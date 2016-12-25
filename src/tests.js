@@ -367,9 +367,9 @@ suite("Parameterize", function() {
   suite("interface tests", function() {
 
     test("template get/set methods", function() {
-      c1 = {a: {foo: "bar"}};
-      c2 = {a: {b: "c"}};
-      c3 = {d: {e: "f"}};
+      var c1 = {a: {foo: "bar"}};
+      var c2 = {a: {b: "c"}};
+      var c3 = {d: {e: "f"}};
       
       var par = new Parameterize(c1, {});
       assume(par.getTemplate()).deep.equals(c1);
@@ -385,9 +385,9 @@ suite("Parameterize", function() {
     });
 
     test("context get/set methods", function() {
-      c1 = {a: {foo: "bar"}};
-      c2 = {a: {b: "c"}};
-      c3 = {d: {e: "f"}};
+      var c1 = {a: {foo: "bar"}};
+      var c2 = {a: {b: "c"}};
+      var c3 = {d: {e: "f"}};
       
       var par = new Parameterize({}, c1);
       assume(par.getContext()).deep.equals(c1);
