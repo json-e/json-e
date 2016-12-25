@@ -8,6 +8,10 @@
     "test": "npm run build && mocha --ui tdd ./dist/tests.js",
     "prepublish": "npm run build && mocha --ui tdd ./dist/tests.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hammad13060/json-e.git"
+  },
   "author": "Hammad Akhtar <hammad13060@iiitd.ac.in>",
   "license": "MIT",
   "dependencies": {
