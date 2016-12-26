@@ -84,16 +84,22 @@ class Parameterize {
 				}
 			}
 		} else if (template[key]["$switch"]) {
-			var condition = template[key]["$switch"];
+			var condition = this._replace(template[key]["$switch"]);
 			var case_option;
 			if (typeof condition === 'string' || condition instanceof String) {
-				case_option = safeEval(condition, this.context);
+				case_option = this._replace(condition);
 			} else {
 				var err = new Error("invalid construct");
 				err.message = "$switch construct must be a string which eval can process";
 				throw err;
 			}
-			template[key] = template[key][case_option];
+			var case_option_value = template[key][case_option];
+			if (typeof case_option_value === 'string' || case_option_value instanceof String) {
+				template[key] = this._replace(case_option_value);
+			} else {
+				this._render(case_option_value);
+				template[key] = case_option_value;
+			}
 		} else if (template[key]["$eval"]) {
 			var expression = template[key]["$eval"];
 			if (typeof expression === 'string' || expression instanceof String) {

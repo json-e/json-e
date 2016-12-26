@@ -170,7 +170,7 @@ suite("Parameterize", function() {
     test("switch with only one option", function() {
       var template = {
         a: {
-          $switch: "'case' + a",
+          $switch: "{{ 'case' + a }}",
           case1: "foo"
         }};
       var context = {a: "1"};
@@ -182,7 +182,7 @@ suite("Parameterize", function() {
     test("switch with multiple options", function() {
       var template = {
         a: {
-          $switch: "'case' + b",
+          $switch: "{{ 'case' + b }}",
           case1: "foo",
           case2: "bar"
         }};
@@ -377,6 +377,30 @@ suite("Parameterize", function() {
       var par = new Parameterize(template, context);
       par.render();
       assume(par.getTemplate()).deep.equals({a:{b:1}});
+    });
+
+    test("switch case where case is an object", function() {
+      var template = {
+        a: {
+          $switch: "{{ 'case' + a }}",
+          caseA: {b:1}
+        }};
+      var context = {a: "A"};
+      var par = new Parameterize(template, context);
+      par.render();
+      assume(par.getTemplate()).deep.equals({a: {b: 1}});
+    });
+
+    test("switch case where case is an eval statement", function() {
+      var template = {
+        a: {
+          $switch: "{{ 'case' + a }}",
+          caseA: "${ a }"
+        }};
+      var context = {a: "A"};
+      var par = new Parameterize(template, context);
+      par.render();
+      assume(par.getTemplate()).deep.equals({a: "A"});
     });
   });
 
