@@ -10,11 +10,11 @@ This module exposes following interface
 // template is js object to be rendered
 // context provides functions/properties to be used
 var par = Parameterize(template1, context1); //constructor
-par.setNewTemplate(template2) //replaces template1 with template2
-par.setNewContext(context2) //replaces context1 with context2
-par.getTemplate() //returns current template
-par.getContext() //returns current context
-par.render() //renders template using context
+par.setNewTemplate(template2); //replaces template1 with template2
+par.setNewContext(context2); //replaces context1 with context2
+par.getTemplate(); //returns current template
+par.getContext(); //returns current context
+par.render(); //renders template using context
 ```
 
 ## substitution
@@ -202,35 +202,35 @@ output > {a: {b: 1}};
 this construct can be used in the following ways
 
 ```javascript
-var template = {
-        a: {
-          $switch: "{{ 'case' + a }}",
-          case1: "foo",
-          case2: "bar"
+var template = {a: {
+  $switch: "{{ 'case' + a }}",
+  case1: "foo",
+  case2: "bar"
 }};
+
 var context = {a: "1"};
 var par = new Parameterize(template, context);
 par.render();
 console.log(par.getTemplate());
 
 /*
-output > {a: "foo"}
+output > {a: "foo"};
 */
 ```
 
 ```javascript
-var template = {
-        a: {
-          $switch: "{{ 'case' + a }}",
-          caseA: {b:1}
-        }};
+var template = {a: {
+  $switch: "{{ 'case' + a }}",
+  caseA: {b:1}
+}};
+
 var context = {a: "A"};
 var par = new Parameterize(template, context);
 par.render();
 console.log(par.getTemplate());
 
 /*
-output > {a: {b: 1}}
+output > {a: {b: 1}};
 */
 ```
 
