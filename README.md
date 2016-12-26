@@ -2,6 +2,21 @@
 json-e is a javascript object prarmetrization module written for embedding context in a javascript object. It supports 
 following features
 
+## inteface
+
+This module exposes following interface
+
+```javascript
+// template is js object to be rendered
+// context provides functions/properties to be used
+var par = Parameterize(template1, context1); //constructor
+par.setNewTemplate(template2) //replaces template1 with template2
+par.setNewContext(context2) //replaces context1 with context2
+par.getTemplate() //returns current template
+par.getContext() //returns current context
+par.render() //renders template using context
+```
+
 ## substitution
 It follows this "{{ expression }}" syntax. expression can be anything javascript eval can
 digest and provide a context object.
@@ -182,3 +197,48 @@ console.log(par.getTemplate());
 output > {a: {b: 1}};
 */
 ```
+
+## $switch construct
+this construct can be used in the following ways
+
+```javascript
+var template = {
+        a: {
+          $switch: "{{ 'case' + a }}",
+          case1: "foo",
+          case2: "bar"
+}};
+var context = {a: "1"};
+var par = new Parameterize(template, context);
+par.render();
+console.log(par.getTemplate());
+
+/*
+output > {a: "foo"}
+*/
+```
+
+```javascript
+var template = {
+        a: {
+          $switch: "{{ 'case' + a }}",
+          caseA: {b:1}
+        }};
+var context = {a: "A"};
+var par = new Parameterize(template, context);
+par.render();
+console.log(par.getTemplate());
+
+/*
+output > {a: {b: 1}}
+*/
+```
+
+instead of js object we can use ${ expression } syntax as case value.
+
+## Note
+
+This module provides recursive evaluation of js objects and arrays for templates,
+along with deep property access from the context.
+
+For more info checkout src/tests.js
