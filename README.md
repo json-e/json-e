@@ -203,7 +203,7 @@ this construct can be used in the following ways
 
 ```javascript
 var template = {a: {
-  $switch: "{{ 'case' + a }}",
+  "$switch": "{{ 'case' + a }}",
   case1: "foo",
   case2: "bar"
 }};
@@ -220,7 +220,7 @@ output > {a: "foo"};
 
 ```javascript
 var template = {a: {
-  $switch: "{{ 'case' + a }}",
+  "$switch": "{{ 'case' + a }}",
   caseA: {b:1}
 }};
 
