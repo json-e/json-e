@@ -58,7 +58,23 @@ suite("Parameterize", function() {
       var par = new Parameterize(template, context);
       par.render();
       assume(par.getTemplate()).deep.equals(output)
-  });
+    });
+
+    test("do not evaluate numbers", function() {
+      let template = {a: {b: 1}};
+      let context = {}
+      let par = new Parameterize(template, context);
+      par.render();
+      assume(par.getTemplate()).deep.equals(template);
+    });
+
+    test("do no evaluate simple strings", function() {
+      let template = {a: {b: "1"}};
+      let context = {}
+      let par = new Parameterize(template, context);
+      par.render();
+      assume(par.getTemplate()).deep.equals(template);
+    });
   });
 
   suite("deep propert access", function() {
@@ -85,7 +101,7 @@ suite("Parameterize", function() {
     });
 
     test("non parameterized template", function() {
-      var template = {a: {b: {c: {d: "name"}}}};
+      var template = {a: {b: {c: {d: 1}}}};
       var context = {};
       var par = new Parameterize(template, context);
       par.render();
