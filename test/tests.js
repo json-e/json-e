@@ -1,6 +1,6 @@
 suite("Parameterize", function() {
 	var assume = require('assume');
-	var Parameterize = require("./index.js");
+	var Parameterize = require("../lib/index.js");
 
 	suite("non deep property access", function () {
     test("with propert access", function() {
