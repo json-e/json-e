@@ -32,7 +32,6 @@
     "mocha-eslint": "^3.0.1"
   },
   "engines": {
-    "node": "0.12.x",
-    "npm": "2.7.x"
+    "node": "6.4.x"
   }
 }
