@@ -3,8 +3,10 @@ var _ = require('lodash');
 
 module.exports = function(_template, _context) {
 
-  var PARSEEXPR = /{{(\s*([\w\W]+)+\s*)}}/;
-  var EXPR = /\${(\s*([\w\W]+)+\s*)}/;
+  //var PARSEEXPR = /{{(\s*([\w\W]+)+\s*)}}/;
+  //var EXPR = /\${(\s*([\w\W]+)+\s*)}/;
+
+  var PARSEEXPR = /\${(\s*([\w\W]+)+\s*)}/;
 
   var template = _.clone(_template);
   var context = _.clone(_context);
@@ -51,8 +53,7 @@ module.exports = function(_template, _context) {
       var condition = template[key]['$if'];
       var hold = undefined;
       if (typeof condition === 'string' || condition instanceof String) {
-        //hold = safeEval(condition, this.context);
-        hold = _replace(condition);
+        hold = safeEval(condition, context);
       } else {
 
         var err = new Error('invalid construct');
@@ -64,6 +65,10 @@ module.exports = function(_template, _context) {
         var hence = template[key]['$then'];
         if (typeof hence === 'string' || hence instanceof String) {
           template[key] = _replace(hence);
+        } else if (hence.hasOwnProperty('$eval')) {
+          var dummy = {dummy: template[key]['$then']};
+          _render(dummy);
+          template[key] = dummy['dummy']; 
         } else {
           _render(hence);
           template[key] = hence;
@@ -72,16 +77,20 @@ module.exports = function(_template, _context) {
         var hence = template[key]['$else'];
         if (typeof hence === 'string' || hence instanceof String) {
           template[key] = _replace(hence);
+        } else if (hence.hasOwnProperty('$eval')) {
+          var dummy = {dummy: template[key]['$else']};
+          _render(dummy);
+          template[key] = dummy['dummy']; 
         } else {
           _render(hence);
           template[key] = hence;
         }
       }
     } else if (template[key]['$switch']) {
-      var condition = _replace(template[key]['$switch']);
+      var condition = template[key]['$switch'];
       var case_option;
       if (typeof condition === 'string' || condition instanceof String) {
-        case_option = _replace(condition);
+        case_option = safeEval(condition, context);
       } else {
         var err = new Error('invalid construct');
         err.message = '$switch construct must be a string which eval can process';
@@ -90,6 +99,10 @@ module.exports = function(_template, _context) {
       var case_option_value = template[key][case_option];
       if (typeof case_option_value === 'string' || case_option_value instanceof String) {
         template[key] = _replace(case_option_value);
+      } else if (case_option_value.hasOwnProperty('$eval')) {
+        var dummy = {dummy: case_option_value};
+        _render(dummy);
+        template[key] = dummy['dummy']; 
       } else {
         _render(case_option_value);
         template[key] = case_option_value;
@@ -97,7 +110,7 @@ module.exports = function(_template, _context) {
     } else if (template[key]['$eval']) {
       var expression = template[key]['$eval'];
       if (typeof expression === 'string' || expression instanceof String) {
-        template[key] = _replace(expression);
+        template[key] = safeEval(expression, context);
       } else {
         var err = new Error('invalid constructoruct');
         err.message = '$eval construct must be a string which eval can process';
@@ -114,9 +127,6 @@ module.exports = function(_template, _context) {
     if (match = PARSEEXPR.exec(parameterizedString)) {
       var replacementValue = safeEval(match[1].trim(), context);
       return parameterizedString.replace(PARSEEXPR, replacementValue);
-    } else if (match = EXPR.exec(parameterizedString)) {
-      var result = safeEval(match[1].trim(), context);
-      return result;
     }
     return parameterizedString;
   }

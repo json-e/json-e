@@ -4,21 +4,21 @@ suite('Parameterize', function() {
 
   suite('non deep property access', function() {
     test('with property access', function() {
-      var template = {id: '{{ clientId }}'};
+      var template = {id: '${ clientId }'};
       var context = {clientId: '123'};
       assume(parameterize(template, context)).deep.equals({id: '123'});
     });
 
     test('with array access', function() {
-      var template = {id: '{{ $arr(0) }}', name: '{{ $arr(2) }}', count: '{{ $arr(1) }}'};
+      var template = {id: '${ $arr(0) }', name: '${ $arr(2) }', count: '${ $arr(1) }'};
       var context = {arr: ['123', 248, 'doodle']};
       assume(parameterize(template, context)).deep.equals({id: '123', name: 'doodle', count: '248'}); 
     });
 
     test('function evaluation', function() {
       var template = {
-        name: '{{ func("jim") }}',
-        username: '{{ func(a) }}',
+        name: '${ func("jim") }',
+        username: '${ func(a) }',
       };
       var context = {
         a: 'foobar',
@@ -31,9 +31,9 @@ suite('Parameterize', function() {
 
     test('Modify string', function() {
       var template = {
-        key1:     '{{ toUpper( "hello world") }}',
-        key2:     '{{  toLower(toUpper("hello world"))   }}',
-        key3:     '{{   toLower(  toUpper(  text))  }}',
+        key1:     '${ toUpper( "hello world") }',
+        key2:     '${  toLower(toUpper("hello world"))   }',
+        key3:     '${   toLower(  toUpper(  text))  }',
       };
       var context = {
         toUpper: function(text) {
@@ -67,7 +67,7 @@ suite('Parameterize', function() {
 
   suite('deep propert access', function() {
     test('with deep array access', function() {
-      var template = {image_version: '{{task.$images(0).$versions(0)}}', name: '{{task.$images(0).name}}'};
+      var template = {image_version: '${task.$images(0).$versions(0)}', name: '${task.$images(0).name}'};
       var context = {
         task: {
           images: [{versions: ['12.10'], name: 'ubuntu'}],
@@ -95,7 +95,7 @@ suite('Parameterize', function() {
     test('if -> then non-deep', function() {
       var template = {
         a: {
-          $if: '${ 1 < 2 }',
+          $if: '1 < 2',
           $then: 'a',
           $else: 'b',
         },
@@ -107,7 +107,7 @@ suite('Parameterize', function() {
     test('if -> else non-deep', function() {
       var template = {
         a: {
-          $if: '${ 1 > 2 }',
+          $if: '1 > 2',
           $then: 'a',
           $else: 'b',
         },
@@ -119,7 +119,7 @@ suite('Parameterize', function() {
     test('if -> then deep', function() {
       var template = {
         b: {a: {
-          $if: '${ 1 < 2 }',
+          $if: '1 < 2',
           $then: 'a',
           $else: 'b',
         }},
@@ -131,7 +131,7 @@ suite('Parameterize', function() {
     test('if -> else deep', function() {
       var template = {
         b: {a: {
-          $if: '${ 1 > 2 }',
+          $if: '1 > 2',
           $then: 'a',
           $else: 'b',
         }},
@@ -164,16 +164,16 @@ suite('Parameterize', function() {
     test('eval with multiple function evaluations', function() {
       var template = {
         value: [
-          {$eval: '${ func(0) }'},
-          {$eval: '${ func(0) }'},
-          {$eval: '${ func(-1) }'},
-          {$eval: '${ func(-2) }'},
-          {$eval: '${ func(0) }'},
-          {$eval: '${ func(0) }'},
-          {$eval: '${ func(0) }'},
-          {$eval: '${ func(0) }'},
-          {$eval: '${ func(0) }'},
-          {$eval: '${ func(1+1) }'},
+          {$eval: 'func(0)'},
+          {$eval: 'func(0)'},
+          {$eval: 'func(-1)'},
+          {$eval: 'func(-2)'},
+          {$eval: 'func(0)'},
+          {$eval: 'func(0)'},
+          {$eval: 'func(0)'},
+          {$eval: 'func(0)'},
+          {$eval: 'func(0)'},
+          {$eval: 'func(1+1)'},
         ],
       };
       var i = 0;
@@ -189,12 +189,12 @@ suite('Parameterize', function() {
     test('nested if (then --> then) construct', function() {
       var template = {
         val: {
-          $if: '${ key1 > key2 }',
+          $if: 'key1 > key2',
           $then: {
             b: {
-              $if: '${ key3 > key4 }',
-              $then: '{{ foo }}',
-              $else: '{{ bar }}',
+              $if: 'key3 > key4',
+              $then: '${ foo }',
+              $else: '${ bar }',
             },
           },
           $else: {b: 'failed'},
@@ -208,12 +208,12 @@ suite('Parameterize', function() {
     test('nested if (else --> else) construct', function() {
       var template = {
         val: {
-          $if: '${ key1 < key2 }',
+          $if: 'key1 < key2',
           $else: {
             b: {
-              $if: '${ key3 < key4 }',
-              $then: '{{ foo }}',
-              $else: '{{ bar }}',
+              $if: 'key3 < key4',
+              $then: '${ foo }',
+              $else: '${ bar }',
             },
           },
           $then: {b: 'failed'},
@@ -227,12 +227,12 @@ suite('Parameterize', function() {
     test('nested if (then --> else) construct', function() {
       var template = {
         val: {
-          $if: '${ key1 > key2 }',
+          $if: 'key1 > key2',
           $then: {
             b: {
-              $if: '${ key3 < key4 }',
-              $then: '{{ foo }}',
-              $else: '{{ bar }}',
+              $if: 'key3 < key4',
+              $then: '${ foo }',
+              $else: '${ bar }',
             },
           },
           $else: {b: 'failed'},
@@ -246,12 +246,12 @@ suite('Parameterize', function() {
     test('nested if (else --> then) construct', function() {
       var template = {
         val: {
-          $if: '${ key1 < key2 }',
+          $if: 'key1 < key2',
           $else: {
             b: {
-              $if: '${ key3 > key4 }',
-              $then: '{{ foo }}',
-              $else: '{{ bar }}',
+              $if: 'key3 > key4',
+              $then: '${ foo }',
+              $else: '${ bar }',
             },
           },
           $then: {b: 'failed'},
@@ -265,15 +265,15 @@ suite('Parameterize', function() {
     test('nested if (else --> then ---> else) construct', function() {
       var template = {
         val: {
-          $if: '${ key1 < key2 }',
+          $if: 'key1 < key2',
           $else: {
             b: {
-              $if: '${ key3 > key4 }',
+              $if: 'key3 > key4',
               $then: {
                 c: {
-                  $if: '${ key5 < key6 }',
+                  $if: 'key5 < key6',
                   $then: 'abc',
-                  $else: '{{ bar }}',
+                  $else: '${ bar }',
                 },
               },
               $else: 'follow',
@@ -286,14 +286,13 @@ suite('Parameterize', function() {
       var context = {key1: 2, key2: 1, key3: 4, key4: 3, key5: 6, key6: 5, foo: 'a', bar: 'b'};
       assume(parameterize(template, context)).deep.equals({val: {b: {c: 'b'}}});
     });
-
-    test('if ($then) with ${ expression }', function() {
+    test('if ($then) with $eval', function() {
       var template = {
         a: {
           b: {
-            $if: '${ 2 < 3 }',
-            $then: '${ one() }',
-            $else: '${ two() }',
+            $if: '2 < 3',
+            $then: {$eval: 'one()'},
+            $else: {$eval: 'two()'},
           }}};
       var context = {
         one: () => 1,
@@ -301,58 +300,78 @@ suite('Parameterize', function() {
       };
       assume(parameterize(template, context)).deep.equals({a:{b:1}});
     });
-
-    test('if (else) with ${ expression }', function() {
+    test('if (else) with $eval', function() {
       var template = {
         a: {
           b: {
-            $if: '${ 2 < 3 }',
-            $then: '${ one() }',
-            $else: '${ two() }',
+            $if: '2 > 3',
+            $then: {$eval: 'one()'},
+            $else: {$eval: 'two()'},
           }}};
       var context = {
         one: () => 1,
         two: () => 2,
       };
-      assume(parameterize(template, context)).deep.equals({a:{b:1}});
+      assume(parameterize(template, context)).deep.equals({a:{b:2}});
     });
 
     test('simple $eval with simple value', function() {
       var template = {a: {b: {$eval: '1'}}};
-      var context = {
-        one: () => 1,
-        two: () => 2,
-      };
-      assume(parameterize(template, context)).deep.equals({a:{b:'1'}});
+      var context = {};
+      assume(parameterize(template, context)).deep.equals({a:{b:1}});
     });
 
-    test('simple $eval with ${ expression }', function() {
-      var template = {a: {b: {$eval: '${ one() }'}}};
+    test('simple $eval with function evaluation', function() {
+      var template = {a: {b: {$eval: 'one()'}}};
       var context = {
         one: () => 1,
         two: () => 2,
       };
       assume(parameterize(template, context)).deep.equals({a:{b:1}});
+    });
+
+    test('simple $eval with object nested replacement', function() {
+      var template = {a: {b: {$eval: 'a.b'}}};
+      var context = {
+        a: {
+          b: {
+            c: {
+              d: 1,
+            },
+          },
+        },
+      };
+      assume(parameterize(template, context)).deep.equals({a:{b:{c:{d:1}}}});
     });
 
     test('switch case where case is an object', function() {
       var template = {
         a: {
-          $switch: '{{ "case" + a }}',
+          $switch: '"case" + a',
           caseA: {b:1},
         }};
       var context = {a: 'A'};
       assume(parameterize(template, context)).deep.equals({a: {b: 1}});
     });
 
-    test('switch case where case is an eval statement', function() {
+    test('switch case where case is an interpolation statement', function() {
       var template = {
         a: {
-          $switch: '{{ "case" + a }}',
+          $switch: '"case" + a',
           caseA: '${ a }',
         }};
       var context = {a: 'A'};
       assume(parameterize(template, context)).deep.equals({a: 'A'});
+    });
+
+    test('switch case where case is $eval', function() {
+      var template = {
+        a: {
+          $switch: '"case" + a',
+          caseA: {$eval: 'obj'},
+        }};
+      var context = {a: 'A', obj: {b:1}};
+      assume(parameterize(template, context)).deep.equals({a: {b:1}});
     });
   });
 });
