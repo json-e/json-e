@@ -151,3 +151,36 @@ context:  {}
 template: {$fromNow: '1 day'}
 result:   '2017-01-20T16:27:20.974Z'
 ################################################################################
+---
+section:  expression language
+---
+title:    addition
+context:  {a: 1, b: 2}
+template: {$eval: 'a + b + 7'}
+result:   10
+---
+title:    multiplication
+context:  {a: 3, b: 2}
+template: {$eval: 'a * b * 3'}
+result:   18
+---
+title:    string concatenation (1)
+context:  {a: 3, b: 2}
+template: {$eval: '"a" + "b"'}
+result:   'ab'
+---
+title:    string concatenation (2)
+context:  {a: 3, b: 2}
+template: {$eval: '"a" + b'}
+result:   'a2'
+---
+title:    string concatenation (3)
+context:  {a: 3, b: 2}
+template: {$eval: '"" + a + b'}
+result:   '32'
+---
+title:    string concatenation (4)
+context:  {a: 3, b: 2}
+template: {$eval: '"" + (a + b)'}
+result:   '5'
+################################################################################
