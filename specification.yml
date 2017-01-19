@@ -1,0 +1,153 @@
+################################################################################
+# ### Specificaiton for json-e
+# This document specifies the json-e template language through a series of
+# test cases on the form: `{title, context, template, result}`
+# Where `jsone.render(template, context) = result` and title is short name
+# for the test case. If no result is specified, it's because the test cases must
+# throw an error.
+#
+# Comments explaining the test cases is encouraged, additionally entries with
+# {section: '...'} is encouraged to separate sections.
+#
+# Test conditions:
+#   1) Context is assumed to always functions:
+#     - max(a, b)
+#     - min(a, b)
+#   2) Time at test time is expected to be '2017-01-19T16:27:20.974Z'
+#   3) JSON is rendered to strings without whitespace and preserving order of
+#      keys
+################################################################################
+---
+section:  Initial Minimal Subset
+---
+title:    Identity
+context:  {}
+template: {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
+result:   {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
+---
+title:    fromNow
+context:  {}
+template: {$fromNow: ''}
+result:   '2017-01-19T16:27:20.974Z'
+---
+title:    fromNow 2 days 3 hours
+context:  {}
+template: {$fromNow: '2 days 3 hours'}
+result:   '2017-01-21T19:27:20.974Z'
+---
+title:    $eval
+context:  {key: ['value', 1, 2, true, {}]}
+template: {$eval: 'key'}
+result:   ['value', 1, 2, true, {}]
+---
+title:    $dumps
+context:  {key: [1,2,true,{},[]]}
+template: {$dumps: 'key'}
+result:   '[1,2,true,{},[]]'
+---
+title:    string interpolation
+context:  {key: 'world', num: 1}
+template: {message: 'hello ${key}', 'k-${num}': true}
+result:   {message: 'hello world', 'k-1': true}
+---
+title:    can't interpolate arrays
+context:  {key: [1,2,3]}
+template: {message: 'hello ${key}'}
+#TODO: Decide if it should be interpolated as JSON
+---
+title:    can't interpolate objects
+context:  {key: {}}
+template: 'hello ${key}'
+#TODO: Decide if it should be interpolated as JSON
+################################################################################
+---
+section:  $if-constructs
+---
+title:    $if-then-else, true
+context:  {cond: true}
+template: {$if: 'cond', then: 1, else: 2}
+result:   1
+---
+title:    $if-then-else, false
+context:  {cond: false}
+template: {$if: 'cond', then: 1, else: 2}
+result:   2
+---
+title:    $if-then in array, true
+context:  {cond: true}
+template: [0, {$if: 'cond', then: 1}]
+result:   [0, 1]
+---
+title:    $if-then in array, false
+context:  {cond: false}
+template: [0, {$if: 'cond', then: 1}]
+result:   [0] # missing else branch should return a delete-marker
+---
+title:    $if-then in object, true
+context:  {cond: true}
+template: {key: {$if: 'cond', then: 1}, k2: 3}
+result:   {key: 1, k2: 3}
+---
+title:    $if-then in object, false
+context:  {cond: false}
+template: {key: {$if: 'cond', then: 1}, k2: 3}
+result:   {k2: 3} # missing else branch should return a delete-marker
+---
+title:    $if -> delete-marker, true
+context:  {cond: true}
+template: {key: {$if: 'cond'}, k2: 3}
+result:   {k2: 3} # missing then/else branches should return a delete-marker
+---
+title:    $if -> delete-marker, false
+context:  {cond: false}
+template: {key: {$if: 'cond'}, k2: 3}
+result:   {k2: 3} # missing then/else branches should return a delete-marker
+################################################################################
+---
+section:  fromNow
+---
+title:    fromNow 1 hour
+context:  {}
+template: {$fromNow: '1 hour'}
+result:   '2017-01-19T17:27:20.974Z'
+---
+title:    fromNow 2 hours
+context:  {}
+template: {$fromNow: '2 hours'}
+result:   '2017-01-19T18:27:20.974Z'
+---
+title:    fromNow 3h
+context:  {}
+template: {$fromNow: '3h'}
+result:   '2017-01-19T19:27:20.974Z'
+---
+title:    fromNow 1 hours
+context:  {}
+template: {$fromNow: '1 hours'}
+result:   '2017-01-19T17:27:20.974Z'
+---
+title:    fromNow -1 hour
+context:  {}
+template: {$fromNow: '-1 hour'}
+result:   '2017-01-19T15:27:20.974Z'
+---
+title:    fromNow 1 m
+context:  {}
+template: {$fromNow: '1 m'}
+result:   '2017-01-19T16:28:20.974Z'
+---
+title:    fromNow 12 min
+context:  {}
+template: {$fromNow: '12 min'}
+result:   '2017-01-19T16:39:20.974Z'
+---
+title:    fromNow 11m
+context:  {}
+template: {$fromNow: '11m'}
+result:   '2017-01-19T16:38:20.974Z'
+---
+title:    fromNow 1 day
+context:  {}
+template: {$fromNow: '1 day'}
+result:   '2017-01-20T16:27:20.974Z'
+################################################################################
