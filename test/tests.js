@@ -1,6 +1,9 @@
 suite('Parameterize', function() {
   var assume = require('assume');
   var parameterize = require('../lib/index.js');
+  var tk = require('timekeeper');
+
+  var date = new Date('2017-01-19T16:27:20.974Z');
 
   suite('non deep property access', function() {
     test('with property access', function() {
@@ -372,6 +375,33 @@ suite('Parameterize', function() {
         }};
       var context = {a: 'A', obj: {b:1}};
       assume(parameterize(template, context)).deep.equals({a: {b:1}});
+    });
+  });
+
+  suite('$fromNow suite', function() {
+    
+    test('$fromNow', function() {
+      tk.freeze(date);
+      var template = {time: {$fromNow: ''}};
+      var context = {};
+      assume(parameterize(template, context)['time']).equals('2017-01-19T16:27:20.974Z');
+      tk.reset();
+    });
+    
+    test('$fromNow 2 days 3 hours', function() {
+      tk.freeze(date);
+      var template = {time: {$fromNow: '2 days 3 hours'}};
+      var context = {};
+      assume(parameterize(template, context)['time']).equals('2017-01-21T19:27:20.974Z');
+      tk.reset();
+    });
+
+    test('$fromNow -1 hour', function() {
+      tk.freeze(date);
+      var template = {time: {$fromNow: '-1 hours'}};
+      var context = {};
+      assume(parameterize(template, context)['time']).equals('2017-01-19T16:27:20.974Z');
+      tk.reset();
     });
   });
 });

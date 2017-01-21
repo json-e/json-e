@@ -21,6 +21,7 @@
   "dependencies": {
     "assume": "^1.4.1",
     "lodash": "^4.17.2",
+    "moment": "^2.17.1",
     "notevil": "^1.0.0"
   },
   "devDependencies": {
@@ -29,7 +30,8 @@
     "eslint-config-taskcluster": "^2.0.0",
     "eslint-plugin-taskcluster": "^1.0.2",
     "mocha": "^3.2.0",
-    "mocha-eslint": "^3.0.1"
+    "mocha-eslint": "^3.0.1",
+    "timekeeper": "^1.0.0"
   },
   "engines": {
     "node": "6.4.x"

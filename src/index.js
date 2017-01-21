@@ -1,5 +1,6 @@
 var safeEval = require('notevil');
 var _ = require('lodash');
+var moment = require('moment');
 
 module.exports = function(_template, _context) {
 
@@ -7,6 +8,7 @@ module.exports = function(_template, _context) {
   //var EXPR = /\${(\s*([\w\W]+)+\s*)}/;
 
   var PARSEEXPR = /\${(\s*([\w\W]+)+\s*)}/;
+  var DATEEXPR = /([0-9]+ *d(ays?)?)? *([0-9]+ *h(ours?)?)? *([0-9]+ *m(in(utes?)?)?)?/;
 
   var template = _.clone(_template);
   var context = _.clone(_context);
@@ -49,12 +51,14 @@ module.exports = function(_template, _context) {
 
   /* private */
   function _handleConstructs(template, key) {
-    if (template[key]['$if']) {
+    if (template[key].hasOwnProperty('$if')) {
       _handleIf(template, key);
-    } else if (template[key]['$switch']) {
+    } else if (template[key].hasOwnProperty('$switch')) {
       _handleSwitch(template, key);
-    } else if (template[key]['$eval']) {
+    } else if (template[key].hasOwnProperty('$eval')) {
       _handleEval(template, key);
+    } else if (template[key].hasOwnProperty('$fromNow')) {
+      _handleFromNow(template, key);
     } else {
       _render(template[key]);
     }
@@ -127,10 +131,39 @@ module.exports = function(_template, _context) {
     if (typeof expression === 'string' || expression instanceof String) {
       template[key] = safeEval(expression, context);
     } else {
-      var err = new Error('invalid constructoruct');
+      var err = new Error('invalid construct value');
       err.message = '$eval construct must be a string which eval can process';
       throw err;
     }
+  }
+
+  function _handleFromNow(template, key) {
+    var expression = template[key]['$fromNow'];
+    if (typeof expression === 'string' || expression instanceof String) {
+      template[key] = _dateToISOString(expression);
+    } else {
+      var err = new Error('invalid construct value');
+      err.message = '$fromNow value must be a string which eval can process';
+      throw err;
+    }
+  }
+
+  function _dateToISOString(expression) {
+    var match = undefined;
+    if (match = DATEEXPR.exec(expression)) {
+      var mom = new moment(new Date());
+      var days = match[1] === undefined ? 0 : parseInt(match[1].split(' ')[0], 10);
+      var hours = match[3] === undefined ? 0 : parseInt(match[3].split(' ')[0], 10);
+      var minutes = match[5] === undefined ? 0 : parseInt(match[5].split(' ')[0], 10);
+      mom.add(days, 'days');
+      mom.add(hours, 'hours');
+      mom.add(minutes, 'minutes');
+      return mom.toISOString();
+    }
+
+    var err = new Error('invalid construct value');
+    err.message = '$fromNow expression is incorrect';
+    throw err;
   }
 
   /* private */
