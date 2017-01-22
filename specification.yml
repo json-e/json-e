@@ -183,4 +183,27 @@ title:    string concatenation (4)
 context:  {a: 3, b: 2}
 template: {$eval: '"" + (a + b)'}
 result:   '5'
+---
+title:    $eval must take string
+context:  {a: 3, b: 2}
+template: {$eval: ['a', 'b']}
+error:    true
+################################################################################
+---
+section:  $dumps
+---
+title:    wrap expressions with $eval
+context:  {a: 1, b: 2}
+template: {$dumps: {$eval: 'a + b + 7'}}
+result:   '10'
+---
+title:    unwrap expressions not evaluated
+context:  {a: 1, b: 2}
+template: {$dumps: 'a + b + 7'}
+result:   '"a + b + 7"'
+---
+title:    $eval inside array
+context:  {a: 1, b: 2}
+template: {$dumps: [2, 5, {$eval: 'a + b + 7'}]}
+result:   '[2,5,10]'
 ################################################################################
