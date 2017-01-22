@@ -184,3 +184,41 @@ context:  {a: 3, b: 2}
 template: {$eval: '"" + (a + b)'}
 result:   '5'
 ################################################################################
+---
+section:  $sort
+---
+title:    simple sort
+context:  {}
+template: {$sort: [3, 4, 1, 2]}
+result:   [1, 2, 3, 4]
+---
+title:    simple sort with $eval
+context:  {array: [3, 4, 1, 2]}
+template: {$sort: {$eval: 'array'}}
+result:   [1, 2, 3, 4]
+---
+title:    sort by
+context:  {}
+template:
+  $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
+  by(x): 'x.a'
+result:   [{a: 1, b: [], {a: 2}, {a: 3}}]
+################################################################################
+---
+section:  $reverse
+---
+title:    simple reverse
+context:  {}
+template: {$reverse: [3, 4, 1, 2]}
+result:   [2, 1, 4, 3]
+---
+title:    simple reverse with $eval
+context:  {key: [3, 4, 1, 2]}
+template: {$reverse: {$eval: 'key'}}
+result:   [2, 1, 4, 3]
+---
+title:    simple reverse + $sort # with this we can sort in reverse order
+context:  {}
+template: {$reverse: {$sort: [3, 4, 1, 2]}}
+result:   [4, 3, 2, 1]
+################################################################################
