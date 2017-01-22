@@ -238,6 +238,16 @@ title:    $eval must take string
 context:  {a: 3, b: 2}
 template: {$eval: ['a', 'b']}
 error:    true
+---
+title: array access [index]
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[0]'}
+result: 1
+---
+title: array slicing [begin:end], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[0:2]'}
+result: [1,2]
 ################################################################################
 ---
 section:  $dumps
