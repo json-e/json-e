@@ -41,8 +41,8 @@ template: {$eval: 'key'}
 result:   ['value', 1, 2, true, {}]
 ---
 title:    $dumps
-context:  {key: [1,2,true,{},[]]}
-template: {$dumps: 'key'}
+context:  {}
+template: {$dumps: [1,2,true,{},[]]}
 result:   '[1,2,true,{},[]]'
 ---
 title:    string interpolation
@@ -102,6 +102,56 @@ title:    $if -> delete-marker, false
 context:  {cond: false}
 template: {key: {$if: 'cond'}, k2: 3}
 result:   {k2: 3} # missing then/else branches should return a delete-marker
+---
+title: $if->then, then => $eval, true
+context: {key: {b: 1}}
+template: {$if: 'true', then: {$eval: 'key'}}
+result: {b: 1}
+---
+title: $if->else, else => $eval, false
+context: {key: {b: 1}}
+template: {$if: 'false', else: {$eval: 'key'}}
+result: {b: 1}
+---
+title: $if->then, then => ${}, true
+context: {key: 'one'}
+template: {$if: 'true', then: '${key}'}
+result: 'one'
+---
+title: $if->else, else => ${}, false
+context: {key: 'one'}
+template: {$if: 'false', else: '${key}'}
+result: 'one'
+---
+title: $if->then, then => object, true
+context: {cond: true}
+template: {$if: 'cond', then: {key: 'hello world'}}
+result: {key: 'hello world'}
+---
+title: $if->else, else => object, false
+context: {cond: false}
+template: {$if: 'cond', else: {key: 'hello world'}}
+result: {key: 'hello world'}
+---
+title: $if->then, then => object, $eval, true
+context: {cond: true, key: 'hello world'}
+template: {$if: 'cond', then: {key: {$eval: 'key'}}}
+result: {key: 'hello world'}
+---
+title: $if->else, else => object, $eval, false
+context: {cond: 'false', key: 'hello world'}
+template: {$if: 'cond', then: {key: {$eval: 'key'}}}
+result: {key: 'hello world'}
+---
+title: $if->then, then => object, interpolation, true
+context: {cond: true, key: 'world'}
+template: {$if: 'cond', then: {key: 'hello ${key}'}}
+result: {key: 'hello world'}
+---
+title: $if->else, else => object, interpolation, false
+context: {cond: false, key: 'world'}
+template: {$if: 'cond', else: {key: 'hello ${key}'}}
+result: {key: 'hello world'}
 ################################################################################
 ---
 section:  fromNow
@@ -206,4 +256,22 @@ title:    $eval inside array
 context:  {a: 1, b: 2}
 template: {$dumps: [2, 5, {$eval: 'a + b + 7'}]}
 result:   '[2,5,10]'
+################################################################################
+---
+section: accessing nested objects => context
+---
+title: $eval
+context:  {key: {key2: ['value', 1, 2, true, {}]}}
+template: {$eval: 'key.key2'}
+result:   ['value', 1, 2, true, {}]
+---
+title:    $dumps
+context:  {key: {key2: [1,2,true,{},[]]}}
+template: {$dumps: {$eval: 'key.key2'}}
+result:   '[1,2,true,{},[]]'
+---
+title: string interpolation
+context: {key: {key2: 'world', key3: 1}}
+template: {message: 'hello ${key.key2}', 'k-${key.key3}': true}
+result:   {message: 'hello world', 'k-1': true}
 ################################################################################
