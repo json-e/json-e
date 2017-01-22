@@ -184,3 +184,58 @@ context:  {a: 3, b: 2}
 template: {$eval: '"" + (a + b)'}
 result:   '5'
 ################################################################################
+---
+section:  $map
+---
+title:    simple map
+context:  {a: 1}
+template:
+  $map: [2, 4, 6]
+  each(x): {$eval: 'x + a'}
+result:   [3, 5, 7]
+---
+title:    complex identifier
+context:  {a: 1}
+template:
+  $map: [2, 4, 6]
+  each(my_identifier97): {$eval: 'my_identifier97 + a'}
+result:   [3, 5, 7]
+---
+title:    must wrap expressions with $eval
+context:  {a: 1}
+template:
+  $map: [2, 4, 6]
+  each(my_identifier97): 'my_identifier97 + a'
+result:   ['my_identifier97 + a', 'my_identifier97 + a', 'my_identifier97 + a']
+---
+title:    can take from objects
+context:  {a: 1}
+template:
+  $map: [{k: 1}, {k: 2}, {k: 3}]
+  each(y): {$eval: 'y.k'}
+result:   [1, 2, 3]
+---
+title:    can make objects too
+context:  {a: 1}
+template:
+  $map: [{k: 1}, {k: 2}, {k: 3}]
+  each(y):
+    k: {$eval: 'y.k + 1'}
+    v: 'before=${y.k}'
+result:
+  - k: 2
+    v: 'before=1'
+  - k: 3
+    v: 'before=2'
+  - k: 4
+    v: 'before=3'
+ ---
+title:    respects delete-marker from $if
+context:  {a: 1}
+template:
+  $map: [{k: 1}, {k: 2}, {k: 3}]
+  each(y):
+    $if: 'y.k != 2'
+    then: {$eval: 'y.k'} 
+result: [1, 3]
+################################################################################
