@@ -3,8 +3,8 @@
 # This document specifies the json-e template language through a series of
 # test cases on the form: `{title, context, template, result}`
 # Where `jsone.render(template, context) = result` and title is short name
-# for the test case. If no result is specified, it's because the test cases must
-# throw an error.
+# for the test case. If `error` property is specified as `true`, no result needs
+# to be specified, as the test case must throw an error.
 #
 # Comments explaining the test cases is encouraged, additionally entries with
 # {section: '...'} is encouraged to separate sections.
@@ -53,12 +53,12 @@ result:   {message: 'hello world', 'k-1': true}
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}
-#TODO: Decide if it should be interpolated as JSON
+error:    true #TODO: Decide if it should be interpolated as JSON
 ---
 title:    can't interpolate objects
 context:  {key: {}}
 template: 'hello ${key}'
-#TODO: Decide if it should be interpolated as JSON
+error:    true #TODO: Decide if it should be interpolated as JSON
 ################################################################################
 ---
 section:  $if-constructs
@@ -183,4 +183,27 @@ title:    string concatenation (4)
 context:  {a: 3, b: 2}
 template: {$eval: '"" + (a + b)'}
 result:   '5'
+---
+title:    $eval must take string
+context:  {a: 3, b: 2}
+template: {$eval: ['a', 'b']}
+error:    true
+################################################################################
+---
+section:  $dumps
+---
+title:    wrap expressions with $eval
+context:  {a: 1, b: 2}
+template: {$dumps: {$eval: 'a + b + 7'}}
+result:   '10'
+---
+title:    unwrap expressions not evaluated
+context:  {a: 1, b: 2}
+template: {$dumps: 'a + b + 7'}
+result:   '"a + b + 7"'
+---
+title:    $eval inside array
+context:  {a: 1, b: 2}
+template: {$dumps: [2, 5, {$eval: 'a + b + 7'}]}
+result:   '[2,5,10]'
 ################################################################################
