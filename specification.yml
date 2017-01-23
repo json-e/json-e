@@ -284,6 +284,16 @@ context: {a: [1,2,3,4]}
 template: {$eval: 'a[-3:-1]'}
 result: [2,3]
 ---
+title: array slicing [:end], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[:3]'}
+result: [1,2,3]
+---
+title: array slicing [:-end], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[:-2]'}
+result: [1,2]
+---
 title: function min(contextValue, contextValue)
 context: {a: 1, b: 2}
 template: {$eval: 'min(a, b)'}
