@@ -40,9 +40,9 @@ context:  {key: ['value', 1, 2, true, {}]}
 template: {$eval: 'key'}
 result:   ['value', 1, 2, true, {}]
 ---
-title:    $dumps
+title:    $json
 context:  {}
-template: {$dumps: [1,2,true,{},[]]}
+template: {$json: [1,2,true,{},[]]}
 result:   '[1,2,true,{},[]]'
 ---
 title:    string interpolation
@@ -240,21 +240,21 @@ template: {$eval: ['a', 'b']}
 error:    true
 ################################################################################
 ---
-section:  $dumps
+section:  $json
 ---
 title:    wrap expressions with $eval
 context:  {a: 1, b: 2}
-template: {$dumps: {$eval: 'a + b + 7'}}
+template: {$json: {$eval: 'a + b + 7'}}
 result:   '10'
 ---
 title:    unwrap expressions not evaluated
 context:  {a: 1, b: 2}
-template: {$dumps: 'a + b + 7'}
+template: {$json: 'a + b + 7'}
 result:   '"a + b + 7"'
 ---
 title:    $eval inside array
 context:  {a: 1, b: 2}
-template: {$dumps: [2, 5, {$eval: 'a + b + 7'}]}
+template: {$json: [2, 5, {$eval: 'a + b + 7'}]}
 result:   '[2,5,10]'
 ################################################################################
 ---
@@ -265,9 +265,9 @@ context:  {key: {key2: ['value', 1, 2, true, {}]}}
 template: {$eval: 'key.key2'}
 result:   ['value', 1, 2, true, {}]
 ---
-title:    $dumps
+title:    $json
 context:  {key: {key2: [1,2,true,{},[]]}}
-template: {$dumps: {$eval: 'key.key2'}}
+template: {$json: {$eval: 'key.key2'}}
 result:   '[1,2,true,{},[]]'
 ---
 title: string interpolation
