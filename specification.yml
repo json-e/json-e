@@ -194,6 +194,15 @@ template:
   each(x): {$eval: 'x + a'}
 result:   [3, 5, 7]
 ---
+title:    map to objects
+context:  {a: 1}
+template:
+  $map: [2, 4, 6]
+  each(x):
+    asText: 'Count ${x + a}'
+    integer: {$eval: 'x + a'}
+result:   [3, 5, 7]
+---
 title:    complex identifier
 context:  {a: 1}
 template:
