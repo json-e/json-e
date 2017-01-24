@@ -201,7 +201,10 @@ template:
   each(x):
     asText: 'Count ${x + a}'
     integer: {$eval: 'x + a'}
-result:   [3, 5, 7]
+result:
+ - {asText: '2', integer: 3}
+ - {asText: '4', integer: 5}
+ - {asText: '6', integer: 7}
 ---
 title:    complex identifier
 context:  {a: 1}
