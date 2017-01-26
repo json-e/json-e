@@ -349,3 +349,71 @@ template:
   each(y): {$eval: 'y.k'}
 error: true # can't do map on non-arrays
 ################################################################################
+---
+section:  $sort
+---
+title:    simple sort
+context:  {}
+template: {$sort: [3, 4, 1, 2]}
+result:   [1, 2, 3, 4]
+---
+title:    simple sort with $eval
+context:  {array: [3, 4, 1, 2]}
+template: {$sort: {$eval: 'array'}}
+result:   [1, 2, 3, 4]
+---
+title:    sort by
+context:  {}
+template:
+  $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
+  by(x): 'x.a'
+result:   [{a: 1, b: [], {a: 2}, {a: 3}}]
+---
+title:    cannot sort objects without by
+context:  {}
+template:
+  $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
+error: true  # list of objects must have a 'by(x)' property
+---
+title:    cannot sort arrays without by
+context:  {}
+template:
+  $sort: [[1,2,3], [4,5], [], [8,9,10]]
+error: true  # list of arrays must have a 'by(x)' property
+---
+title:    sort requires an array (string)
+context:  {}
+template:
+  $sort:  "some string"
+error: true  # $sort must be given an array
+---
+title:    sort requires an array (number)
+context:  {}
+template:
+  $sort:  34
+error: true  # $sort must be given an array
+---
+title:    sort requires an array (object)
+context:  {}
+template:
+  $sort:  {k: 1, b: 4, x: 8}
+error: true  # $sort must be given an array
+################################################################################
+---
+section:  $reverse
+---
+title:    simple reverse
+context:  {}
+template: {$reverse: [3, 4, 1, 2]}
+result:   [2, 1, 4, 3]
+---
+title:    simple reverse with $eval
+context:  {key: [3, 4, 1, 2]}
+template: {$reverse: {$eval: 'key'}}
+result:   [2, 1, 4, 3]
+---
+title:    simple reverse + $sort # with this we can sort in reverse order
+context:  {}
+template: {$reverse: {$sort: [3, 4, 1, 2]}}
+result:   [4, 3, 2, 1]
+################################################################################
