@@ -1,6 +1,8 @@
-var safeEval = require('notevil');
+var parser = require('./parser/prattparser');
 var _ = require('lodash');
 var moment = require('moment');
+
+var safeEval = (src, context) => parser.parse(src, context);
 
 module.exports = function(_template, _context) {
 

@@ -354,8 +354,7 @@ suite('Parameterize', function() {
       assume(parser.parse(src, context)).equals(false);
     });
   });
-// disabled
-  if (false) {
+  suite('json-e constructs', function() {
     suite('non deep property access', function() {
       test('with property access', function() {
         var template = {id: '${ clientId }'};
@@ -364,7 +363,7 @@ suite('Parameterize', function() {
       });
 
       test('with array access', function() {
-        var template = {id: '${ $arr(0) }', name: '${ $arr(2) }', count: '${ $arr(1) }'};
+        var template = {id: '${ arr[0] }', name: '${ arr[2] }', count: '${ arr[1] }'};
         var context = {arr: ['123', 248, 'doodle']};
         assume(parameterize(template, context)).deep.equals({id: '123', name: 'doodle', count: '248'}); 
       });
@@ -421,7 +420,7 @@ suite('Parameterize', function() {
 
     suite('deep propert access', function() {
       test('with deep array access', function() {
-        var template = {image_version: '${task.$images(0).$versions(0)}', name: '${task.$images(0).name}'};
+        var template = {image_version: '${task.images[0].versions[0]}', name: '${task.images[0].name}'};
         var context = {
           task: {
             images: [{versions: ['12.10'], name: 'ubuntu'}],
@@ -497,7 +496,7 @@ suite('Parameterize', function() {
       test('switch with only one option', function() {
         var template = {
           a: {
-            $switch: '{{ "case" + a }}',
+            $switch: '"case" + a',
             case1: 'foo',
           }};
         var context = {a: '1'};
@@ -507,7 +506,7 @@ suite('Parameterize', function() {
       test('switch with multiple options', function() {
         var template = {
           a: {
-            $switch: '{{ "case" + b }}',
+            $switch: '"case" + b',
             case1: 'foo',
             case2: 'bar',
           }};
@@ -755,5 +754,5 @@ suite('Parameterize', function() {
         tk.reset();
       });
     });
-  }
+  });
 });
