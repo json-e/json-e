@@ -42,8 +42,12 @@ module.exports = {
   tokens: [
     ...'+-*/[].(){}:,'.split(''),
     'number', 'id', 'string',
+    '==', '!=', '===', '!==',
+    '<', '<=', '>', '>=',
   ],
   precedence: [
+  	['==', '!='],
+  	['<', '<=', '>', '>='],
     ['+', '-'],
     ['*', '/'],
     ['[', '.'],
@@ -70,7 +74,7 @@ module.exports = {
   },*/
   
   prefixRules: {
-    'number': (token, ctx) => parseFloat(token.value),
+    'number': (token, ctx) => Number(token.value),
     '-':      (token, ctx) => - ctx.parse('unary'),
     '+':      (token, ctx) => ctx.parse('unary'),
     'id':     (token, ctx) => ctx.context[token.value],
@@ -87,5 +91,11 @@ module.exports = {
     '[': (left, token, ctx) => {let v = left[ctx.parse()]; ctx.require(']'); return v;},
     '.': (left, token, ctx) => left[ctx.require('id').value],
     '(': (left, token, ctx) => left.apply(null, parseList(ctx, ',', ')')),
+    '==': (left, token, ctx) => left === ctx.parse('=='),
+    '!=': (left, token, ctx) => left !== ctx.parse('!='),
+    '<': (left, token, ctx) => left < ctx.parse('<'),
+    '<=': (left, token, ctx) => left <= ctx.parse('<='),
+    '>': (left, token, ctx) => left > ctx.parse('>'),
+    '>=': (left, token, ctx) => left >= ctx.parse('>='),
   },
 }

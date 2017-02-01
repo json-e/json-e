@@ -34,6 +34,30 @@ suite('Parameterize', function() {
       assume(parser.parse(src, context)).equals(18);
     });
 
+    test ('division (1)', function() {
+      var src = 'a / b';
+      var context = {a: 3, b: 2};
+      assume(parser.parse(src, context)).equals(3 / 2);
+    });
+
+    test ('division (2)', function() {
+      var src = 'a / b';
+      var context = {a: 3.0, b: 2.0};
+      assume(parser.parse(src, context)).equals(3.0 / 2.0);
+    });
+
+    test ('division (3)', function() {
+      var src = 'b / a';
+      var context = {a: 3, b: 2};
+      assume(parser.parse(src, context)).equals(2 / 3);
+    });
+
+    test ('division (4)', function() {
+      var src = 'b / a';
+      var context = {a: 3.0, b: 2.0};
+      assume(parser.parse(src, context)).equals(2.0 / 3.0);
+    });
+
     test('string concatenation (1)', function() {
       var src = '"a" + "b"';
       var context = {a: 3, b: 2};
@@ -58,6 +82,98 @@ suite('Parameterize', function() {
       assume(parser.parse(src, context)).equals('  5');
     });
 
+    test('property access (1)', function() {
+      var context = {key: 1};
+      var src = 'key';
+      assume(parser.parse(src, context)).equals(1);
+    });
+
+    test('property access (2)', function() {
+      var context = {key: 'a'};
+      var src = 'key';
+      assume(parser.parse(src, context)).equals('a');
+    });
+
+    test('property access (3)', function() {
+      var context = {key: true};
+      var src = 'key';
+      assume(parser.parse(src, context)).equals(true);
+    });
+
+    test('property access (4)', function() {
+      var context = {key: {a: 1}};
+      var src = 'key';
+      assume(parser.parse(src, context)).deep.equals({a: 1});
+    });
+
+    test('nested property access (1)', function() {
+      var context = {key: {key2: {key3: {a: 1}}}};
+      var src = 'key.key2.key3';
+      assume(parser.parse(src, context)).deep.equals({a: 1});
+    });
+
+    test('nested property access (2)', function() {
+      var context = {key: {key2: {key3: {a: 1}}}};
+      var src = 'key["key2"]["key3"]';
+      assume(parser.parse(src, context)).deep.equals({a: 1});
+    });
+
+    test('array access (1)', function() {
+      var context = {key: [1, 2, 3, 4, 5]};
+      var src = 'key[0]';
+      assume(parser.parse(src, context)).equals(1);
+    });
+
+    test('array access (2)', function() {
+      var context = {key: [1, 2, 3, 4, 5]};
+      var src = 'key[2]';
+      assume(parser.parse(src, context)).equals(3);
+    });
+
+    test('array access (3)', function() {
+      var context = {key: [1, 2, 3, 4, 5]};
+      var src = 'key[0] + key[1] + key[2] + key[3] + key[4]';
+      assume(parser.parse(src, context)).equals(15);
+    });
+
+    test('nested array access (1)', function() {
+      var context = {key: {key2: {key3: [1, 2, 3, 4, 5]}}};
+      var src = 'key.key2.key3[0]';
+      assume(parser.parse(src, context)).equals(1);
+    });
+
+    test('nested array access (2)', function() {
+      var context = {key: {key2: {key3: [1, 2, 3, 4, 5]}}};
+      var src = 'key["key2"]["key3"][0]';
+      assume(parser.parse(src, context)).equals(1);
+    });
+
+    test('nested array access (3)', function() {
+      var context = {key: {key2: {key3: [1, 2, 3, 4, 5]}}};
+      var src = 'key.key2.key3[2]';
+      assume(parser.parse(src, context)).equals(3);
+    });
+
+    test('nested array access (4)', function() {
+      var context = {key: {key2: {key3: [1, 2, 3, 4, 5]}}};
+      var src = 'key["key2"]["key3"][2]';
+      assume(parser.parse(src, context)).equals(3);
+    });
+
+    test('nested array access (5)', function() {
+      var context = {key: {key2: {key3: [1, 2, 3, 4, 5]}}};
+      var src = 'key.key2.key3[0] + key.key2.key3[1] \
+      + key.key2.key3[2] + key.key2.key3[3] + key.key2.key3[4]';
+      assume(parser.parse(src, context)).equals(15);
+    });
+
+    test('nested array access (6)', function() {
+      var context = {key: {key2: {key3: [1, 2, 3, 4, 5]}}};
+      var src = 'key["key2"]["key3"][0] + key["key2"]["key3"][1] \
+      + key["key2"]["key3"][2] + key["key2"]["key3"][3] + key["key2"]["key3"][4]';
+      assume(parser.parse(src, context)).equals(15);
+    });
+
     test('function call (1)', function() {
       var src = 'min(a, b)';
       var context = {a: 3, b: 2, min: min};
@@ -80,6 +196,162 @@ suite('Parameterize', function() {
       var src = 'min(1, 2)';
       var context = {a: 3, b: 2, min: min};
       assume(parser.parse(src, context)).equals(1);
+    });
+
+    test('nested function call (1)', function() {
+      var context = {a: 3, b: 2, key: {key2: {key3: min}}};
+      var src = 'key.key2.key3(a, b)';
+      assume(parser.parse(src, context)).equals(2);
+    });
+
+    test('nested function call (2)', function() {
+      var context = {a: 3, b: 2, key: {key2: {key3: min}}};
+      var src = 'key["key2"]["key3"](a, b)';
+      assume(parser.parse(src, context)).equals(2);
+    });
+
+    test('nested function call (3)', function() {
+      var context = {a: 3, b: 2, key: {key2: {key3: min}}};
+      var src = 'key.key2.key3(3, b)';
+      assume(parser.parse(src, context)).equals(2);
+    });
+
+    test('nested function call (4)', function() {
+      var context = {a: 3, b: 2, key: {key2: {key3: min}}};
+      var src = 'key["key2"]["key3"](3, b)';
+      assume(parser.parse(src, context)).equals(2);
+    });
+
+    test('nested function call (5)', function() {
+      var context = {a: 3, b: 2, key: {key2: {key3: min}}};
+      var src = 'key.key2.key3(a, 2)';
+      assume(parser.parse(src, context)).equals(2);
+    });
+
+    test('nested function call (6)', function() {
+      var context = {a: 3, b: 2, key: {key2: {key3: min}}};
+      var src = 'key["key2"]["key3"](a, 2)';
+      assume(parser.parse(src, context)).equals(2);
+    });
+
+    test('nested function call (7)', function() {
+      var context = {a: 3, b: 2, key: {key2: {key3: min}}};
+      var src = 'key.key2.key3(3, 2)';
+      assume(parser.parse(src, context)).equals(2);
+    });
+
+    test('nested function call (8)', function() {
+      var context = {a: 3, b: 2, key: {key2: {key3: min}}};
+      var src = 'key["key2"]["key3"](3, 2)';
+      assume(parser.parse(src, context)).equals(2);
+    });
+
+    test('equality (1)', function() {
+      var src = '1 == 1';
+      assume(parser.parse(src, {})).equals(true);
+    });
+
+    test('equality (2)', function() {
+      var src = '1 == 2';
+      assume(parser.parse(src, {})).equals(false);
+    });
+
+    test('equality (3)', function() {
+      var context = {a: 1, b: 1};
+      var src = 'a == b';
+      assume(parser.parse(src, context)).equals(true);
+    });
+
+    test('equality (4)', function() {
+      var context = {a: 1, b: 2};
+      var src = 'a == b';
+      assume(parser.parse(src, context)).equals(false);
+    });
+
+    test('in-equality (1)', function() {
+      var src = '1 != 1';
+      assume(parser.parse(src, {})).equals(false);
+    });
+
+    test('in-equality (2)', function() {
+      var src = '1 != 2';
+      assume(parser.parse(src, {})).equals(true);
+    });
+
+    test('in-equality (3)', function() {
+      var context = {a: 1, b: 1};
+      var src = 'a != b';
+      assume(parser.parse(src, context)).equals(false);
+    });
+
+    test('in-equality (4)', function() {
+      var context = {a: 1, b: 2};
+      var src = 'a != b';
+      assume(parser.parse(src, context)).equals(true);
+    });
+
+    test('less than (1)', function() {
+      var src = '1 < 2';
+      assume(parser.parse(src, {})).equals(true);
+    });
+
+    test('less than (2)', function() {
+      var src = '2 < 1';
+      assume(parser.parse(src, {})).equals(false);
+    });
+
+    test('less than (3)', function() {
+      var src = '"a" < "b"';
+      assume(parser.parse(src, {})).equals(true);
+    });
+
+    test('less than (4)', function() {
+      var src = '"b" < "a"';
+      assume(parser.parse(src, {})).equals(false);
+    });
+
+    test('less than (5)', function() {
+      var context = {a: 1, b: 2};
+      var src = 'a < b';
+      assume(parser.parse(src, context)).equals(true);
+    });
+
+    test('less than (6)', function() {
+      var context = {a: 1, b: 2};
+      var src = 'b < a';
+      assume(parser.parse(src, context)).equals(false);
+    });
+
+    test('greater than (1)', function() {
+      var src = '2 > 1';
+      assume(parser.parse(src, {})).equals(true);
+    });
+
+    test('greater than (2)', function() {
+      var src = '1 > 2';
+      assume(parser.parse(src, {})).equals(false);
+    });
+
+    test('greater than (3)', function() {
+      var src = '"b" > "a"';
+      assume(parser.parse(src, {})).equals(true);
+    });
+
+    test('greater than (4)', function() {
+      var src = '"a" > "b"';
+      assume(parser.parse(src, {})).equals(false);
+    });
+
+    test('greater than (5)', function() {
+      var context = {a: 1, b: 2};
+      var src = 'b > a';
+      assume(parser.parse(src, context)).equals(true);
+    });
+
+    test('greater than (6)', function() {
+      var context = {a: 1, b: 2};
+      var src = 'a > b';
+      assume(parser.parse(src, context)).equals(false);
     });
   });
 // disabled
