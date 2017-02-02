@@ -42,11 +42,12 @@ module.exports = new PrattParser({
     ...'+-*/[].(){}:,'.split(''),
     'number', 'id', 'string',
     '==', '!=', '===', '!==',
-    '<', '<=', '>', '>=',
+    '<=', '<', '>=', '>',
   ],
   precedence: [
   	['==', '!='],
   	['<', '<=', '>', '>='],
+    [':'],
     ['+', '-'],
     ['*', '/'],
     ['[', '.'],
@@ -87,7 +88,11 @@ module.exports = new PrattParser({
     '-': (left, token, ctx) => left - ctx.parse('-'),
     '*': (left, token, ctx) => left * ctx.parse('*'),
     '/': (left, token, ctx) => left / ctx.parse('/'),
-    '[': (left, token, ctx) => {let v = left[ctx.parse()]; ctx.require(']'); return v;},
+    '[': (left, token, ctx) => {
+      let v = ctx.parse(); 
+      if (v instanceof Array) {v = left.slice(v[0], v[1]);} else {v = left[v];} 
+      ctx.require(']'); return v;
+    },
     '.': (left, token, ctx) => left[ctx.require('id').value],
     '(': (left, token, ctx) => left.apply(null, parseList(ctx, ',', ')')),
     '==': (left, token, ctx) => left === ctx.parse('=='),
@@ -96,5 +101,6 @@ module.exports = new PrattParser({
     '<=': (left, token, ctx) => left <= ctx.parse('<='),
     '>': (left, token, ctx) => left > ctx.parse('>'),
     '>=': (left, token, ctx) => left >= ctx.parse('>='),
+    ':': (left, token, ctx) => [left, ctx.parse()],
   },
 });

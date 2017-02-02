@@ -128,6 +128,26 @@ context: {key: {key2: {key3: [1,2,3,4,5]}}}
 source: 'key["key2"]["key3"][0] + key["key2"]["key3"][1] + key["key2"]["key3"][2] + key["key2"]["key3"][3] + key["key2"]["key3"][4]'
 result: 15
 ---
+title: 'array slicing (1)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0:5]'
+result: [1,2,3,4,5]
+---
+title: 'array slicing (2)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0:3]'
+result: [1,2,3]
+---
+title: 'array slicing (4)'
+context: {key: [1,2,3,4,5]}
+source: 'key[-5:-1]'
+result: [1,2,3,4]
+---
+title: 'array slicing (5)'
+context: {key: [1,2,3,4,5]}
+source: 'key[key.length / 2: key.length]'
+result: [3,4,5]
+---
 title: 'function call (1)'
 context: {a: 3, b: 2}
 source: 'min(a, b)'
@@ -287,3 +307,43 @@ title: 'greater than (6)'
 context: {a: 1, b: 2}
 source: 'a > b'
 result: false
+---
+title: 'less than equal (1)'
+context: {a: 1, b: 2}
+source: "a <= b"
+result: true
+---
+title: 'less than equal (2)'
+context: {a: 1, b: 1}
+source: "a <= b"
+result: true
+---
+title: 'less than equal (3)'
+context: {a: 1, b: 2}
+source: "b <= a"
+result: false
+---
+title: 'less than equal (4)'
+context: {a: 1, b: 1}
+source: "b <= a"
+result: true
+---
+title: 'greater than equal (1)'
+context: {a: 1, b: 2}
+source: "b >= a"
+result: true
+---
+title: 'greater than equal (2)'
+context: {a: 1, b: 1}
+source: "a >= b"
+result: true
+---
+title: 'greater than equal (3)'
+context: {a: 1, b: 2}
+source: "a >= b"
+result: false
+---
+title: 'greater than equal (4)'
+context: {a: 1, b: 1}
+source: "a >= b"
+result: true
