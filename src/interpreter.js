@@ -31,22 +31,33 @@ let parseObject = (ctx) => {
   return obj;
 };
 
+let compareNumbers = (left, operator, right) => {
+  switch (operator) {
+    case '>=': return left >= right;
+    case '<=': return left <= right;
+    case '>': return left > right;
+    case '<': return left < right;
+    default: return left < right;
+  }
+};
+
 module.exports = new PrattParser({
   ignore: '\\s+', // ignore all whitespace including \n
   patterns: {
     number: '[0-9]+(?:\\.[0-9]+)?',
     id:     '[a-zA-Z_][a-zA-Z_0-9]*',
     string: '\'[^\']*\'|"[^"]*"',
+    comparison: '>=|<=|>|<',
   },
   tokens: [
     ...'+-*/[].(){}:,'.split(''),
     'number', 'id', 'string',
     '==', '!=', '===', '!==',
-    '<=', '<', '>=', '>',
+    'comparison',
   ],
   precedence: [
   	['==', '!='],
-  	['<', '<=', '>', '>='],
+  	['comparison'],
     [':'],
     ['+', '-'],
     ['*', '/'],
@@ -97,10 +108,7 @@ module.exports = new PrattParser({
     '(': (left, token, ctx) => left.apply(null, parseList(ctx, ',', ')')),
     '==': (left, token, ctx) => left === ctx.parse('=='),
     '!=': (left, token, ctx) => left !== ctx.parse('!='),
-    '<': (left, token, ctx) => left < ctx.parse('<'),
-    '<=': (left, token, ctx) => left <= ctx.parse('<='),
-    '>': (left, token, ctx) => left > ctx.parse('>'),
-    '>=': (left, token, ctx) => left >= ctx.parse('>='),
     ':': (left, token, ctx) => [left, ctx.parse()],
+    comparison: (left, token, ctx) => compareNumbers(left, token.value, ctx.parse('comparison')), 
   },
 });
