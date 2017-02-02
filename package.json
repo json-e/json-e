@@ -1,0 +1,39 @@
+{
+  "name": "json-e",
+  "version": "1.0.0",
+  "description": "json parameterization module inspired from json-parameterization",
+  "main": "./dist/index.js",
+  "scripts": {
+    "compile": "babel-compile -p es2015 src:lib test:.test",
+    "pretest": "npm run compile",
+    "test": "mocha --ui tdd .test/lint.js .test/tests.js",
+    "prepublish": "npm run compile && mocha --ui tdd .test/tests.js"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hammad13060/json-e.git"
+  },
+  "author": "Hammad Akhtar <hammad13060@iiitd.ac.in>",
+  "license": "MIT",
+  "dependencies": {
+    "assume": "^1.4.1",
+    "lodash": "^4.17.2",
+    "moment": "^2.17.1",
+    "notevil": "^1.0.0"
+  },
+  "devDependencies": {
+    "babel-compile": "^2.0.0",
+    "babel-preset-es2015": "^6.18.0",
+    "eslint-config-taskcluster": "^2.0.0",
+    "eslint-plugin-taskcluster": "^1.0.2",
+    "mocha": "^3.2.0",
+    "mocha-eslint": "^3.0.1",
+    "timekeeper": "^1.0.0"
+  },
+  "engines": {
+    "node": "6.4.x"
+  }
+}
