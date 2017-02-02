@@ -3,8 +3,8 @@
 * Github: https://github.com/jonasfj
 */
 
-var _ = require('lodash');
-var PrattParser = require('./prattparser');
+let _ = require('lodash');
+let PrattParser = require('./prattparser');
 
 let parseList = (ctx, separator, terminator) => {
   let list = [];

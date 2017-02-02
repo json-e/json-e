@@ -7,25 +7,9 @@ let safeEval = (src, context) => interpreter.parse(src, context);
 module.exports = function(_template, _context) {
 
   let PARSEEXPR = /\${(\s*([\w\W]+)+\s*)}/;
-  let DATEEXPR = /([0-9]+ *d(ays?)?)? *([0-9]+ *h(ours?)?)? *([0-9]+ *m(in(utes?)?)?)?/;
 
   let template = _.clone(_template);
   let context = _.clone(_context);
-
-  /* private */
-  function _attachArrayAccessor(context) {
-    for (let key of Object.keys(context)) {
-      if (context.hasOwnProperty(key)) {
-        let value = context[key];
-        if (value instanceof Array) {
-          context['$' + key] = _generateArrayAccessorFunc(value);
-        } 
-        if (value instanceof Array || value instanceof Object) {
-          _attachArrayAccessor(value);
-        }
-      }
-    }
-  }
 
   /* private */
   function _generateArrayAccessorFunc(context) {
@@ -157,7 +141,6 @@ module.exports = function(_template, _context) {
     return parameterizedString;
   }
 
-  _attachArrayAccessor(context);
   _render(template);
   return template;
 };
