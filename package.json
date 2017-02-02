@@ -19,10 +19,7 @@
   "author": "Hammad Akhtar <hammad13060@iiitd.ac.in>",
   "license": "Mozilla Public License Version 2.0",
   "dependencies": {
-    "assume": "^1.4.1",
-    "lodash": "^4.17.2",
-    "moment": "^2.17.1",
-    "notevil": "^1.0.0"
+    "lodash": "^4.17.2"
   },
   "devDependencies": {
     "babel-compile": "^2.0.0",
@@ -34,6 +31,6 @@
     "timekeeper": "^1.0.0"
   },
   "engines": {
-    "node": "6.4.x"
+    "node": "^6.4.0"
   }
 }
