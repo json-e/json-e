@@ -2,14 +2,6 @@ let interpreter = require('./interpreter');
 let fromNow = require('./from-now');
 let ExtendableError = require('es6-error');
 
-let interpolate = (string, context) => {
-  return string.replace('/\${([^}]*)}/g', (text, expr) => {
-    return interpreter.parse(expr, context);  
-  });
-};
-
-let deleteMarker = {};
-
 class TemplateError extends ExtendableError {
   constructor(message) {
     super(message);
@@ -17,6 +9,19 @@ class TemplateError extends ExtendableError {
     this.name = 'Template Error';
   }
 }
+
+let interpolate = (string, context) => {
+  return string.replace('/\${([^}]*)}/g', (text, expr) => {
+    let v = interpreter.parse(expr, context);
+    if (v instanceof Array || v instanceof Object) {
+      throw new TemplateError('Cannot interpolate objects/arrays: '
+        + text + ' <-- ' + expr);
+    }
+    return v;
+  });
+};
+
+let deleteMarker = {};
 
 let constructs = {
   $eval: (template, context) => {
@@ -47,6 +52,12 @@ let constructs = {
     }
     let c = interpreter.parse(template['$switch'], context);
     return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
+  },
+  $json: (template, context) => {
+    if (template['$json'] instanceof Array || template['$json'] instanceof Object) {
+      return JSON.stringify(render(template['$json'], context));
+    }
+    return JSON.stringify(template['$json']);
   },
 };
 
