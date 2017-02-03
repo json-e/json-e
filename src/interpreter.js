@@ -3,6 +3,15 @@
 * Github: https://github.com/jonasfj
 */
 let PrattParser = require('./prattparser');
+let ExtendableError = require('es6-error');
+
+class InterpreterError extends ExtendableError {
+  constructor(message) {
+    super(message);
+    this.message = message;
+    this.name = 'Interpreter Error';
+  }
+}
 
 let parseList = (ctx, separator, terminator) => {
   let list = [];
@@ -29,7 +38,7 @@ let parseObject = (ctx) => {
   return obj;
 };
 
-let parseKey = (left, token, ctx) => {
+let parseInterval = (left, token, ctx) => {
   if (left instanceof Array) {
     let begin, end;
     if (ctx.try(':')) {
@@ -70,7 +79,7 @@ let compareNumbers = (left, operator, right) => {
     case '<=': return left <= right;
     case '>': return left > right;
     case '<': return left < right;
-    default: return left < right;
+    default: throw InterpreterError('no rule for comparison operator: ' + operator);
   }
 };
 
@@ -85,8 +94,7 @@ module.exports = new PrattParser({
   tokens: [
     ...'+-*/[].(){}:,'.split(''),
     'number', 'id', 'string',
-    '==', '!=', '===', '!==',
-    'comparison',
+    '==', '!=', 'comparison',
   ],
   precedence: [
   	['==', '!='],
@@ -131,7 +139,7 @@ module.exports = new PrattParser({
     '-': (left, token, ctx) => left - ctx.parse('-'),
     '*': (left, token, ctx) => left * ctx.parse('*'),
     '/': (left, token, ctx) => left / ctx.parse('/'),
-    '[': (left, token, ctx) => parseKey(left, token, ctx),
+    '[': (left, token, ctx) => parseInterval(left, token, ctx),
     '.': (left, token, ctx) => left[ctx.require('id').value],
     '(': (left, token, ctx) => left.apply(null, parseList(ctx, ',', ')')),
     '==': (left, token, ctx) => left === ctx.parse('=='),

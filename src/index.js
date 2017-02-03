@@ -10,46 +10,43 @@ let interpolate = (string, context) => {
 
 let deleteMarker = {};
 
-class Json_E_Error extends ExtendableError {
+class TemplateError extends ExtendableError {
   constructor(message) {
     super(message);
     this.message = message;
-    this.name = 'json-e error';
+    this.name = 'Template Error';
   }
 }
 
 let constructs = {
-  $if: (template, context) => {
-    if (!(typeof template['$if'] === 'string')) {
-      throw new Json_E_Error('$if can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
-    }
-    if (interpreter.parse(template['$if'], context)) {
-      return template.then ? render(template.then, context) : deleteMarker;
-    } else {
-      return template.else ? render(template.else, context) : deleteMarker;
-    }
-  },
-  $switch: (template, context) => {
-    if (!(typeof template['$switch'] === 'string')) {
-      throw new Json_E_Error('$switch can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
-    }
-    let c = interpreter.parse(template['$switch'], context);
-    return template[c] ? render(template[c], context) : deleteMarker;
-  },
-};
-
-let evaluators = {
   $eval: (template, context) => {
     if (!(typeof template['$eval'] === 'string')) {
-      throw new Json_E_Error('$eval can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+      throw new TemplateError('$eval can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
     }
     return interpreter.parse(template['$eval'], context);
   },
   $fromNow: (template, context) => {
     if (!(typeof ['$fromNow'] === 'string')) {
-      throw new Json_E_Error('$fromNow can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+      throw new TemplateError('$fromNow can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
     }
     return fromNow(template['fromNow']);
+  },
+  $if: (template, context) => {
+    if (!(typeof template['$if'] === 'string')) {
+      throw new TemplateError('$if can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    }
+    if (interpreter.parse(template['$if'], context)) {
+      return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
+    } else {
+      return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
+    }
+  },
+  $switch: (template, context) => {
+    if (!(typeof template['$switch'] === 'string')) {
+      throw new TemplateError('$switch can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    }
+    let c = interpreter.parse(template['$switch'], context);
+    return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
   },
 };
 
@@ -64,17 +61,22 @@ let render = (template, context) => {
     return template.map((v) => render(v, context)).filter((v) => v !== deleteMarker);
   }
 
-  // TODO: Probably throw an error if template two construct 
-  // or (construct and evaluators) keys like having both $if and $map,
+  // check for multiple constructs
+  let detectConstruct = false, prevConstruct;
   for (let construct of Object.keys(constructs)) {
     if (template.hasOwnProperty(construct)) {
-      return constructs[construct](template, context);
+      if (detectConstruct) {
+        throw new TemplateError('only one construct allowed\n'
+          + JSON.stringify(template, null, '\t'));
+      } else {
+        detectConstruct = true;
+      }
     }
   }
 
-  for (let evaluator of Object.keys(evaluators)) {
-    if (template.hasOwnProperty(evaluator)) {
-      return evaluators[evaluator](template, context);
+  for (let construct of Object.keys(constructs)) {
+    if (template.hasOwnProperty(construct)) {
+      return constructs[construct](template, context);
     }
   }
 
@@ -89,6 +91,12 @@ let render = (template, context) => {
   return result;
 };
 
-console.log(render({a: {$eval: '1 + 2'}}, {}));
+//console.log(render({a: {$eval: '1 + 2', $if: 'true'}}, {}));
 
-module.exports = render;
+module.exports = (template, context = {}) => {
+  let result = render(template, context);
+  if (result === deleteMarker) {
+    return undefined;
+  }
+  return result;
+};

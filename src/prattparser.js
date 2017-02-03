@@ -4,6 +4,17 @@
 */
 
 let Tokenizer = require('./tokenizer');
+let ExtendableError = require('es6-error');
+
+class ParserError extends ExtendableError {
+  constructor(message, start, end) {
+    super(message);
+    this.message = message;
+    this.start = start;
+    this.end = end;
+    this.name = 'Parser Error';
+  }
+}
 
 class PrattParser {
   constructor(options = {}) {
@@ -88,14 +99,16 @@ class Context {
     let token = this.require();
     let prefixRule = this._prefixRules[token.kind];
     if (!prefixRule) {
-      throw new Error('...');
+      throw InterpreterError('No prefix rule of kind: ' + token.kind + ', value: ' + token.value,
+        token.start, token.end);
     }
     let left = prefixRule(token, this);
     while (this._next && precedence < this._precedenceMap[this._next.kind]) {
       let token = this.require();
       let infixRule = this._infixRules[token.kind];
       if (!infixRule) {
-        throw new Error('...');
+        throw InterpreterError('No infix rule of kind: ' + token.kind + ', value: ' + token.value,
+          token.start, token.end);
       }
       left = infixRule(left, token, this);
     }

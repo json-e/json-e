@@ -4,8 +4,19 @@
 */
 
 let assert = require('assert');
+let ExtendableError = require('es6-error');
 
 let escapeRegex = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
+class SyntaxError extends ExtendableError {
+  constructor(message, start, end) {
+    super(message);
+    this.message = message;
+    this.start = start;
+    this.end = end;
+    this.name = 'Syntax Error';
+  }
+}
 
 let isRegEx = (re) => {
   if (typeof re !== 'string') {
