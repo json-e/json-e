@@ -1,9 +1,13 @@
-/*
-* Author: Jonas Finnemann Jensen
-* Github: https://github.com/jonasfj
-*/
+import assert from 'assert';
+import ExtendableError from 'es6-error';
 
-let assert = require('assert');
+class SyntaxError extends ExtendableError {
+  constructor(message, start, end) {
+    this.message = message;
+    this.start = start;
+    this.end = end;
+  }
+}
 
 let escapeRegex = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
