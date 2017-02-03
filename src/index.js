@@ -11,13 +11,13 @@ class TemplateError extends ExtendableError {
 }
 
 let interpolate = (string, context) => {
-  return string.replace('/\${([^}]*)}/g', (text, expr) => {
+  return string.replace(/\${([^}]*)}/g, (text, expr) => {
     let v = interpreter.parse(expr, context);
     if (v instanceof Array || v instanceof Object) {
       throw new TemplateError('Cannot interpolate objects/arrays: '
         + text + ' <-- ' + expr);
     }
-    return v;
+    return v.toString();
   });
 };
 
@@ -58,6 +58,35 @@ let constructs = {
       return JSON.stringify(render(template['$json'], context));
     }
     return JSON.stringify(template['$json']);
+  },
+  $map: (template, context) => {
+    let exp = /\(([a-zA-Z_][a-zA-Z_0-9]*)\)/;
+    if (template['$map'] instanceof Array) {
+      for (let prop of Object.keys(template)) {
+        if (template.hasOwnProperty(prop) && prop.startsWith('each')) {
+          if (typeof template[prop] === 'string') {
+            return template['$map'].map((v) => template[prop]);
+          }
+          let match = exp.exec(prop);
+          if (match && match[1]) {
+            let itr = match[1];
+            context[itr] = null;
+            let result = template['$map'].map((v) => {
+              context[itr] = v;
+              return render(template[prop], context);
+            });
+            delete context[itr];
+            return result;
+          } else {
+            throw new TemplateError('$map requires each(identifier) syntax\n' +
+              JSON.stringify(template, null, '\t'));
+          }
+        }
+      }
+    } else {
+      throw new TemplateError('$map requires array as value\n' +
+              JSON.stringify(template, null, '\t'));
+    }
   },
 };
 
@@ -103,6 +132,8 @@ let render = (template, context) => {
 };
 
 //console.log(render({a: {$eval: '1 + 2', $if: 'true'}}, {}));
+//console.log(render({a: {$map: [1,2], 'each(x)': {$eval: 'x + 1'}}}, {}));
+//console.log(render({a: {$map: [1,2], 'each(x)': {a: {$eval: 'x + 1'}, b:'before=${x}'}}},{}));
 
 module.exports = (template, context = {}) => {
   let result = render(template, context);
