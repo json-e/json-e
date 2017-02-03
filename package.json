@@ -19,7 +19,7 @@
   "author": "Hammad Akhtar <hammad13060@iiitd.ac.in>",
   "license": "Mozilla Public License Version 2.0",
   "dependencies": {
-    "lodash": "^4.17.2"
+    "es6-error": "^4.0.1"
   },
   "devDependencies": {
     "babel-compile": "^2.0.0",

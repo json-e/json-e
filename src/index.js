@@ -1,146 +1,94 @@
 let interpreter = require('./interpreter');
-let _ = require('lodash');
 let fromNow = require('./from-now');
+let ExtendableError = require('es6-error');
 
-let safeEval = (src, context) => interpreter.parse(src, context);
-
-module.exports = function(_template, _context) {
-
-  let PARSEEXPR = /\${(\s*([\w\W]+)+\s*)}/;
-
-  let template = _.clone(_template);
-  let context = _.clone(_context);
-
-  /* private */
-  function _generateArrayAccessorFunc(context) {
-    return function(index) {
-      return context[index];
-    };
-  }
-
-  /* private */
-  function  _render(template) {
-    for (let key of Object.keys(template)) {
-      if (template.hasOwnProperty(key)) {
-        let value = template[key];
-        if (typeof value === 'string' || value instanceof String) {
-          template[key] = _replace(template[key]);
-        } else {
-          _handleConstructs(template, key);
-        }
-      }
-    }
-  }
-
-  /* private */
-  function _handleConstructs(template, key) {
-    if (template[key].hasOwnProperty('$if')) {
-      _handleIf(template, key);
-    } else if (template[key].hasOwnProperty('$switch')) {
-      _handleSwitch(template, key);
-    } else if (template[key].hasOwnProperty('$eval')) {
-      _handleEval(template, key);
-    } else if (template[key].hasOwnProperty('$fromNow')) {
-      _handleFromNow(template, key);
-    } else {
-      _render(template[key]);
-    }
-  }
-
-  function _handleIf(template, key) {
-    let condition = template[key]['$if'];
-    let hold = undefined;
-    if (typeof condition === 'string' || condition instanceof String) {
-      hold = safeEval(condition, context);
-    } else {
-
-      let err = new Error('invalid construct');
-      err.message = '$if construct must be a string which eval can process';
-      throw err;
-    }
-
-    if (hold) {
-      let hence = template[key]['$then'];
-      if (typeof hence === 'string' || hence instanceof String) {
-        template[key] = _replace(hence);
-      } else if (hence.hasOwnProperty('$eval')) {
-        let dummy = {dummy: template[key]['$then']};
-        _render(dummy);
-        template[key] = dummy['dummy']; 
-      } else {
-        _render(hence);
-        template[key] = hence;
-      }
-    } else {
-      let hence = template[key]['$else'];
-      if (typeof hence === 'string' || hence instanceof String) {
-        template[key] = _replace(hence);
-      } else if (hence.hasOwnProperty('$eval')) {
-        let dummy = {dummy: template[key]['$else']};
-        _render(dummy);
-        template[key] = dummy['dummy']; 
-      } else {
-        _render(hence);
-        template[key] = hence;
-      }
-    }
-  }
-
-  function _handleSwitch(template, key) {
-    let condition = template[key]['$switch'];
-    let case_option;
-    if (typeof condition === 'string' || condition instanceof String) {
-      case_option = safeEval(condition, context);
-    } else {
-      let err = new Error('invalid construct');
-      err.message = '$switch construct must be a string which eval can process';
-      throw err;
-    }
-    let case_option_value = template[key][case_option];
-    if (typeof case_option_value === 'string' || case_option_value instanceof String) {
-      template[key] = _replace(case_option_value);
-    } else if (case_option_value.hasOwnProperty('$eval')) {
-      let dummy = {dummy: case_option_value};
-      _render(dummy);
-      template[key] = dummy['dummy']; 
-    } else {
-      _render(case_option_value);
-      template[key] = case_option_value;
-    }
-  }
-
-  function _handleEval(template, key) {
-    let expression = template[key]['$eval'];
-    if (typeof expression === 'string' || expression instanceof String) {
-      template[key] = safeEval(expression, context);
-    } else {
-      let err = new Error('invalid construct value');
-      err.message = '$eval construct must be a string which eval can process';
-      throw err;
-    }
-  }
-
-  function _handleFromNow(template, key) {
-    let expression = template[key]['$fromNow'];
-    if (typeof expression === 'string' || expression instanceof String) {
-      template[key] = fromNow(expression);
-    } else {
-      let err = new Error('invalid construct value');
-      err.message = '$fromNow value must be a string which eval can process';
-      throw err;
-    }
-  }
-
-  /* private */
-  function _replace(parameterizedString) {
-    let match = undefined;
-    if (match = PARSEEXPR.exec(parameterizedString)) {
-      let replacementValue = safeEval(match[1].trim(), context);
-      return parameterizedString.replace(PARSEEXPR, replacementValue);
-    }
-    return parameterizedString;
-  }
-
-  _render(template);
-  return template;
+let interpolate = (string, context) => {
+  return string.replace('/\${([^}]*)}/g', (text, expr) => {
+    return interpreter.parse(expr, context);  
+  });
 };
+
+let deleteMarker = {};
+
+class Json_E_Error extends ExtendableError {
+  constructor(message) {
+    super(message);
+    this.message = message;
+    this.name = 'json-e error';
+  }
+}
+
+let constructs = {
+  $if: (template, context) => {
+    if (!(typeof template['$if'] === 'string')) {
+      throw new Json_E_Error('$if can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    }
+    if (interpreter.parse(template['$if'], context)) {
+      return template.then ? render(template.then, context) : deleteMarker;
+    } else {
+      return template.else ? render(template.else, context) : deleteMarker;
+    }
+  },
+  $switch: (template, context) => {
+    if (!(typeof template['$switch'] === 'string')) {
+      throw new Json_E_Error('$switch can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    }
+    let c = interpreter.parse(template['$switch'], context);
+    return template[c] ? render(template[c], context) : deleteMarker;
+  },
+};
+
+let evaluators = {
+  $eval: (template, context) => {
+    if (!(typeof template['$eval'] === 'string')) {
+      throw new Json_E_Error('$eval can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    }
+    return interpreter.parse(template['$eval'], context);
+  },
+  $fromNow: (template, context) => {
+    if (!(typeof ['$fromNow'] === 'string')) {
+      throw new Json_E_Error('$fromNow can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    }
+    return fromNow(template['fromNow']);
+  },
+};
+
+let render = (template, context) => {
+  if (typeof template === 'number' || typeof template === 'boolean') {
+    return template;
+  } 
+  if (typeof template === 'string') {
+    return interpolate(template, context);
+  }
+  if (template instanceof Array) {
+    return template.map((v) => render(v, context)).filter((v) => v !== deleteMarker);
+  }
+
+  // TODO: Probably throw an error if template two construct 
+  // or (construct and evaluators) keys like having both $if and $map,
+  for (let construct of Object.keys(constructs)) {
+    if (template.hasOwnProperty(construct)) {
+      return constructs[construct](template, context);
+    }
+  }
+
+  for (let evaluator of Object.keys(evaluators)) {
+    if (template.hasOwnProperty(evaluator)) {
+      return evaluators[evaluator](template, context);
+    }
+  }
+
+  // clone object
+  let result = {};
+  for (let key of Object.keys(template)) {
+    let value = render(template[key], context);
+    if (value !== deleteMarker) {
+      result[interpolate(key, context)] = value;
+    }
+  }
+  return result;
+};
+
+console.log(render({a: {$eval: '1 + 2'}}, {}));
+
+module.exports = render;

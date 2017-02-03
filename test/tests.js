@@ -3,6 +3,7 @@ let fs = require('fs');
 let path = require('path');
 let _ = require('lodash');
 let assert = require('assert');
+let parameterize = require('../src/index');
 
 let builtinMethods = {
   min: (a, b) => Math.min(a, b),

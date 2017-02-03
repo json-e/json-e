@@ -19,7 +19,7 @@ let fromNow = (timespan = '', reference = Date.now()) => {
   let hours = parseInt(m[7] || 0, 10);
   let minutes = parseInt(m[11] || 0, 10);
   return new Date(
-    reference + neg * ((days * 24 + hours) * 60 + minutes) * 60 * 1000,
+    reference + neg * ((days * 24 + hours) * 60 + minutes) * 60 * 1000
   ).toJSON();
 };
 

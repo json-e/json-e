@@ -2,8 +2,6 @@
 * Author: Jonas Finnemann Jensen
 * Github: https://github.com/jonasfj
 */
-
-let _ = require('lodash');
 let PrattParser = require('./prattparser');
 
 let parseList = (ctx, separator, terminator) => {
@@ -126,7 +124,7 @@ module.exports = new PrattParser({
     '[':      (token, ctx) => ctx.parseList(',', ']'),
     '(':      (token, ctx) => {let v = ctx.parse(); ctx.require(')'); return v;},
     '{':      (token, ctx) => parseObject(ctx),
-    string: (token, ctx) => _.trim(_.trim(token.value, '\''), '"'),
+    string: (token, ctx) => token.value.slice(1, -1),
   },
   infixRules: {
     '+': (left, token, ctx) => left + ctx.parse('+'),
