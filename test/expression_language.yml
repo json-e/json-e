@@ -138,15 +138,25 @@ context: {key: [1,2,3,4,5]}
 source: 'key[0:3]'
 result: [1,2,3]
 ---
-title: 'array slicing (4)'
+title: 'array slicing (3)'
 context: {key: [1,2,3,4,5]}
 source: 'key[-5:-1]'
 result: [1,2,3,4]
 ---
-title: 'array slicing (5)'
+title: 'array slicing (4)'
 context: {key: [1,2,3,4,5]}
 source: 'key[key.length / 2: key.length]'
 result: [3,4,5]
+---
+title: 'array slicing (5)'
+context: {key: [1,2,3,4,5]}
+source: 'key[-4:]'
+result: [2,3,4,5]
+---
+title: 'array slicing (6)'
+context: {key: [1,2,3,4,5]}
+source: 'key[:-3]'
+result: [1,2]
 ---
 title: 'function call (1)'
 context: {a: 3, b: 2}

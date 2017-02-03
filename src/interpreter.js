@@ -31,6 +31,41 @@ let parseObject = (ctx) => {
   return obj;
 };
 
+let parseKey = (left, token, ctx) => {
+  if (left instanceof Array) {
+    let begin, end;
+    if (ctx.try(':')) {
+      begin = 0;
+      if (ctx.try(']')) {
+        end = left.length;
+      } else {
+        end = ctx.parse();
+        ctx.require(']');
+      }
+    } else {
+      begin = ctx.parse();
+      if (ctx.try(':')) {
+        if (ctx.try(']')) {
+          end = left.length;
+        } else {
+          end = ctx.parse();
+          ctx.require(']');
+        }
+      } else {
+        ctx.require(']');
+      }
+    }
+    if (begin !== undefined && end !== undefined) {
+      return left.slice(begin, end);
+    }
+    return left[begin];
+  } else {
+    let result = left[ctx.parse()];
+    ctx.require(']');
+    return result;
+  }
+};
+
 let compareNumbers = (left, operator, right) => {
   switch (operator) {
     case '>=': return left >= right;
@@ -58,7 +93,6 @@ module.exports = new PrattParser({
   precedence: [
   	['==', '!='],
   	['comparison'],
-    [':'],
     ['+', '-'],
     ['*', '/'],
     ['[', '.'],
@@ -99,16 +133,11 @@ module.exports = new PrattParser({
     '-': (left, token, ctx) => left - ctx.parse('-'),
     '*': (left, token, ctx) => left * ctx.parse('*'),
     '/': (left, token, ctx) => left / ctx.parse('/'),
-    '[': (left, token, ctx) => {
-      let v = ctx.parse(); 
-      if (v instanceof Array) {v = left.slice(v[0], v[1]);} else {v = left[v];} 
-      ctx.require(']'); return v;
-    },
+    '[': (left, token, ctx) => parseKey(left, token, ctx),
     '.': (left, token, ctx) => left[ctx.require('id').value],
     '(': (left, token, ctx) => left.apply(null, parseList(ctx, ',', ')')),
     '==': (left, token, ctx) => left === ctx.parse('=='),
     '!=': (left, token, ctx) => left !== ctx.parse('!='),
-    ':': (left, token, ctx) => [left, ctx.parse()],
     comparison: (left, token, ctx) => compareNumbers(left, token.value, ctx.parse('comparison')), 
   },
 });
