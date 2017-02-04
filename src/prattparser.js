@@ -4,17 +4,11 @@
 */
 
 let Tokenizer = require('./tokenizer');
-let ExtendableError = require('es6-error');
+let SyntaxError = require('./syntaxerror');
 
-class ParserError extends ExtendableError {
-  constructor(message, start, end) {
-    super(message);
-    this.message = message;
-    this.start = start;
-    this.end = end;
-    this.name = 'Parser Error';
-  }
-}
+let syntaxRuleError = (token, rules) => {
+  throw new SyntaxError(`Found '${token.value}' expected ${Object.keys(rules).join(', ')}`, token);
+};
 
 class PrattParser {
   constructor(options = {}) {
@@ -28,8 +22,20 @@ class PrattParser {
            infixRules: {},
          }, options);
 
-    // TODO: Validate options
+    // creating map of kinds in precedence array
+    let kindMap = {};
+    precedence.forEach((row) => {
+      row.forEach((kind) => {
+        kindMap[kind] = true;
+      });
+    });
+
     // Ensure we have precedence for all the kinds used in infixRules
+    for (let kind of Object.keys(infixRules)) {
+      if (!kindMap[kind]) {
+        throw new Error(`No prefix rule for kind '${kind}'`);
+      }
+    }
 
     this._tokenizer = new Tokenizer({ignore, patterns, tokens});
 
@@ -99,16 +105,14 @@ class Context {
     let token = this.require();
     let prefixRule = this._prefixRules[token.kind];
     if (!prefixRule) {
-      throw InterpreterError('No prefix rule of kind: ' + token.kind + ', value: ' + token.value,
-        token.start, token.end);
+      syntaxRuleError(token, this._infixRules);
     }
     let left = prefixRule(token, this);
     while (this._next && precedence < this._precedenceMap[this._next.kind]) {
       let token = this.require();
       let infixRule = this._infixRules[token.kind];
       if (!infixRule) {
-        throw InterpreterError('No infix rule of kind: ' + token.kind + ', value: ' + token.value,
-          token.start, token.end);
+        syntaxRuleError(token, this._prefixRules);
       }
       left = infixRule(left, token, this);
     }

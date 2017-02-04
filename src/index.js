@@ -6,9 +6,17 @@ class TemplateError extends ExtendableError {
   constructor(message) {
     super(message);
     this.message = message;
-    this.name = 'Template Error';
+    this.name = 'TemplateError';
   }
 }
+
+let isString = (expr) => typeof expr === 'string';
+let isNumber = (expr) => typeof expr === 'number';
+let isBool = (expr) => typeof expr === 'boolean';
+let isArray = (expr) => expr instanceof Array;
+let isObject = (expr) => expr instanceof Object;
+
+let jsonTemplateError = (msg, template) => {throw new TemplateError(msg + JSON.stringify(template, null, '\t'));};
 
 let interpolate = (string, context) => {
   return string.replace(/\${([^}]*)}/g, (text, expr) => {
@@ -25,20 +33,20 @@ let deleteMarker = {};
 
 let constructs = {
   $eval: (template, context) => {
-    if (!(typeof template['$eval'] === 'string')) {
-      throw new TemplateError('$eval can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    if (!isString(template['$eval'])) {
+      jsonTemplateError('$eval can evaluate string expressions only\n');
     }
     return interpreter.parse(template['$eval'], context);
   },
   $fromNow: (template, context) => {
-    if (!(typeof ['$fromNow'] === 'string')) {
-      throw new TemplateError('$fromNow can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    if (!isString(template['$fromNow'])) {
+      jsonTemplateError('$fromNow can evaluate string expressions only\n');
     }
-    return fromNow(template['fromNow']);
+    return fromNow(template['$fromNow']);
   },
   $if: (template, context) => {
-    if (!(typeof template['$if'] === 'string')) {
-      throw new TemplateError('$if can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    if (!isString(template['$if'])) {
+      jsonTemplateError('$if can evaluate string expressions only\n');
     }
     if (interpreter.parse(template['$if'], context)) {
       return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
@@ -47,21 +55,21 @@ let constructs = {
     }
   },
   $switch: (template, context) => {
-    if (!(typeof template['$switch'] === 'string')) {
-      throw new TemplateError('$switch can evaluate string expressions only\n' + JSON.stringify(template, null, '\t'));
+    if (!isString(template['$switch'])) {
+      jsonTemplateError('$switch can evaluate string expressions only\n');
     }
     let c = interpreter.parse(template['$switch'], context);
     return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
   },
   $json: (template, context) => {
-    if (template['$json'] instanceof Array || template['$json'] instanceof Object) {
+    if (isArray(template['$json']) || isObject(['$json'])) {
       return JSON.stringify(render(template['$json'], context));
     }
     return JSON.stringify(template['$json']);
   },
   $map: (template, context) => {
     let exp = /\(([a-zA-Z_][a-zA-Z_0-9]*)\)/;
-    if (template['$map'] instanceof Array) {
+    if (isArray(template['$map'])) {
       for (let prop of Object.keys(template)) {
         if (template.hasOwnProperty(prop) && prop.startsWith('each')) {
           if (typeof template[prop] === 'string') {
@@ -78,26 +86,24 @@ let constructs = {
             delete context[itr];
             return result;
           } else {
-            throw new TemplateError('$map requires each(identifier) syntax\n' +
-              JSON.stringify(template, null, '\t'));
+            jsonTemplateError('$map requires each(identifier) syntax\n');
           }
         }
       }
     } else {
-      throw new TemplateError('$map requires array as value\n' +
-              JSON.stringify(template, null, '\t'));
+      jsonTemplateError('$map requires array as value\n');
     }
   },
 };
 
 let render = (template, context) => {
-  if (typeof template === 'number' || typeof template === 'boolean') {
+  if (isNumber(template) || isBool(template)) {
     return template;
   } 
-  if (typeof template === 'string') {
+  if (isString(template)) {
     return interpolate(template, context);
   }
-  if (template instanceof Array) {
+  if (isArray(template)) {
     return template.map((v) => render(v, context)).filter((v) => v !== deleteMarker);
   }
 

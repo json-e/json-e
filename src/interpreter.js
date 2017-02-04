@@ -144,6 +144,6 @@ module.exports = new PrattParser({
     '(': (left, token, ctx) => left.apply(null, parseList(ctx, ',', ')')),
     '==': (left, token, ctx) => left === ctx.parse('=='),
     '!=': (left, token, ctx) => left !== ctx.parse('!='),
-    comparison: (left, token, ctx) => compareNumbers(left, token.value, ctx.parse('comparison')), 
+    comparison: (left, token, ctx) => compareNumbers(left, token.value, ctx.parse('comparison')),
   },
 });

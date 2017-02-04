@@ -4,19 +4,9 @@
 */
 
 let assert = require('assert');
-let ExtendableError = require('es6-error');
+let SyntaxError = require('./syntaxerror');
 
 let escapeRegex = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-
-class SyntaxError extends ExtendableError {
-  constructor(message, start, end) {
-    super(message);
-    this.message = message;
-    this.start = start;
-    this.end = end;
-    this.name = 'Syntax Error';
-  }
-}
 
 let isRegEx = (re) => {
   if (typeof re !== 'string') {
@@ -78,6 +68,10 @@ class Tokenizer {
       m = this._regex.exec(source.slice(offset));
       if (m === null) {
         // If not at end of input throw an error
+        if (source.slice(offset) !== '') {
+          throw new SyntaxError(`unexpected EOF for '${source}' at '${source.slice(offset)}'`,
+            {start: offset, end: source.length});
+        }
         return null;
       }
       i = indexOfNotUndefined(m, 1);
