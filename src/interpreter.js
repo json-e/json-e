@@ -65,6 +65,9 @@ let parseInterval = (left, token, ctx) => {
     if (begin !== undefined && end !== undefined) {
       return left.slice(begin, end);
     }
+    if (begin < 0) {
+      begin = (left.length + begin) % left.length;
+    }
     return left[begin];
   } else {
     let result = left[ctx.parse()];
@@ -90,10 +93,11 @@ module.exports = new PrattParser({
     id:     '[a-zA-Z_][a-zA-Z_0-9]*',
     string: '\'[^\']*\'|"[^"]*"',
     comparison: '>=|<=|>|<',
+    bool: 'true|false',
   },
   tokens: [
     ...'+-*/[].(){}:,'.split(''),
-    'number', 'id', 'string',
+    'number', 'bool', 'id', 'string',
     '==', '!=', 'comparison',
   ],
   precedence: [
@@ -133,6 +137,7 @@ module.exports = new PrattParser({
     '(':      (token, ctx) => {let v = ctx.parse(); ctx.require(')'); return v;},
     '{':      (token, ctx) => parseObject(ctx),
     string: (token, ctx) => token.value.slice(1, -1),
+    bool: (token, ctx) => token.value === 'true' ? true : false,
   },
   infixRules: {
     '+': (left, token, ctx) => left + ctx.parse('+'),

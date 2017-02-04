@@ -1,10 +1,18 @@
 // Regular expression matching a timespan on the form:
 // X days Y hours Z minutes
+// const timespanExpression = new RegExp([
+//   '^(\\s*(-|\\+))?',
+//   '(\\s*(\\d+)\\s*d(ays?)?)?',
+//   '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
+//   '(\\s*(\\d+)\\s*min(utes?)?)?',
+//   '\\s*$',
+// ].join(''), 'i');
+
 const timespanExpression = new RegExp([
   '^(\\s*(-|\\+))?',
   '(\\s*(\\d+)\\s*d(ays?)?)?',
   '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
-  '(\\s*(\\d+)\\s*min(utes?)?)?',
+  '(\\s*(\\d+)\\s*m((in(utes?)?)?)?)?',
   '\\s*$',
 ].join(''), 'i');
 

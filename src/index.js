@@ -69,6 +69,10 @@ let constructs = {
   },
   $map: (template, context) => {
     let exp = /\(([a-zA-Z_][a-zA-Z_0-9]*)\)/;
+    if (isObject(template['$map'])) {
+      template['$map'] = render(template['$map'], context);
+    }
+
     if (isArray(template['$map'])) {
       for (let prop of Object.keys(template)) {
         if (template.hasOwnProperty(prop) && prop.startsWith('each')) {
@@ -82,7 +86,7 @@ let constructs = {
             let result = template['$map'].map((v) => {
               context[itr] = v;
               return render(template[prop], context);
-            });
+            }).filter((v) => v !== deleteMarker);
             delete context[itr];
             return result;
           } else {
@@ -92,6 +96,60 @@ let constructs = {
       }
     } else {
       jsonTemplateError('$map requires array as value\n');
+    }
+  },
+  $sort: (template, context) => {
+    let exp = /\(([a-zA-Z_][a-zA-Z_0-9]*)\)/;
+    if (isObject(template['$sort'])) {
+      template['$sort'] = render(template['$sort'], context);
+    }
+
+    if (isArray(template['$sort'])) {
+      let arr = template['$sort'];
+      if (isArray(arr[0]) || isObject(arr[0])) {
+        for (let prop of Object.keys(template)) {
+          if (template.hasOwnProperty(prop) && prop.startsWith('by')) {
+            let match = exp.exec(prop);
+            if (match && match[1]) {
+              let itr = match[1];
+              context[itr] = null;
+              let result = arr.sort((left, right) => {
+                context[itr] = left;
+                left = interpreter.parse(template[prop], context);
+                context[itr] = right;
+                right = interpreter.parse(template[prop], context);
+                if (left < right) {
+                  return -1;
+                } else if (left > right) {
+                  return 1;
+                }
+                return 0;
+              });
+              delete context[itr];
+              return result;
+            } else {
+              jsonTemplateError('$sort requires each(identifier) syntax\n');
+            }
+          }
+        }
+        jsonTemplateError('$sort requires by(identifier) for sorting arrays/objects\n');
+      } else {
+        return template['$sort'].sort();
+      }
+
+    } else {
+      jsonTemplateError('$sort requires array as value\n');
+    }
+  },
+  $reverse: (template, context) => {
+    if (isObject(template['$reverse'])) {
+      template['$reverse'] = render(template['$reverse'], context);
+    }
+
+    if (isArray(template['$reverse'])) {
+      return template['$reverse'].reverse();
+    } else {
+      jsonTemplateError('$reverse requires array as value\n');
     }
   },
 };
@@ -140,6 +198,7 @@ let render = (template, context) => {
 //console.log(render({a: {$eval: '1 + 2', $if: 'true'}}, {}));
 //console.log(render({a: {$map: [1,2], 'each(x)': {$eval: 'x + 1'}}}, {}));
 //console.log(render({a: {$map: [1,2], 'each(x)': {a: {$eval: 'x + 1'}, b:'before=${x}'}}},{}));
+//console.log(render({a: {$sort: [{a: 2}, {a: 1, b: []}, {a: 3}]}}, {}));
 
 module.exports = (template, context = {}) => {
   let result = render(template, context);
