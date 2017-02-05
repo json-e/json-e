@@ -16,7 +16,7 @@ let isBool = (expr) => typeof expr === 'boolean';
 let isArray = (expr) => expr instanceof Array;
 let isObject = (expr) => expr instanceof Object;
 
-let jsonTemplateError = (msg, template) => {throw new TemplateError(msg + JSON.stringify(template, null, '\t'));};
+let jsonTemplateError = (msg, template) => new TemplateError(msg + JSON.stringify(template, null, '\t'));
 
 let interpolate = (string, context) => {
   return string.replace(/\${([^}]*)}/g, (text, expr) => {
@@ -34,19 +34,19 @@ let deleteMarker = {};
 let constructs = {
   $eval: (template, context) => {
     if (!isString(template['$eval'])) {
-      jsonTemplateError('$eval can evaluate string expressions only\n');
+      throw jsonTemplateError('$eval can evaluate string expressions only\n', template);
     }
     return interpreter.parse(template['$eval'], context);
   },
   $fromNow: (template, context) => {
     if (!isString(template['$fromNow'])) {
-      jsonTemplateError('$fromNow can evaluate string expressions only\n');
+      throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
     }
     return fromNow(template['$fromNow']);
   },
   $if: (template, context) => {
     if (!isString(template['$if'])) {
-      jsonTemplateError('$if can evaluate string expressions only\n');
+      throw jsonTemplateError('$if can evaluate string expressions only\n', template);
     }
     if (interpreter.parse(template['$if'], context)) {
       return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
@@ -56,101 +56,78 @@ let constructs = {
   },
   $switch: (template, context) => {
     if (!isString(template['$switch'])) {
-      jsonTemplateError('$switch can evaluate string expressions only\n');
+      throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
     }
     let c = interpreter.parse(template['$switch'], context);
     return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
   },
   $json: (template, context) => {
-    if (isArray(template['$json']) || isObject(['$json'])) {
-      return JSON.stringify(render(template['$json'], context));
-    }
-    return JSON.stringify(template['$json']);
-  },
-  $map: (template, context) => {
-    let exp = /\(([a-zA-Z_][a-zA-Z_0-9]*)\)/;
-    if (isObject(template['$map'])) {
-      template['$map'] = render(template['$map'], context);
-    }
-
-    if (isArray(template['$map'])) {
-      for (let prop of Object.keys(template)) {
-        if (template.hasOwnProperty(prop) && prop.startsWith('each')) {
-          if (typeof template[prop] === 'string') {
-            return template['$map'].map((v) => template[prop]);
-          }
-          let match = exp.exec(prop);
-          if (match && match[1]) {
-            let itr = match[1];
-            context[itr] = null;
-            let result = template['$map'].map((v) => {
-              context[itr] = v;
-              return render(template[prop], context);
-            }).filter((v) => v !== deleteMarker);
-            delete context[itr];
-            return result;
-          } else {
-            jsonTemplateError('$map requires each(identifier) syntax\n');
-          }
-        }
-      }
-    } else {
-      jsonTemplateError('$map requires array as value\n');
-    }
-  },
-  $sort: (template, context) => {
-    let exp = /\(([a-zA-Z_][a-zA-Z_0-9]*)\)/;
-    if (isObject(template['$sort'])) {
-      template['$sort'] = render(template['$sort'], context);
-    }
-
-    if (isArray(template['$sort'])) {
-      let arr = template['$sort'];
-      if (isArray(arr[0]) || isObject(arr[0])) {
-        for (let prop of Object.keys(template)) {
-          if (template.hasOwnProperty(prop) && prop.startsWith('by')) {
-            let match = exp.exec(prop);
-            if (match && match[1]) {
-              let itr = match[1];
-              context[itr] = null;
-              let result = arr.sort((left, right) => {
-                context[itr] = left;
-                left = interpreter.parse(template[prop], context);
-                context[itr] = right;
-                right = interpreter.parse(template[prop], context);
-                if (left < right) {
-                  return -1;
-                } else if (left > right) {
-                  return 1;
-                }
-                return 0;
-              });
-              delete context[itr];
-              return result;
-            } else {
-              jsonTemplateError('$sort requires each(identifier) syntax\n');
-            }
-          }
-        }
-        jsonTemplateError('$sort requires by(identifier) for sorting arrays/objects\n');
-      } else {
-        return template['$sort'].sort();
-      }
-
-    } else {
-      jsonTemplateError('$sort requires array as value\n');
-    }
+    return JSON.stringify(render(template['$json'], context));
   },
   $reverse: (template, context) => {
-    if (isObject(template['$reverse'])) {
-      template['$reverse'] = render(template['$reverse'], context);
+    let value = render(template['$reverse'], context);
+    if (!isArray(value)) {
+      throw jsonTemplateError('$reverse requires array as value\n', template);
+    }
+    return value.reverse();
+  },
+  $map: (template, context) => {
+    let value = render(template['$map'], context);
+    if (!isArray(value)) {
+      throw jsonTemplateError('$map requires array as value\n', template);
     }
 
-    if (isArray(template['$reverse'])) {
-      return template['$reverse'].reverse();
-    } else {
-      jsonTemplateError('$reverse requires array as value\n');
+    if (Object.keys(template).length !== 2) {
+      throw jsonTemplateError('$map requires cannot have more than two properties\n', template);
     }
+
+    let eachKey = Object.keys(template).filter(k => k !== '$map')[0];
+    let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(eachKey);
+    if (!match) {
+      throw jsonTemplateError('$map requires each(identifier) syntax\n', template);
+    }
+
+    let x = match[1];
+    let each = template[eachKey];
+
+    return value.map(v => render(each, Object.assign({}, context, {[x]: v}))).filter(v => v !== deleteMarker);
+
+  },
+  $sort: (template, context) => {
+    let value = render(template['$sort'], context);
+    if (!isArray(value)) {
+      throw jsonTemplateError('$sort requires array as value\n', template);
+    }
+
+    if (isArray(value[0]) || isObject(value[0])) {
+      if (Object.keys(template).length !== 2) {
+        throw jsonTemplateError('$sort requires cannot have more than two properties\n', template);
+      }
+
+      let byKey = Object.keys(template).filter(k => k !== '$sort')[0];
+      let match = /^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(byKey);
+      if (!match) {
+        throw jsonTemplateError('$sort requires by(identifier) syntax\n', template);
+      }
+
+      let x = match[1];
+      let by = template[byKey];
+      let contextClone = Object.assign({}, context);
+
+      return value.sort((left, right) => {
+        contextClone[x] = left;
+        left = render(by, contextClone);
+        contextClone[x] = right;
+        right = render(by, contextClone);
+        if (left <= right) {
+          return false;
+        } else if (left > right) {
+          return true;
+        }
+      });
+    }
+
+    return value.sort();
   },
 };
 

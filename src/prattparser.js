@@ -6,9 +6,7 @@
 let Tokenizer = require('./tokenizer');
 let SyntaxError = require('./syntaxerror');
 
-let syntaxRuleError = (token, rules) => {
-  throw new SyntaxError(`Found '${token.value}' expected ${Object.keys(rules).join(', ')}`, token);
-};
+let syntaxRuleError = (token, expects) => new SyntaxError(`Found '${token.value}' expected '${expects}'`, token);
 
 class PrattParser {
   constructor(options = {}) {
@@ -51,8 +49,10 @@ class PrattParser {
   parse(source, context = {}, offset = 0) {
     let ctx = new Context(this, source, context, offset);
     let result = ctx.parse();
-    if (ctx.try()) {
-      throw new Error('Expected end of input');
+    let eof;
+    if (eof = ctx.attempt()) {
+      throw syntaxRuleError(eof, 'end of input');
+      //throw new Error('Expected end of input');
     }
     return result;
   }
@@ -73,7 +73,7 @@ class Context {
    * Try to get the next token if it matches one of the kinds given, otherwise
    * return null. If no kinds are given returns the next of any kind.
    */
-  try(...kinds) {
+  attempt(...kinds) {
     let token = this._next;
     if (!token) {
       return null;
@@ -90,7 +90,7 @@ class Context {
    * kinds or end of input. If no kinds are given returns the next of any kind.
    */
   require(...kinds) {
-    let token = this.try();
+    let token = this.attempt();
     if (!token) {
       throw new Error('unexpected end of input');
     }
@@ -105,15 +105,12 @@ class Context {
     let token = this.require();
     let prefixRule = this._prefixRules[token.kind];
     if (!prefixRule) {
-      syntaxRuleError(token, this._infixRules);
+      throw syntaxRuleError(token, Object.keys(this._prefixRules).join(', '));
     }
     let left = prefixRule(token, this);
-    while (this._next && precedence < this._precedenceMap[this._next.kind]) {
+    while (this._next && precedence < this._precedenceMap[this._next.kind] && this._infixRules[this._next.kind]) {
       let token = this.require();
       let infixRule = this._infixRules[token.kind];
-      if (!infixRule) {
-        syntaxRuleError(token, this._prefixRules);
-      }
       left = infixRule(left, token, this);
     }
     return left;
