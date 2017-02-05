@@ -115,8 +115,8 @@ constructs.$sort = (template, context) => {
   let byKey = Object.keys(template).filter(k => k !== '$sort')[0];
   let match = /^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(byKey);
   if (!match) {
-    let count = value.filter(v => isArray(v) || isObject(v)).length;
-    if (count > 0) {
+    let needBy = value.some(v => isArray(v) || isObject(v)).length;
+    if (needBy) {
       throw jsonTemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays\n', template);
     }
     return value.sort();
