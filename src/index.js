@@ -71,11 +71,13 @@ constructs.$json = (template, context) => {
 
 constructs.$reverse = (template, context) => {
   let value = render(template['$reverse'], context);
-  if (!isArray(value)) {
-    if (isArray(template['$reverse'])) {
-      throw jsonTemplateError('$reverse requires array as value\n', template);
-    }
+
+  if (!isArray(value) && !isArray(template['$reverse'])) {
     throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
+  }
+  
+  if (!isArray(value)) {
+    throw jsonTemplateError('$reverse requires array as value\n', template);
   }
   return value.reverse();
 };
