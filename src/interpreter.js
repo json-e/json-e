@@ -39,44 +39,64 @@ let parseObject = (ctx) => {
 };
 
 let parseInterval = (left, token, ctx) => {
-  let begin, end;
+  let a = null, b = null, isInterval = false;
   if (ctx.attempt(':')) {
-    begin = 0;
+    a = 0;
+    isInterval = true;
     if (!(left instanceof Array)) {
       throw new InterpreterError('cannot perform interval access on non-array');
     }
     if (ctx.attempt(']')) {
-      end = left.length;
+      b = left.length;
     } else {
-      end = ctx.parse();
+      b = ctx.parse();
     }
   } else {
-    begin = ctx.parse();
+    a = ctx.parse();
     if (ctx.attempt(':')) {
+      isInterval = true;
       if (!(left instanceof Array)) {
         throw new InterpreterError('cannot perform interval access on non-array');
       }
       if (ctx.attempt(']')) {
-        end = left.length;
+        b = left.length;
       } else {
-        end = ctx.parse();
+        b = ctx.parse();
       }
     }
   }
 
-  if (begin !== undefined && end !== undefined) {
-    if (typeof begin !== 'number' || typeof end !== 'number') {
-      throw new InterpreterError('cannot perform interval access with non-integers');
-    }
-    ctx.attempt(']');
-    return left.slice(begin, end);
-  }
-  // support for -ve index access
-  if (typeof begin === 'number' && begin < 0) {
-    begin = (left.length + begin) % left.length;
-  }
   ctx.attempt(']');
-  return left[begin];
+  return accessProperty(left, a, b, isInterval);
+};
+
+let accessProperty = (obj, a, b, isInterval) => {
+  if (obj instanceof Array) {
+    if (isInterval) {
+      if (typeof a !== 'number' || typeof b !== 'number') {
+        throw new InterpreterError('cannot perform interval access with non-integers');
+      }
+      return obj.slice(a, b);
+    }
+
+    if (typeof a !== 'number') {
+      throw new InterpreterError('should access arrays using integers only');
+    }
+
+    // for -ve index access
+    a = a < 0 ? (obj.length + a) % obj.length : a;
+    return obj[a];   
+  }
+
+  // if we reach here it means we are accessing property value from object
+  if (!obj.hasOwnProperty(a)) {
+    throw new InterpreterError(`'${a}' not found in ${JSON.stringify(obj, null, '\t')}`);
+  }
+
+  if (a instanceof Object) {
+    throw new InterpreterError('cannot use objects as keys');
+  }
+  return obj[a];
 };
 
 let compareNumbers = (left, operator, right) => {
@@ -87,6 +107,13 @@ let compareNumbers = (left, operator, right) => {
     case '<':  return left < right;
     default:   throw new Error('no rule for comparison operator: ' + operator);
   }
+};
+
+let parseString = (str) => {
+  if (str[0] === '"') {
+    return str.replace('"', '\"').slice(1, -1);
+  }
+  return str.replace('\"', '"').slice(1, -1);
 };
 
 module.exports = new PrattParser({
@@ -110,25 +137,6 @@ module.exports = new PrattParser({
     ['('],
     ['unary'],
   ],
-  /*prefixRules: {
-    'number': (token, ctx) => ['number', token.value],
-    '-':      (token, ctx) => ['-', ctx.parse('unary')],
-    '+':      (token, ctx) => ['+', ctx.parse('unary')],
-    'id':     (token, ctx) => ['id:', token.value],
-    '[':      (token, ctx) => ['list:', ctx.parseList(',', ']')],
-    '(':      (token, ctx) => {let v = ctx.parse(); ctx.require(')'); return v;},
-    '{':      (token, ctx) => ['obj:', parseObject(ctx)],
-  },
-  infixRules: {
-    '+': (left, token, ctx) => [left, '+', ctx.parse('+')],
-    '-': (left, token, ctx) => [left, '-', ctx.parse('-')],
-    '*': (left, token, ctx) => [left, '*', ctx.parse('*')],
-    '/': (left, token, ctx) => [left, '/', ctx.parse('/')],
-    '[': (left, token, ctx) => {let v = ['access:', left, ctx.parse()]; ctx.require(']'); return v;},
-    '.': (left, token, ctx) => ['access:', left, ctx.require('id').value],
-    '(': (left, token, ctx) => ['apply:', left, parseList(ctx, ',', ')')],
-  },*/
-  
   prefixRules: {
     number: (token, ctx) => Number(token.value),
     '-':    (token, ctx) => - ctx.parse('unary'),
@@ -137,7 +145,7 @@ module.exports = new PrattParser({
     '[':    (token, ctx) => ctx.parseList(',', ']'),
     '(':    (token, ctx) => {let v = ctx.parse(); ctx.require(')'); return v;},
     '{':    (token, ctx) => parseObject(ctx),
-    string: (token, ctx) => token.value.slice(1, -1),
+    string: (token, ctx) => parseString(token.value),
     true:   (token, context) => true,
     false:  (token, context) => false,
   },

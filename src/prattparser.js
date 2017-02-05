@@ -4,6 +4,7 @@
 */
 
 let Tokenizer = require('./tokenizer');
+let assert = require('assert');
 let SyntaxError = require('./syntaxerror');
 
 let syntaxRuleError = (token, expects) => new SyntaxError(`Found '${token.value}' expected '${expects}'`, token);
@@ -20,27 +21,19 @@ class PrattParser {
            infixRules: {},
          }, options);
 
-    // creating map of kinds in precedence array
-    let kindMap = {};
-    precedence.forEach((row) => {
-      row.forEach((kind) => {
-        kindMap[kind] = true;
-      });
-    });
-
-    // Ensure we have precedence for all the kinds used in infixRules
-    for (let kind of Object.keys(infixRules)) {
-      if (!kindMap[kind]) {
-        throw new Error(`No prefix rule for kind '${kind}'`);
-      }
-    }
-
     this._tokenizer = new Tokenizer({ignore, patterns, tokens});
 
     this._precedenceMap = {}; // Map from string to precedence level
     precedence.forEach((row, i) => row.forEach(kind => {
       this._precedenceMap[kind] = i + 1;
     }));
+
+    // Ensure we have precedence for all the kinds used in infixRules
+    for (let kind of Object.keys(infixRules)) {
+      if (infixRules.hasOwnProperty(kind)) {
+        assert(this._precedenceMap[kind], `token '${kind}' must have a precedence`);
+      }
+    }
 
     this._prefixRules = prefixRules;
     this._infixRules = infixRules;
@@ -49,10 +42,9 @@ class PrattParser {
   parse(source, context = {}, offset = 0) {
     let ctx = new Context(this, source, context, offset);
     let result = ctx.parse();
-    let eof;
-    if (eof = ctx.attempt()) {
-      throw syntaxRuleError(eof, 'end of input');
-      //throw new Error('Expected end of input');
+    let next = ctx.attempt();
+    if (next) {
+      throw new syntaxRuleError(next, Object.keys(this._infixRules).join(', '));
     }
     return result;
   }
@@ -108,7 +100,7 @@ class Context {
       throw syntaxRuleError(token, Object.keys(this._prefixRules).join(', '));
     }
     let left = prefixRule(token, this);
-    while (this._next && precedence < this._precedenceMap[this._next.kind] && this._infixRules[this._next.kind]) {
+    while (this._next && this._infixRules[this._next.kind] && precedence < this._precedenceMap[this._next.kind]) {
       let token = this.require();
       let infixRule = this._infixRules[token.kind];
       left = infixRule(left, token, this);

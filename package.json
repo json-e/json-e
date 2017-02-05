@@ -14,10 +14,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/hammad13060/json-e.git"
+    "url": "https://github.com/taskcluster/json-e"
   },
-  "author": "Hammad Akhtar <hammad13060@iiitd.ac.in>",
-  "license": "Mozilla Public License Version 2.0",
+  "author": "",
+  "license": "MPL-2.0",
   "dependencies": {
     "es6-error": "^4.0.1"
   },
