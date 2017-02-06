@@ -120,7 +120,7 @@ let parseString = (str) => {
   return str.replace('\"', '"').slice(1, -1);
 };
 
-let operandTest = (operator, operand) => {
+let testOperand = (operator, operand) => {
   if (operator === '+') {
     if (!(isNumber(operand) || isString(operand))) {
       throw expectationError('infix: +', 'number/string + number/string'); 
@@ -137,9 +137,9 @@ let operandTest = (operator, operand) => {
 };
 
 let applyMathOperator = (left, token, ctx) => {
-  operandTest(token.value, left);
+  testOperand(token.value, left);
   let right = ctx.parse(token.value);
-  operandTest(token.value, right);
+  testOperand(token.value, right);
 
   switch (token.value) {
     case '+': return left + right;
