@@ -159,8 +159,6 @@ let render = (template, context) => {
   // clone object
   let result = {};
   for (let key of Object.keys(template)) {
-    assert(/[a-zA-Z_][a-zA-Z0-9_]*/.exec(key)[0], 
-      jsonTemplateError('keys must follow /[a-zA-Z_][a-zA-Z0-9_]*/\n', template).msg);
     let value = render(template[key], context);
     if (value !== deleteMarker) {
       result[interpolate(key, context)] = value;
@@ -169,28 +167,9 @@ let render = (template, context) => {
   return result;
 };
 
-let assertContext = (context) => {
-
-  if (isNumber(context) || isBool(context) || isString(context) || isFunction(context)) {
-    return;
-  }
-
-  if (isArray(context)) {
-    context.forEach(v => assertContext(v));
-    return;
-  }
-
-  for (let key of Object.keys(context)) {
-    if (context.hasOwnProperty(key)) {
-      assert(/[a-zA-Z_][a-zA-Z0-9_]*/.exec(key)[0], 
-      jsonTemplateError('context keys must follow /[a-zA-Z_][a-zA-Z0-9_]*/\n', context).msg);
-      assertContext(context[key]);
-    }
-  }
-};
-
 module.exports = (template, context = {}) => {
-  assertContext(context);
+  Object.keys(context).forEach(v => assert(/[a-zA-Z_][a-zA-Z0-9_]*/.exec(v)[0], 
+    jsonTemplateError('top level keys must follow /[a-zA-Z_][a-zA-Z0-9_]*/\n', template).msg));
   let result = render(template, context);
   if (result === deleteMarker) {
     return undefined;

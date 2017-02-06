@@ -43,7 +43,7 @@ let parseObject = (ctx) => {
 };
 
 let parseInterval = (left, token, ctx) => {
-  let a = null, isInterval = false;
+  let a = null, b = null, isInterval = false;
   if (ctx.attempt(':')) {
     a = 0;
     isInterval = true;
@@ -54,19 +54,24 @@ let parseInterval = (left, token, ctx) => {
     }
   }
 
-  return accessProperty(ctx, left, a, isInterval);
+  if (isInterval && ctx.attempt(']')) {
+    b = left.length;
+  } else if (isInterval) {
+    b = ctx.parse();
+    ctx.require(']');
+  }
+
+  if (!isInterval) {
+    ctx.require(']');
+  }
+
+  return accessProperty(left, a, b, isInterval);
 };
 
-let accessProperty = (ctx, left, a, isInterval) => {
-  let b = null;
+let accessProperty = (left, a, b, isInterval) => {
   if (isArray(left)) {
     if (isInterval) {
-      if (ctx.attempt(']')) {
-        b = left.length;
-      } else {
-        b = ctx.parse();
-        ctx.require(']');
-      }
+      
       if (!isNumber(a) || !isNumber(b)) {
         throw new InterpreterError('cannot perform interval access with non-integers');
       }
@@ -79,8 +84,7 @@ let accessProperty = (ctx, left, a, isInterval) => {
 
     // for -ve index access
     a = a < 0 ? (left.length + a) % left.length : a;
-    ctx.require(']');
-    return left[a];  
+    return left[a];
   }
 
   // if we reach here it means we are accessing property value from object
@@ -93,24 +97,9 @@ let accessProperty = (ctx, left, a, isInterval) => {
   }
 
   if (isString(a)) {
-    ctx.require(']');
     return left[a];
   }
   throw new InterpreterError('cannot use objects as keys');
-};
-
-let compareNumbers = (left, operator, right) => {
-  let valid = isNumber(left) && isNumber(right) || isString(left) && isString(right);
-  if (valid) {
-    switch (operator) {
-      case '>=': return left >= right;
-      case '<=': return left <= right;
-      case '>':  return left > right;
-      case '<':  return left < right;
-      default:   throw new Error('no rule for comparison operator: ' + operator);
-    }
-  }
-  throw expectationError(`infix: ${operator}`, `numbers/strings ${operator} numbers/strings`);
 };
 
 let parseString = (str) => {
@@ -120,34 +109,29 @@ let parseString = (str) => {
   return str.replace('\"', '"').slice(1, -1);
 };
 
-let testOperand = (operator, operand) => {
-  if (operator === '+') {
-    if (!(isNumber(operand) || isString(operand))) {
-      throw expectationError('infix: +', 'number/string + number/string'); 
-    }
-    return;
-  } else if (['-', '*', '/'].some(v => v === operator)) {
-    if (!isNumber(operand)) {
-      throw expectationError(`infix: ${operator}`, `number ${operator} number`);
-    }
-    return;
+let tetsComparisonOperands = (operator, left, right) => {
+
+  if (operator === '==' || operator === '!=') {
+    return null;
   }
 
-  throw new Error(`unknown infix operator: '${operator}'`);
+  let test = ['>=', '<=', '<', '>'].some(v => v === operator)
+              && (isNumber(left) && isNumber(right) || isString(left) && isString(right));
+  
+  if (!test) {
+    throw expectationError(`infix: ${operator}`, `numbers/strings ${operator} numbers/strings`);
+  }
+  return;
 };
 
-let applyMathOperator = (left, token, ctx) => {
-  testOperand(token.value, left);
-  let right = ctx.parse(token.value);
-  testOperand(token.value, right);
-
-  switch (token.value) {
-    case '+': return left + right;
-    case '-': return left - right;
-    case '*': return left * right;
-    case '/': return left / right;
-    default: throw new Error(`unknown infix operator: '${operator}'`);
+let testMathOperand = (operator, operand) => {
+  if (operator === '+' && !(isNumber(operand) || isString(operand))) {
+    throw expectationError('infix: +', 'number/string + number/string'); 
+  } 
+  if (['-', '*', '/'].some(v => v === operator) && !isNumber(operand)) {
+    throw expectationError(`infix: ${operator}`, `number ${operator} number`);
   }
+  return;
 };
 
 let prefixRules = {};
@@ -215,7 +199,19 @@ prefixRules['false'] = (token, ctx) => {
 
 // infix rule definition starts here
 infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/']
-  = (left, token, ctx) => applyMathOperator(left, token, ctx);
+  = (left, token, ctx) => {
+    testMathOperand(token.value, left);
+    let right = ctx.parse(token.value);
+    testMathOperand(token.value, right);
+
+    switch (token.value) {
+      case '+': return left + right;
+      case '-': return left - right;
+      case '*': return left * right;
+      case '/': return left / right;
+      default: throw new Error(`unknown infix operator: '${operator}'`);
+    }
+  };
 
 infixRules['['] = (left, token, ctx) => parseInterval(left, token, ctx);
 
@@ -237,12 +233,22 @@ infixRules['('] =  (left, token, ctx) => {
   throw expectationError('infix: f(args)', 'f to be function');
 };
 
-infixRules['=='] = (left, token, ctx) => left === ctx.parse('==');
-infixRules['!='] = (left, token, ctx) => left !== ctx.parse('!=');
-infixRules['<='] = (left, token, ctx) => compareNumbers(left, token.value, ctx.parse('<='));
-infixRules['>='] = (left, token, ctx) => compareNumbers(left, token.value, ctx.parse('>='));
-infixRules['<'] =  (left, token, ctx) => compareNumbers(left, token.value, ctx.parse('<'));
-infixRules['>'] =  (left, token, ctx) => compareNumbers(left, token.value, ctx.parse('>'));
+infixRules['=='] = infixRules['!='] = infixRules['<='] = 
+infixRules['>='] = infixRules['<'] =  infixRules['>'] 
+  =  (left, token, ctx) => {
+    let operator = token.value;
+    let right = ctx.parse(operator);
+    tetsComparisonOperands(operator, left, right);
+    switch (operator) {
+      case '>=': return left >= right;
+      case '<=': return left <= right;
+      case '>':  return left > right;
+      case '<':  return left < right;
+      case '==': return left === right;
+      case '!=': return left !== right;
+      default:   throw new Error('no rule for comparison operator: ' + operator);
+    }
+  };
 
 module.exports = new PrattParser({
   ignore: '\\s+', // ignore all whitespace including \n
@@ -253,8 +259,8 @@ module.exports = new PrattParser({
   },
   tokens: [
     ...'+-*/[].(){}:,'.split(''),
-    'number', 'true', 'false', 'identifier', 'string',
     '>=', '<=', '<', '>', '==', '!=',
+    'true', 'false', 'number', 'identifier', 'string',
   ],
   precedence: [
   	['==', '!='],
@@ -265,6 +271,6 @@ module.exports = new PrattParser({
     ['('],
     ['unary'],
   ],
-  prefixRules: prefixRules,
-  infixRules: infixRules,
+  prefixRules,
+  infixRules,
 });
