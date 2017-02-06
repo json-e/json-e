@@ -44,7 +44,7 @@ class PrattParser {
     let result = ctx.parse();
     let next = ctx.attempt();
     if (next) {
-      throw new syntaxRuleError(next, Object.keys(this._infixRules).join(', '));
+      throw syntaxRuleError(next, Object.keys(this._infixRules).join(', '));
     }
     return result;
   }

@@ -23,7 +23,7 @@ suite('intepreter', () => {
           assert(_.isEqual(result, c.result), 'unexpected result');
           return;
         } catch (err) {
-          assert(c.error, 'unexpected error');
+          assert(c.error, 'unexpected error' + err);
           return; 
         }
         assert(!c.error, 'expected an error');
@@ -45,26 +45,22 @@ suite('json-e', () => {
   });
 
   for (let currentSuite of Object.keys(jsoneSuite)) {
-    if (jsoneSuite.hasOwnProperty(currentSuite)) {
-      suite(currentSuite, () => {
-        jsoneSuite[currentSuite].forEach((c) => {
-          test(c.title, () => {
-            tk.freeze(date);
-            try {
-              let result = parameterize(c.template, _.defaults({}, c.context, builtinMethods));
-              assert(_.isEqual(result, c.result), 'unexpected result');
-              tk.reset();
-              return;
-            } catch (err) {
-              assert(c.error, 'unexpected error');
-              tk.reset();
-              return; 
-            }
-            assert(!c.error, 'expected an error');
-            tk.reset();
-          });
+    suite(currentSuite, () => {
+      before(() => tk.freeze(date));
+      after(() => tk.reset());
+      jsoneSuite[currentSuite].forEach((c) => {
+        test(c.title, () => {
+          try {
+            let result = parameterize(c.template, _.defaults({}, c.context, builtinMethods));
+            assert(_.isEqual(result, c.result), 'unexpected result');
+            return;
+          } catch (err) {
+            assert(c.error, 'unexpected error' + err);
+            return; 
+          }
+          assert(!c.error, 'expected an error');
         });
       });
-    }
+    });
   }
 });

@@ -357,3 +357,43 @@ title: 'greater than equal (4)'
 context: {a: 1, b: 1}
 source: "a >= b"
 result: true
+---
+title: 'parse list (1)'
+context: {}
+source: '[1,2,3,4]'
+result: [1,2,3,4]
+---
+title: 'parse list (2)'
+context: {}
+source: '[1,2,3,4][0]'
+result: 1
+---
+title: 'parse list (3)'
+context: {}
+source: '[1,2,3,4][0:-1]'
+result: [1,2,3]
+---
+title: 'parse list (4)'
+context: {}
+source: '[1,2,3,4'
+error: true
+---
+title: 'parse object (1)'
+context: {key: 1}
+source: '{a: key, b: key + 1}'
+result: {a: 1, b: 2}
+---
+title: 'parse object (2)'
+context: {key: 1}
+source: '{a: key, b: [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (3)'
+context: {key: 1}
+source: '{a: key, b: min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (4)'
+context: {key: 1}
+source: '{a: key, b: key + 1'
+error: true
