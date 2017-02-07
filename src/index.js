@@ -1,6 +1,10 @@
 let interpreter = require('./interpreter');
 let fromNow = require('./from-now');
 let ExtendableError = require('es6-error');
+let assert = require('assert');
+
+let {isString, isNumber, isBool, 
+  isArray, isObject, isFunction} = require('./type-utils');
 
 class TemplateError extends ExtendableError {
   constructor(message) {
@@ -9,12 +13,6 @@ class TemplateError extends ExtendableError {
     this.name = 'TemplateError';
   }
 }
-
-let isString = (expr) => typeof expr === 'string';
-let isNumber = (expr) => typeof expr === 'number';
-let isBool = (expr) => typeof expr === 'boolean';
-let isArray = (expr) => expr instanceof Array;
-let isObject = (expr) => expr instanceof Object;
 
 let jsonTemplateError = (msg, template) => new TemplateError(msg + JSON.stringify(template, null, '\t'));
 
@@ -29,6 +27,7 @@ let interpolate = (string, context) => {
   });
 };
 
+// Object used to indicate deleteMarker
 let deleteMarker = {};
 
 let constructs = {};
@@ -115,7 +114,7 @@ constructs.$sort = (template, context) => {
   let byKey = Object.keys(template).filter(k => k !== '$sort')[0];
   let match = /^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(byKey);
   if (!match) {
-    let needBy = value.some(v => isArray(v) || isObject(v)).length;
+    let needBy = value.some(v => isArray(v) || isObject(v));
     if (needBy) {
       throw jsonTemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays\n', template);
     }
@@ -128,14 +127,13 @@ constructs.$sort = (template, context) => {
 
   return value.sort((left, right) => {
     contextClone[x] = left;
-    left = render(by, contextClone);
+    left = interpreter.parse(by, contextClone);
     contextClone[x] = right;
-    right = render(by, contextClone);
+    right = interpreter.parse(by, contextClone);
     if (left <= right) {
       return false;
-    } else if (left > right) {
-      return true;
     }
+    return true;
   });
 };
 
@@ -158,12 +156,6 @@ let render = (template, context) => {
     return constructs[matches[0]](template, context);
   }
 
-  for (let construct of Object.keys(constructs)) {
-    if (template.hasOwnProperty(construct)) {
-      return constructs[construct](template, context);
-    }
-  }
-
   // clone object
   let result = {};
   for (let key of Object.keys(template)) {
@@ -176,6 +168,8 @@ let render = (template, context) => {
 };
 
 module.exports = (template, context = {}) => {
+  let test = Object.keys(context).every(v => /[a-zA-Z_][a-zA-Z0-9_]*/.exec(v)[0]);
+  assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   let result = render(template, context);
   if (result === deleteMarker) {
     return undefined;
