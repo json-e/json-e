@@ -13,13 +13,13 @@ class PrattParser {
   constructor(options = {}) {
     let {ignore, patterns, tokens,
          precedence, prefixRules, infixRules} = Object.assign({}, {
-           ignore: null,
-           patterns: {},
-           tokens: [],
-           precedence: [],
-           prefixRules: {},
-           infixRules: {},
-         }, options);
+      ignore: null,
+      patterns: {},
+      tokens: [],
+      precedence: [],
+      prefixRules: {},
+      infixRules: {},
+    }, options);
 
     this._tokenizer = new Tokenizer({ignore, patterns, tokens});
 
