@@ -54,9 +54,7 @@ let parseInterval = (left, token, ctx) => {
     }
   }
 
-  if (isInterval && ctx.attempt(']')) {
-    b = left.length;
-  } else if (isInterval) {
+  if (isInterval && !ctx.attempt(']')) {
     b = ctx.parse();
     ctx.require(']');
   }
@@ -72,12 +70,12 @@ let accessProperty = (left, a, b, isInterval) => {
   if (isArray(left)) {
     if (isInterval) {
       
-      if (!isNumber(a) || !isNumber(b)) {
+      if (!isNumber(a)) {
         throw new InterpreterError('cannot perform interval access with non-integers');
       }
+      b = b === null ? left.length : b;
       return left.slice(a, b);
     }
-
     if (!isNumber(a)) {
       throw new InterpreterError('should access arrays using integers only');
     }
@@ -99,7 +97,7 @@ let accessProperty = (left, a, b, isInterval) => {
   if (isString(a)) {
     return left[a];
   }
-  throw new InterpreterError('cannot use objects as keys');
+  throw new InterpreterError('cannot use non strings/numbers as keys');
 };
 
 let parseString = (str) => {

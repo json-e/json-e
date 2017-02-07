@@ -168,8 +168,8 @@ let render = (template, context) => {
 };
 
 module.exports = (template, context = {}) => {
-  Object.keys(context).forEach(v => assert(/[a-zA-Z_][a-zA-Z0-9_]*/.exec(v)[0], 
-    jsonTemplateError('top level keys must follow /[a-zA-Z_][a-zA-Z0-9_]*/\n', template).msg));
+  let test = Object.keys(context).every(v => /[a-zA-Z_][a-zA-Z0-9_]*/.exec(v)[0]);
+  assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   let result = render(template, context);
   if (result === deleteMarker) {
     return undefined;
