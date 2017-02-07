@@ -1,0 +1,36 @@
+{
+  "name": "json-e",
+  "version": "1.0.0",
+  "description": "json parameterization module inspired from json-parameterization",
+  "main": "./dist/index.js",
+  "scripts": {
+    "compile": "babel-compile -p taskcluster src:lib test:.test",
+    "pretest": "npm run compile",
+    "test": "mocha --ui tdd .test/lint.js .test/tests.js",
+    "prepublish": "npm run compile && mocha --ui tdd .test/tests.js"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/taskcluster/json-e"
+  },
+  "author": "",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "es6-error": "^4.0.1"
+  },
+  "devDependencies": {
+    "babel-compile": "^2.0.0",
+    "babel-preset-taskcluster": "^3.0.0",
+    "eslint-config-taskcluster": "^2.0.0",
+    "eslint-plugin-taskcluster": "^1.0.2",
+    "mocha": "^3.2.0",
+    "mocha-eslint": "^3.0.1",
+    "timekeeper": "^1.0.0"
+  },
+  "engines": {
+    "node": "^6.4.0"
+  }
+}

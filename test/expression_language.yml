@@ -1,0 +1,399 @@
+title: 'addition'
+context: {a: 1, b: 2}
+source: 'a + b + 7'
+result: 10
+---
+title: 'multiplication'
+context: {a: 3, b: 2}
+source: 'a * b * 3'
+result: 18
+---
+title: 'division (1)'
+context: {a: 3, b: 2}
+source: 'a / b'
+result: 1.5
+---
+title: 'division (2)'
+context: {a: 3.0, b: 2.0}
+source: 'a / b'
+result: 1.5
+---
+title: 'division (3)'
+context: {a: 3, b: 2}
+source: 'b / a'
+result: 0.6666666666666666
+---
+title: 'division (4)'
+context: {a: 3.0, b: 2.0}
+source: 'b / a'
+result: 0.6666666666666666
+---
+title: 'string concatenation (1)'
+context: {a: 3, b: 2}
+source: '"a" + "b"'
+result: 'ab'
+---
+title: 'string concatenation (2)'
+context: {a: 3, b: 2}
+source: '"a" + b'
+result: 'a2'
+---
+title: 'string concatenation (3)'
+context: {a: 3, b: 2}
+source: '"" + a + b'
+result: '32'
+---
+title: 'string concatenation (4)'
+context: {a: 3, b: 2}
+source: '"" + (a + b)'
+result: '5'
+---
+title: 'string concatenation (5)'
+context: {a: 3, b: 2}
+source: '"  " + (a + b)'
+result: '  5'
+---
+title: 'property access (1)'
+context: {key: 1}
+source: 'key'
+result: 1
+---
+title: 'property access (2)'
+context: {key: 'a'}
+source: 'key'
+result: 'a'
+---
+title: 'property access (3)'
+context: {key: true}
+source: 'key'
+result: true
+---
+title: 'property access (4)'
+context: {key: {a: 1}}
+source: 'key'
+result: {a: 1}
+---
+title: 'nested property access (1)'
+context: {key: {key2: {key3: {a: 1}}}}
+source: 'key.key2.key3'
+result: {a: 1}
+---
+title: 'nested property access (2)'
+context: {key: {key2: {key3: 1}}}
+source: 'key["key2"]["key3"]'
+result: 1
+---
+title: 'array access (1)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0]'
+result: 1
+---
+title: 'array access (2)'
+context: {key: [1,2,3,4,5]}
+source: 'key[2]'
+result: 3
+---
+title: 'array access (3)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0] + key[1] + key[2] + key[3] + key[4]'
+result: 15
+---
+title: 'nested array access (1)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key.key2.key3[0]'
+result: 1
+---
+title: 'nested array access (2)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key["key2"]["key3"][0]'
+result: 1
+---
+title: 'nested array access (3)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key.key2.key3[2]'
+result: 3
+---
+title: 'nested array access (4)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key["key2"]["key3"][2]'
+result: 3
+---
+title: 'nested array access (5)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key.key2.key3[0] + key.key2.key3[1] + key.key2.key3[2] + key.key2.key3[3] + key.key2.key3[4]'
+result: 15
+---
+title: 'nested array access (6)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key["key2"]["key3"][0] + key["key2"]["key3"][1] + key["key2"]["key3"][2] + key["key2"]["key3"][3] + key["key2"]["key3"][4]'
+result: 15
+---
+title: 'array slicing (1)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0:5]'
+result: [1,2,3,4,5]
+---
+title: 'array slicing (2)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0:3]'
+result: [1,2,3]
+---
+title: 'array slicing (3)'
+context: {key: [1,2,3,4,5]}
+source: 'key[-5:-1]'
+result: [1,2,3,4]
+---
+title: 'array slicing (4)'
+context: {key: [1,2,3,4,5]}
+source: 'key[key.length / 2: key.length]'
+result: [3,4,5]
+---
+title: 'array slicing (5)'
+context: {key: [1,2,3,4,5]}
+source: 'key[-4:]'
+result: [2,3,4,5]
+---
+title: 'array slicing (6)'
+context: {key: [1,2,3,4,5]}
+source: 'key[:-3]'
+result: [1,2]
+---
+title: 'function call (1)'
+context: {a: 3, b: 2}
+source: 'min(a, b)'
+result: 2
+---
+title: 'function call (2)'
+context: {a: 3, b: 2}
+source: 'min(3, b)'
+result: 2
+---
+title: 'function call (3)'
+context: {a: 3, b: 2}
+source: 'min(a, 2)'
+result: 2
+---
+title: 'function call (4)'
+context: {a: 3, b: 2}
+source: 'min(3, 2)'
+result: 2
+---
+title: 'function call (5)'
+context: {a: 3, b: 2}
+source: 'max(a, b)'
+result: 3
+---
+title: 'function call (6)'
+context: {a: 3, b: 2}
+source: 'max(3, b)'
+result: 3
+---
+title: 'function call (7)'
+context: {a: 3, b: 2}
+source: 'max(a, 2)'
+result: 3
+---
+title: 'function call (8)'
+context: {a: 3, b: 2}
+source: 'max(3, 2)'
+result: 3
+---
+title: 'function call (9)'
+context: {a: 3, b: 2}
+source: 'min(a, b) + max(a, b)'
+result: 5
+---
+title: 'function call (10)'
+context: {a: 3, b: 2}
+source: 'min(3, b) + max(3, b)'
+result: 5
+---
+title: 'function call (11)'
+context: {a: 3, b: 2}
+source: 'min(a, 2) + max(a, 2)'
+result: 5
+---
+title: 'function call (12)'
+context: {a: 3, b: 2}
+source: 'min(3, 2) + max(3, 2)'
+result: 5
+---
+title: 'equality (1)'
+context: {a: 1, b: 1}
+source: '1 == 1'
+result: true
+---
+title: 'equality (2)'
+context: {a: 1, b: 1}
+source: '1 == 2'
+result: false
+---
+title: 'equality (3)'
+context: {a: 1, b: 1}
+source: 'a == b'
+result: true
+---
+title: 'equality (4)'
+context: {a: 1, b: 2}
+source: 'a == b'
+result: false
+---
+title: 'in-equality (1)'
+context: {a: 1, b: 1}
+source: '1 != 1'
+result: false
+---
+title: 'in-equality (2)'
+context: {a: 1, b: 1}
+source: '1 != 2'
+result: true
+---
+title: 'in-equality (3)'
+context: {a: 1, b: 1}
+source: 'a != b'
+result: false
+---
+title: 'in-equality (4)'
+context: {a: 1, b: 2}
+source: 'a != b'
+result: true
+---
+title: 'less than (1)'
+context: {a: 1, b: 2}
+source: '1 < 2'
+result: true
+---
+title: 'less than (2)'
+context: {a: 1, b: 2}
+source: '2 < 1'
+result: false
+---
+title: 'less than (3)'
+context: {a: 1, b: 2}
+source: '"a" < "b"'
+result: true
+---
+title: 'less than (4)'
+context: {a: 1, b: 2}
+source: '"b" < "a"'
+result: false
+---
+title: 'less than (5)'
+context: {a: 1, b: 2}
+source: 'a < b'
+result: true
+---
+title: 'less than (6)'
+context: {a: 1, b: 2}
+source: 'b < a'
+result: false
+---
+title: 'greater than (1)'
+context: {a: 1, b: 2}
+source: '2 > 1'
+result: true
+---
+title: 'greater than (2)'
+context: {a: 1, b: 2}
+source: '1 > 2'
+result: false
+---
+title: 'greater than (3)'
+context: {a: 1, b: 2}
+source: '"b" > "a"'
+result: true
+---
+title: 'greater than (4)'
+context: {a: 1, b: 2}
+source: '"a" > "b"'
+result: false
+---
+title: 'greater than (5)'
+context: {a: 1, b: 2}
+source: 'b > a'
+result: true
+---
+title: 'greater than (6)'
+context: {a: 1, b: 2}
+source: 'a > b'
+result: false
+---
+title: 'less than equal (1)'
+context: {a: 1, b: 2}
+source: "a <= b"
+result: true
+---
+title: 'less than equal (2)'
+context: {a: 1, b: 1}
+source: "a <= b"
+result: true
+---
+title: 'less than equal (3)'
+context: {a: 1, b: 2}
+source: "b <= a"
+result: false
+---
+title: 'less than equal (4)'
+context: {a: 1, b: 1}
+source: "b <= a"
+result: true
+---
+title: 'greater than equal (1)'
+context: {a: 1, b: 2}
+source: "b >= a"
+result: true
+---
+title: 'greater than equal (2)'
+context: {a: 1, b: 1}
+source: "a >= b"
+result: true
+---
+title: 'greater than equal (3)'
+context: {a: 1, b: 2}
+source: "a >= b"
+result: false
+---
+title: 'greater than equal (4)'
+context: {a: 1, b: 1}
+source: "a >= b"
+result: true
+---
+title: 'parse list (1)'
+context: {}
+source: '[1,2,3,4]'
+result: [1,2,3,4]
+---
+title: 'parse list (2)'
+context: {}
+source: '[1,2,3,4][0]'
+result: 1
+---
+title: 'parse list (3)'
+context: {}
+source: '[1,2,3,4][0:-1]'
+result: [1,2,3]
+---
+title: 'parse list (4)'
+context: {}
+source: '[1,2,3,4'
+error: true
+---
+title: 'parse object (1)'
+context: {key: 1}
+source: '{a: key, b: key + 1}'
+result: {a: 1, b: 2}
+---
+title: 'parse object (2)'
+context: {key: 1}
+source: '{a: key, b: [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (3)'
+context: {key: 1}
+source: '{a: key, b: min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (4)'
+context: {key: 1}
+source: '{a: key, b: key + 1'
+error: true
