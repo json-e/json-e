@@ -6,8 +6,8 @@
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
     "pretest": "npm run compile",
-    "test": "mocha --ui tdd .test/lint.js .test/tests.js",
-    "prepublish": "npm run compile && mocha --ui tdd .test/tests.js"
+    "test": "npm run compile && mocha .test/*_test.js",
+    "prepublish": "npm run compile && npm test"
   },
   "files": [
     "lib"
@@ -28,7 +28,9 @@
     "eslint-plugin-taskcluster": "^1.0.2",
     "mocha": "^3.2.0",
     "mocha-eslint": "^3.0.1",
-    "timekeeper": "^1.0.0"
+    "timekeeper": "^1.0.0",
+    "source-map-support": "^0.4.11",
+    "assume": "^1.4.1"
   },
   "engines": {
     "node": "^6.4.0"

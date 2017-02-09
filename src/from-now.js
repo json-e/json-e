@@ -9,7 +9,7 @@ const timespanExpression = new RegExp([
 ].join(''), 'i');
 
 // Render timespan fromNow as JSON timestamp
-let fromNow = (timespan = '', reference = Date.now()) => {
+export default (timespan = '', reference = Date.now()) => {
   let m = timespanExpression.exec(timespan);
   if (!m) {
     throw new Error('Invalid timespan expression: ' + timespan);
@@ -19,9 +19,6 @@ let fromNow = (timespan = '', reference = Date.now()) => {
   let hours = parseInt(m[3] || 0, 10);
   let minutes = parseInt(m[4] || 0, 10);
   return new Date(
-    reference + neg * ((days * 24 + hours) * 60 + minutes) * 60 * 1000
+    reference + neg * ((days * 24 + hours) * 60 + minutes) * 60 * 1000,
   ).toJSON();
 };
-
-// Export fromNow
-module.exports = fromNow;
