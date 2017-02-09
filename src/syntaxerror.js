@@ -1,13 +1,11 @@
-let ExtendableError = require('es6-error');
+import ExtendableError from 'es6-error';
 
-class SyntaxError extends ExtendableError {
-  constructor(message, token) {
+export default class SyntaxError extends ExtendableError {
+  constructor(message, {start, end}) {
     super(message);
-    this.message = message;
-    this.start = token.start;
-    this.end = token.end;
     this.name = 'SyntaxError';
+    this.message = message;
+    this.start = start;
+    this.end = end;
   }
 }
-
-module.exports = SyntaxError;

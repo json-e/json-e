@@ -1,10 +1,11 @@
-let interpreter = require('./interpreter');
-let fromNow = require('./from-now');
-let ExtendableError = require('es6-error');
-let assert = require('assert');
-
-let {isString, isNumber, isBool, 
-  isArray, isObject, isFunction} = require('./type-utils');
+import interpreter from './interpreter';
+import fromNow from './from-now';
+import ExtendableError from 'es6-error';
+import assert from 'assert';
+import {
+  isString, isNumber, isBool,
+  isArray, isObject, isFunction,
+} from './type-utils';
 
 class TemplateError extends ExtendableError {
   constructor(message) {
@@ -74,7 +75,7 @@ constructs.$reverse = (template, context) => {
   if (!isArray(value) && !isArray(template['$reverse'])) {
     throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
   }
-  
+
   if (!isArray(value)) {
     throw jsonTemplateError('$reverse requires array as value\n', template);
   }
@@ -140,7 +141,7 @@ constructs.$sort = (template, context) => {
 let render = (template, context) => {
   if (isNumber(template) || isBool(template)) {
     return template;
-  } 
+  }
   if (isString(template)) {
     return interpolate(template, context);
   }

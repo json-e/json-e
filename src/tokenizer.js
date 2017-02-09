@@ -1,10 +1,5 @@
-/*
-* Author: Jonas Finnemann Jensen
-* Github: https://github.com/jonasfj
-*/
-
-let assert = require('assert');
-let SyntaxError = require('./syntaxerror');
+import assert from 'assert';
+import SyntaxError from './syntaxerror';
 
 let escapeRegex = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
