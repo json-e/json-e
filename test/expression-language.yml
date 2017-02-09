@@ -98,6 +98,11 @@ context: {key: [1,2,3,4,5]}
 source: 'key[0] + key[1] + key[2] + key[3] + key[4]'
 result: 15
 ---
+title: 'array access (4)'
+context: {key: [1,2,3,4,5]}
+source: 'key["a"]'
+error: true
+---
 title: 'nested array access (1)'
 context: {key: {key2: {key3: [1,2,3,4,5]}}}
 source: 'key.key2.key3[0]'
@@ -157,6 +162,31 @@ title: 'array slicing (6)'
 context: {key: [1,2,3,4,5]}
 source: 'key[:-3]'
 result: [1,2]
+---
+title: 'array slicing (7)'
+context: {key: [1,2,3,4,5]}
+source: 'key["a":]'
+error: true
+---
+title: 'array slicing (8)'
+context: {key: [1,2,3,4,5]}
+source: 'key[:"a"]'
+error: true
+---
+title: 'array slicing (9)'
+context: {key: [1,2,3,4,5]}
+source: 'key["a":"b"]'
+error: true
+---
+title: 'array slicing (10)'
+context: {key: [1,2,3,4,5]}
+source: 'key[1:"a"]'
+error: true
+---
+title: 'array slicing (11)'
+context: {key: [1,2,3,4,5]}
+source: 'key["a":2]'
+error: true
 ---
 title: 'function call (1)'
 context: {a: 3, b: 2}
@@ -396,4 +426,109 @@ result: {a: 1, b: 1}
 title: 'parse object (4)'
 context: {key: 1}
 source: '{a: key, b: key + 1'
+error: true
+---
+title: 'invalid expression (1)'
+context: {key: 'hello'}
+source: '-key'
+error: true
+---
+title: 'invalid expression (2)'
+context: {key: 'hello'}
+source: '+key'
+error: true
+---
+title: 'invalid expression (3)'
+context: {key: 'hello'}
+source: 'key2'
+error: true
+---
+title: 'invalid expression (4)'
+context: {key: 'hello'}
+source: 'key2'
+error: true
+---
+title: 'invalid expression (5)'
+context: {key1: 1, key2: 1}
+source: 'key1 + (key2 + key1'
+error: true
+---
+title: 'invalid expression (6)'
+context: {}
+source: '"hello'
+error: true
+---
+title: 'invalid expression (7)'
+context: {}
+source: 'true + false'
+error: true
+---
+title: 'invalid expression (8)'
+context: {}
+source: '"hello" - 3'
+error: true
+---
+title: 'invalid expression (9)'
+context: {}
+source: '"hello" * 3'
+error: true
+---
+title: 'invalid expression (10)'
+context: {}
+source: '"hello" / 3'
+error: true
+---
+title: 'invalid expression (11)'
+context: {}
+source: '3 - "hello"'
+error: true
+---
+title: 'invalid expression (12)'
+context: {}
+source: '3 * "hello"'
+error: true
+---
+title: 'invalid expression (13)'
+context: {}
+source: '3 / "hello"'
+error: true
+---
+title: 'invalid expression (14)'
+context: {}
+source: '"hello" < 3'
+error: true
+---
+title: 'invalid expression (15)'
+context: {}
+source: '"hello" > 3'
+error: true
+---
+title: 'invalid expression (16)'
+context: {}
+source: '"hello" <= 3'
+error: true
+---
+title: 'invalid expression (17)'
+context: {}
+source: '"hello" >= 3'
+error: true
+---
+title: 'invalid expression (18)'
+context: {}
+source: '3 < "hello"'
+error: true
+---
+title: 'invalid expression (19)'
+context: {}
+source: '3 > "hello"'
+error: true
+---
+title: 'invalid expression (20)'
+context: {}
+source: '3 <= "hello"'
+error: true
+---
+title: 'invalid expression (21)'
+context: {}
+source: '3 >= "hello"'
 error: true

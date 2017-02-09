@@ -69,11 +69,10 @@ let parseInterval = (left, token, ctx) => {
 let accessProperty = (left, a, b, isInterval) => {
   if (isArray(left)) {
     if (isInterval) {
-      
-      if (!isNumber(a)) {
+      b = b === null ? left.length : b;
+      if (!isNumber(a) || !isNumber(b)) {
         throw new InterpreterError('cannot perform interval access with non-integers');
       }
-      b = b === null ? left.length : b;
       return left.slice(a, b);
     }
     if (!isNumber(a)) {
