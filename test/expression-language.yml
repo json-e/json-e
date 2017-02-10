@@ -163,27 +163,27 @@ context: {key: [1,2,3,4,5]}
 source: 'key[:-3]'
 result: [1,2]
 ---
-title: 'array slicing (7)'
+title: 'array slicing type error (1)'
 context: {key: [1,2,3,4,5]}
 source: 'key["a":]'
 error: true
 ---
-title: 'array slicing (8)'
+title: 'array slicing type error (2)'
 context: {key: [1,2,3,4,5]}
 source: 'key[:"a"]'
 error: true
 ---
-title: 'array slicing (9)'
+title: 'array slicing type error (3)'
 context: {key: [1,2,3,4,5]}
 source: 'key["a":"b"]'
 error: true
 ---
-title: 'array slicing (10)'
+title: 'array slicing type error (4)'
 context: {key: [1,2,3,4,5]}
 source: 'key[1:"a"]'
 error: true
 ---
-title: 'array slicing (11)'
+title: 'array slicing type error (5)'
 context: {key: [1,2,3,4,5]}
 source: 'key["a":2]'
 error: true
@@ -428,107 +428,112 @@ context: {key: 1}
 source: '{a: key, b: key + 1'
 error: true
 ---
-title: 'invalid expression (1)'
+title: 'prefix - type error'
 context: {key: 'hello'}
 source: '-key'
 error: true
 ---
-title: 'invalid expression (2)'
+title: 'prefix + type error'
 context: {key: 'hello'}
 source: '+key'
 error: true
 ---
-title: 'invalid expression (3)'
+title: 'undefined variable'
 context: {key: 'hello'}
 source: 'key2'
 error: true
 ---
-title: 'invalid expression (4)'
-context: {key: 'hello'}
-source: 'key2'
-error: true
----
-title: 'invalid expression (5)'
+title: 'missing closing parenthesis'
 context: {key1: 1, key2: 1}
 source: 'key1 + (key2 + key1'
 error: true
 ---
-title: 'invalid expression (6)'
+title: 'missing opening parenthesis'
+context: {key1: 1, key2: 1}
+source: 'key1 + key2 + key1)'
+error: true
+---
+title: 'missing closing "'
 context: {}
 source: '"hello'
 error: true
 ---
-title: 'invalid expression (7)'
+title: 'missing opening "'
+context: {}
+source: 'hello"'
+error: true
+---
+title: 'Infix + type error'
 context: {}
 source: 'true + false'
 error: true
 ---
-title: 'invalid expression (8)'
+title: 'Infix - type error'
 context: {}
 source: '"hello" - 3'
 error: true
 ---
-title: 'invalid expression (9)'
+title: 'Infix * type error'
 context: {}
 source: '"hello" * 3'
 error: true
 ---
-title: 'invalid expression (10)'
+title: 'Infix / type error'
 context: {}
 source: '"hello" / 3'
 error: true
 ---
-title: 'invalid expression (11)'
+title: 'Infix - type error'
 context: {}
 source: '3 - "hello"'
 error: true
 ---
-title: 'invalid expression (12)'
+title: 'Infix * type error'
 context: {}
 source: '3 * "hello"'
 error: true
 ---
-title: 'invalid expression (13)'
+title: 'Infix / type error'
 context: {}
 source: '3 / "hello"'
 error: true
 ---
-title: 'invalid expression (14)'
+title: 'Infix < type error'
 context: {}
 source: '"hello" < 3'
 error: true
 ---
-title: 'invalid expression (15)'
+title: 'Infix > type error'
 context: {}
 source: '"hello" > 3'
 error: true
 ---
-title: 'invalid expression (16)'
+title: 'Infix <= type error'
 context: {}
 source: '"hello" <= 3'
 error: true
 ---
-title: 'invalid expression (17)'
+title: 'Infix >= type error'
 context: {}
 source: '"hello" >= 3'
 error: true
 ---
-title: 'invalid expression (18)'
+title: 'Infix < type error'
 context: {}
 source: '3 < "hello"'
 error: true
 ---
-title: 'invalid expression (19)'
+title: 'Infix > type error'
 context: {}
 source: '3 > "hello"'
 error: true
 ---
-title: 'invalid expression (20)'
+title: 'Infix <= type error'
 context: {}
 source: '3 <= "hello"'
 error: true
 ---
-title: 'invalid expression (21)'
+title: 'Infix >= type error'
 context: {}
 source: '3 >= "hello"'
 error: true
