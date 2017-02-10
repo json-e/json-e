@@ -597,3 +597,28 @@ title: 'Infix >= type error'
 context: {}
 source: '3 >= "hello"'
 error: true
+---
+title: 'Prefix logical not type error'
+context: {key: 'hello'}
+source: '!key'
+error: true
+---
+title: 'Infix or type error (1)'
+context: {key1: true, key2: 'hello'}
+source: 'key1 || key2'
+error: true
+---
+title: 'Infix or type error (2)'
+context: {key1: true, key2: 'hello'}
+source: 'key2 || key1'
+error: true
+---
+title: 'Infix and type error (1)'
+context: {key1: true, key2: 'hello'}
+source: 'key1 && key2'
+error: true
+---
+title: 'Infix and type error (2)'
+context: {key1: true, key2: 'hello'}
+source: 'key2 && key1'
+error: true
