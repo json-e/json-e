@@ -131,6 +131,12 @@ let testMathOperand = (operator, operand) => {
   return;
 };
 
+let testLogicalOperand = (operator, operand) => {
+  if (!isBool(operand)) {
+    throw expectationError(`infix: ${operator}`, `boolean ${operator} boolean`);
+  }
+};
+
 let prefixRules = {};
 let infixRules = {};
 
@@ -141,6 +147,12 @@ prefixRules['number'] = (token, ctx) => {
     throw new Error(`${token.value} should be a number`);
   }
   return v;
+};
+
+prefixRules['!'] = (token, ctx) => {
+  let operand = ctx.parse('unary');
+  testLogicalOperand('!', operand);
+  return !operand;
 };
 
 prefixRules['-'] = (token, ctx) => {
@@ -247,6 +259,18 @@ infixRules['>='] = infixRules['<'] =  infixRules['>']
     }
   };
 
+infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
+  let operator = token.value;
+  let right = ctx.parse(operator);
+  testLogicalOperand(operator, left);
+  testLogicalOperand(operator, right);
+  switch (operator) {
+    case '||':  return left || right;
+    case '&&':  return left && right;
+    default:    throw new Error('no rule for boolean operator: ' + operator);
+  }
+};
+
 module.exports = new PrattParser({
   ignore: '\\s+', // ignore all whitespace including \n
   patterns: {
@@ -256,10 +280,12 @@ module.exports = new PrattParser({
   },
   tokens: [
     ...'+-*/[].(){}:,'.split(''),
-    '>=', '<=', '<', '>', '==', '!=',
+    '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
     'true', 'false', 'number', 'identifier', 'string',
   ],
   precedence: [
+    ['||'],
+    ['&&'],
   	['==', '!='],
   	['>=', '<=', '<', '>'],
     ['+', '-'],
