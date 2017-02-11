@@ -50,6 +50,11 @@ context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k-${num}': true}
 result:   {message: 'hello world', 'k-1': true}
 ---
+title:    string interpolation with object evaluation
+context:  {key: 'world', num: 1}
+template: {message: 'hello ${{a: "world"}.a}', 'k-${{a: 1}.a + {a: 0}.a}': true}
+result:   {message: 'hello world', 'k-1': true}
+---
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}

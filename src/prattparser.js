@@ -48,6 +48,16 @@ class PrattParser {
     }
     return result;
   }
+
+  parseUntilTerminator(source, offset, terminator, context) {
+    let ctx = new Context(this, source, context, offset);
+    let result = ctx.parse();
+    let next = ctx.attempt();
+    if (next.value !== terminator) {
+      throw syntaxRuleError(next, terminator);
+    }
+    return {result, offset: next.start};
+  }
 };
 
 class Context {
