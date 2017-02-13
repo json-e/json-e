@@ -29,63 +29,83 @@ source: 'b / a'
 result: 0.6666666666666666
 ---
 title: 'logical not (1)'
-context: {key1: true, key2: false}
-source: '!key1'
+context: {tt: true, ff: false}
+source: '!tt'
 result: false
 ---
 title: 'logical not (2)'
-context: {key1: true, key2: false}
-source: '!key2'
+context: {tt: true, ff: false}
+source: '!ff'
 result: true
 ---
 title: 'or operator (1)'
-context: {key1: true, key2: false}
-source: 'key1 || key1'
+context: {tt: true, ff: false}
+source: 'tt || ff'
 result: true
 ---
 title: 'or operator (2)'
-context: {key1: true, key2: false}
-source: 'key1 || key2'
+context: {tt: true, ff: false}
+source: 'tt || ff'
 result: true
 ---
 title: 'or operator (3)'
-context: {key1: true, key2: false}
-source: 'key2 || key1'
+context: {tt: true, ff: false}
+source: 'ff || tt'
 result: true
 ---
 title: 'or operator (4)'
-context: {key1: true, key2: false}
-source: 'key2 || key2'
+context: {tt: true, ff: false}
+source: 'ff || ff'
 result: false
 ---
 title: 'and operator (1)'
-context: {key1: true, key2: false}
-source: 'key1 && key1'
+context: {tt: true, ff: false}
+source: 'tt && tt'
 result: true
 ---
 title: 'and operator (2)'
-context: {key1: true, key2: false}
-source: 'key1 && key2'
+context: {tt: true, ff: false}
+source: 'tt && ff'
 result: false
 ---
 title: 'and operator (3)'
-context: {key1: true, key2: false}
-source: 'key2 && key1'
+context: {tt: true, ff: false}
+source: 'ff && tt'
 result: false
 ---
 title: 'and operator (4)'
-context: {key1: true, key2: false}
-source: 'key2 && key2'
+context: {tt: true, ff: false}
+source: 'ff && ff'
 result: false
 ---
 title: 'and operator with not operator'
-context: {key1: true, key2: false}
-source: 'key1 && !key2'
+context: {tt: true, ff: false}
+source: 'tt && !ff'
 result: true
 ---
 title: 'or operator with not operator'
-context: {key1: true, key2: false}
-source: 'key2 || !key2'
+context: {tt: true, ff: false}
+source: 'ff || !ff'
+result: true
+---
+title: 'complex logical operation (1)'
+context: {}
+source: "4 < 6 && 2 == 1 + 1"
+result: true
+---
+title: 'complex logical operation (2)'
+context: {}
+source: "!(4 < 6) && 2 == 1 + 1"
+result: false
+---
+title: 'complex logical operation (3)'
+context: {}
+source: "2 == 1 + 1 && 4 < 6"
+result: true
+---
+title: 'complex logical operation (4)'
+context: {}
+source: "4 >= 6 || 2 == 1 + 1"
 result: true
 ---
 title: 'string concatenation (1)'
@@ -604,21 +624,21 @@ source: '!key'
 error: true
 ---
 title: 'Infix or type error (1)'
-context: {key1: true, key2: 'hello'}
-source: 'key1 || key2'
+context: {tt: true, key: 'hello'}
+source: 'tt || key'
 error: true
 ---
 title: 'Infix or type error (2)'
-context: {key1: true, key2: 'hello'}
-source: 'key2 || key1'
+context: {tt: true, key: 'hello'}
+source: 'key || tt'
 error: true
 ---
 title: 'Infix and type error (1)'
-context: {key1: true, key2: 'hello'}
-source: 'key1 && key2'
+context: {tt: true, key: 'hello'}
+source: 'tt && key'
 error: true
 ---
 title: 'Infix and type error (2)'
-context: {key1: true, key2: 'hello'}
-source: 'key2 && key1'
+context: {tt: true, key: 'hello'}
+source: 'key && tt'
 error: true
