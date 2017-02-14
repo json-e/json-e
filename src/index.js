@@ -20,13 +20,20 @@ let jsonTemplateError = (msg, template) => new TemplateError(msg + JSON.stringif
 let interpolate = (string, context) => {
   let result = '';
   let begin = 0;
-  string.replace(/\${/, (text, offset, str) => {
-    let v = interpreter.parseUntilTerminator(str.slice(offset), 2, '}', context);
-    let terminatorOffset = v.offset;
-    result += str.slice(begin, offset) + v.result.toString();
-    begin = terminatorOffset + offset + 1; 
-  });
-  result += string.slice(begin);
+  let remainingStr = string;
+  while (true) {
+    let offset = remainingStr.search(/\${/);
+    if (offset === -1) {
+      break;
+    }
+    let v = interpreter.parseUntilTerminator(remainingStr.slice(offset), 2, '}', context);
+    if (isArray(v.result) || isObject(v.result)) {
+      throw new TemplateError('cannot interpolate array/object: ' + string);
+    }
+    result += remainingStr.slice(0, offset) + v.result.toString();
+    remainingStr = remainingStr.slice(offset + v.offset + 1);
+  }
+  result += remainingStr;
   return result;
 };
 
