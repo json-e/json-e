@@ -33,6 +33,26 @@ context: {a: 3, b: 2}
 source: '"a" + "b"'
 result: 'ab'
 ---
+title: 'TypeError: string + number (1)'
+context: {a: 3, b: 2}
+source: '"a" + b'
+error: true
+---
+title: 'TypeError: string + number (2)'
+context: {a: 3, b: 2}
+source: '"" + a + b'
+error: true
+---
+title: 'TypeError: string + number (3)'
+context: {a: 3, b: 2}
+source: '"" + (a + b)'
+error: true
+---
+title: 'TypeError: number + string (4)'
+context: {a: 3, b: 2}
+source: '(a + b) + "abc"'
+error: true
+---
 title: 'property access (1)'
 context: {key: 1}
 source: 'key'

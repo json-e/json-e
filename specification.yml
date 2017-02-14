@@ -237,7 +237,7 @@ context:  {a: 3, b: 2}
 template: {$eval: 'a * b * 3'}
 result:   18
 ---
-title:    string concatenation (1)
+title:    string concatenation
 context:  {a: 3, b: 2}
 template: {$eval: '"a" + "b"'}
 result:   'ab'
