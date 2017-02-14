@@ -200,7 +200,9 @@ infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/']
     testMathOperand(token.value, left);
     let right = ctx.parse(token.value);
     testMathOperand(token.value, right);
-
+    if (typeof left !== typeof right) {
+      throw new InterpreterError(`TypeError: ${typeof left} ${token.value} ${typeof right}`);
+    }
     switch (token.value) {
       case '+': return left + right;
       case '-': return left - right;
