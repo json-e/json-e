@@ -249,7 +249,7 @@ infixRules['>='] = infixRules['<'] =  infixRules['>']
   };
 
 module.exports = new PrattParser({
-  ignore: '[\\s#\\$]+', // ignore all whitespace including \n
+  ignore: '\\s+', // ignore all whitespace including \n
   patterns: {
     number:     '[0-9]+(?:\\.[0-9]+)?',
     identifier: '[a-zA-Z_][a-zA-Z_0-9]*',

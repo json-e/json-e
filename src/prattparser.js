@@ -52,7 +52,8 @@ class PrattParser {
   parseUntilTerminator(source, offset, terminator, context) {
     let ctx = new Context(this, source, context, offset);
     let result = ctx.parse();
-    let next = ctx.attempt();
+    console.log(source, result);
+    let next = ctx.getNext();
     if (next.value !== terminator) {
       throw syntaxRuleError(next, terminator);
     }
@@ -85,6 +86,13 @@ class Context {
     }
     this._next = this._tokenizer.next(this._source, token.end);
     return token;
+  }
+
+  /*
+  * returns next token object
+  */
+  getNext() {
+    return this._next;
   }
 
   /**

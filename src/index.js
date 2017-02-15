@@ -22,7 +22,7 @@ let interpolate = (string, context) => {
   let begin = 0;
   let remainingStr = string;
   while (true) {
-    let offset = remainingStr.search(/\${/);
+    let offset = remainingStr.search(/\${/g);
     if (offset === -1) {
       break;
     }
