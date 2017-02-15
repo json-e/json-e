@@ -113,25 +113,25 @@ context: {a: 3, b: 2}
 source: '"a" + "b"'
 result: 'ab'
 ---
-title: 'string concatenation (2)'
+title: 'TypeError: string + number (1)'
 context: {a: 3, b: 2}
 source: '"a" + b'
-result: 'a2'
+error: true
 ---
-title: 'string concatenation (3)'
+title: 'TypeError: string + number (2)'
 context: {a: 3, b: 2}
 source: '"" + a + b'
-result: '32'
+error: true
 ---
-title: 'string concatenation (4)'
+title: 'TypeError: string + number (3)'
 context: {a: 3, b: 2}
 source: '"" + (a + b)'
-result: '5'
+error: true
 ---
-title: 'string concatenation (5)'
+title: 'TypeError: number + string (4)'
 context: {a: 3, b: 2}
-source: '"  " + (a + b)'
-result: '  5'
+source: '(a + b) + "abc"'
+error: true
 ---
 title: 'property access (1)'
 context: {key: 1}

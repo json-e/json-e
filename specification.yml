@@ -237,25 +237,10 @@ context:  {a: 3, b: 2}
 template: {$eval: 'a * b * 3'}
 result:   18
 ---
-title:    string concatenation (1)
+title:    string concatenation
 context:  {a: 3, b: 2}
 template: {$eval: '"a" + "b"'}
 result:   'ab'
----
-title:    string concatenation (2)
-context:  {a: 3, b: 2}
-template: {$eval: '"a" + b'}
-result:   'a2'
----
-title:    string concatenation (3)
-context:  {a: 3, b: 2}
-template: {$eval: '"" + a + b'}
-result:   '32'
----
-title:    string concatenation (4)
-context:  {a: 3, b: 2}
-template: {$eval: '"" + (a + b)'}
-result:   '5'
 ---
 title:    $eval must take string
 context:  {a: 3, b: 2}
