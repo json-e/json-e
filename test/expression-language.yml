@@ -268,6 +268,46 @@ context: {key: [1,2,3,4,5]}
 source: 'key["a":2]'
 error: true
 ---
+title: 'string access (1)'
+context: {key: '12345'}
+source: 'key[1]'
+result: '2'
+---
+title: 'string access (2)'
+context: {key: '12345'}
+source: 'key[-2]'
+result: '4'
+---
+title: 'string access (3)'
+context: {}
+source: '"12345"[1]'
+result: '2'
+---
+title: 'string access (4)'
+context: {}
+source: '"12345"[-2]'
+result: '4'
+---
+title: 'string slicing (1)'
+context: {key: '12345'}
+source: 'key[1:-1]'
+result: '234'
+---
+title: 'string slicing (2)'
+context: {key: '12345'}
+source: 'key[-2:]'
+result: '45'
+---
+title: 'string slicing type error (1)'
+context: {key: '12345'}
+source: 'key["a":]'
+error: true
+---
+title: 'string slicing type error (2)'
+context: {key: '12345'}
+source: 'key[:"a"]'
+error: true
+---
 title: 'function call (1)'
 context: {a: 3, b: 2}
 source: 'min(a, b)'

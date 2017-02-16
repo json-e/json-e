@@ -67,7 +67,7 @@ let parseInterval = (left, token, ctx) => {
 };
 
 let accessProperty = (left, a, b, isInterval) => {
-  if (isArray(left)) {
+  if (isArray(left) || isString(left)) {
     if (isInterval) {
       b = b === null ? left.length : b;
       if (!isNumber(a) || !isNumber(b)) {
