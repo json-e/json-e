@@ -53,7 +53,7 @@ class PrattParser {
     let ctx = new Context(this, source, context, offset);
     let result = ctx.parse();
     console.log(source, result);
-    let next = ctx.getNext();
+    let next = ctx.attempt();
     if (next.value !== terminator) {
       throw syntaxRuleError(next, terminator);
     }
@@ -78,21 +78,22 @@ class Context {
    */
   attempt(...kinds) {
     let token = this._next;
+    if (token instanceof Error) {
+      throw token;
+    }
+
     if (!token) {
       return null;
     }
     if (kinds.length > 0 && kinds.indexOf(token.kind) === -1) {
       return null;
     }
-    this._next = this._tokenizer.next(this._source, token.end);
+    try {
+      this._next = this._tokenizer.next(this._source, token.end);
+    } catch (err) {
+      this._next = err;
+    }
     return token;
-  }
-
-  /*
-  * returns next token object
-  */
-  getNext() {
-    return this._next;
   }
 
   /**
