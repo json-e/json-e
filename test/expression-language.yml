@@ -408,6 +408,11 @@ context: {key: 'aabc'}
 source: '"efg" in key'
 result: false
 ---
+title: 'in operator on string, failure (4)'
+context: {key: 'aabc'}
+source: '2 in key'
+result: false
+---
 title: 'in operator on array, success (1)'
 context: {}
 source: '"abc" in [1, "abc", "def"]'
@@ -447,6 +452,26 @@ title: 'in operator on object, failure (4)'
 context: {key: {a: 1, b: 2}}
 source: '"c" in key'
 result: false
+---
+title: 'in operator on object, failure (5)'
+context: {}
+source: '3 in {'3': 1, "b": 2}'
+result: false
+---
+title: 'in operator on object, failure (6)'
+context: {}
+source: '3.4 in {'3': 1, "b": 2}'
+result: false
+---
+title: 'in operator on array, error (1)'
+context: {key: {a: 1, b: 2}}
+source: '[] in key'
+error: true
+---
+title: 'in operator on array, error (2)'
+context: {key: {a: 1, b: 2}}
+source: '{} in key'
+error: true
 ---
 title: 'equality (1)'
 context: {a: 1, b: 1}
