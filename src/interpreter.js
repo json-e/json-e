@@ -35,6 +35,9 @@ let parseObject = (ctx) => {
       let k = ctx.require('identifier', 'string');
       ctx.require(':');
       let v = ctx.parse();
+      if (k.kind === 'string') {
+        k.value = parseString(k.value);
+      }
       obj[k.value] = v;
     } while (ctx.attempt(','));
     ctx.require('}');
@@ -273,6 +276,19 @@ infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
   }
 };
 
+infixRules['in'] = (left, token, ctx) => {
+  let right = ctx.parse('in');
+  if (isObject(right) && !isArray(right)) {
+    right = Object.keys(right);
+  }
+
+  if (!(isArray(right) || isString(right))) {
+    throw expectationError('Infix: in', 'array/string/object to perform lookup');
+  }
+
+  return right.indexOf(left) !== -1;
+};
+
 module.exports = new PrattParser({
   ignore: '\\s+', // ignore all whitespace including \n
   patterns: {
@@ -283,9 +299,10 @@ module.exports = new PrattParser({
   tokens: [
     ...'+-*/[].(){}:,'.split(''),
     '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
-    'true', 'false', 'number', 'identifier', 'string',
+    'true', 'false', 'in', 'number', 'identifier', 'string',
   ],
   precedence: [
+    ['in'],
     ['||'],
     ['&&'],
   	['==', '!='],
