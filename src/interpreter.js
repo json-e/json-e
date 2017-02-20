@@ -128,7 +128,7 @@ let testMathOperand = (operator, operand) => {
   if (operator === '+' && !(isNumber(operand) || isString(operand))) {
     throw expectationError('infix: +', 'number/string + number/string'); 
   } 
-  if (['-', '*', '/'].some(v => v === operator) && !isNumber(operand)) {
+  if (['-', '*', '/', '**'].some(v => v === operator) && !isNumber(operand)) {
     throw expectationError(`infix: ${operator}`, `number ${operator} number`);
   }
   return;
@@ -210,7 +210,7 @@ prefixRules['false'] = (token, ctx) => {
 };
 
 // infix rule definition starts here
-infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/']
+infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/'] = infixRules['**']
   = (left, token, ctx) => {
     testMathOperand(token.value, left);
     let right = ctx.parse(token.value);
@@ -219,10 +219,11 @@ infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/']
       throw new InterpreterError(`TypeError: ${typeof left} ${token.value} ${typeof right}`);
     }
     switch (token.value) {
-      case '+': return left + right;
-      case '-': return left - right;
-      case '*': return left * right;
-      case '/': return left / right;
+      case '+':  return left + right;
+      case '-':  return left - right;
+      case '*':  return left * right;
+      case '/':  return left / right;
+      case '**': return Math.pow(left, right);
       default: throw new Error(`unknown infix operator: '${operator}'`);
     }
   };
@@ -297,7 +298,7 @@ module.exports = new PrattParser({
     string:     '\'[^\']*\'|"[^"]*"',
   },
   tokens: [
-    ...'+-*/[].(){}:,'.split(''),
+    '**', ...'+-*/[].(){}:,'.split(''),
     '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
     'true', 'false', 'in', 'number', 'identifier', 'string',
   ],
@@ -309,6 +310,7 @@ module.exports = new PrattParser({
   	['>=', '<=', '<', '>'],
     ['+', '-'],
     ['*', '/'],
+    ['**'],
     ['[', '.'],
     ['('],
     ['unary'],

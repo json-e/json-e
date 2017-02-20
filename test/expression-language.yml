@@ -28,6 +28,26 @@ context: {a: 3.0, b: 2.0}
 source: 'b / a'
 result: 0.6666666666666666
 ---
+title: 'exponentiation (1)'
+context: {a: 2, b: 3}
+source: 'a ** b'
+result: 8
+---
+title: 'exponentiation (2)'
+context: {a: 2, b: 3}
+source: 'a ** b + 2'
+result: 10
+---
+title: 'exponentiation (3)'
+context: {a: 2, b: 3}
+source: 'a ** b * 2'
+result: 16
+---
+title: 'exponentiation (4)'
+context: {a: 2, b: 3}
+source: 'a * a ** b'
+result: 16
+---
 title: 'logical not (1)'
 context: {tt: true, ff: false}
 source: '!tt'
@@ -676,6 +696,16 @@ error: true
 title: 'Infix / type error'
 context: {}
 source: '3 / "hello"'
+error: true
+---
+title: 'Infix ** type error'
+context: {}
+source: '"hello" ** 3'
+error: true
+---
+title: 'Infix ** type error'
+context: {}
+source: '3 ** "hello"'
 error: true
 ---
 title: 'Infix < type error'
