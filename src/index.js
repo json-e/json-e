@@ -18,14 +18,20 @@ class TemplateError extends ExtendableError {
 let jsonTemplateError = (msg, template) => new TemplateError(msg + JSON.stringify(template, null, '\t'));
 
 let interpolate = (string, context) => {
-  return string.replace(/\${([^}]*)}/g, (text, expr) => {
-    let v = interpreter.parse(expr, context);
-    if (v instanceof Array || v instanceof Object) {
-      throw new TemplateError('Cannot interpolate objects/arrays: '
-        + text + ' <-- ' + expr);
+  let result = '';
+  let begin = 0;
+  let remaining = string;
+  let offset;
+  while ((offset = remaining.search(/\${/g)) !== -1) {
+    let v = interpreter.parseUntilTerminator(remaining.slice(offset), 2, '}', context);
+    if (isArray(v.result) || isObject(v.result)) {
+      throw new TemplateError('cannot interpolate array/object: ' + string);
     }
-    return v.toString();
-  });
+    result += remaining.slice(0, offset) + v.result.toString();
+    remaining = remaining.slice(offset + v.offset + 1);
+  }
+  result += remaining;
+  return result;
 };
 
 // Object used to indicate deleteMarker

@@ -48,6 +48,16 @@ class PrattParser {
     }
     return result;
   }
+
+  parseUntilTerminator(source, offset, terminator, context) {
+    let ctx = new Context(this, source, context, offset);
+    let result = ctx.parse();
+    let next = ctx.attempt();
+    if (next.kind !== terminator) {
+      throw syntaxRuleError(next, terminator);
+    }
+    return {result, offset: next.start};
+  }
 };
 
 class Context {
@@ -58,6 +68,7 @@ class Context {
     this._prefixRules = parser._prefixRules;
     this._infixRules = parser._infixRules;
     this._next = this._tokenizer.next(this._source, offset);
+    this._nextErr = null;
     this.context = context;
   }
 
@@ -66,6 +77,9 @@ class Context {
    * return null. If no kinds are given returns the next of any kind.
    */
   attempt(...kinds) {
+    if (this._nextErr) {
+      throw this._nextErr;
+    }
     let token = this._next;
     if (!token) {
       return null;
@@ -73,7 +87,11 @@ class Context {
     if (kinds.length > 0 && kinds.indexOf(token.kind) === -1) {
       return null;
     }
-    this._next = this._tokenizer.next(this._source, token.end);
+    try {
+      this._next = this._tokenizer.next(this._source, token.end);
+    } catch (err) {
+      this._nextErr = err;
+    }
     return token;
   }
 
