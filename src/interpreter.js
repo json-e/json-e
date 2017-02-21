@@ -213,7 +213,11 @@ prefixRules['false'] = (token, ctx) => {
 infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/'] = infixRules['**']
   = (left, token, ctx) => {
     testMathOperand(token.value, left);
-    let right = ctx.parse(token.value);
+    let operator = token.value;
+    if (operator === '**') {
+      operator = '**-right-associative';
+    }
+    let right = ctx.parse(operator);
     testMathOperand(token.value, right);
     if (typeof left !== typeof right) {
       throw new InterpreterError(`TypeError: ${typeof left} ${token.value} ${typeof right}`);
@@ -321,6 +325,7 @@ module.exports = new PrattParser({
   	['>=', '<=', '<', '>'],
     ['+', '-'],
     ['*', '/'],
+    ['**-right-associative'],
     ['**'],
     ['[', '.'],
     ['('],

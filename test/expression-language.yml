@@ -48,6 +48,26 @@ context: {a: 2, b: 3}
 source: 'a * a ** b'
 result: 16
 ---
+title: 'exponentiation, right associativity (1)'
+context: {a: 2, b: 3}
+source: 'a ** a ** b == a ** (a ** b)'
+result: true
+---
+title: 'exponentiation, right associativity (2)'
+context: {a: 2, b: 3}
+source: 'a ** a ** b'
+result: 256
+---
+title: 'exponentiation, right associativity (3)'
+context: {a: 2, b: 3}
+source: '2 ** 2 ** 3 == 2 ** (2 ** 3)'
+result: true
+---
+title: 'exponentiation, right associativity (4)'
+context: {a: 2, b: 3}
+source: '2 ** 2 ** 3'
+result: 256
+---
 title: 'logical not (1)'
 context: {tt: true, ff: false}
 source: '!tt'
