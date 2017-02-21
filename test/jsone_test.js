@@ -30,9 +30,9 @@ suite('json-e', () => {
   after(() => tk.reset());
 
   _.forEach(spec, (C, s) => suite(s, () => C.forEach(c => test(c.title, () => {
+    let result;
     try {
-      let result = jsone(c.template, _.defaults({}, c.context, builtinMethods));
-      assume(result).eql(c.result);
+      result = jsone(c.template, _.defaults({}, c.context, builtinMethods));
     } catch (err) {
       if (!c.error) {
         throw err;
@@ -40,5 +40,6 @@ suite('json-e', () => {
       return;
     }
     assert(!c.error, 'Expected an error');
+    assume(result).eql(c.result);
   }))));
 });

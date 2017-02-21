@@ -410,7 +410,7 @@ result: false
 ---
 title: 'in operator on string, failure (5)'
 context: {key: 'aabc'}
-source: '2 in key'
+source: '"2" in key'
 result: false
 ---
 title: 'in operator on array, success (1)'
@@ -418,19 +418,39 @@ context: {}
 source: '"abc" in [1, "abc", "def"]'
 result: true
 ---
-title: 'in operator on array, failure (2)'
+title: 'in operator on array, success (2)'
 context: {}
-source: '"efg" in [1, "abc", "def"]'
-result: false
+source: '1 in [1, "abc", "def"]'
+result: true
 ---
 title: 'in operator on array, success (3)'
 context: {key: [1, 'abc', 'def']}
 source: '"abc" in key'
 result: true
 ---
-title: 'in operator on array, failure (4)'
+title: 'in operator on array, success (3)'
+context: {key: [1, 'abc', 'def']}
+source: '1 in key'
+result: true
+---
+title: 'in operator on array, failure (1)'
+context: {}
+source: '"efg" in [1, "abc", "def"]'
+result: false
+---
+title: 'in operator on array, failure (2)'
+context: {}
+source: '2 in [1, "abc", "def"]'
+result: false
+---
+title: 'in operator on array, failure (2)'
 context: {key: [1, 'abc', 'def']}
 source: '"efg" in key'
+result: false
+---
+title: 'in operator on array, failure (4)'
+context: {key: [1, 'abc', 'def']}
+source: '2 in key'
 result: false
 ---
 title: 'in operator on object, success (1)'
@@ -438,38 +458,73 @@ context: {}
 source: '"a" in {"a": 1, b: 2}'
 result: true
 ---
-title: 'in operator on object, failure (2)'
-context: {}
-source: '3 in {a: 1, "b": 2}'
-result: false
----
-title: 'in operator on object, success (3)'
+title: 'in operator on object, success (2)'
 context: {key: {a: 1, b: 2}}
 source: '"a" in key'
 result: true
 ---
-title: 'in operator on object, failure (4)'
+title: 'in operator on object, success (3)'
+context: {}
+source: '"3.4" in {"3.4": 1, "b": 2}'
+result: true
+---
+title: 'in operator on object, failure (1)'
+context: {}
+source: '"c" in {a: 1, "b": 2}'
+result: false
+---
+title: 'in operator on object, failure (2)'
 context: {key: {a: 1, b: 2}}
 source: '"c" in key'
 result: false
 ---
-title: 'in operator on object, failure (5)'
+title: 'in operator on object, failure (3)'
 context: {}
-source: '3 in {"3": 1, "b": 2}'
+source: '"a" in {"3": 1, "b": 2}'
 result: false
 ---
-title: 'in operator on object, failure (6)'
+title: 'in operator on object, failure (4)'
 context: {}
-source: '3.4 in {"3": 1, "b": 2}'
+source: '"3.4" in {"3": 1, "b": 2}'
 result: false
 ---
-title: 'in operator on array, error (1)'
+title: 'TypeError: in operator on Object, error (1)'
 context: {key: {a: 1, b: 2}}
 source: '[] in key'
 error: true
 ---
-title: 'in operator on array, error (2)'
+title: 'TypeError: in operator on Object, error (2)'
 context: {key: {a: 1, b: 2}}
+source: '{} in key'
+error: true
+---
+title: 'TypeError: in operator on Object, error (3)'
+context: {key: {a: 1, b: 2}}
+source: '1 in key'
+error: true
+---
+title: 'TypeError: in operator on Array, error (1)'
+context: {key: [2,3,4]}
+source: '[] in key'
+error: true
+---
+title: 'TypeError: in operator on String, error (1)'
+context: {key: 'hello world!'}
+source: '[] in key'
+error: true
+---
+title: 'TypeError: in operator on String, error (2)'
+context: {key: 'hello world!'}
+source: '{} in key'
+error: true
+---
+title: 'TypeError: in operator on String, error (3)'
+context: {key: 'hello world!'}
+source: '1 in key'
+error: true
+---
+title: 'TypeError: in operator on Array, error (2)'
+context: {key: [2,3,4]}
 source: '{} in key'
 error: true
 ---

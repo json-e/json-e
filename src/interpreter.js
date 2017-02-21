@@ -280,11 +280,22 @@ infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
 infixRules['in'] = (left, token, ctx) => {
   let right = ctx.parse('in');
   if (isObject(right) && !isArray(right)) {
+    if (isNumber(left)) {
+      throw expectationError('Infix: in', 'String query on Object');
+    }
     right = Object.keys(right);
   }
 
   if (!(isArray(right) || isString(right))) {
     throw expectationError('Infix: in', 'array/string/object to perform lookup');
+  }
+
+  if (isArray(right) && !(isNumber(left) || isString(left))) {
+    throw expectationError('Infix: in', 'String/Number query on Array');
+  }
+
+  if (isString(right) && !isString(left)) {
+    throw expectationError('Infix: in', 'String query on String');
   }
 
   return right.indexOf(left) !== -1;
