@@ -33,11 +33,11 @@ let parseObject = (ctx) => {
   if (!ctx.attempt('}')) {
     do {
       let k = ctx.require('identifier', 'string');
-      ctx.require(':');
-      let v = ctx.parse();
       if (k.kind === 'string') {
         k.value = parseString(k.value);
       }
+      ctx.require(':');
+      let v = ctx.parse();
       obj[k.value] = v;
     } while (ctx.attempt(','));
     ctx.require('}');

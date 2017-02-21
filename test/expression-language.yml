@@ -408,7 +408,7 @@ context: {key: 'aabc'}
 source: '"efg" in key'
 result: false
 ---
-title: 'in operator on string, failure (4)'
+title: 'in operator on string, failure (5)'
 context: {key: 'aabc'}
 source: '2 in key'
 result: false
@@ -455,12 +455,12 @@ result: false
 ---
 title: 'in operator on object, failure (5)'
 context: {}
-source: '3 in {'3': 1, "b": 2}'
+source: '3 in {"3": 1, "b": 2}'
 result: false
 ---
 title: 'in operator on object, failure (6)'
 context: {}
-source: '3.4 in {'3': 1, "b": 2}'
+source: '3.4 in {"3": 1, "b": 2}'
 result: false
 ---
 title: 'in operator on array, error (1)'
@@ -640,15 +640,55 @@ result: {a: 1, b: 2}
 ---
 title: 'parse object (2)'
 context: {key: 1}
+source: '{"a": key, b: key + 1}'
+result: {a: 1, b: 2}
+---
+title: 'parse object (3)'
+context: {key: 1}
+source: '{"a": key, "b": key + 1}'
+result: {a: 1, b: 2}
+---
+title: 'parse object (4)'
+context: {key: 1}
 source: '{"a": key, b: [key,key+1,key+2]}'
 result: {a: 1, b: [1,2,3]}
 ---
-title: 'parse object (3)'
+title: 'parse object (5)'
+context: {key: 1}
+source: '{a: key, "b": [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (6)'
+context: {key: 1}
+source: '{"a": key, "b": [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (7)'
+context: {key: 1}
+source: '{a: key, b: [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (8)'
 context: {key: 1}
 source: '{a: key, b: min(key + 1, 1)}'
 result: {a: 1, b: 1}
 ---
-title: 'parse object (4)'
+title: 'parse object (9)'
+context: {key: 1}
+source: '{"a": key, b: min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (10)'
+context: {key: 1}
+source: '{a: key, "b": min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (11)'
+context: {key: 1}
+source: '{"a": key, "b": min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (12)'
 context: {key: 1}
 source: '{a: key, b: key + 1'
 error: true
