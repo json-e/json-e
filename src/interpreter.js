@@ -109,7 +109,7 @@ let parseString = (str) => {
   return str.replace('\"', '"').slice(1, -1);
 };
 
-let tetsComparisonOperands = (operator, left, right) => {
+let testComparisonOperands = (operator, left, right) => {
 
   if (operator === '==' || operator === '!=') {
     return null;
@@ -265,7 +265,7 @@ infixRules['>='] = infixRules['<'] =  infixRules['>']
   =  (left, token, ctx) => {
     let operator = token.kind;
     let right = ctx.parse(operator);
-    tetsComparisonOperands(operator, left, right);
+    testComparisonOperands(operator, left, right);
     switch (operator) {
       case '>=': return left >= right;
       case '<=': return left <= right;
