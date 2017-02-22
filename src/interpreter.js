@@ -210,19 +210,16 @@ prefixRules['false'] = (token, ctx) => {
 };
 
 // infix rule definition starts here
-infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/'] = infixRules['**']
+infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/']
   = (left, token, ctx) => {
-    testMathOperand(token.value, left);
-    let operator = token.value;
-    if (operator === '**') {
-      operator = '**-right-associative';
-    }
+    let operator = token.kind;
+    testMathOperand(operator, left);
     let right = ctx.parse(operator);
-    testMathOperand(token.value, right);
+    testMathOperand(operator, right);
     if (typeof left !== typeof right) {
-      throw new InterpreterError(`TypeError: ${typeof left} ${token.value} ${typeof right}`);
+      throw new InterpreterError(`TypeError: ${typeof left} ${operator} ${typeof right}`);
     }
-    switch (token.value) {
+    switch (operator) {
       case '+':  return left + right;
       case '-':  return left - right;
       case '*':  return left * right;
@@ -231,6 +228,17 @@ infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/'] = infixRul
       default: throw new Error(`unknown infix operator: '${operator}'`);
     }
   };
+
+infixRules['**'] = (left, token, ctx) => {
+  let operator = token.kind;
+  testMathOperand(operator, left);
+  let right = ctx.parse('**-right-associative');
+  testMathOperand(operator, right);
+  if (typeof left !== typeof right) {
+    throw new InterpreterError(`TypeError: ${typeof left} ${operator} ${typeof right}`);
+  }
+  return Math.pow(left, right);
+};
 
 infixRules['['] = (left, token, ctx) => parseInterval(left, token, ctx);
 
@@ -255,7 +263,7 @@ infixRules['('] =  (left, token, ctx) => {
 infixRules['=='] = infixRules['!='] = infixRules['<='] = 
 infixRules['>='] = infixRules['<'] =  infixRules['>'] 
   =  (left, token, ctx) => {
-    let operator = token.value;
+    let operator = token.kind;
     let right = ctx.parse(operator);
     tetsComparisonOperands(operator, left, right);
     switch (operator) {
@@ -270,7 +278,7 @@ infixRules['>='] = infixRules['<'] =  infixRules['>']
   };
 
 infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
-  let operator = token.value;
+  let operator = token.kind;
   let right = ctx.parse(operator);
   testLogicalOperand(operator, left);
   testLogicalOperand(operator, right);
@@ -282,7 +290,7 @@ infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
 };
 
 infixRules['in'] = (left, token, ctx) => {
-  let right = ctx.parse('in');
+  let right = ctx.parse(token.kind);
   if (isObject(right) && !isArray(right)) {
     if (isNumber(left)) {
       throw expectationError('Infix: in', 'String query on Object');
