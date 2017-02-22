@@ -6,6 +6,7 @@ import {
   isString, isNumber, isBool,
   isArray, isObject, isFunction,
 } from './type-utils';
+import builtins from './builtins';
 
 class TemplateError extends ExtendableError {
   constructor(message) {
@@ -176,6 +177,7 @@ let render = (template, context) => {
 
 module.exports = (template, context = {}) => {
   let test = Object.keys(context).every(v => /[a-zA-Z_][a-zA-Z0-9_]*/.exec(v)[0]);
+  Object.assign(context, builtins);
   assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   let result = render(template, context);
   if (result === deleteMarker) {
