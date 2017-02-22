@@ -124,11 +124,11 @@ let testComparisonOperands = (operator, left, right) => {
   return;
 };
 
-let testMathOperand = (operator, operand) => {
-  if (operator === '+' && !(isNumber(operand) || isString(operand))) {
+let testMathOperands = (operator, left, right) => {
+  if (operator === '+' && !(isNumber(left) && isNumber(right) || isString(left) && isString(right))) {
     throw expectationError('infix: +', 'number/string + number/string'); 
   } 
-  if (['-', '*', '/', '**'].some(v => v === operator) && !isNumber(operand)) {
+  if (['-', '*', '/', '**'].some(v => v === operator) && !(isNumber(left) && isNumber(right))) {
     throw expectationError(`infix: ${operator}`, `number ${operator} number`);
   }
   return;
@@ -213,12 +213,8 @@ prefixRules['false'] = (token, ctx) => {
 infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/']
   = (left, token, ctx) => {
     let operator = token.kind;
-    testMathOperand(operator, left);
     let right = ctx.parse(operator);
-    testMathOperand(operator, right);
-    if (typeof left !== typeof right) {
-      throw new InterpreterError(`TypeError: ${typeof left} ${operator} ${typeof right}`);
-    }
+    testMathOperands(operator, left, right);
     switch (operator) {
       case '+':  return left + right;
       case '-':  return left - right;
@@ -230,9 +226,8 @@ infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/']
 
 infixRules['**'] = (left, token, ctx) => {
   let operator = token.kind;
-  testMathOperand(operator, left);
   let right = ctx.parse('**-right-associative');
-  testMathOperand(operator, right);
+  testMathOperands(operator, left, right);
   if (typeof left !== typeof right) {
     throw new InterpreterError(`TypeError: ${typeof left} ${operator} ${typeof right}`);
   }
