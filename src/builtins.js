@@ -1,37 +1,22 @@
-import {
-  isString, isNumber, isBool,
-  isArray, isObject, isFunction,
-} from './type-utils';
+import type_utils from './type-utils';
 import BuiltinError from './error';
 
 let builtinError = (builtin, expectation) => new BuiltinError(`${builtin} expects ${expectation}`);
 
 let builtins = {};
 
-let define = (name, context, {argumentTypes = [], variadic = null, invoke}) => context[name] = (...args) => {
-  if (!variadic && args.length < argumentTypes.length) {
+let define = (name, context, {argumentTests = [], variadic = null, invoke}) => context[name] = (...args) => {
+  if (!variadic && args.length < argumentTests.length) {
     throw builtinError(`builtin: ${name}`, `${args.toString()}, arguments too less`);
   }
 
   if (variadic) {
-    argumentTypes = args.map(() => variadic);
+    argumentTests = args.map(() => variadic);
   }
 
-  let getArgumentTests = types => types.split('|').map(type => {
-    switch (type) {
-      case 'string':   return isString;
-      case 'number':   return isNumber;
-      case 'array':    return isArray;
-      case 'object':   return isObject;
-      case 'function': return isFunction;
-      case 'boolean':  return isBool;
-      default:         throw new Error(`${type} not supported for builtin arguments`);
-    }
-  });
-
   args.forEach((arg, i) => {
-    if (!getArgumentTests(argumentTypes[i]).some(test => test(arg))) {
-      throw builtinError(`builtin: ${name}`, `argument ${i + 1} to be ${argumentTypes[i]} found ${typeof arg}`);
+    if (!argumentTests[i].split('|').some(test => type_utils[test](arg))) {
+      throw builtinError(`builtin: ${name}`, `argument ${i + 1} to be ${argumentTests[i]} found ${typeof arg}`);
     }
   });
 
@@ -39,56 +24,43 @@ let define = (name, context, {argumentTypes = [], variadic = null, invoke}) => c
 };
 
 // attaching math functions
-let mathBuiltins = [
-  ['min', builtins, {
-    variadic: 'number',
-  }],
-  ['max', builtins, {
-    variadic: 'number',
-  }],
-  ['sqrt', builtins, {
-    argumentTypes: ['number'],
-  }],
-  ['ceil', builtins, {
-    argumentTypes: ['number'],
-  }],
-  ['floor', builtins, {
-    argumentTypes: ['number'],
-  }],
-  ['abs', builtins, {
-    argumentTypes: ['number'],
-  }],
-];
-
-mathBuiltins.forEach(props => {
-  if (Math[props[0]] == undefined) {
-    throw new Error(`${prop} in Math undefined`);
+['max', 'min'].forEach(name => {
+  if (Math[name] == undefined) {
+    throw new Error(`${name} in Math undefined`);
   }
+  define(name, builtins, {
+    variadic: 'isNumber',
+    invoke: (...args) => Math[name](...args),
+  });
+});
 
-  props[2] = Object.assign({}, {
-    invoke: (...args) => Math[props[0]](...args),
-  }, props[2]);
-
-  define.apply(null, props);
+['sqrt', 'ceil', 'floor', 'abs'].forEach(name => {
+  if (Math[name] == undefined) {
+    throw new Error(`${name} in Math undefined`);
+  }
+  define(name, builtins, {
+    argumentTests: ['isNumber'],
+    invoke: num => Math[name](num),
+  });
 });
 
 define('lowercase', builtins, {
-  argumentTypes: ['string'],
+  argumentTests: ['isString'],
   invoke: str => str.toLowerCase(),
 });
 
 define('uppercase', builtins, {
-  argumentTypes: ['string'],
+  argumentTests: ['isString'],
   invoke: str => str.toUpperCase(),
 });
 
 define('str', builtins, {
-  argumentTypes: ['string|number|boolean|array'],
+  argumentTests: ['isString|isNumber|isBool|isArray'],
   invoke: obj => obj.toString(),
 });
 
 define('len', builtins, {
-  argumentTypes: ['string|array'],
+  argumentTests: ['isString|isArray'],
   invoke: obj => obj.length,
 });
 
