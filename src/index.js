@@ -177,7 +177,7 @@ let render = (template, context) => {
 
 module.exports = (template, context = {}) => {
   let test = Object.keys(context).every(v => /[a-zA-Z_][a-zA-Z0-9_]*/.exec(v)[0]);
-  Object.assign(context, builtins);
+  context = Object.assign({}, builtins, context);
   assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   let result = render(template, context);
   if (result === deleteMarker) {

@@ -902,3 +902,73 @@ title: TypeError len (4)
 context: {}
 template: {$eval: 'len(1)'}
 error: true
+---
+title: str (1)
+context: {key: 1}
+template: {$eval: 'str(key)'}
+result: '1'
+---
+title: str (2)
+context: {}
+template: {$eval: 'str(1)'}
+result: '1'
+---
+title: str (3)
+context: {key: 'hello'}
+template: {$eval: 'str(key)'}
+result: 'hello'
+---
+title: str (4)
+context: {}
+template: {$eval: 'str("hello")'}
+result: 'hello'
+---
+title: str (3)
+context: {key: 'hello'}
+template: {$eval: 'str(key)'}
+result: 'hello'
+---
+title: str (4)
+context: {}
+template: {$eval: 'str("hello")'}
+result: 'hello'
+---
+title: str (5)
+context: {key: true}
+template: {$eval: 'str(key)'}
+result: 'true'
+---
+title: str (6)
+context: {}
+template: {$eval: 'str(true)'}
+result: 'true'
+---
+title: str (7)
+context: {key: false}
+template: {$eval: 'str(key)'}
+result: 'false'
+---
+title: str (8)
+context: {}
+template: {$eval: 'str(false)'}
+result: 'false'
+---
+title: str (9)
+context: {key: [1, 2, 3]}
+template: {$eval: 'str(key)'}
+result: '1,2,3'
+---
+title: str (10)
+context: {}
+template: {$eval: 'str([1, 2, 3])'}
+result: '1,2,3'
+---
+title: override builtin (1), uppercase
+context: {uppercase: 1}
+template: {$eval: 'uppercase + 1'}
+result: 2
+---
+title: override builtin (2), min
+context: {min: 'hello world!'}
+template: {$eval: 'min'}
+result: 'hello world!'
