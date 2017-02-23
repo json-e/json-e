@@ -1,20 +1,12 @@
 import interpreter from './interpreter';
 import fromNow from './from-now';
-import ExtendableError from 'es6-error';
 import assert from 'assert';
 import {
   isString, isNumber, isBool,
   isArray, isObject, isFunction,
 } from './type-utils';
 import builtins from './builtins';
-
-class TemplateError extends ExtendableError {
-  constructor(message) {
-    super(message);
-    this.message = message;
-    this.name = 'TemplateError';
-  }
-}
+import TemplateError from './error';
 
 let jsonTemplateError = (msg, template) => new TemplateError(msg + JSON.stringify(template, null, '\t'));
 
@@ -175,7 +167,7 @@ let render = (template, context) => {
   return result;
 };
 
-module.exports = (template, context = {}) => {
+export default (template, context = {}) => {
   let test = Object.keys(context).every(v => /[a-zA-Z_][a-zA-Z0-9_]*/.exec(v)[0]);
   context = Object.assign({}, builtins, context);
   assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');

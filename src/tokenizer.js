@@ -1,5 +1,5 @@
 import assert from 'assert';
-import SyntaxError from './syntaxerror';
+import SyntaxError from './error';
 
 let escapeRegex = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
@@ -91,4 +91,4 @@ class Tokenizer {
 }
 
 // Export Tokenizer
-module.exports = Tokenizer;
+export default Tokenizer;

@@ -3,9 +3,9 @@
 * Github: https://github.com/jonasfj
 */
 
-let Tokenizer = require('./tokenizer');
-let assert = require('assert');
-let SyntaxError = require('./syntaxerror');
+import Tokenizer from './tokenizer';
+import assert from 'assert';
+import SyntaxError from './error';
 
 let syntaxRuleError = (token, expects) => new SyntaxError(`Found '${token.value}' expected '${expects}'`, token);
 
@@ -128,4 +128,4 @@ class Context {
 }
 
 // Export PrattParser
-module.exports = PrattParser;
+export default PrattParser;

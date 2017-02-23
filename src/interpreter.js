@@ -2,18 +2,10 @@
 * Author: Jonas Finnemann Jensen
 * Github: https://github.com/jonasfj
 */
-let PrattParser = require('./prattparser');
-let ExtendableError = require('es6-error');
-let {isString, isNumber, isBool, 
-  isArray, isObject, isFunction} = require('./type-utils');
-
-class InterpreterError extends ExtendableError {
-  constructor(message) {
-    super(message);
-    this.message = message;
-    this.name = 'InterpreterError';
-  }
-}
+import PrattParser from './prattparser';
+import {isString, isNumber, isBool,
+  isArray, isObject, isFunction} from './type-utils';
+import InterpreterError from './error';
 
 let expectationError = (operator, expectation) => new InterpreterError(`'${operator}' expects '${expectation}'`);
 
@@ -273,7 +265,7 @@ infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
   }
 };
 
-module.exports = new PrattParser({
+export default new PrattParser({
   ignore: '\\s+', // ignore all whitespace including \n
   patterns: {
     number:     '[0-9]+(?:\\.[0-9]+)?',

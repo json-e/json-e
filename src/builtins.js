@@ -2,15 +2,7 @@ import {
   isString, isNumber, isBool,
   isArray, isObject, isFunction,
 } from './type-utils';
-import ExtendableError from 'es6-error';
-
-class BuiltinError extends ExtendableError {
-  constructor(message) {
-    super(message);
-    this.message = message;
-    this.name = 'BuiltinError';
-  }
-}
+import BuiltinError from './error';
 
 let builtinError = (builtin, expectation) => new BuiltinError(`${builtin} expects ${expectation}`);
 
