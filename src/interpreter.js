@@ -33,6 +33,9 @@ let parseObject = (ctx) => {
   if (!ctx.attempt('}')) {
     do {
       let k = ctx.require('identifier', 'string');
+      if (k.kind === 'string') {
+        k.value = parseString(k.value);
+      }
       ctx.require(':');
       let v = ctx.parse();
       obj[k.value] = v;
@@ -106,7 +109,7 @@ let parseString = (str) => {
   return str.replace('\"', '"').slice(1, -1);
 };
 
-let tetsComparisonOperands = (operator, left, right) => {
+let testComparisonOperands = (operator, left, right) => {
 
   if (operator === '==' || operator === '!=') {
     return null;
@@ -121,11 +124,11 @@ let tetsComparisonOperands = (operator, left, right) => {
   return;
 };
 
-let testMathOperand = (operator, operand) => {
-  if (operator === '+' && !(isNumber(operand) || isString(operand))) {
+let testMathOperands = (operator, left, right) => {
+  if (operator === '+' && !(isNumber(left) && isNumber(right) || isString(left) && isString(right))) {
     throw expectationError('infix: +', 'number/string + number/string'); 
   } 
-  if (['-', '*', '/'].some(v => v === operator) && !isNumber(operand)) {
+  if (['-', '*', '/', '**'].some(v => v === operator) && !(isNumber(left) && isNumber(right))) {
     throw expectationError(`infix: ${operator}`, `number ${operator} number`);
   }
   return;
@@ -209,20 +212,27 @@ prefixRules['false'] = (token, ctx) => {
 // infix rule definition starts here
 infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/']
   = (left, token, ctx) => {
-    testMathOperand(token.value, left);
-    let right = ctx.parse(token.value);
-    testMathOperand(token.value, right);
-    if (typeof left !== typeof right) {
-      throw new InterpreterError(`TypeError: ${typeof left} ${token.value} ${typeof right}`);
-    }
-    switch (token.value) {
-      case '+': return left + right;
-      case '-': return left - right;
-      case '*': return left * right;
-      case '/': return left / right;
+    let operator = token.kind;
+    let right = ctx.parse(operator);
+    testMathOperands(operator, left, right);
+    switch (operator) {
+      case '+':  return left + right;
+      case '-':  return left - right;
+      case '*':  return left * right;
+      case '/':  return left / right;
       default: throw new Error(`unknown infix operator: '${operator}'`);
     }
   };
+
+infixRules['**'] = (left, token, ctx) => {
+  let operator = token.kind;
+  let right = ctx.parse('**-right-associative');
+  testMathOperands(operator, left, right);
+  if (typeof left !== typeof right) {
+    throw new InterpreterError(`TypeError: ${typeof left} ${operator} ${typeof right}`);
+  }
+  return Math.pow(left, right);
+};
 
 infixRules['['] = (left, token, ctx) => parseInterval(left, token, ctx);
 
@@ -247,9 +257,9 @@ infixRules['('] =  (left, token, ctx) => {
 infixRules['=='] = infixRules['!='] = infixRules['<='] = 
 infixRules['>='] = infixRules['<'] =  infixRules['>'] 
   =  (left, token, ctx) => {
-    let operator = token.value;
+    let operator = token.kind;
     let right = ctx.parse(operator);
-    tetsComparisonOperands(operator, left, right);
+    testComparisonOperands(operator, left, right);
     switch (operator) {
       case '>=': return left >= right;
       case '<=': return left <= right;
@@ -262,7 +272,7 @@ infixRules['>='] = infixRules['<'] =  infixRules['>']
   };
 
 infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
-  let operator = token.value;
+  let operator = token.kind;
   let right = ctx.parse(operator);
   testLogicalOperand(operator, left);
   testLogicalOperand(operator, right);
@@ -273,6 +283,30 @@ infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
   }
 };
 
+infixRules['in'] = (left, token, ctx) => {
+  let right = ctx.parse(token.kind);
+  if (isObject(right) && !isArray(right)) {
+    if (isNumber(left)) {
+      throw expectationError('Infix: in', 'String query on Object');
+    }
+    right = Object.keys(right);
+  }
+
+  if (!(isArray(right) || isString(right))) {
+    throw expectationError('Infix: in', 'array/string/object to perform lookup');
+  }
+
+  if (isArray(right) && !(isNumber(left) || isString(left))) {
+    throw expectationError('Infix: in', 'String/Number query on Array');
+  }
+
+  if (isString(right) && !isString(left)) {
+    throw expectationError('Infix: in', 'String query on String');
+  }
+
+  return right.indexOf(left) !== -1;
+};
+
 module.exports = new PrattParser({
   ignore: '\\s+', // ignore all whitespace including \n
   patterns: {
@@ -281,17 +315,20 @@ module.exports = new PrattParser({
     string:     '\'[^\']*\'|"[^"]*"',
   },
   tokens: [
-    ...'+-*/[].(){}:,'.split(''),
+    '**', ...'+-*/[].(){}:,'.split(''),
     '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
-    'true', 'false', 'number', 'identifier', 'string',
+    'true', 'false', 'in', 'number', 'identifier', 'string',
   ],
   precedence: [
+    ['in'],
     ['||'],
     ['&&'],
   	['==', '!='],
   	['>=', '<=', '<', '>'],
     ['+', '-'],
     ['*', '/'],
+    ['**-right-associative'],
+    ['**'],
     ['[', '.'],
     ['('],
     ['unary'],
