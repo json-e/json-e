@@ -28,7 +28,7 @@ suite('json-e', () => {
   _.forEach(spec, (C, s) => suite(s, () => C.forEach(c => test(c.title, () => {
     let result;
     try {
-      result = jsone(c.template, _.defaults({}, c.context, builtinMethods));
+      result = jsone(c.template, c.context);
     } catch (err) {
       if (!c.error) {
         throw err;
