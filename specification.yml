@@ -520,3 +520,455 @@ context:  {}
 template: {$reverse: {$sort: [3, 4, 1, 2]}}
 result:   [4, 3, 2, 1]
 ################################################################################
+---
+section: builtins
+---
+title: min (1)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(key1, key2)'}
+result: 1
+---
+title: min (2)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(1, key2)'}
+result: 1
+---
+title: min (3)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(key1, 2)'}
+result: 1
+---
+title: min (4)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(1, 2)'}
+result: 1
+---
+title: min (5)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(2, 1)'}
+result: 1
+---
+title: min (6)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(2, 1, 3, 4, 5)'}
+result: 1
+---
+title: max (1)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(key1, key2)'}
+result: 2
+---
+title: max (2)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(1, key2)'}
+result: 2
+---
+title: max (3)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(key1, 2)'}
+result: 2
+---
+title: max (4)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(1, 2)'}
+result: 2
+---
+title: max (5)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(2, 1)'}
+result: 2
+---
+title: max (6)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(2, 1, 3, 4, 5)'}
+result: 5
+---
+title: sqrt (1)
+context: {key: 4}
+template: {$eval: 'sqrt(key)'}
+result: 2
+---
+title: sqrt (2)
+context: {key: 4}
+template: {$eval: 'sqrt(key)'}
+result: 2.0
+---
+title: sqrt (3)
+context: {}
+template: {$eval: 'sqrt(9)'}
+result: 3
+---
+title: sqrt (3)
+context: {}
+template: {$eval: 'sqrt(9)'}
+result: 3.0
+---
+title: ceil (1)
+context: {key: 1.1}
+template: {$eval: 'ceil(key)'}
+result: 2
+---
+title: ceil (2)
+context: {key: 1.1}
+template: {$eval: 'ceil(key)'}
+result: 2.0
+---
+title: ceil (3)
+context: {}
+template: {$eval: 'ceil(2.003)'}
+result: 3
+---
+title: ceil (4)
+context: {}
+template: {$eval: 'ceil(2.003)'}
+result: 3.0
+---
+title: ceil (5)
+context: {key: 1}
+template: {$eval: 'ceil(key)'}
+result: 1
+---
+title: ceil (6)
+context: {key: 1}
+template: {$eval: 'ceil(key)'}
+result: 1.0
+---
+title: ceil (7)
+context: {key: 1.0}
+template: {$eval: 'ceil(key)'}
+result: 1
+---
+title: ceil (8)
+context: {key: 1.0}
+template: {$eval: 'ceil(key)'}
+result: 1.0
+---
+title: floor (1)
+context: {key: 1.1}
+template: {$eval: 'floor(key)'}
+result: 1
+---
+title: floor (2)
+context: {key: 1.1}
+template: {$eval: 'floor(key)'}
+result: 1.0
+---
+title: floor (3)
+context: {}
+template: {$eval: 'floor(2.003)'}
+result: 2
+---
+title: floor (4)
+context: {}
+template: {$eval: 'floor(2.003)'}
+result: 2.0
+---
+title: floor (5)
+context: {key: 1}
+template: {$eval: 'floor(key)'}
+result: 1
+---
+title: floor (6)
+context: {key: 1}
+template: {$eval: 'floor(key)'}
+result: 1.0
+---
+title: floor (7)
+context: {key: 1.0}
+template: {$eval: 'floor(key)'}
+result: 1
+---
+title: floor (8)
+context: {key: 1.0}
+template: {$eval: 'floor(key)'}
+result: 1.0
+---
+title: abs (1)
+context: {key: -1.1}
+template: {$eval: 'abs(key)'}
+result: 1.1
+---
+title: abs (2)
+context: {}
+template: {$eval: 'abs(-1.1)'}
+result: 1.1
+---
+title: abs (3)
+context: {key: -1}
+template: {$eval: 'abs(key)'}
+result: 1
+---
+title: abs (4)
+context: {key: -1}
+template: {$eval: 'abs(key)'}
+result: 1.0
+---
+title: abs (5)
+context: {key: -1.0}
+template: {$eval: 'abs(key)'}
+result: 1
+---
+title: abs (6)
+context: {key: -1.0}
+template: {$eval: 'abs(key)'}
+result: 1.0
+---
+title: abs (7)
+context: {}
+template: {$eval: 'abs(-1)'}
+result: 1
+---
+title: abs (8)
+context: {}
+template: {$eval: 'abs(-1)'}
+result: 1.0
+---
+title: abs (9)
+context: {}
+template: {$eval: 'abs(-1.0)'}
+result: 1
+---
+title: abs (10)
+context: {}
+template: {$eval: 'abs(-1.0)'}
+result: 1.0
+---
+title: abs (11)
+context: {key: 1.1}
+template: {$eval: 'abs(key)'}
+result: 1.1
+---
+title: abs (12)
+context: {}
+template: {$eval: 'abs(1.1)'}
+result: 1.1
+---
+title: abs (13)
+context: {key: 1}
+template: {$eval: 'abs(key)'}
+result: 1
+---
+title: abs (14)
+context: {key: 1}
+template: {$eval: 'abs(key)'}
+result: 1.0
+---
+title: abs (15)
+context: {key: 1.0}
+template: {$eval: 'abs(key)'}
+result: 1
+---
+title: abs (16)
+context: {key: 1.0}
+template: {$eval: 'abs(key)'}
+result: 1.0
+---
+title: abs (17)
+context: {}
+template: {$eval: 'abs(1)'}
+result: 1
+---
+title: abs (18)
+context: {}
+template: {$eval: 'abs(1)'}
+result: 1.0
+---
+title: abs (19)
+context: {}
+template: {$eval: 'abs(1.0)'}
+result: 1
+---
+title: abs (20)
+context: {}
+template: {$eval: 'abs(1.0)'}
+result: 1.0
+---
+title: lowercase (1)
+context: {key: 'HEllo'}
+template: {$eval: 'lowercase(key)'}
+result: 'hello'
+---
+title: lowercase (2)
+context: {}
+template: {$eval: 'lowercase("HEllo")'}
+result: 'hello'
+---
+title: TypeError lowercase (1)
+context: {key: {}}
+template: {$eval: 'lowercase(key)'}
+error: true
+---
+title: TypeError lowercase (2)
+context: {}
+template: {$eval: 'lowercase({})'}
+error: true
+---
+title: TypeError lowercase (3)
+context: {key: []}
+template: {$eval: 'lowercase(key)'}
+error: true
+---
+title: TypeError lowercase (4)
+context: {}
+template: {$eval: 'lowercase([])'}
+error: true
+---
+title: TypeError lowercase (5)
+context: {key: 1}
+template: {$eval: 'lowercase(key)'}
+error: true
+---
+title: TypeError lowercase (6)
+context: {}
+template: {$eval: 'lowercase(1)'}
+error: true
+---
+title: uppercase (1)
+context: {key: 'HEllo'}
+template: {$eval: 'uppercase(key)'}
+result: 'HELLO'
+---
+title: uppercase (2)
+context: {}
+template: {$eval: 'uppercase("HEllo")'}
+result: 'HELLO'
+---
+title: TypeError uppercase (1)
+context: {key: {}}
+template: {$eval: 'uppercase(key)'}
+error: true
+---
+title: TypeError uppercase (2)
+context: {}
+template: {$eval: 'uppercase({})'}
+error: true
+---
+title: TypeError uppercase (3)
+context: {key: []}
+template: {$eval: 'uppercase(key)'}
+error: true
+---
+title: TypeError uppercase (4)
+context: {}
+template: {$eval: 'uppercase([])'}
+error: true
+---
+title: TypeError uppercase (5)
+context: {key: 1}
+template: {$eval: 'uppercase(key)'}
+error: true
+---
+title: TypeError uppercase (6)
+context: {}
+template: {$eval: 'uppercase(1)'}
+error: true
+---
+title: len (1)
+context: {key: [1,2,3]}
+template: {$eval: 'len(key)'}
+result: 3
+---
+title: len (2)
+context: {key: [1,2,3]}
+template: {$eval: 'len([1, 2, 3])'}
+result: 3
+---
+title: len (3)
+context: {key: 'abc'}
+template: {$eval: 'len(key)'}
+result: 3
+---
+title: len (4)
+context: {key: [1,2,3]}
+template: {$eval: 'len("abc")'}
+result: 3
+---
+title: TypeError len (1)
+context: {key: {}}
+template: {$eval: 'len(key)'}
+error: true
+---
+title: TypeError len (2)
+context: {}
+template: {$eval: 'len({})'}
+error: true
+---
+title: TypeError len (3)
+context: {key: 1}
+template: {$eval: 'len(key)'}
+error: true
+---
+title: TypeError len (4)
+context: {}
+template: {$eval: 'len(1)'}
+error: true
+---
+title: str (1)
+context: {key: 1}
+template: {$eval: 'str(key)'}
+result: '1'
+---
+title: str (2)
+context: {}
+template: {$eval: 'str(1)'}
+result: '1'
+---
+title: str (3)
+context: {key: 'hello'}
+template: {$eval: 'str(key)'}
+result: 'hello'
+---
+title: str (4)
+context: {}
+template: {$eval: 'str("hello")'}
+result: 'hello'
+---
+title: str (3)
+context: {key: 'hello'}
+template: {$eval: 'str(key)'}
+result: 'hello'
+---
+title: str (4)
+context: {}
+template: {$eval: 'str("hello")'}
+result: 'hello'
+---
+title: str (5)
+context: {key: true}
+template: {$eval: 'str(key)'}
+result: 'true'
+---
+title: str (6)
+context: {}
+template: {$eval: 'str(true)'}
+result: 'true'
+---
+title: str (7)
+context: {key: false}
+template: {$eval: 'str(key)'}
+result: 'false'
+---
+title: str (8)
+context: {}
+template: {$eval: 'str(false)'}
+result: 'false'
+---
+title: str (9)
+context: {key: [1, 2, 3]}
+template: {$eval: 'str(key)'}
+result: '1,2,3'
+---
+title: str (10)
+context: {}
+template: {$eval: 'str([1, 2, 3])'}
+result: '1,2,3'
+---
+title: override builtin (1), uppercase
+context: {uppercase: 1}
+template: {$eval: 'uppercase + 1'}
+result: 2
+---
+title: override builtin (2), min
+context: {min: 'hello world!'}
+template: {$eval: 'min'}
+result: 'hello world!'

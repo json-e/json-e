@@ -9,10 +9,6 @@ import jsone from '../lib/';
 
 const SPEC_FILE = path.join(__dirname, '../specification.yml');
 const TEST_DATE = new Date('2017-01-19T16:27:20.974Z');
-const builtinMethods = {
-  min: (a, b) => Math.min(a, b),
-  max: (a, b) => Math.max(a, b),
-};
 
 suite('json-e', () => {
   let spec = {};
@@ -32,7 +28,7 @@ suite('json-e', () => {
   _.forEach(spec, (C, s) => suite(s, () => C.forEach(c => test(c.title, () => {
     let result;
     try {
-      result = jsone(c.template, _.defaults({}, c.context, builtinMethods));
+      result = jsone(c.template, c.context);
     } catch (err) {
       if (!c.error) {
         throw err;
