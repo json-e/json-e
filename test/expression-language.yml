@@ -28,6 +28,71 @@ context: {a: 3.0, b: 2.0}
 source: 'b / a'
 result: 0.6666666666666666
 ---
+title: 'exponentiation (1)'
+context: {a: 2, b: 3}
+source: 'a ** b'
+result: 8
+---
+title: 'exponentiation (2)'
+context: {a: 2, b: 3}
+source: 'a ** b + 2'
+result: 10
+---
+title: 'exponentiation (3)'
+context: {a: 2, b: 3}
+source: 'a ** b * 2'
+result: 16
+---
+title: 'exponentiation (4)'
+context: {a: 2, b: 3}
+source: 'a * a ** b'
+result: 16
+---
+title: 'exponentiation, right associativity (1)'
+context: {a: 2, b: 3}
+source: 'a ** a ** b == a ** (a ** b)'
+result: true
+---
+title: 'exponentiation, right associativity (2)'
+context: {a: 2, b: 3}
+source: 'a ** a ** b'
+result: 256
+---
+title: 'exponentiation, right associativity (3)'
+context: {a: 2, b: 3}
+source: '2 ** 2 ** 3 == 2 ** (2 ** 3)'
+result: true
+---
+title: 'exponentiation, right associativity (4)'
+context: {a: 2, b: 3}
+source: '2 ** 2 ** 3'
+result: 256
+---
+title: 'TypeError: exponentiation (1)'
+context: {a: 'hello', b: 2}
+source: 'a ** b'
+error: true
+---
+title: 'TypeError: exponentiation (2)'
+context: {a: 'hello', b: 2}
+source: 'b ** a'
+error: true
+---
+title: 'TypeError: exponentiation (3)'
+context: {a: 'hello', b: 2}
+source: '"hello" ** b'
+error: true
+---
+title: 'TypeError: exponentiation (4)'
+context: {a: 'hello', b: 2}
+source: 'b ** "hello"'
+error: true
+---
+title: 'TypeError: exponentiation (5)'
+context: {a: 'hello', b: 2}
+source: '2 ** "hello"'
+error: true
+---
 title: 'logical not (1)'
 context: {tt: true, ff: false}
 source: '!tt'
@@ -368,6 +433,146 @@ context: {a: 3, b: 2}
 source: 'min(3, 2) + max(3, 2)'
 result: 5
 ---
+title: 'in operator on string, success (1)'
+context: {}
+source: '"abc" in "aabc"'
+result: true
+---
+title: 'in operator on string, failure (2)'
+context: {}
+source: '"efg" in "aabc"'
+result: false
+---
+title: 'in operator on string, success (3)'
+context: {key: 'aabc'}
+source: '"abc" in key'
+result: true
+---
+title: 'in operator on string, failure (4)'
+context: {key: 'aabc'}
+source: '"efg" in key'
+result: false
+---
+title: 'in operator on string, failure (5)'
+context: {key: 'aabc'}
+source: '"2" in key'
+result: false
+---
+title: 'in operator on array, success (1)'
+context: {}
+source: '"abc" in [1, "abc", "def"]'
+result: true
+---
+title: 'in operator on array, success (2)'
+context: {}
+source: '1 in [1, "abc", "def"]'
+result: true
+---
+title: 'in operator on array, success (3)'
+context: {key: [1, 'abc', 'def']}
+source: '"abc" in key'
+result: true
+---
+title: 'in operator on array, success (3)'
+context: {key: [1, 'abc', 'def']}
+source: '1 in key'
+result: true
+---
+title: 'in operator on array, failure (1)'
+context: {}
+source: '"efg" in [1, "abc", "def"]'
+result: false
+---
+title: 'in operator on array, failure (2)'
+context: {}
+source: '2 in [1, "abc", "def"]'
+result: false
+---
+title: 'in operator on array, failure (2)'
+context: {key: [1, 'abc', 'def']}
+source: '"efg" in key'
+result: false
+---
+title: 'in operator on array, failure (4)'
+context: {key: [1, 'abc', 'def']}
+source: '2 in key'
+result: false
+---
+title: 'in operator on object, success (1)'
+context: {}
+source: '"a" in {"a": 1, b: 2}'
+result: true
+---
+title: 'in operator on object, success (2)'
+context: {key: {a: 1, b: 2}}
+source: '"a" in key'
+result: true
+---
+title: 'in operator on object, success (3)'
+context: {}
+source: '"3.4" in {"3.4": 1, "b": 2}'
+result: true
+---
+title: 'in operator on object, failure (1)'
+context: {}
+source: '"c" in {a: 1, "b": 2}'
+result: false
+---
+title: 'in operator on object, failure (2)'
+context: {key: {a: 1, b: 2}}
+source: '"c" in key'
+result: false
+---
+title: 'in operator on object, failure (3)'
+context: {}
+source: '"a" in {"3": 1, "b": 2}'
+result: false
+---
+title: 'in operator on object, failure (4)'
+context: {}
+source: '"3.4" in {"3": 1, "b": 2}'
+result: false
+---
+title: 'TypeError: in operator on Object, error (1)'
+context: {key: {a: 1, b: 2}}
+source: '[] in key'
+error: true
+---
+title: 'TypeError: in operator on Object, error (2)'
+context: {key: {a: 1, b: 2}}
+source: '{} in key'
+error: true
+---
+title: 'TypeError: in operator on Object, error (3)'
+context: {key: {a: 1, b: 2}}
+source: '1 in key'
+error: true
+---
+title: 'TypeError: in operator on Array, error (1)'
+context: {key: [2,3,4]}
+source: '[] in key'
+error: true
+---
+title: 'TypeError: in operator on String, error (1)'
+context: {key: 'hello world!'}
+source: '[] in key'
+error: true
+---
+title: 'TypeError: in operator on String, error (2)'
+context: {key: 'hello world!'}
+source: '{} in key'
+error: true
+---
+title: 'TypeError: in operator on String, error (3)'
+context: {key: 'hello world!'}
+source: '1 in key'
+error: true
+---
+title: 'TypeError: in operator on Array, error (2)'
+context: {key: [2,3,4]}
+source: '{} in key'
+error: true
+---
 title: 'equality (1)'
 context: {a: 1, b: 1}
 source: '1 == 1'
@@ -530,20 +735,60 @@ error: true
 ---
 title: 'parse object (1)'
 context: {key: 1}
-source: '{a: key, b: key + 1}'
+source: '{a: key, "b": key + 1}'
 result: {a: 1, b: 2}
 ---
 title: 'parse object (2)'
 context: {key: 1}
+source: '{"a": key, b: key + 1}'
+result: {a: 1, b: 2}
+---
+title: 'parse object (3)'
+context: {key: 1}
+source: '{"a": key, "b": key + 1}'
+result: {a: 1, b: 2}
+---
+title: 'parse object (4)'
+context: {key: 1}
+source: '{"a": key, b: [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (5)'
+context: {key: 1}
+source: '{a: key, "b": [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (6)'
+context: {key: 1}
+source: '{"a": key, "b": [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (7)'
+context: {key: 1}
 source: '{a: key, b: [key,key+1,key+2]}'
 result: {a: 1, b: [1,2,3]}
 ---
-title: 'parse object (3)'
+title: 'parse object (8)'
 context: {key: 1}
 source: '{a: key, b: min(key + 1, 1)}'
 result: {a: 1, b: 1}
 ---
-title: 'parse object (4)'
+title: 'parse object (9)'
+context: {key: 1}
+source: '{"a": key, b: min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (10)'
+context: {key: 1}
+source: '{a: key, "b": min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (11)'
+context: {key: 1}
+source: '{"a": key, "b": min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (12)'
 context: {key: 1}
 source: '{a: key, b: key + 1'
 error: true
@@ -616,6 +861,16 @@ error: true
 title: 'Infix / type error'
 context: {}
 source: '3 / "hello"'
+error: true
+---
+title: 'Infix ** type error'
+context: {}
+source: '"hello" ** 3'
+error: true
+---
+title: 'Infix ** type error'
+context: {}
+source: '3 ** "hello"'
 error: true
 ---
 title: 'Infix < type error'

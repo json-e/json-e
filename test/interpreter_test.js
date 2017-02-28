@@ -16,9 +16,9 @@ const builtinMethods = {
 suite('intepreter', () => {
   let rawexpr = fs.readFileSync(EXPR_SPEC, {encoding: 'utf8'});
   yaml.loadAll(rawexpr, c => test(c.title, () => {
+    let result;
     try {
-      let result = interpreter.parse(c.source, _.defaults({}, c.context, builtinMethods));
-      assume(result).eql(c.result);
+      result = interpreter.parse(c.source, _.defaults({}, c.context, builtinMethods));
     } catch (err) {
       if (!c.error) {
         throw err;
@@ -26,5 +26,6 @@ suite('intepreter', () => {
       return;
     }
     assert(!c.error, 'Expected an error from: ' + c.source);
+    assume(result).eql(c.result);
   }));
 });
