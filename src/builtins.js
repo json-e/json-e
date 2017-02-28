@@ -1,5 +1,17 @@
-import type_utils from './type-utils';
 import BuiltinError from './error';
+import {
+  isString, isNumber, isBool,
+  isArray, isObject, isJSON,
+} from './type-utils';
+
+let types = {
+  string: isString,
+  number: isNumber,
+  boolean: isBool,
+  array: isArray,
+  object: isObject,
+  json: isJSON,
+};
 
 let builtinError = (builtin, expectation) => new BuiltinError(`${builtin} expects ${expectation}`);
 
@@ -15,7 +27,7 @@ let define = (name, context, {argumentTests = [], variadic = null, invoke}) => c
   }
 
   args.forEach((arg, i) => {
-    if (!argumentTests[i].split('|').some(test => type_utils[test](arg))) {
+    if (!argumentTests[i].split('|').some(test => types[test](arg))) {
       throw builtinError(`builtin: ${name}`, `argument ${i + 1} to be ${argumentTests[i]} found ${typeof arg}`);
     }
   });
@@ -29,7 +41,7 @@ let define = (name, context, {argumentTests = [], variadic = null, invoke}) => c
     throw new Error(`${name} in Math undefined`);
   }
   define(name, builtins, {
-    variadic: 'isNumber',
+    variadic: 'number',
     invoke: (...args) => Math[name](...args),
   });
 });
@@ -39,28 +51,28 @@ let define = (name, context, {argumentTests = [], variadic = null, invoke}) => c
     throw new Error(`${name} in Math undefined`);
   }
   define(name, builtins, {
-    argumentTests: ['isNumber'],
+    argumentTests: ['number'],
     invoke: num => Math[name](num),
   });
 });
 
 define('lowercase', builtins, {
-  argumentTests: ['isString'],
+  argumentTests: ['string'],
   invoke: str => str.toLowerCase(),
 });
 
 define('uppercase', builtins, {
-  argumentTests: ['isString'],
+  argumentTests: ['string'],
   invoke: str => str.toUpperCase(),
 });
 
 define('str', builtins, {
-  argumentTests: ['isString|isNumber|isBool|isArray'],
+  argumentTests: ['string|number|boolean|array'],
   invoke: obj => obj.toString(),
 });
 
 define('len', builtins, {
-  argumentTests: ['isString|isArray'],
+  argumentTests: ['string|array'],
   invoke: obj => obj.length,
 });
 
