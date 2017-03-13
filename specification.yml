@@ -50,6 +50,26 @@ context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k-${num}': true}
 result:   {message: 'hello world', 'k-1': true}
 ---
+title:    string interpolation with object evaluation
+context:  {key: 'world', num: 1}
+template: {message: 'hello ${{a: "world"}.a}', 'k-${{a: 1}.a + {a: 0}.a}': true}
+result:   {message: 'hello world', 'k-1': true}
+---
+title: multiple string interpolation (1)
+context:  {a: 'hello', b: 'world'}
+template: {message: '${a} ${b}'}
+result:   {message: 'hello world'}
+---
+title: multiple string interpolation (2)
+context:  {a: 'hello', b: 'world'}
+template: {message: '${a}$$${b}'}
+result:   {message: 'hello$$world'}
+---
+title: multiple string interpolation (3)
+context:  {a: 'hello', b: 'world'}
+template: {message: '${a}##${b}'}
+result:   {message: 'hello##world'}
+---
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}
@@ -59,6 +79,14 @@ title:    can't interpolate objects
 context:  {key: {}}
 template: 'hello ${key}'
 error:    true #TODO: Decide if it should be interpolated as JSON
+---
+title: invalid context (1)
+context: {{a:2}: 1}
+error: true
+---
+title: invalid context (2)
+context: {'a b c': 1}
+error: true
 ################################################################################
 ---
 section:  $if-constructs
@@ -139,8 +167,8 @@ template: {$if: 'cond', then: {key: {$eval: 'key'}}}
 result: {key: 'hello world'}
 ---
 title: $if->else, else => object, $eval, false
-context: {cond: 'false', key: 'hello world'}
-template: {$if: 'cond', then: {key: {$eval: 'key'}}}
+context: {cond: false, key: 'hello world'}
+template: {$if: 'cond', else: {key: {$eval: 'key'}}}
 result: {key: 'hello world'}
 ---
 title: $if->then, then => object, interpolation, true
@@ -186,14 +214,29 @@ context:  {}
 template: {$fromNow: '1 m'}
 result:   '2017-01-19T16:28:20.974Z'
 ---
+title:    fromNow 1m
+context:  {}
+template: {$fromNow: '1m'}
+result:   '2017-01-19T16:28:20.974Z'
+---
 title:    fromNow 12 min
 context:  {}
 template: {$fromNow: '12 min'}
 result:   '2017-01-19T16:39:20.974Z'
 ---
+title:    fromNow 12min
+context:  {}
+template: {$fromNow: '12min'}
+result:   '2017-01-19T16:39:20.974Z'
+---
 title:    fromNow 11m
 context:  {}
 template: {$fromNow: '11m'}
+result:   '2017-01-19T16:38:20.974Z'
+---
+title:    fromNow 11 m
+context:  {}
+template: {$fromNow: '11 m'}
 result:   '2017-01-19T16:38:20.974Z'
 ---
 title:    fromNow 1 day
@@ -214,25 +257,10 @@ context:  {a: 3, b: 2}
 template: {$eval: 'a * b * 3'}
 result:   18
 ---
-title:    string concatenation (1)
+title:    string concatenation
 context:  {a: 3, b: 2}
 template: {$eval: '"a" + "b"'}
 result:   'ab'
----
-title:    string concatenation (2)
-context:  {a: 3, b: 2}
-template: {$eval: '"a" + b'}
-result:   'a2'
----
-title:    string concatenation (3)
-context:  {a: 3, b: 2}
-template: {$eval: '"" + a + b'}
-result:   '32'
----
-title:    string concatenation (4)
-context:  {a: 3, b: 2}
-template: {$eval: '"" + (a + b)'}
-result:   '5'
 ---
 title:    $eval must take string
 context:  {a: 3, b: 2}
@@ -365,12 +393,12 @@ context:  {a: 1}
 template:
   $map: [2, 4, 6]
   each(x):
-    asText: 'Count ${x + a}'
+    asText: '${x + a}'
     integer: {$eval: 'x + a'}
 result:
- - {asText: '2', integer: 3}
- - {asText: '4', integer: 5}
- - {asText: '6', integer: 7}
+ - {asText: '3', integer: 3}
+ - {asText: '5', integer: 5}
+ - {asText: '7', integer: 7}
 ---
 title:    complex identifier
 context:  {a: 1}
@@ -407,7 +435,7 @@ result:
     v: 'before=2'
   - k: 4
     v: 'before=3'
- ---
+---
 title:    respects delete-marker from $if
 context:  {a: 1}
 template:
@@ -442,7 +470,7 @@ context:  {}
 template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
   by(x): 'x.a'
-result:   [{a: 1, b: [], {a: 2}, {a: 3}}]
+result:   [{a: 1, b: []}, {a: 2}, {a: 3}]
 ---
 title:    cannot sort objects without by
 context:  {}
@@ -492,3 +520,455 @@ context:  {}
 template: {$reverse: {$sort: [3, 4, 1, 2]}}
 result:   [4, 3, 2, 1]
 ################################################################################
+---
+section: builtins
+---
+title: min (1)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(key1, key2)'}
+result: 1
+---
+title: min (2)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(1, key2)'}
+result: 1
+---
+title: min (3)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(key1, 2)'}
+result: 1
+---
+title: min (4)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(1, 2)'}
+result: 1
+---
+title: min (5)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(2, 1)'}
+result: 1
+---
+title: min (6)
+context: {key1: 1, key2: 2}
+template: {$eval: 'min(2, 1, 3, 4, 5)'}
+result: 1
+---
+title: max (1)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(key1, key2)'}
+result: 2
+---
+title: max (2)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(1, key2)'}
+result: 2
+---
+title: max (3)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(key1, 2)'}
+result: 2
+---
+title: max (4)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(1, 2)'}
+result: 2
+---
+title: max (5)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(2, 1)'}
+result: 2
+---
+title: max (6)
+context: {key1: 1, key2: 2}
+template: {$eval: 'max(2, 1, 3, 4, 5)'}
+result: 5
+---
+title: sqrt (1)
+context: {key: 4}
+template: {$eval: 'sqrt(key)'}
+result: 2
+---
+title: sqrt (2)
+context: {key: 4}
+template: {$eval: 'sqrt(key)'}
+result: 2.0
+---
+title: sqrt (3)
+context: {}
+template: {$eval: 'sqrt(9)'}
+result: 3
+---
+title: sqrt (3)
+context: {}
+template: {$eval: 'sqrt(9)'}
+result: 3.0
+---
+title: ceil (1)
+context: {key: 1.1}
+template: {$eval: 'ceil(key)'}
+result: 2
+---
+title: ceil (2)
+context: {key: 1.1}
+template: {$eval: 'ceil(key)'}
+result: 2.0
+---
+title: ceil (3)
+context: {}
+template: {$eval: 'ceil(2.003)'}
+result: 3
+---
+title: ceil (4)
+context: {}
+template: {$eval: 'ceil(2.003)'}
+result: 3.0
+---
+title: ceil (5)
+context: {key: 1}
+template: {$eval: 'ceil(key)'}
+result: 1
+---
+title: ceil (6)
+context: {key: 1}
+template: {$eval: 'ceil(key)'}
+result: 1.0
+---
+title: ceil (7)
+context: {key: 1.0}
+template: {$eval: 'ceil(key)'}
+result: 1
+---
+title: ceil (8)
+context: {key: 1.0}
+template: {$eval: 'ceil(key)'}
+result: 1.0
+---
+title: floor (1)
+context: {key: 1.1}
+template: {$eval: 'floor(key)'}
+result: 1
+---
+title: floor (2)
+context: {key: 1.1}
+template: {$eval: 'floor(key)'}
+result: 1.0
+---
+title: floor (3)
+context: {}
+template: {$eval: 'floor(2.003)'}
+result: 2
+---
+title: floor (4)
+context: {}
+template: {$eval: 'floor(2.003)'}
+result: 2.0
+---
+title: floor (5)
+context: {key: 1}
+template: {$eval: 'floor(key)'}
+result: 1
+---
+title: floor (6)
+context: {key: 1}
+template: {$eval: 'floor(key)'}
+result: 1.0
+---
+title: floor (7)
+context: {key: 1.0}
+template: {$eval: 'floor(key)'}
+result: 1
+---
+title: floor (8)
+context: {key: 1.0}
+template: {$eval: 'floor(key)'}
+result: 1.0
+---
+title: abs (1)
+context: {key: -1.1}
+template: {$eval: 'abs(key)'}
+result: 1.1
+---
+title: abs (2)
+context: {}
+template: {$eval: 'abs(-1.1)'}
+result: 1.1
+---
+title: abs (3)
+context: {key: -1}
+template: {$eval: 'abs(key)'}
+result: 1
+---
+title: abs (4)
+context: {key: -1}
+template: {$eval: 'abs(key)'}
+result: 1.0
+---
+title: abs (5)
+context: {key: -1.0}
+template: {$eval: 'abs(key)'}
+result: 1
+---
+title: abs (6)
+context: {key: -1.0}
+template: {$eval: 'abs(key)'}
+result: 1.0
+---
+title: abs (7)
+context: {}
+template: {$eval: 'abs(-1)'}
+result: 1
+---
+title: abs (8)
+context: {}
+template: {$eval: 'abs(-1)'}
+result: 1.0
+---
+title: abs (9)
+context: {}
+template: {$eval: 'abs(-1.0)'}
+result: 1
+---
+title: abs (10)
+context: {}
+template: {$eval: 'abs(-1.0)'}
+result: 1.0
+---
+title: abs (11)
+context: {key: 1.1}
+template: {$eval: 'abs(key)'}
+result: 1.1
+---
+title: abs (12)
+context: {}
+template: {$eval: 'abs(1.1)'}
+result: 1.1
+---
+title: abs (13)
+context: {key: 1}
+template: {$eval: 'abs(key)'}
+result: 1
+---
+title: abs (14)
+context: {key: 1}
+template: {$eval: 'abs(key)'}
+result: 1.0
+---
+title: abs (15)
+context: {key: 1.0}
+template: {$eval: 'abs(key)'}
+result: 1
+---
+title: abs (16)
+context: {key: 1.0}
+template: {$eval: 'abs(key)'}
+result: 1.0
+---
+title: abs (17)
+context: {}
+template: {$eval: 'abs(1)'}
+result: 1
+---
+title: abs (18)
+context: {}
+template: {$eval: 'abs(1)'}
+result: 1.0
+---
+title: abs (19)
+context: {}
+template: {$eval: 'abs(1.0)'}
+result: 1
+---
+title: abs (20)
+context: {}
+template: {$eval: 'abs(1.0)'}
+result: 1.0
+---
+title: lowercase (1)
+context: {key: 'HEllo'}
+template: {$eval: 'lowercase(key)'}
+result: 'hello'
+---
+title: lowercase (2)
+context: {}
+template: {$eval: 'lowercase("HEllo")'}
+result: 'hello'
+---
+title: TypeError lowercase (1)
+context: {key: {}}
+template: {$eval: 'lowercase(key)'}
+error: true
+---
+title: TypeError lowercase (2)
+context: {}
+template: {$eval: 'lowercase({})'}
+error: true
+---
+title: TypeError lowercase (3)
+context: {key: []}
+template: {$eval: 'lowercase(key)'}
+error: true
+---
+title: TypeError lowercase (4)
+context: {}
+template: {$eval: 'lowercase([])'}
+error: true
+---
+title: TypeError lowercase (5)
+context: {key: 1}
+template: {$eval: 'lowercase(key)'}
+error: true
+---
+title: TypeError lowercase (6)
+context: {}
+template: {$eval: 'lowercase(1)'}
+error: true
+---
+title: uppercase (1)
+context: {key: 'HEllo'}
+template: {$eval: 'uppercase(key)'}
+result: 'HELLO'
+---
+title: uppercase (2)
+context: {}
+template: {$eval: 'uppercase("HEllo")'}
+result: 'HELLO'
+---
+title: TypeError uppercase (1)
+context: {key: {}}
+template: {$eval: 'uppercase(key)'}
+error: true
+---
+title: TypeError uppercase (2)
+context: {}
+template: {$eval: 'uppercase({})'}
+error: true
+---
+title: TypeError uppercase (3)
+context: {key: []}
+template: {$eval: 'uppercase(key)'}
+error: true
+---
+title: TypeError uppercase (4)
+context: {}
+template: {$eval: 'uppercase([])'}
+error: true
+---
+title: TypeError uppercase (5)
+context: {key: 1}
+template: {$eval: 'uppercase(key)'}
+error: true
+---
+title: TypeError uppercase (6)
+context: {}
+template: {$eval: 'uppercase(1)'}
+error: true
+---
+title: len (1)
+context: {key: [1,2,3]}
+template: {$eval: 'len(key)'}
+result: 3
+---
+title: len (2)
+context: {key: [1,2,3]}
+template: {$eval: 'len([1, 2, 3])'}
+result: 3
+---
+title: len (3)
+context: {key: 'abc'}
+template: {$eval: 'len(key)'}
+result: 3
+---
+title: len (4)
+context: {key: [1,2,3]}
+template: {$eval: 'len("abc")'}
+result: 3
+---
+title: TypeError len (1)
+context: {key: {}}
+template: {$eval: 'len(key)'}
+error: true
+---
+title: TypeError len (2)
+context: {}
+template: {$eval: 'len({})'}
+error: true
+---
+title: TypeError len (3)
+context: {key: 1}
+template: {$eval: 'len(key)'}
+error: true
+---
+title: TypeError len (4)
+context: {}
+template: {$eval: 'len(1)'}
+error: true
+---
+title: str (1)
+context: {key: 1}
+template: {$eval: 'str(key)'}
+result: '1'
+---
+title: str (2)
+context: {}
+template: {$eval: 'str(1)'}
+result: '1'
+---
+title: str (3)
+context: {key: 'hello'}
+template: {$eval: 'str(key)'}
+result: 'hello'
+---
+title: str (4)
+context: {}
+template: {$eval: 'str("hello")'}
+result: 'hello'
+---
+title: str (3)
+context: {key: 'hello'}
+template: {$eval: 'str(key)'}
+result: 'hello'
+---
+title: str (4)
+context: {}
+template: {$eval: 'str("hello")'}
+result: 'hello'
+---
+title: str (5)
+context: {key: true}
+template: {$eval: 'str(key)'}
+result: 'true'
+---
+title: str (6)
+context: {}
+template: {$eval: 'str(true)'}
+result: 'true'
+---
+title: str (7)
+context: {key: false}
+template: {$eval: 'str(key)'}
+result: 'false'
+---
+title: str (8)
+context: {}
+template: {$eval: 'str(false)'}
+result: 'false'
+---
+title: str (9)
+context: {key: [1, 2, 3]}
+template: {$eval: 'str(key)'}
+result: '1,2,3'
+---
+title: str (10)
+context: {}
+template: {$eval: 'str([1, 2, 3])'}
+result: '1,2,3'
+---
+title: override builtin (1), uppercase
+context: {uppercase: 1}
+template: {$eval: 'uppercase + 1'}
+result: 2
+---
+title: override builtin (2), min
+context: {min: 'hello world!'}
+template: {$eval: 'min'}
+result: 'hello world!'
