@@ -3,24 +3,23 @@
 * Github: https://github.com/jonasfj
 */
 
+import Tokenizer from './tokenizer';
+import assert from 'assert';
+import SyntaxError from './error';
 
-let Tokenizer = require('./tokenizer');
-let configs = require('./configs');
+let syntaxRuleError = (token, expects) => new SyntaxError(`Found '${token.value}' expected '${expects}'`, token);
 
 class PrattParser {
   constructor(options = {}) {
     let {ignore, patterns, tokens,
          precedence, prefixRules, infixRules} = Object.assign({}, {
-      ignore: null,
-      patterns: {},
-      tokens: [],
-      precedence: [],
-      prefixRules: {},
-      infixRules: {},
-    }, options);
-
-    // TODO: Validate options
-    // Ensure we have precedence for all the kinds used in infixRules
+           ignore: null,
+           patterns: {},
+           tokens: [],
+           precedence: [],
+           prefixRules: {},
+           infixRules: {},
+         }, options);
 
     this._tokenizer = new Tokenizer({ignore, patterns, tokens});
 
@@ -29,6 +28,13 @@ class PrattParser {
       this._precedenceMap[kind] = i + 1;
     }));
 
+    // Ensure we have precedence for all the kinds used in infixRules
+    for (let kind of Object.keys(infixRules)) {
+      if (infixRules.hasOwnProperty(kind)) {
+        assert(this._precedenceMap[kind], `token '${kind}' must have a precedence`);
+      }
+    }
+
     this._prefixRules = prefixRules;
     this._infixRules = infixRules;
   }
@@ -36,10 +42,21 @@ class PrattParser {
   parse(source, context = {}, offset = 0) {
     let ctx = new Context(this, source, context, offset);
     let result = ctx.parse();
-    if (ctx.try()) {
-      throw new Error('Expected end of input');
+    let next = ctx.attempt();
+    if (next) {
+      throw syntaxRuleError(next, Object.keys(this._infixRules).join(', '));
     }
     return result;
+  }
+
+  parseUntilTerminator(source, offset, terminator, context) {
+    let ctx = new Context(this, source, context, offset);
+    let result = ctx.parse();
+    let next = ctx.attempt();
+    if (next.kind !== terminator) {
+      throw syntaxRuleError(next, terminator);
+    }
+    return {result, offset: next.start};
   }
 };
 
@@ -51,6 +68,7 @@ class Context {
     this._prefixRules = parser._prefixRules;
     this._infixRules = parser._infixRules;
     this._next = this._tokenizer.next(this._source, offset);
+    this._nextErr = null;
     this.context = context;
   }
 
@@ -58,7 +76,10 @@ class Context {
    * Try to get the next token if it matches one of the kinds given, otherwise
    * return null. If no kinds are given returns the next of any kind.
    */
-  try(...kinds) {
+  attempt(...kinds) {
+    if (this._nextErr) {
+      throw this._nextErr;
+    }
     let token = this._next;
     if (!token) {
       return null;
@@ -66,7 +87,11 @@ class Context {
     if (kinds.length > 0 && kinds.indexOf(token.kind) === -1) {
       return null;
     }
-    this._next = this._tokenizer.next(this._source, token.end);
+    try {
+      this._next = this._tokenizer.next(this._source, token.end);
+    } catch (err) {
+      this._nextErr = err;
+    }
     return token;
   }
 
@@ -75,7 +100,7 @@ class Context {
    * kinds or end of input. If no kinds are given returns the next of any kind.
    */
   require(...kinds) {
-    let token = this.try();
+    let token = this.attempt();
     if (!token) {
       throw new Error('unexpected end of input');
     }
@@ -86,19 +111,16 @@ class Context {
   }
 
   parse(precedence = null) {
-    precedence = precedence == null ? 0 : this._precedenceMap[precedence];
+    precedence = precedence === null ? 0 : this._precedenceMap[precedence];
     let token = this.require();
     let prefixRule = this._prefixRules[token.kind];
     if (!prefixRule) {
-      throw new Error('...');
+      throw syntaxRuleError(token, Object.keys(this._prefixRules).join(', '));
     }
     let left = prefixRule(token, this);
-    while (this._next && precedence < this._precedenceMap[this._next.kind]) {
+    while (this._next && this._infixRules[this._next.kind] && precedence < this._precedenceMap[this._next.kind]) {
       let token = this.require();
       let infixRule = this._infixRules[token.kind];
-      if (!infixRule) {
-        throw new Error('...');
-      }
       left = infixRule(left, token, this);
     }
     return left;
@@ -106,4 +128,4 @@ class Context {
 }
 
 // Export PrattParser
-module.exports = new PrattParser(configs);
+export default PrattParser;

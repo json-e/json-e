@@ -1,184 +1,179 @@
-var parser = require('./parser/prattparser');
-var _ = require('lodash');
-var moment = require('moment');
+import interpreter from './interpreter';
+import fromNow from './from-now';
+import assert from 'assert';
+import {
+  isString, isNumber, isBool,
+  isArray, isObject, isFunction,
+} from './type-utils';
+import builtins from './builtins';
+import TemplateError from './error';
 
-var safeEval = (src, context) => parser.parse(src, context);
+let jsonTemplateError = (msg, template) => new TemplateError(msg + JSON.stringify(template, null, '\t'));
 
-module.exports = function(_template, _context) {
-
-  //var PARSEEXPR = /{{(\s*([\w\W]+)+\s*)}}/;
-  //var EXPR = /\${(\s*([\w\W]+)+\s*)}/;
-
-  var PARSEEXPR = /\${(\s*([\w\W]+)+\s*)}/;
-  var DATEEXPR = /([0-9]+ *d(ays?)?)? *([0-9]+ *h(ours?)?)? *([0-9]+ *m(in(utes?)?)?)?/;
-
-  var template = _.clone(_template);
-  var context = _.clone(_context);
-
-  /* private */
-  function _attachArrayAccessor(context) {
-    for (var key of Object.keys(context)) {
-      if (context.hasOwnProperty(key)) {
-        var value = context[key];
-        if (value instanceof Array) {
-          context['$' + key] = _generateArrayAccessorFunc(value);
-        } 
-        if (value instanceof Array || value instanceof Object) {
-          _attachArrayAccessor(value);
-        }
-      }
+let interpolate = (string, context) => {
+  let result = '';
+  let begin = 0;
+  let remaining = string;
+  let offset;
+  while ((offset = remaining.search(/\${/g)) !== -1) {
+    let v = interpreter.parseUntilTerminator(remaining.slice(offset), 2, '}', context);
+    if (isArray(v.result) || isObject(v.result)) {
+      throw new TemplateError('cannot interpolate array/object: ' + string);
     }
+    result += remaining.slice(0, offset) + v.result.toString();
+    remaining = remaining.slice(offset + v.offset + 1);
+  }
+  result += remaining;
+  return result;
+};
+
+// Object used to indicate deleteMarker
+let deleteMarker = {};
+
+let constructs = {};
+
+constructs.$eval = (template, context) => {
+  if (!isString(template['$eval'])) {
+    throw jsonTemplateError('$eval can evaluate string expressions only\n', template);
+  }
+  return interpreter.parse(template['$eval'], context);
+};
+
+constructs.$fromNow = (template, context) => {
+  if (!isString(template['$fromNow'])) {
+    throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
+  }
+  return fromNow(template['$fromNow']);
+};
+
+constructs.$if = (template, context) => {
+  if (!isString(template['$if'])) {
+    throw jsonTemplateError('$if can evaluate string expressions only\n', template);
+  }
+  if (interpreter.parse(template['$if'], context)) {
+    return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
+  }
+  return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
+};
+
+constructs.$switch = (template, context) => {
+  if (!isString(template['$switch'])) {
+    throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
+  }
+  let c = interpreter.parse(template['$switch'], context);
+  return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
+};
+
+constructs.$json = (template, context) => {
+  return JSON.stringify(render(template['$json'], context));
+};
+
+constructs.$reverse = (template, context) => {
+  let value = render(template['$reverse'], context);
+
+  if (!isArray(value) && !isArray(template['$reverse'])) {
+    throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
   }
 
-  /* private */
-  function _generateArrayAccessorFunc(context) {
-    return function(index) {
-      return context[index];
-    };
+  if (!isArray(value)) {
+    throw jsonTemplateError('$reverse requires array as value\n', template);
+  }
+  return value.reverse();
+};
+
+constructs.$map = (template, context) => {
+  let value = render(template['$map'], context);
+  if (!isArray(value)) {
+    throw jsonTemplateError('$map requires array as value\n', template);
   }
 
-  /* private */
-  function  _render(template) {
-    for (var key of Object.keys(template)) {
-      if (template.hasOwnProperty(key)) {
-        var value = template[key];
-        if (typeof value === 'string' || value instanceof String) {
-          template[key] = _replace(template[key]);
-        } else {
-          _handleConstructs(template, key);
-        }
-      }
-    }
+  if (Object.keys(template).length !== 2) {
+    throw jsonTemplateError('$map requires cannot have more than two properties\n', template);
   }
 
-  /* private */
-  function _handleConstructs(template, key) {
-    if (template[key].hasOwnProperty('$if')) {
-      _handleIf(template, key);
-    } else if (template[key].hasOwnProperty('$switch')) {
-      _handleSwitch(template, key);
-    } else if (template[key].hasOwnProperty('$eval')) {
-      _handleEval(template, key);
-    } else if (template[key].hasOwnProperty('$fromNow')) {
-      _handleFromNow(template, key);
-    } else {
-      _render(template[key]);
-    }
+  let eachKey = Object.keys(template).filter(k => k !== '$map')[0];
+  let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(eachKey);
+  if (!match) {
+    throw jsonTemplateError('$map requires each(identifier) syntax\n', template);
   }
 
-  function _handleIf(template, key) {
-    var condition = template[key]['$if'];
-    var hold = undefined;
-    if (typeof condition === 'string' || condition instanceof String) {
-      hold = safeEval(condition, context);
-    } else {
+  let x = match[1];
+  let each = template[eachKey];
 
-      var err = new Error('invalid construct');
-      err.message = '$if construct must be a string which eval can process';
-      throw err;
-    }
+  return value.map(v => render(each, Object.assign({}, context, {[x]: v})))
+              .filter(v => v !== deleteMarker);
 
-    if (hold) {
-      var hence = template[key]['$then'];
-      if (typeof hence === 'string' || hence instanceof String) {
-        template[key] = _replace(hence);
-      } else if (hence.hasOwnProperty('$eval')) {
-        var dummy = {dummy: template[key]['$then']};
-        _render(dummy);
-        template[key] = dummy['dummy']; 
-      } else {
-        _render(hence);
-        template[key] = hence;
-      }
-    } else {
-      var hence = template[key]['$else'];
-      if (typeof hence === 'string' || hence instanceof String) {
-        template[key] = _replace(hence);
-      } else if (hence.hasOwnProperty('$eval')) {
-        var dummy = {dummy: template[key]['$else']};
-        _render(dummy);
-        template[key] = dummy['dummy']; 
-      } else {
-        _render(hence);
-        template[key] = hence;
-      }
-    }
+};
+
+constructs.$sort = (template, context) => {
+  let value = render(template['$sort'], context);
+  if (!isArray(value)) {
+    throw jsonTemplateError('$sort requires array as value\n', template);
   }
 
-  function _handleSwitch(template, key) {
-    var condition = template[key]['$switch'];
-    var case_option;
-    if (typeof condition === 'string' || condition instanceof String) {
-      case_option = safeEval(condition, context);
-    } else {
-      var err = new Error('invalid construct');
-      err.message = '$switch construct must be a string which eval can process';
-      throw err;
+  let byKey = Object.keys(template).filter(k => k !== '$sort')[0];
+  let match = /^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(byKey);
+  if (!match) {
+    let needBy = value.some(v => isArray(v) || isObject(v));
+    if (needBy) {
+      throw jsonTemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays\n', template);
     }
-    var case_option_value = template[key][case_option];
-    if (typeof case_option_value === 'string' || case_option_value instanceof String) {
-      template[key] = _replace(case_option_value);
-    } else if (case_option_value.hasOwnProperty('$eval')) {
-      var dummy = {dummy: case_option_value};
-      _render(dummy);
-      template[key] = dummy['dummy']; 
-    } else {
-      _render(case_option_value);
-      template[key] = case_option_value;
-    }
+    return value.sort();
   }
 
-  function _handleEval(template, key) {
-    var expression = template[key]['$eval'];
-    if (typeof expression === 'string' || expression instanceof String) {
-      template[key] = safeEval(expression, context);
-    } else {
-      var err = new Error('invalid construct value');
-      err.message = '$eval construct must be a string which eval can process';
-      throw err;
+  let x = match[1];
+  let by = template[byKey];
+  let contextClone = Object.assign({}, context);
+
+  return value.sort((left, right) => {
+    contextClone[x] = left;
+    left = interpreter.parse(by, contextClone);
+    contextClone[x] = right;
+    right = interpreter.parse(by, contextClone);
+    if (left <= right) {
+      return false;
     }
+    return true;
+  });
+};
+
+let render = (template, context) => {
+  if (isNumber(template) || isBool(template)) {
+    return template;
+  }
+  if (isString(template)) {
+    return interpolate(template, context);
+  }
+  if (isArray(template)) {
+    return template.map((v) => render(v, context)).filter((v) => v !== deleteMarker);
   }
 
-  function _handleFromNow(template, key) {
-    var expression = template[key]['$fromNow'];
-    if (typeof expression === 'string' || expression instanceof String) {
-      template[key] = _dateToISOString(expression);
-    } else {
-      var err = new Error('invalid construct value');
-      err.message = '$fromNow value must be a string which eval can process';
-      throw err;
-    }
+  let matches = Object.keys(constructs).filter(c => template.hasOwnProperty(c));
+  if (matches.length > 1) {
+    throw jsonTemplateError('only one construct allowed\n', template);
+  }
+  if (matches.length === 1) {
+    return constructs[matches[0]](template, context);
   }
 
-  function _dateToISOString(expression) {
-    var match = undefined;
-    if (match = DATEEXPR.exec(expression)) {
-      var mom = new moment(new Date());
-      var days = match[1] === undefined ? 0 : parseInt(match[1].split(' ')[0], 10);
-      var hours = match[3] === undefined ? 0 : parseInt(match[3].split(' ')[0], 10);
-      var minutes = match[5] === undefined ? 0 : parseInt(match[5].split(' ')[0], 10);
-      mom.add(days, 'days');
-      mom.add(hours, 'hours');
-      mom.add(minutes, 'minutes');
-      return mom.toISOString();
+  // clone object
+  let result = {};
+  for (let key of Object.keys(template)) {
+    let value = render(template[key], context);
+    if (value !== deleteMarker) {
+      result[interpolate(key, context)] = value;
     }
-
-    var err = new Error('invalid construct value');
-    err.message = '$fromNow expression is incorrect';
-    throw err;
   }
+  return result;
+};
 
-  /* private */
-  function _replace(parameterizedString) {
-    var match = undefined;
-    if (match = PARSEEXPR.exec(parameterizedString)) {
-      var replacementValue = safeEval(match[1].trim(), context);
-      return parameterizedString.replace(PARSEEXPR, replacementValue);
-    }
-    return parameterizedString;
+export default (template, context = {}) => {
+  let test = Object.keys(context).every(v => /[a-zA-Z_][a-zA-Z0-9_]*/.exec(v)[0]);
+  context = Object.assign({}, builtins, context);
+  assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
+  let result = render(template, context);
+  if (result === deleteMarker) {
+    return undefined;
   }
-
-  _attachArrayAccessor(context);
-  _render(template);
-  return template;
+  return result;
 };

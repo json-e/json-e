@@ -1,9 +1,5 @@
-/*
-* Author: Jonas Finnemann Jensen
-* Github: https://github.com/jonasfj
-*/
-
-let assert = require('assert');
+import assert from 'assert';
+import SyntaxError from './error';
 
 let escapeRegex = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
@@ -17,7 +13,7 @@ let isRegEx = (re) => {
     return false;
   }
   return true;
-}
+};
 
 let isNonCaptureRegex = (re) => {
   return isRegEx(re) && (new RegExp(`^(?:|${re})$`)).exec('').length === 1;
@@ -31,7 +27,7 @@ let indexOfNotUndefined = (a, start = 0) => {
     }
   }
   return -1;
-}
+};
 
 class Tokenizer {
   constructor(options = {}) {
@@ -44,7 +40,7 @@ class Tokenizer {
     // Validate options
     assert(options.ignore === null || isNonCaptureRegex(options.ignore));
     assert(options.patterns instanceof Object);
-    for (let pattern in options.patterns) {
+    for (let pattern of Object.keys(options.patterns)) {
       assert(isNonCaptureRegex(options.patterns[pattern]));
     }
     assert(options.tokens instanceof Array);
@@ -67,11 +63,15 @@ class Tokenizer {
       m = this._regex.exec(source.slice(offset));
       if (m === null) {
         // If not at end of input throw an error
+        if (source.slice(offset) !== '') {
+          throw new SyntaxError(`unexpected EOF for '${source}' at '${source.slice(offset)}'`,
+            {start: offset, end: source.length});
+        }
         return null;
       }
       i = indexOfNotUndefined(m, 1);
       offset += m[0].length;
-    } while(this._hasIgnore && i === 1);
+    } while (this._hasIgnore && i === 1);
     return {
       kind:   this._tokens[i - 1 - this._hasIgnore],
       value:  m[i],
@@ -91,4 +91,4 @@ class Tokenizer {
 }
 
 // Export Tokenizer
-module.exports = Tokenizer;
+export default Tokenizer;

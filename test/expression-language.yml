@@ -1,0 +1,939 @@
+title: 'addition'
+context: {a: 1, b: 2}
+source: 'a + b + 7'
+result: 10
+---
+title: 'multiplication'
+context: {a: 3, b: 2}
+source: 'a * b * 3'
+result: 18
+---
+title: 'division (1)'
+context: {a: 3, b: 2}
+source: 'a / b'
+result: 1.5
+---
+title: 'division (2)'
+context: {a: 3.0, b: 2.0}
+source: 'a / b'
+result: 1.5
+---
+title: 'division (3)'
+context: {a: 3, b: 2}
+source: 'b / a'
+result: 0.6666666666666666
+---
+title: 'division (4)'
+context: {a: 3.0, b: 2.0}
+source: 'b / a'
+result: 0.6666666666666666
+---
+title: 'exponentiation (1)'
+context: {a: 2, b: 3}
+source: 'a ** b'
+result: 8
+---
+title: 'exponentiation (2)'
+context: {a: 2, b: 3}
+source: 'a ** b + 2'
+result: 10
+---
+title: 'exponentiation (3)'
+context: {a: 2, b: 3}
+source: 'a ** b * 2'
+result: 16
+---
+title: 'exponentiation (4)'
+context: {a: 2, b: 3}
+source: 'a * a ** b'
+result: 16
+---
+title: 'exponentiation, right associativity (1)'
+context: {a: 2, b: 3}
+source: 'a ** a ** b == a ** (a ** b)'
+result: true
+---
+title: 'exponentiation, right associativity (2)'
+context: {a: 2, b: 3}
+source: 'a ** a ** b'
+result: 256
+---
+title: 'exponentiation, right associativity (3)'
+context: {a: 2, b: 3}
+source: '2 ** 2 ** 3 == 2 ** (2 ** 3)'
+result: true
+---
+title: 'exponentiation, right associativity (4)'
+context: {a: 2, b: 3}
+source: '2 ** 2 ** 3'
+result: 256
+---
+title: 'TypeError: exponentiation (1)'
+context: {a: 'hello', b: 2}
+source: 'a ** b'
+error: true
+---
+title: 'TypeError: exponentiation (2)'
+context: {a: 'hello', b: 2}
+source: 'b ** a'
+error: true
+---
+title: 'TypeError: exponentiation (3)'
+context: {a: 'hello', b: 2}
+source: '"hello" ** b'
+error: true
+---
+title: 'TypeError: exponentiation (4)'
+context: {a: 'hello', b: 2}
+source: 'b ** "hello"'
+error: true
+---
+title: 'TypeError: exponentiation (5)'
+context: {a: 'hello', b: 2}
+source: '2 ** "hello"'
+error: true
+---
+title: 'logical not (1)'
+context: {tt: true, ff: false}
+source: '!tt'
+result: false
+---
+title: 'logical not (2)'
+context: {tt: true, ff: false}
+source: '!ff'
+result: true
+---
+title: 'or operator (1)'
+context: {tt: true, ff: false}
+source: 'tt || ff'
+result: true
+---
+title: 'or operator (2)'
+context: {tt: true, ff: false}
+source: 'tt || ff'
+result: true
+---
+title: 'or operator (3)'
+context: {tt: true, ff: false}
+source: 'ff || tt'
+result: true
+---
+title: 'or operator (4)'
+context: {tt: true, ff: false}
+source: 'ff || ff'
+result: false
+---
+title: 'and operator (1)'
+context: {tt: true, ff: false}
+source: 'tt && tt'
+result: true
+---
+title: 'and operator (2)'
+context: {tt: true, ff: false}
+source: 'tt && ff'
+result: false
+---
+title: 'and operator (3)'
+context: {tt: true, ff: false}
+source: 'ff && tt'
+result: false
+---
+title: 'and operator (4)'
+context: {tt: true, ff: false}
+source: 'ff && ff'
+result: false
+---
+title: 'and operator with not operator'
+context: {tt: true, ff: false}
+source: 'tt && !ff'
+result: true
+---
+title: 'or operator with not operator'
+context: {tt: true, ff: false}
+source: 'ff || !ff'
+result: true
+---
+title: 'complex logical operation (1)'
+context: {}
+source: "4 < 6 && 2 == 1 + 1"
+result: true
+---
+title: 'complex logical operation (2)'
+context: {}
+source: "!(4 < 6) && 2 == 1 + 1"
+result: false
+---
+title: 'complex logical operation (3)'
+context: {}
+source: "2 == 1 + 1 && 4 < 6"
+result: true
+---
+title: 'complex logical operation (4)'
+context: {}
+source: "4 >= 6 || 2 == 1 + 1"
+result: true
+---
+title: 'string concatenation (1)'
+context: {a: 3, b: 2}
+source: '"a" + "b"'
+result: 'ab'
+---
+title: 'TypeError: string + number (1)'
+context: {a: 3, b: 2}
+source: '"a" + b'
+error: true
+---
+title: 'TypeError: string + number (2)'
+context: {a: 3, b: 2}
+source: '"" + a + b'
+error: true
+---
+title: 'TypeError: string + number (3)'
+context: {a: 3, b: 2}
+source: '"" + (a + b)'
+error: true
+---
+title: 'TypeError: number + string (4)'
+context: {a: 3, b: 2}
+source: '(a + b) + "abc"'
+error: true
+---
+title: 'property access (1)'
+context: {key: 1}
+source: 'key'
+result: 1
+---
+title: 'property access (2)'
+context: {key: 'a'}
+source: 'key'
+result: 'a'
+---
+title: 'property access (3)'
+context: {key: true}
+source: 'key'
+result: true
+---
+title: 'property access (4)'
+context: {key: {a: 1}}
+source: 'key'
+result: {a: 1}
+---
+title: 'nested property access (1)'
+context: {key: {key2: {key3: {a: 1}}}}
+source: 'key.key2.key3'
+result: {a: 1}
+---
+title: 'nested property access (2)'
+context: {key: {key2: {key3: 1}}}
+source: 'key["key2"]["key3"]'
+result: 1
+---
+title: 'array access (1)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0]'
+result: 1
+---
+title: 'array access (2)'
+context: {key: [1,2,3,4,5]}
+source: 'key[2]'
+result: 3
+---
+title: 'array access (3)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0] + key[1] + key[2] + key[3] + key[4]'
+result: 15
+---
+title: 'array access (4)'
+context: {key: [1,2,3,4,5]}
+source: 'key["a"]'
+error: true
+---
+title: 'nested array access (1)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key.key2.key3[0]'
+result: 1
+---
+title: 'nested array access (2)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key["key2"]["key3"][0]'
+result: 1
+---
+title: 'nested array access (3)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key.key2.key3[2]'
+result: 3
+---
+title: 'nested array access (4)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key["key2"]["key3"][2]'
+result: 3
+---
+title: 'nested array access (5)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key.key2.key3[0] + key.key2.key3[1] + key.key2.key3[2] + key.key2.key3[3] + key.key2.key3[4]'
+result: 15
+---
+title: 'nested array access (6)'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+source: 'key["key2"]["key3"][0] + key["key2"]["key3"][1] + key["key2"]["key3"][2] + key["key2"]["key3"][3] + key["key2"]["key3"][4]'
+result: 15
+---
+title: 'array slicing (1)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0:5]'
+result: [1,2,3,4,5]
+---
+title: 'array slicing (2)'
+context: {key: [1,2,3,4,5]}
+source: 'key[0:3]'
+result: [1,2,3]
+---
+title: 'array slicing (3)'
+context: {key: [1,2,3,4,5]}
+source: 'key[-5:-1]'
+result: [1,2,3,4]
+---
+title: 'array slicing (4)'
+context: {key: [1,2,3,4,5]}
+source: 'key[key.length / 2: key.length]'
+result: [3,4,5]
+---
+title: 'array slicing (5)'
+context: {key: [1,2,3,4,5]}
+source: 'key[-4:]'
+result: [2,3,4,5]
+---
+title: 'array slicing (6)'
+context: {key: [1,2,3,4,5]}
+source: 'key[:-3]'
+result: [1,2]
+---
+title: 'array slicing type error (1)'
+context: {key: [1,2,3,4,5]}
+source: 'key["a":]'
+error: true
+---
+title: 'array slicing type error (2)'
+context: {key: [1,2,3,4,5]}
+source: 'key[:"a"]'
+error: true
+---
+title: 'array slicing type error (3)'
+context: {key: [1,2,3,4,5]}
+source: 'key["a":"b"]'
+error: true
+---
+title: 'array slicing type error (4)'
+context: {key: [1,2,3,4,5]}
+source: 'key[1:"a"]'
+error: true
+---
+title: 'array slicing type error (5)'
+context: {key: [1,2,3,4,5]}
+source: 'key["a":2]'
+error: true
+---
+title: 'string access (1)'
+context: {key: '12345'}
+source: 'key[1]'
+result: '2'
+---
+title: 'string access (2)'
+context: {key: '12345'}
+source: 'key[-2]'
+result: '4'
+---
+title: 'string access (3)'
+context: {}
+source: '"12345"[1]'
+result: '2'
+---
+title: 'string access (4)'
+context: {}
+source: '"12345"[-2]'
+result: '4'
+---
+title: 'string slicing (1)'
+context: {key: '12345'}
+source: 'key[1:-1]'
+result: '234'
+---
+title: 'string slicing (2)'
+context: {key: '12345'}
+source: 'key[-2:]'
+result: '45'
+---
+title: 'string slicing type error (1)'
+context: {key: '12345'}
+source: 'key["a":]'
+error: true
+---
+title: 'string slicing type error (2)'
+context: {key: '12345'}
+source: 'key[:"a"]'
+error: true
+---
+title: 'function call (1)'
+context: {a: 3, b: 2}
+source: 'min(a, b)'
+result: 2
+---
+title: 'function call (2)'
+context: {a: 3, b: 2}
+source: 'min(3, b)'
+result: 2
+---
+title: 'function call (3)'
+context: {a: 3, b: 2}
+source: 'min(a, 2)'
+result: 2
+---
+title: 'function call (4)'
+context: {a: 3, b: 2}
+source: 'min(3, 2)'
+result: 2
+---
+title: 'function call (5)'
+context: {a: 3, b: 2}
+source: 'max(a, b)'
+result: 3
+---
+title: 'function call (6)'
+context: {a: 3, b: 2}
+source: 'max(3, b)'
+result: 3
+---
+title: 'function call (7)'
+context: {a: 3, b: 2}
+source: 'max(a, 2)'
+result: 3
+---
+title: 'function call (8)'
+context: {a: 3, b: 2}
+source: 'max(3, 2)'
+result: 3
+---
+title: 'function call (9)'
+context: {a: 3, b: 2}
+source: 'min(a, b) + max(a, b)'
+result: 5
+---
+title: 'function call (10)'
+context: {a: 3, b: 2}
+source: 'min(3, b) + max(3, b)'
+result: 5
+---
+title: 'function call (11)'
+context: {a: 3, b: 2}
+source: 'min(a, 2) + max(a, 2)'
+result: 5
+---
+title: 'function call (12)'
+context: {a: 3, b: 2}
+source: 'min(3, 2) + max(3, 2)'
+result: 5
+---
+title: 'in operator on string, success (1)'
+context: {}
+source: '"abc" in "aabc"'
+result: true
+---
+title: 'in operator on string, failure (2)'
+context: {}
+source: '"efg" in "aabc"'
+result: false
+---
+title: 'in operator on string, success (3)'
+context: {key: 'aabc'}
+source: '"abc" in key'
+result: true
+---
+title: 'in operator on string, failure (4)'
+context: {key: 'aabc'}
+source: '"efg" in key'
+result: false
+---
+title: 'in operator on string, failure (5)'
+context: {key: 'aabc'}
+source: '"2" in key'
+result: false
+---
+title: 'in operator on array, success (1)'
+context: {}
+source: '"abc" in [1, "abc", "def"]'
+result: true
+---
+title: 'in operator on array, success (2)'
+context: {}
+source: '1 in [1, "abc", "def"]'
+result: true
+---
+title: 'in operator on array, success (3)'
+context: {key: [1, 'abc', 'def']}
+source: '"abc" in key'
+result: true
+---
+title: 'in operator on array, success (3)'
+context: {key: [1, 'abc', 'def']}
+source: '1 in key'
+result: true
+---
+title: 'in operator on array, failure (1)'
+context: {}
+source: '"efg" in [1, "abc", "def"]'
+result: false
+---
+title: 'in operator on array, failure (2)'
+context: {}
+source: '2 in [1, "abc", "def"]'
+result: false
+---
+title: 'in operator on array, failure (2)'
+context: {key: [1, 'abc', 'def']}
+source: '"efg" in key'
+result: false
+---
+title: 'in operator on array, failure (4)'
+context: {key: [1, 'abc', 'def']}
+source: '2 in key'
+result: false
+---
+title: 'in operator on object, success (1)'
+context: {}
+source: '"a" in {"a": 1, b: 2}'
+result: true
+---
+title: 'in operator on object, success (2)'
+context: {key: {a: 1, b: 2}}
+source: '"a" in key'
+result: true
+---
+title: 'in operator on object, success (3)'
+context: {}
+source: '"3.4" in {"3.4": 1, "b": 2}'
+result: true
+---
+title: 'in operator on object, failure (1)'
+context: {}
+source: '"c" in {a: 1, "b": 2}'
+result: false
+---
+title: 'in operator on object, failure (2)'
+context: {key: {a: 1, b: 2}}
+source: '"c" in key'
+result: false
+---
+title: 'in operator on object, failure (3)'
+context: {}
+source: '"a" in {"3": 1, "b": 2}'
+result: false
+---
+title: 'in operator on object, failure (4)'
+context: {}
+source: '"3.4" in {"3": 1, "b": 2}'
+result: false
+---
+title: 'TypeError: in operator on Object, error (1)'
+context: {key: {a: 1, b: 2}}
+source: '[] in key'
+error: true
+---
+title: 'TypeError: in operator on Object, error (2)'
+context: {key: {a: 1, b: 2}}
+source: '{} in key'
+error: true
+---
+title: 'TypeError: in operator on Object, error (3)'
+context: {key: {a: 1, b: 2}}
+source: '1 in key'
+error: true
+---
+title: 'TypeError: in operator on Array, error (1)'
+context: {key: [2,3,4]}
+source: '[] in key'
+error: true
+---
+title: 'TypeError: in operator on String, error (1)'
+context: {key: 'hello world!'}
+source: '[] in key'
+error: true
+---
+title: 'TypeError: in operator on String, error (2)'
+context: {key: 'hello world!'}
+source: '{} in key'
+error: true
+---
+title: 'TypeError: in operator on String, error (3)'
+context: {key: 'hello world!'}
+source: '1 in key'
+error: true
+---
+title: 'TypeError: in operator on Array, error (2)'
+context: {key: [2,3,4]}
+source: '{} in key'
+error: true
+---
+title: 'equality (1)'
+context: {a: 1, b: 1}
+source: '1 == 1'
+result: true
+---
+title: 'equality (2)'
+context: {a: 1, b: 1}
+source: '1 == 2'
+result: false
+---
+title: 'equality (3)'
+context: {a: 1, b: 1}
+source: 'a == b'
+result: true
+---
+title: 'equality (4)'
+context: {a: 1, b: 2}
+source: 'a == b'
+result: false
+---
+title: 'in-equality (1)'
+context: {a: 1, b: 1}
+source: '1 != 1'
+result: false
+---
+title: 'in-equality (2)'
+context: {a: 1, b: 1}
+source: '1 != 2'
+result: true
+---
+title: 'in-equality (3)'
+context: {a: 1, b: 1}
+source: 'a != b'
+result: false
+---
+title: 'in-equality (4)'
+context: {a: 1, b: 2}
+source: 'a != b'
+result: true
+---
+title: 'less than (1)'
+context: {a: 1, b: 2}
+source: '1 < 2'
+result: true
+---
+title: 'less than (2)'
+context: {a: 1, b: 2}
+source: '2 < 1'
+result: false
+---
+title: 'less than (3)'
+context: {a: 1, b: 2}
+source: '"a" < "b"'
+result: true
+---
+title: 'less than (4)'
+context: {a: 1, b: 2}
+source: '"b" < "a"'
+result: false
+---
+title: 'less than (5)'
+context: {a: 1, b: 2}
+source: 'a < b'
+result: true
+---
+title: 'less than (6)'
+context: {a: 1, b: 2}
+source: 'b < a'
+result: false
+---
+title: 'greater than (1)'
+context: {a: 1, b: 2}
+source: '2 > 1'
+result: true
+---
+title: 'greater than (2)'
+context: {a: 1, b: 2}
+source: '1 > 2'
+result: false
+---
+title: 'greater than (3)'
+context: {a: 1, b: 2}
+source: '"b" > "a"'
+result: true
+---
+title: 'greater than (4)'
+context: {a: 1, b: 2}
+source: '"a" > "b"'
+result: false
+---
+title: 'greater than (5)'
+context: {a: 1, b: 2}
+source: 'b > a'
+result: true
+---
+title: 'greater than (6)'
+context: {a: 1, b: 2}
+source: 'a > b'
+result: false
+---
+title: 'less than equal (1)'
+context: {a: 1, b: 2}
+source: "a <= b"
+result: true
+---
+title: 'less than equal (2)'
+context: {a: 1, b: 1}
+source: "a <= b"
+result: true
+---
+title: 'less than equal (3)'
+context: {a: 1, b: 2}
+source: "b <= a"
+result: false
+---
+title: 'less than equal (4)'
+context: {a: 1, b: 1}
+source: "b <= a"
+result: true
+---
+title: 'greater than equal (1)'
+context: {a: 1, b: 2}
+source: "b >= a"
+result: true
+---
+title: 'greater than equal (2)'
+context: {a: 1, b: 1}
+source: "a >= b"
+result: true
+---
+title: 'greater than equal (3)'
+context: {a: 1, b: 2}
+source: "a >= b"
+result: false
+---
+title: 'greater than equal (4)'
+context: {a: 1, b: 1}
+source: "a >= b"
+result: true
+---
+title: 'parse list (1)'
+context: {}
+source: '[1,2,3,4]'
+result: [1,2,3,4]
+---
+title: 'parse list (2)'
+context: {}
+source: '[1,2,3,4][0]'
+result: 1
+---
+title: 'parse list (3)'
+context: {}
+source: '[1,2,3,4][0:-1]'
+result: [1,2,3]
+---
+title: 'parse list (4)'
+context: {}
+source: '[1,2,3,4'
+error: true
+---
+title: 'parse object (1)'
+context: {key: 1}
+source: '{a: key, "b": key + 1}'
+result: {a: 1, b: 2}
+---
+title: 'parse object (2)'
+context: {key: 1}
+source: '{"a": key, b: key + 1}'
+result: {a: 1, b: 2}
+---
+title: 'parse object (3)'
+context: {key: 1}
+source: '{"a": key, "b": key + 1}'
+result: {a: 1, b: 2}
+---
+title: 'parse object (4)'
+context: {key: 1}
+source: '{"a": key, b: [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (5)'
+context: {key: 1}
+source: '{a: key, "b": [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (6)'
+context: {key: 1}
+source: '{"a": key, "b": [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (7)'
+context: {key: 1}
+source: '{a: key, b: [key,key+1,key+2]}'
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (8)'
+context: {key: 1}
+source: '{a: key, b: min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (9)'
+context: {key: 1}
+source: '{"a": key, b: min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (10)'
+context: {key: 1}
+source: '{a: key, "b": min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (11)'
+context: {key: 1}
+source: '{"a": key, "b": min(key + 1, 1)}'
+result: {a: 1, b: 1}
+---
+title: 'parse object (12)'
+context: {key: 1}
+source: '{a: key, b: key + 1'
+error: true
+---
+title: 'prefix - type error'
+context: {key: 'hello'}
+source: '-key'
+error: true
+---
+title: 'prefix + type error'
+context: {key: 'hello'}
+source: '+key'
+error: true
+---
+title: 'undefined variable'
+context: {key: 'hello'}
+source: 'key2'
+error: true
+---
+title: 'missing closing parenthesis'
+context: {key1: 1, key2: 1}
+source: 'key1 + (key2 + key1'
+error: true
+---
+title: 'missing opening parenthesis'
+context: {key1: 1, key2: 1}
+source: 'key1 + key2 + key1)'
+error: true
+---
+title: 'missing closing "'
+context: {}
+source: '"hello'
+error: true
+---
+title: 'missing opening "'
+context: {}
+source: 'hello"'
+error: true
+---
+title: 'Infix + type error'
+context: {}
+source: 'true + false'
+error: true
+---
+title: 'Infix - type error'
+context: {}
+source: '"hello" - 3'
+error: true
+---
+title: 'Infix * type error'
+context: {}
+source: '"hello" * 3'
+error: true
+---
+title: 'Infix / type error'
+context: {}
+source: '"hello" / 3'
+error: true
+---
+title: 'Infix - type error'
+context: {}
+source: '3 - "hello"'
+error: true
+---
+title: 'Infix * type error'
+context: {}
+source: '3 * "hello"'
+error: true
+---
+title: 'Infix / type error'
+context: {}
+source: '3 / "hello"'
+error: true
+---
+title: 'Infix ** type error'
+context: {}
+source: '"hello" ** 3'
+error: true
+---
+title: 'Infix ** type error'
+context: {}
+source: '3 ** "hello"'
+error: true
+---
+title: 'Infix < type error'
+context: {}
+source: '"hello" < 3'
+error: true
+---
+title: 'Infix > type error'
+context: {}
+source: '"hello" > 3'
+error: true
+---
+title: 'Infix <= type error'
+context: {}
+source: '"hello" <= 3'
+error: true
+---
+title: 'Infix >= type error'
+context: {}
+source: '"hello" >= 3'
+error: true
+---
+title: 'Infix < type error'
+context: {}
+source: '3 < "hello"'
+error: true
+---
+title: 'Infix > type error'
+context: {}
+source: '3 > "hello"'
+error: true
+---
+title: 'Infix <= type error'
+context: {}
+source: '3 <= "hello"'
+error: true
+---
+title: 'Infix >= type error'
+context: {}
+source: '3 >= "hello"'
+error: true
+---
+title: 'Prefix logical not type error'
+context: {key: 'hello'}
+source: '!key'
+error: true
+---
+title: 'Infix or type error (1)'
+context: {tt: true, key: 'hello'}
+source: 'tt || key'
+error: true
+---
+title: 'Infix or type error (2)'
+context: {tt: true, key: 'hello'}
+source: 'key || tt'
+error: true
+---
+title: 'Infix and type error (1)'
+context: {tt: true, key: 'hello'}
+source: 'tt && key'
+error: true
+---
+title: 'Infix and type error (2)'
+context: {tt: true, key: 'hello'}
+source: 'key && tt'
+error: true
