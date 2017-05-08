@@ -19,7 +19,7 @@ The JS module exposes following interface:
 ```javascript
 import jsone from 'json-e';
 
-var template = {a: "{{ foo.bar }}"};
+var template = {a: {$eval: "foo.bar"}};
 var context = {foo: {bar: "zoo"}};
 console.log(jsone(template, context));
 // -> { a: 'zoo' }
