@@ -104,8 +104,8 @@ unusual case to include a JSON string in a larger data structure.
 
 ```yaml
 context:  {a: 1, b: 2}
-template: {$json: [a, b, c, 1, 2, 3]}
-result:   '["a", "b", "c", 1, 2, 3]'
+template: {$json: [a, b, {$eval: 'a+b', 4]}
+result:   '["a", "b", 3, 4]'
 ```
 
 ### `$if` - `then` - `else`
@@ -118,6 +118,24 @@ omitted, then the expression is omitted from the parent object.
 context:  {cond: true}
 template: {key: {$if: 'cond', then: 1}, k2: 3}
 result:   {key: 1, k2: 3}
+```
+
+```yaml
+context:  {x: 10}
+template: {$if: 'x > 5', then: 1, else: -1}
+result:   1
+```
+
+```yaml
+context: {cond: false}
+template: [1, {$if: 'cond', else: 2}, 3]
+result: [1,2,3]
+```
+
+```yaml
+context: {cond: false}
+template: {key: {$if: 'cond', then: 2}, other: 3}
+result: {other: 3}
 ```
 
 ### `$fromNow`
