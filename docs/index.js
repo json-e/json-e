@@ -1,14 +1,8 @@
-"use strict";
-
-var _lib = require("../lib");
-
-var _lib2 = _interopRequireDefault(_lib);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+import jsone from "../lib";
 
 $(function() {
     //hang on event of form with id=myform
-    $("form").submit(function(e) {
+    $("button").click(function(e) {
         //prevent Default functionality
         e.preventDefault();
 
@@ -18,7 +12,7 @@ $(function() {
         eval("template" + "=" + template);
         eval("context" + "=" + context);
 
-        var output = (0, _lib2.default)(template, context);
+        var output = jsone(template, context);
 
         $("textarea").val(JSON.stringify(output));
 

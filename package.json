@@ -8,7 +8,7 @@
     "pretest": "npm run compile",
     "test": "npm run compile && mocha .test/*_test.js",
     "prepublish": "npm run compile && npm test",
-    "build-demo": "babel-compile -p taskcluster src:lib test:.test && browserify docs/index.js -o docs/bundle.js"
+    "build-demo": "babel-compile -p taskcluster src:lib test:.test && babel --presets taskcluster docs/index.js > docs/.built-index.js && browserify docs/.built-index.js -o docs/bundle.js"
   },
   "files": [
     "lib"

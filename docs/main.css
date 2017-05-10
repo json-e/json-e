@@ -10,13 +10,11 @@ h1 {
     text-align: center;
 }
 
-form {
+.form {
     text-align: center;
 }
 
 input, textarea {
-    display: block;
-    margin: 20px;
     text-align: center;
     margin: 30px auto;
 }
@@ -24,32 +22,10 @@ input, textarea {
 input[type=text] {
     width: 40%;
     height: 20%;
-    font-family: "Sans-serif";
-    font-size: 25px;
 }
 
-textarea {
+.form textarea#output {
     width: 40%;
     height: 20%;
     padding: 20px;
-    font-family: "Sans-serif";
-    font-size: 25px;
-}
-
-input[type=submit] {
-    width: 150px;
-    height: 60px;
-    background: #AAAAFF;
-    border: 1px solid black;
-    border-radius: 10px;
-    cursor: pointer;
-    outline: none;
-}
-
-input[type=submit]:hover {
-    background: #AAAAEE;
-}
-
-input[type=submit]:active {
-    background: #AAAABB;
 }
