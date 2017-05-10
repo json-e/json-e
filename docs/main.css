@@ -1,0 +1,31 @@
+body {
+    margin: 50px;
+    background: white;
+}
+
+h1 {
+    font-family: "Sans-serif";
+    font-size: 50px;
+    color: #444444;
+    text-align: center;
+}
+
+.form {
+    text-align: center;
+}
+
+input, textarea {
+    text-align: center;
+    margin: 30px auto;
+}
+
+input[type=text] {
+    width: 40%;
+    height: 20%;
+}
+
+.form textarea#output {
+    width: 40%;
+    height: 20%;
+    padding: 20px;
+}
