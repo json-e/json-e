@@ -104,7 +104,7 @@ unusual case to include a JSON string in a larger data structure.
 
 ```yaml
 context:  {a: 1, b: 2}
-template: {$json: [a, b, {$eval: 'a+b', 4]}
+template: {$json: [a, b, {$eval: 'a+b'}, 4]}
 result:   '["a", "b", 3, 4]'
 ```
 
@@ -212,7 +212,7 @@ supports the following:
 * Object property access: `obj.prop` or `obj["prop"]`
 * Array indexing and slicing
   * `array[1]` -- second element of array (zero-indexed)
-  * `array[1:3]` -- second and third elements of the array
+  * `array[1:4]` -- second through fourth elements of the array (the slice includes the left index and excludes the right index)
   * `array[1:]` -- second through last element of the array
   * `array[:3]` -- first through third element of the array
 * Containment operator:
