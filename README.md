@@ -210,11 +210,15 @@ supports the following:
 * Boolean operators (`||`, `&&`, `!`)
 * Identifiers referring to variables (matching `/[a-zA-Z_][a-zA-Z_0-9]*/`)
 * Object property access: `obj.prop` or `obj["prop"]`
-* Array indexing and slicing
+* Array and string indexing and slicing with Python semantics
   * `array[1]` -- second element of array (zero-indexed)
   * `array[1:4]` -- second through fourth elements of the array (the slice includes the left index and excludes the right index)
   * `array[1:]` -- second through last element of the array
   * `array[:3]` -- first through third element of the array
+  * `array[-2:]` -- the last two elements of the array
+  * `array[:-1]` -- all but the last element of the array
+  * `string[3]` -- fourth character of the string
+  * `string[-4:]` -- all but the last four characters of the string
 * Containment operator:
   * `"string" in object` -- true if the object has the given property
   * `"string" in array` -- true if the string is an array element
