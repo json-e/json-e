@@ -202,6 +202,7 @@ supports the following:
 * Numeric literals (decimal only)
 * String literals (enclosed in `'` or `"`, with no escaping)
 * Arrays in JSON format (`[.., ..]`)
+* Objects in JS format: `{"foo": 10}` or `{foo: 10}`
 * Parentheses for grouping (`(a + b) * c`)
 * Arithmetic on integers (`+`, `-`, `*`, `/`, `**` for exponentiation), with unary `-` and `+`
 * String concatenation (`+`)
