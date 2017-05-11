@@ -60,7 +60,7 @@ tasks:
           cd repo &&
           git config advice.detachedHead false &&
           git checkout {{event.head.sha}} &&
-          export DEBUG=* DOCS_PROJECT=json-e DOCS_TIER=libraries DOCS_FOLDER=docs DOCS_README=README.md &&
+          export DEBUG=* DOCS_PROJECT=json-e DOCS_TIER=libraries DOCS_FOLDER=tc-docs DOCS_README=README.md &&
           upload-project-docs
     metadata:
       name: "json-e docs upload"
