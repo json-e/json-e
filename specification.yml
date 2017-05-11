@@ -245,104 +245,6 @@ template: {$fromNow: '1 day'}
 result:   '2017-01-20T16:27:20.974Z'
 ################################################################################
 ---
-section:  expression language
----
-title:    addition
-context:  {a: 1, b: 2}
-template: {$eval: 'a + b + 7'}
-result:   10
----
-title:    multiplication
-context:  {a: 3, b: 2}
-template: {$eval: 'a * b * 3'}
-result:   18
----
-title:    string concatenation
-context:  {a: 3, b: 2}
-template: {$eval: '"a" + "b"'}
-result:   'ab'
----
-title:    $eval must take string
-context:  {a: 3, b: 2}
-template: {$eval: ['a', 'b']}
-error:    true
----
-title: array access [index]
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[0]'}
-result: 1
----
-title: array access [index]
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[2]'}
-result: 3
----
-title: array access [-index]
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[-1]'}
-result: 4
----
-title: array access [-index]
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[-2]'}
-result: 3
----
-title: array slicing [begin:end], [begin, end)
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[0:2]'}
-result: [1,2]
----
-title: array slicing [begin:], [begin, end)
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[0:]'}
-result: [1,2,3,4]
----
-title: array slicing [begin:], [begin, end)
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[1:]'}
-result: [2,3,4]
----
-title: array slicing [-begin:], [begin, end)
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[-3:]'}
-result: [2,3,4]
----
-title: array slicing [-begin:-end], [begin, end)
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[-3:-1]'}
-result: [2,3]
----
-title: array slicing [:end], [begin, end)
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[:3]'}
-result: [1,2,3]
----
-title: array slicing [:-end], [begin, end)
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[:-2]'}
-result: [1,2]
----
-title: function min(contextValue, contextValue)
-context: {a: 1, b: 2}
-template: {$eval: 'min(a, b)'}
-result: 1
----
-title: function max(contextValue, contextValue)
-context: {a: 1, b: 2}
-template: {$eval: 'max(a, b)'}
-result: 2
----
-title: function min(contextValue, value)
-context: {a: 1, b: 2}
-template: {$eval: 'min(a, -1)'}
-result: -1
----
-title: function max(contextValue, value)
-context: {a: 1, b: 2}
-template: {$eval: 'max(a, 3)'}
-result: 3
-################################################################################
----
 section:  $json
 ---
 title:    wrap expressions with $eval
@@ -972,3 +874,1074 @@ title: override builtin (2), min
 context: {min: 'hello world!'}
 template: {$eval: 'min'}
 result: 'hello world!'
+################################################################################
+---
+section:  expression language - basics
+---
+title:    addition
+context:  {a: 1, b: 2}
+template: {$eval: 'a + b + 7'}
+result:   10
+---
+title:    multiplication
+context:  {a: 3, b: 2}
+template: {$eval: 'a * b * 3'}
+result:   18
+---
+title:    string concatenation
+context:  {a: 3, b: 2}
+template: {$eval: '"a" + "b"'}
+result:   'ab'
+---
+title:    $eval must take string
+context:  {a: 3, b: 2}
+template: {$eval: ['a', 'b']}
+error:    true
+---
+title: array access [index]
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[0]'}
+result: 1
+---
+title: array access [index]
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[2]'}
+result: 3
+---
+title: array access [-index]
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[-1]'}
+result: 4
+---
+title: array access [-index]
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[-2]'}
+result: 3
+---
+title: array slicing [begin:end], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[0:2]'}
+result: [1,2]
+---
+title: array slicing [begin:], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[0:]'}
+result: [1,2,3,4]
+---
+title: array slicing [begin:], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[1:]'}
+result: [2,3,4]
+---
+title: array slicing [-begin:], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[-3:]'}
+result: [2,3,4]
+---
+title: array slicing [-begin:-end], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[-3:-1]'}
+result: [2,3]
+---
+title: array slicing [:end], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[:3]'}
+result: [1,2,3]
+---
+title: array slicing [:-end], [begin, end)
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[:-2]'}
+result: [1,2]
+---
+title: function min(contextValue, contextValue)
+context: {a: 1, b: 2}
+template: {$eval: 'min(a, b)'}
+result: 1
+---
+title: function max(contextValue, contextValue)
+context: {a: 1, b: 2}
+template: {$eval: 'max(a, b)'}
+result: 2
+---
+title: function min(contextValue, value)
+context: {a: 1, b: 2}
+template: {$eval: 'min(a, -1)'}
+result: -1
+---
+title: function max(contextValue, value)
+context: {a: 1, b: 2}
+template: {$eval: 'max(a, 3)'}
+result: 3
+################################################################################
+---
+section: expression language - arithemtic
+---
+title: 'addition'
+context: {a: 1, b: 2}
+template: {$eval: 'a + b + 7'}
+result: 10
+---
+title: 'multiplication'
+context: {a: 3, b: 2}
+template: {$eval: 'a * b * 3'}
+result: 18
+---
+title: 'division (1)'
+context: {a: 3, b: 2}
+template: {$eval: 'a / b'}
+result: 1.5
+---
+title: 'division (2)'
+context: {a: 3.0, b: 2.0}
+template: {$eval: 'a / b'}
+result: 1.5
+---
+title: 'division (3)'
+context: {a: 3, b: 2}
+template: {$eval: 'b / a'}
+result: 0.6666666666666666
+---
+title: 'division (4)'
+context: {a: 3.0, b: 2.0}
+template: {$eval: 'b / a'}
+result: 0.6666666666666666
+---
+title: 'exponentiation (1)'
+context: {a: 2, b: 3}
+template: {$eval: 'a ** b'}
+result: 8
+---
+title: 'exponentiation (2)'
+context: {a: 2, b: 3}
+template: {$eval: 'a ** b + 2'}
+result: 10
+---
+title: 'exponentiation (3)'
+context: {a: 2, b: 3}
+template: {$eval: 'a ** b * 2'}
+result: 16
+---
+title: 'exponentiation (4)'
+context: {a: 2, b: 3}
+template: {$eval: 'a * a ** b'}
+result: 16
+---
+title: 'exponentiation, right associativity (1)'
+context: {a: 2, b: 3}
+template: {$eval: 'a ** a ** b == a ** (a ** b)'}
+result: true
+---
+title: 'exponentiation, right associativity (2)'
+context: {a: 2, b: 3}
+template: {$eval: 'a ** a ** b'}
+result: 256
+---
+title: 'exponentiation, right associativity (3)'
+context: {a: 2, b: 3}
+template: {$eval: '2 ** 2 ** 3 == 2 ** (2 ** 3)'}
+result: true
+---
+title: 'exponentiation, right associativity (4)'
+context: {a: 2, b: 3}
+template: {$eval: '2 ** 2 ** 3'}
+result: 256
+---
+title: 'TypeError: exponentiation (1)'
+context: {a: 'hello', b: 2}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'TypeError: exponentiation (2)'
+context: {a: 'hello', b: 2}
+template: {$eval: 'b ** a'}
+error: true
+---
+title: 'TypeError: exponentiation (3)'
+context: {a: 'hello', b: 2}
+template: {$eval: '"hello" ** b'}
+error: true
+---
+title: 'TypeError: exponentiation (4)'
+context: {a: 'hello', b: 2}
+template: {$eval: 'b ** "hello"'}
+error: true
+---
+title: 'TypeError: exponentiation (5)'
+context: {a: 'hello', b: 2}
+template: {$eval: '2 ** "hello"'}
+error: true
+################################################################################
+---
+section: expression language - logic
+---
+title: 'logical not (1)'
+context: {tt: true, ff: false}
+template: {$eval: '!tt'}
+result: false
+---
+title: 'logical not (2)'
+context: {tt: true, ff: false}
+template: {$eval: '!ff'}
+result: true
+---
+title: 'or operator (1)'
+context: {tt: true, ff: false}
+template: {$eval: 'tt || ff'}
+result: true
+---
+title: 'or operator (2)'
+context: {tt: true, ff: false}
+template: {$eval: 'tt || ff'}
+result: true
+---
+title: 'or operator (3)'
+context: {tt: true, ff: false}
+template: {$eval: 'ff || tt'}
+result: true
+---
+title: 'or operator (4)'
+context: {tt: true, ff: false}
+template: {$eval: 'ff || ff'}
+result: false
+---
+title: 'and operator (1)'
+context: {tt: true, ff: false}
+template: {$eval: 'tt && tt'}
+result: true
+---
+title: 'and operator (2)'
+context: {tt: true, ff: false}
+template: {$eval: 'tt && ff'}
+result: false
+---
+title: 'and operator (3)'
+context: {tt: true, ff: false}
+template: {$eval: 'ff && tt'}
+result: false
+---
+title: 'and operator (4)'
+context: {tt: true, ff: false}
+template: {$eval: 'ff && ff'}
+result: false
+---
+title: 'and operator with not operator'
+context: {tt: true, ff: false}
+template: {$eval: 'tt && !ff'}
+result: true
+---
+title: 'or operator with not operator'
+context: {tt: true, ff: false}
+template: {$eval: 'ff || !ff'}
+result: true
+---
+title: 'complex logical operation (1)'
+context: {}
+template: {$eval: "4 < 6 && 2 == 1 + 1"}
+result: true
+---
+title: 'complex logical operation (2)'
+context: {}
+template: {$eval: "!(4 < 6) && 2 == 1 + 1"}
+result: false
+---
+title: 'complex logical operation (3)'
+context: {}
+template: {$eval: "2 == 1 + 1 && 4 < 6"}
+result: true
+---
+title: 'complex logical operation (4)'
+context: {}
+template: {$eval: "4 >= 6 || 2 == 1 + 1"}
+result: true
+################################################################################
+---
+section: expression language - string operations
+---
+title: 'string concatenation (1)'
+context: {a: 3, b: 2}
+template: {$eval: '"a" + "b"'}
+result: 'ab'
+---
+title: 'TypeError: string + number (1)'
+context: {a: 3, b: 2}
+template: {$eval: '"a" + b'}
+error: true
+---
+title: 'TypeError: string + number (2)'
+context: {a: 3, b: 2}
+template: {$eval: '"" + a + b'}
+error: true
+---
+title: 'TypeError: string + number (3)'
+context: {a: 3, b: 2}
+template: {$eval: '"" + (a + b)'}
+error: true
+---
+title: 'TypeError: number + string (4)'
+context: {a: 3, b: 2}
+template: {$eval: '(a + b) + "abc"'}
+error: true
+---
+title: 'string indexing (1)'
+context: {key: '12345'}
+template: {$eval: 'key[1]'}
+result: '2'
+---
+title: 'string indexing (2)'
+context: {key: '12345'}
+template: {$eval: 'key[-2]'}
+result: '4'
+---
+title: 'string indexing (3)'
+context: {}
+template: {$eval: '"12345"[1]'}
+result: '2'
+---
+title: 'string indexing (4)'
+context: {}
+template: {$eval: '"12345"[-2]'}
+result: '4'
+---
+title: 'string slicing (1)'
+context: {key: '12345'}
+template: {$eval: 'key[1:-1]'}
+result: '234'
+---
+title: 'string slicing (2)'
+context: {key: '12345'}
+template: {$eval: 'key[-2:]'}
+result: '45'
+---
+title: 'string slicing type error (1)'
+context: {key: '12345'}
+template: {$eval: 'key["a":]'}
+error: true
+---
+title: 'string slicing type error (2)'
+context: {key: '12345'}
+template: {$eval: 'key[:"a"]'}
+error: true
+################################################################################
+---
+section: expression language - property access
+---
+title: 'property with numeric value'
+context: {key: 1}
+template: {$eval: 'key'}
+result: 1
+---
+title: 'property with string value'
+context: {key: 'a'}
+template: {$eval: 'key'}
+result: 'a'
+---
+title: 'property with boolean value'
+context: {key: true}
+template: {$eval: 'key'}
+result: true
+---
+title: 'property with object value'
+context: {key: {a: 1}}
+template: {$eval: 'key'}
+result: {a: 1}
+---
+title: 'nested property access with object value'
+context: {key: {key2: {key3: {a: 1}}}}
+template: {$eval: 'key.key2.key3'}
+result: {a: 1}
+---
+title: 'nested property access with numeric value'
+context: {key: {key2: {key3: 1}}}
+template: {$eval: 'key["key2"]["key3"]'}
+result: 1
+################################################################################
+---
+section: expression language - array access
+---
+title: 'numeric'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[0]'}
+result: 1
+---
+title: 'numeric, nonzero index'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[2]'}
+result: 3
+---
+title: 'arithemtic with results'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[0] + key[1] + key[2] + key[3] + key[4]'}
+result: 15
+---
+title: 'string index'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key["a"]'}
+error: true
+---
+title: 'nested, in property accesses'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+template: {$eval: 'key.key2.key3[0]'}
+result: 1
+---
+title: 'nested, in property access by string'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+template: {$eval: 'key["key2"]["key3"][0]'}
+result: 1
+---
+title: 'nested, nonzero index'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+template: {$eval: 'key.key2.key3[2]'}
+result: 3
+---
+title: 'nested, nonzero index, in property access by string'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+template: {$eval: 'key["key2"]["key3"][2]'}
+result: 3
+---
+title: 'nested, with arithmetic'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+template: {$eval: 'key.key2.key3[0] + key.key2.key3[1] + key.key2.key3[2] + key.key2.key3[3] + key.key2.key3[4]'}
+result: 15
+---
+title: 'nested, with arithmetic, in property access by string'
+context: {key: {key2: {key3: [1,2,3,4,5]}}}
+template: {$eval: 'key["key2"]["key3"][0] + key["key2"]["key3"][1] + key["key2"]["key3"][2] + key["key2"]["key3"][3] + key["key2"]["key3"][4]'}
+result: 15
+################################################################################
+---
+section: expression language - array slicing
+---
+title: 'array slicing (full slice)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[0:5]'}
+result: [1,2,3,4,5]
+---
+title: 'array slicing (prefix)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[0:3]'}
+result: [1,2,3]
+---
+title: 'array slicing (negative indices)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[-5:-1]'}
+result: [1,2,3,4]
+---
+title: 'array slicing (noninteger index)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[key.length / 2: key.length]'}
+result: [3,4,5]
+---
+title: 'array slicing (no end index)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[-4:]'}
+result: [2,3,4,5]
+---
+title: 'array slicing (no start index)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[:-3]'}
+result: [1,2]
+---
+title: 'array slicing type error (1)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key["a":]'}
+error: true
+---
+title: 'array slicing type error (2)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[:"a"]'}
+error: true
+---
+title: 'array slicing type error (3)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key["a":"b"]'}
+error: true
+---
+title: 'array slicing type error (4)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[1:"a"]'}
+error: true
+---
+title: 'array slicing type error (5)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key["a":2]'}
+error: true
+################################################################################
+---
+section: expression language - function calls
+---
+title: 'function call (1)'
+context: {a: 3, b: 2}
+template: {$eval: 'min(a, b)'}
+result: 2
+---
+title: 'function call (2)'
+context: {a: 3, b: 2}
+template: {$eval: 'min(3, b)'}
+result: 2
+---
+title: 'function call (3)'
+context: {a: 3, b: 2}
+template: {$eval: 'min(a, 2)'}
+result: 2
+---
+title: 'function call (4)'
+context: {a: 3, b: 2}
+template: {$eval: 'min(3, 2)'}
+result: 2
+---
+title: 'function call (5)'
+context: {a: 3, b: 2}
+template: {$eval: 'max(a, b)'}
+result: 3
+---
+title: 'function call (6)'
+context: {a: 3, b: 2}
+template: {$eval: 'max(3, b)'}
+result: 3
+---
+title: 'function call (7)'
+context: {a: 3, b: 2}
+template: {$eval: 'max(a, 2)'}
+result: 3
+---
+title: 'function call (8)'
+context: {a: 3, b: 2}
+template: {$eval: 'max(3, 2)'}
+result: 3
+---
+title: 'function call (9)'
+context: {a: 3, b: 2}
+template: {$eval: 'min(a, b) + max(a, b)'}
+result: 5
+---
+title: 'function call (10)'
+context: {a: 3, b: 2}
+template: {$eval: 'min(3, b) + max(3, b)'}
+result: 5
+---
+title: 'function call (11)'
+context: {a: 3, b: 2}
+template: {$eval: 'min(a, 2) + max(a, 2)'}
+result: 5
+---
+title: 'function call (12)'
+context: {a: 3, b: 2}
+template: {$eval: 'min(3, 2) + max(3, 2)'}
+result: 5
+################################################################################
+---
+section: expression language - in operator
+---
+title: 'in operator on string, success (1)'
+context: {}
+template: {$eval: '"abc" in "aabc"'}
+result: true
+---
+title: 'in operator on string, failure (2)'
+context: {}
+template: {$eval: '"efg" in "aabc"'}
+result: false
+---
+title: 'in operator on string, success (3)'
+context: {key: 'aabc'}
+template: {$eval: '"abc" in key'}
+result: true
+---
+title: 'in operator on string, failure (4)'
+context: {key: 'aabc'}
+template: {$eval: '"efg" in key'}
+result: false
+---
+title: 'in operator on string, failure (5)'
+context: {key: 'aabc'}
+template: {$eval: '"2" in key'}
+result: false
+---
+title: 'in operator on array, success (1)'
+context: {}
+template: {$eval: '"abc" in [1, "abc", "def"]'}
+result: true
+---
+title: 'in operator on array, success (2)'
+context: {}
+template: {$eval: '1 in [1, "abc", "def"]'}
+result: true
+---
+title: 'in operator on array, success (3)'
+context: {key: [1, 'abc', 'def']}
+template: {$eval: '"abc" in key'}
+result: true
+---
+title: 'in operator on array, success (3)'
+context: {key: [1, 'abc', 'def']}
+template: {$eval: '1 in key'}
+result: true
+---
+title: 'in operator on array, failure (1)'
+context: {}
+template: {$eval: '"efg" in [1, "abc", "def"]'}
+result: false
+---
+title: 'in operator on array, failure (2)'
+context: {}
+template: {$eval: '2 in [1, "abc", "def"]'}
+result: false
+---
+title: 'in operator on array, failure (2)'
+context: {key: [1, 'abc', 'def']}
+template: {$eval: '"efg" in key'}
+result: false
+---
+title: 'in operator on array, failure (4)'
+context: {key: [1, 'abc', 'def']}
+template: {$eval: '2 in key'}
+result: false
+---
+title: 'in operator on object, success (1)'
+context: {}
+template: {$eval: '"a" in {"a": 1, b: 2}'}
+result: true
+---
+title: 'in operator on object, success (2)'
+context: {key: {a: 1, b: 2}}
+template: {$eval: '"a" in key'}
+result: true
+---
+title: 'in operator on object, success (3)'
+context: {}
+template: {$eval: '"3.4" in {"3.4": 1, "b": 2}'}
+result: true
+---
+title: 'in operator on object, failure (1)'
+context: {}
+template: {$eval: '"c" in {a: 1, "b": 2}'}
+result: false
+---
+title: 'in operator on object, failure (2)'
+context: {key: {a: 1, b: 2}}
+template: {$eval: '"c" in key'}
+result: false
+---
+title: 'in operator on object, failure (3)'
+context: {}
+template: {$eval: '"a" in {"3": 1, "b": 2}'}
+result: false
+---
+title: 'in operator on object, failure (4)'
+context: {}
+template: {$eval: '"3.4" in {"3": 1, "b": 2}'}
+result: false
+---
+title: 'TypeError: in operator on Object, error (1)'
+context: {key: {a: 1, b: 2}}
+template: {$eval: '[] in key'}
+error: true
+---
+title: 'TypeError: in operator on Object, error (2)'
+context: {key: {a: 1, b: 2}}
+template: {$eval: '{} in key'}
+error: true
+---
+title: 'TypeError: in operator on Object, error (3)'
+context: {key: {a: 1, b: 2}}
+template: {$eval: '1 in key'}
+error: true
+---
+title: 'TypeError: in operator on Array, error (1)'
+context: {key: [2,3,4]}
+template: {$eval: '[] in key'}
+error: true
+---
+title: 'TypeError: in operator on String, error (1)'
+context: {key: 'hello world!'}
+template: {$eval: '[] in key'}
+error: true
+---
+title: 'TypeError: in operator on String, error (2)'
+context: {key: 'hello world!'}
+template: {$eval: '{} in key'}
+error: true
+---
+title: 'TypeError: in operator on String, error (3)'
+context: {key: 'hello world!'}
+template: {$eval: '1 in key'}
+error: true
+---
+title: 'TypeError: in operator on Array, error (2)'
+context: {key: [2,3,4]}
+template: {$eval: '{} in key'}
+error: true
+################################################################################
+---
+section: expression language - comparisons
+---
+title: 'equality (1)'
+context: {a: 1, b: 1}
+template: {$eval: '1 == 1'}
+result: true
+---
+title: 'equality (2)'
+context: {a: 1, b: 1}
+template: {$eval: '1 == 2'}
+result: false
+---
+title: 'equality (3)'
+context: {a: 1, b: 1}
+template: {$eval: 'a == b'}
+result: true
+---
+title: 'equality (4)'
+context: {a: 1, b: 2}
+template: {$eval: 'a == b'}
+result: false
+---
+title: 'in-equality (1)'
+context: {a: 1, b: 1}
+template: {$eval: '1 != 1'}
+result: false
+---
+title: 'in-equality (2)'
+context: {a: 1, b: 1}
+template: {$eval: '1 != 2'}
+result: true
+---
+title: 'in-equality (3)'
+context: {a: 1, b: 1}
+template: {$eval: 'a != b'}
+result: false
+---
+title: 'in-equality (4)'
+context: {a: 1, b: 2}
+template: {$eval: 'a != b'}
+result: true
+---
+title: 'less than (1)'
+context: {a: 1, b: 2}
+template: {$eval: '1 < 2'}
+result: true
+---
+title: 'less than (2)'
+context: {a: 1, b: 2}
+template: {$eval: '2 < 1'}
+result: false
+---
+title: 'less than (3)'
+context: {a: 1, b: 2}
+template: {$eval: '"a" < "b"'}
+result: true
+---
+title: 'less than (4)'
+context: {a: 1, b: 2}
+template: {$eval: '"b" < "a"'}
+result: false
+---
+title: 'less than (5)'
+context: {a: 1, b: 2}
+template: {$eval: 'a < b'}
+result: true
+---
+title: 'less than (6)'
+context: {a: 1, b: 2}
+template: {$eval: 'b < a'}
+result: false
+---
+title: 'greater than (1)'
+context: {a: 1, b: 2}
+template: {$eval: '2 > 1'}
+result: true
+---
+title: 'greater than (2)'
+context: {a: 1, b: 2}
+template: {$eval: '1 > 2'}
+result: false
+---
+title: 'greater than (3)'
+context: {a: 1, b: 2}
+template: {$eval: '"b" > "a"'}
+result: true
+---
+title: 'greater than (4)'
+context: {a: 1, b: 2}
+template: {$eval: '"a" > "b"'}
+result: false
+---
+title: 'greater than (5)'
+context: {a: 1, b: 2}
+template: {$eval: 'b > a'}
+result: true
+---
+title: 'greater than (6)'
+context: {a: 1, b: 2}
+template: {$eval: 'a > b'}
+result: false
+---
+title: 'less than equal (1)'
+context: {a: 1, b: 2}
+template: {$eval: "a <= b"}
+result: true
+---
+title: 'less than equal (2)'
+context: {a: 1, b: 1}
+template: {$eval: "a <= b"}
+result: true
+---
+title: 'less than equal (3)'
+context: {a: 1, b: 2}
+template: {$eval: "b <= a"}
+result: false
+---
+title: 'less than equal (4)'
+context: {a: 1, b: 1}
+template: {$eval: "b <= a"}
+result: true
+---
+title: 'greater than equal (1)'
+context: {a: 1, b: 2}
+template: {$eval: "b >= a"}
+result: true
+---
+title: 'greater than equal (2)'
+context: {a: 1, b: 1}
+template: {$eval: "a >= b"}
+result: true
+---
+title: 'greater than equal (3)'
+context: {a: 1, b: 2}
+template: {$eval: "a >= b"}
+result: false
+---
+title: 'greater than equal (4)'
+context: {a: 1, b: 1}
+template: {$eval: "a >= b"}
+result: true
+################################################################################
+---
+section: expression language - compound literals
+---
+title: 'parse list (1)'
+context: {}
+template: {$eval: '[1,2,3,4]'}
+result: [1,2,3,4]
+---
+title: 'parse list (2)'
+context: {}
+template: {$eval: '[1,2,3,4][0]'}
+result: 1
+---
+title: 'parse list (3)'
+context: {}
+template: {$eval: '[1,2,3,4][0:-1]'}
+result: [1,2,3]
+---
+title: 'parse list (4)'
+context: {}
+template: {$eval: '[1,2,3,4'}
+error: true
+---
+title: 'parse object (1)'
+context: {key: 1}
+template: {$eval: '{a: key, "b": key + 1}'}
+result: {a: 1, b: 2}
+---
+title: 'parse object (2)'
+context: {key: 1}
+template: {$eval: '{"a": key, b: key + 1}'}
+result: {a: 1, b: 2}
+---
+title: 'parse object (3)'
+context: {key: 1}
+template: {$eval: '{"a": key, "b": key + 1}'}
+result: {a: 1, b: 2}
+---
+title: 'parse object (4)'
+context: {key: 1}
+template: {$eval: '{"a": key, b: [key,key+1,key+2]}'}
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (5)'
+context: {key: 1}
+template: {$eval: '{a: key, "b": [key,key+1,key+2]}'}
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (6)'
+context: {key: 1}
+template: {$eval: '{"a": key, "b": [key,key+1,key+2]}'}
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (7)'
+context: {key: 1}
+template: {$eval: '{a: key, b: [key,key+1,key+2]}'}
+result: {a: 1, b: [1,2,3]}
+---
+title: 'parse object (8)'
+context: {key: 1}
+template: {$eval: '{a: key, b: min(key + 1, 1)}'}
+result: {a: 1, b: 1}
+---
+title: 'parse object (9)'
+context: {key: 1}
+template: {$eval: '{"a": key, b: min(key + 1, 1)}'}
+result: {a: 1, b: 1}
+---
+title: 'parse object (10)'
+context: {key: 1}
+template: {$eval: '{a: key, "b": min(key + 1, 1)}'}
+result: {a: 1, b: 1}
+---
+title: 'parse object (11)'
+context: {key: 1}
+template: {$eval: '{"a": key, "b": min(key + 1, 1)}'}
+result: {a: 1, b: 1}
+---
+title: 'parse object (12)'
+context: {key: 1}
+template: {$eval: '{a: key, b: key + 1'}
+error: true
+################################################################################
+---
+section: expression language - errors
+---
+title: 'unary - type error'
+context: {key: 'hello'}
+template: {$eval: '-key'}
+error: true
+---
+title: 'unary + type error'
+context: {key: 'hello'}
+template: {$eval: '+key'}
+error: true
+---
+title: 'undefined variable'
+context: {key: 'hello'}
+template: {$eval: 'key2'}
+error: true
+---
+title: 'missing closing parenthesis'
+context: {key1: 1, key2: 1}
+template: {$eval: 'key1 + (key2 + key1'}
+error: true
+---
+title: 'missing opening parenthesis'
+context: {key1: 1, key2: 1}
+template: {$eval: 'key1 + key2 + key1)'}
+error: true
+---
+title: 'missing closing "'
+context: {}
+template: {$eval: '"hello'}
+error: true
+---
+title: 'missing opening "'
+context: {}
+template: {$eval: 'hello"'}
+error: true
+---
+title: 'Infix + type error'
+context: {}
+template: {$eval: 'true + false'}
+error: true
+---
+title: 'Infix - type error'
+context: {}
+template: {$eval: '"hello" - 3'}
+error: true
+---
+title: 'Infix * type error'
+context: {}
+template: {$eval: '"hello" * 3'}
+error: true
+---
+title: 'Infix / type error'
+context: {}
+template: {$eval: '"hello" / 3'}
+error: true
+---
+title: 'Infix - type error'
+context: {}
+template: {$eval: '3 - "hello"'}
+error: true
+---
+title: 'Infix * type error'
+context: {}
+template: {$eval: '3 * "hello"'}
+error: true
+---
+title: 'Infix / type error'
+context: {}
+template: {$eval: '3 / "hello"'}
+error: true
+---
+title: 'Infix ** type error'
+context: {}
+template: {$eval: '"hello" ** 3'}
+error: true
+---
+title: 'Infix ** type error'
+context: {}
+template: {$eval: '3 ** "hello"'}
+error: true
+---
+title: 'Infix < type error'
+context: {}
+template: {$eval: '"hello" < 3'}
+error: true
+---
+title: 'Infix > type error'
+context: {}
+template: {$eval: '"hello" > 3'}
+error: true
+---
+title: 'Infix <= type error'
+context: {}
+template: {$eval: '"hello" <= 3'}
+error: true
+---
+title: 'Infix >= type error'
+context: {}
+template: {$eval: '"hello" >= 3'}
+error: true
+---
+title: 'Infix < type error'
+context: {}
+template: {$eval: '3 < "hello"'}
+error: true
+---
+title: 'Infix > type error'
+context: {}
+template: {$eval: '3 > "hello"'}
+error: true
+---
+title: 'Infix <= type error'
+context: {}
+template: {$eval: '3 <= "hello"'}
+error: true
+---
+title: 'Infix >= type error'
+context: {}
+template: {$eval: '3 >= "hello"'}
+error: true
+---
+title: 'Prefix logical not type error'
+context: {key: 'hello'}
+template: {$eval: '!key'}
+error: true
+---
+title: 'Infix or type error (1)'
+context: {tt: true, key: 'hello'}
+template: {$eval: 'tt || key'}
+error: true
+---
+title: 'Infix or type error (2)'
+context: {tt: true, key: 'hello'}
+template: {$eval: 'key || tt'}
+error: true
+---
+title: 'Infix and type error (1)'
+context: {tt: true, key: 'hello'}
+template: {$eval: 'tt && key'}
+error: true
+---
+title: 'Infix and type error (2)'
+context: {tt: true, key: 'hello'}
+template: {$eval: 'key && tt'}
+error: true
