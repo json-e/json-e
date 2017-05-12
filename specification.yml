@@ -35,6 +35,16 @@ context:  {}
 template: {$fromNow: '2 days 3 hours'}
 result:   '2017-01-21T19:27:20.974Z'
 ---
+title:    fromNow built-in
+context:  {}
+template: {$eval: fromNow("")}
+result:   '2017-01-19T16:27:20.974Z'
+---
+title:    fromNow built-in 2 days 3 hours
+context:  {}
+template: {$eval: fromNow("2 days 3 hours")}
+result:   '2017-01-21T19:27:20.974Z'
+---
 title:    $eval
 context:  {key: ['value', 1, 2, true, {}]}
 template: {$eval: 'key'}
@@ -344,7 +354,7 @@ template:
   $map: [{k: 1}, {k: 2}, {k: 3}]
   each(y):
     $if: 'y.k != 2'
-    then: {$eval: 'y.k'} 
+    then: {$eval: 'y.k'}
 result: [1, 3]
 ---
 title:    $map requires an array

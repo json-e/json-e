@@ -49,7 +49,7 @@ irrelevant to its operation.
 
 ## Simple Operations
 
-All JSON-e directives involve the `$` character, so a template without any directives is 
+All JSON-e directives involve the `$` character, so a template without any directives is
 rendered unchanged:
 
 ```yaml
@@ -147,6 +147,14 @@ pairs in a string. For example:
 ```yaml
 context:  {}
 template: {$fromNow: '2 days 1 hour'}
+result:   '2017-01-19T16:27:20.974Z'
+```
+
+`$fromNow` can also be used as a built-in function. For example:
+
+```yaml
+context:  {}
+template: {$eval: fromNow('2 days 1 hour')}
 result:   '2017-01-19T16:27:20.974Z'
 ```
 
