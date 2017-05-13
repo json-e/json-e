@@ -49,7 +49,7 @@ irrelevant to its operation.
 
 ## Simple Operations
 
-All JSON-e directives involve the `$` character, so a template without any directives is 
+All JSON-e directives involve the `$` character, so a template without any directives is
 rendered unchanged:
 
 ```yaml
@@ -140,9 +140,10 @@ result: {other: 3}
 
 ### `$fromNow`
 
-The `$fromNow` operator creates a JSON (ISO 8601) datestamp for a time relative
-to the current time. The offset is specified by a sequence of number/unit
-pairs in a string. For example:
+The `$fromNow` operator is a shorthand for the built-in function `fromNow`. It
+creates a JSON (ISO 8601) datestamp for a time relative to the current time.
+The offset is specified by a sequence of number/unit pairs in a string. For
+example:
 
 ```yaml
 context:  {}
@@ -233,6 +234,7 @@ The expression language provides a laundry-list of built-in functions. Library
 users can easily add additional functions, or override the built-ins, as part
 of the context.
 
+* `fromNow(x)` -- JSON datestamp for a time relative to the current time
 * `min(a, b, ..)` -- the smallest of the arguments
 * `max(a, b, ..)` -- the largest of the arguments
 * `sqrt(x)`, `ceil(x)`, `floor(x)`, `abs(x)` -- mathematical functions

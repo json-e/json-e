@@ -47,6 +47,10 @@ var _error = require('./error');
 
 var _error2 = _interopRequireDefault(_error);
 
+var _fromNow = require('./from-now');
+
+var _fromNow2 = _interopRequireDefault(_fromNow);
+
 var _typeUtils = require('./type-utils');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -99,7 +103,7 @@ var define = function define(name, context, _ref) {
   };
 };
 
-// attaching math functions
+// Math functions
 ['max', 'min'].forEach(function (name) {
   if (Math[name] == undefined) {
     throw new Error(name + ' in Math undefined');
@@ -124,6 +128,7 @@ var define = function define(name, context, _ref) {
   });
 });
 
+// String manipulation
 define('lowercase', builtins, {
   argumentTests: ['string'],
   invoke: function invoke(str) {
@@ -152,10 +157,18 @@ define('len', builtins, {
   }
 });
 
+// Miscellaneous
+define('fromNow', builtins, {
+  argumentTests: ['string'],
+  invoke: function invoke(str) {
+    return (0, _fromNow2.default)(str);
+  }
+});
+
 exports.default = builtins;
 
 
-},{"./error":3,"./type-utils":9,"babel-runtime/helpers/typeof":27}],3:[function(require,module,exports){
+},{"./error":3,"./from-now":4,"./type-utils":9,"babel-runtime/helpers/typeof":27}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

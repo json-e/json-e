@@ -1,4 +1,5 @@
 import BuiltinError from './error';
+import fromNow from './from-now';
 import {
   isString, isNumber, isBool,
   isArray, isObject, isJSON,
@@ -35,7 +36,7 @@ let define = (name, context, {argumentTests = [], variadic = null, invoke}) => c
   return invoke(...args);
 };
 
-// attaching math functions
+// Math functions
 ['max', 'min'].forEach(name => {
   if (Math[name] == undefined) {
     throw new Error(`${name} in Math undefined`);
@@ -56,6 +57,7 @@ let define = (name, context, {argumentTests = [], variadic = null, invoke}) => c
   });
 });
 
+// String manipulation
 define('lowercase', builtins, {
   argumentTests: ['string'],
   invoke: str => str.toLowerCase(),
@@ -74,6 +76,12 @@ define('str', builtins, {
 define('len', builtins, {
   argumentTests: ['string|array'],
   invoke: obj => obj.length,
+});
+
+// Miscellaneous
+define('fromNow', builtins, {
+  argumentTests: ['string'],
+  invoke: str => fromNow(str),
 });
 
 export default builtins;
