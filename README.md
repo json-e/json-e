@@ -140,21 +140,14 @@ result: {other: 3}
 
 ### `$fromNow`
 
-The `$fromNow` operator creates a JSON (ISO 8601) datestamp for a time relative
-to the current time. The offset is specified by a sequence of number/unit
-pairs in a string. For example:
+The `$fromNow` operator is a shorthand for the built-in function `fromNow`. It
+creates a JSON (ISO 8601) datestamp for a time relative to the current time.
+The offset is specified by a sequence of number/unit pairs in a string. For
+example:
 
 ```yaml
 context:  {}
 template: {$fromNow: '2 days 1 hour'}
-result:   '2017-01-19T16:27:20.974Z'
-```
-
-`$fromNow` can also be used as a built-in function. For example:
-
-```yaml
-context:  {}
-template: {$eval: fromNow('2 days 1 hour')}
 result:   '2017-01-19T16:27:20.974Z'
 ```
 
@@ -241,6 +234,7 @@ The expression language provides a laundry-list of built-in functions. Library
 users can easily add additional functions, or override the built-ins, as part
 of the context.
 
+* `fromNow(x)` -- JSON datestamp for a time relative to the current time
 * `min(a, b, ..)` -- the smallest of the arguments
 * `max(a, b, ..)` -- the largest of the arguments
 * `sqrt(x)`, `ceil(x)`, `floor(x)`, `abs(x)` -- mathematical functions
