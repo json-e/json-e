@@ -55,6 +55,11 @@ context:  {}
 template: {$json: [1,2,true,{},[]]}
 result:   '[1,2,true,{},[]]'
 ---
+title:    $merge
+context:  {}
+template: {$merge: [{a: 1, b: 1}, {b: 2, c: 3}, {d: 4}]}
+result:   {a: 1, b: 2, c: 3, d: 4}
+---
 title:    string interpolation
 context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k-${num}': true}

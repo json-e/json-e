@@ -463,6 +463,26 @@ constructs.$map = function (template, context) {
   });
 };
 
+constructs.$merge = function (template, context) {
+  var value = render(template['$merge'], context);
+
+  if (!(0, _typeUtils.isArray)(value) && !(0, _typeUtils.isArray)(template['$merge'])) {
+    throw jsonTemplateError('$merge value must evaluate to an array\n', template);
+  }
+
+  if (!(0, _typeUtils.isArray)(value)) {
+    throw jsonTemplateError('$merge requires array as value\n', template);
+  }
+
+  var obj = {};
+
+  value.forEach(function (x) {
+    (0, _assign2.default)(obj, x);
+  });
+
+  return obj;
+};
+
 constructs.$sort = function (template, context) {
   var value = render(template['$sort'], context);
   if (!(0, _typeUtils.isArray)(value)) {
