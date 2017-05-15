@@ -888,6 +888,11 @@ result: 'hello world!'
 ---
 section:  expression language - basics
 ---
+title:    decimal literal
+context:  {}
+template: {$eval: '10.5'}
+result:   10.5
+---
 title:    addition
 context:  {a: 1, b: 2}
 template: {$eval: 'a + b + 7'}
