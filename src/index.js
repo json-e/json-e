@@ -56,29 +56,8 @@ constructs.$if = (template, context) => {
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
 };
 
-constructs.$switch = (template, context) => {
-  if (!isString(template['$switch'])) {
-    throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
-  }
-  let c = interpreter.parse(template['$switch'], context);
-  return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
-};
-
 constructs.$json = (template, context) => {
   return JSON.stringify(render(template['$json'], context));
-};
-
-constructs.$reverse = (template, context) => {
-  let value = render(template['$reverse'], context);
-
-  if (!isArray(value) && !isArray(template['$reverse'])) {
-    throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
-  }
-
-  if (!isArray(value)) {
-    throw jsonTemplateError('$reverse requires array as value\n', template);
-  }
-  return value.reverse();
 };
 
 constructs.$map = (template, context) => {
@@ -103,6 +82,19 @@ constructs.$map = (template, context) => {
   return value.map(v => render(each, Object.assign({}, context, {[x]: v})))
               .filter(v => v !== deleteMarker);
 
+};
+
+constructs.$reverse = (template, context) => {
+  let value = render(template['$reverse'], context);
+
+  if (!isArray(value) && !isArray(template['$reverse'])) {
+    throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
+  }
+
+  if (!isArray(value)) {
+    throw jsonTemplateError('$reverse requires array as value\n', template);
+  }
+  return value.reverse();
 };
 
 constructs.$sort = (template, context) => {
@@ -135,6 +127,14 @@ constructs.$sort = (template, context) => {
     }
     return true;
   });
+};
+
+constructs.$switch = (template, context) => {
+  if (!isString(template['$switch'])) {
+    throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
+  }
+  let c = interpreter.parse(template['$switch'], context);
+  return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
 };
 
 let render = (template, context) => {
