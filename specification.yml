@@ -83,12 +83,28 @@ result:   {message: 'hello##world'}
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}
-error:    true #TODO: Decide if it should be interpolated as JSON
+error:    true
 ---
 title:    can't interpolate objects
 context:  {key: {}}
 template: 'hello ${key}'
-error:    true #TODO: Decide if it should be interpolated as JSON
+error:    true
+---
+title:    booleans interpolate
+context:  {t: true, f: false}
+template: '${t} or ${f}: yeast is a bacterium'
+result:   'true or false: yeast is a bacterium'
+---
+title:    numbers interpolate
+context:  {round: 3, decimal: 3.75}
+template: '${round}, really ${decimal}'
+result:   '3, really 3.75'
+---
+title:    nulls interpolate
+context:  {nothing: null}
+template: 'big pile of ${nothing}'
+result:   'big pile of null'
+todo:     'https://github.com/taskcluster/json-e/issues/65'
 ---
 title: invalid context (1)
 context: {{a:2}: 1}
