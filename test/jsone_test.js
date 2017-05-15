@@ -25,17 +25,26 @@ suite('json-e', () => {
   before(() => tk.freeze(TEST_DATE));
   after(() => tk.reset());
 
-  _.forEach(spec, (C, s) => suite(s, () => C.forEach(c => test(c.title, () => {
-    let result;
-    try {
-      result = jsone(c.template, c.context);
-    } catch (err) {
-      if (!c.error) {
-        throw err;
+  _.forEach(spec, (C, s) => suite(s, function() {
+    C.forEach(c => {
+      let t = function() {
+        let result;
+        try {
+          result = jsone(c.template, c.context);
+        } catch (err) {
+          if (!c.error) {
+            throw err;
+          }
+          return;
+        }
+        assert(!c.error, 'Expected an error');
+        assume(result).eql(c.result);
+      };
+      if (c.todo) {
+        test.skip(c.title, t);
+      } else {
+        test(c.title, t);
       }
-      return;
-    }
-    assert(!c.error, 'Expected an error');
-    assume(result).eql(c.result);
-  }))));
+    });
+  }));
 });
