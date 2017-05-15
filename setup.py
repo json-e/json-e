@@ -6,14 +6,14 @@ def make_test_suite():
     import yaml
     import jsone
 
-    def todo(test):
+    def todo(test, reason):
         "Wrap a test that should not pass yet"
         def wrap():
             try:
                 test()
             except Exception:
-                raise unittest.SkipTest('blacklisted')
-            raise AssertionError("test passed unexpectedly - remove from python-blacklist.txt?")
+                raise unittest.SkipTest(reason)
+            raise AssertionError("test passed unexpectedly")
         return wrap
 
     def spec_test(spec):
@@ -57,7 +57,9 @@ def make_test_suite():
             name = '{}: {}'.format(section, spec['title'])
             t = spec_test(spec)
             if name in blacklist:
-                t = todo(t)
+                t = todo(t, 'blacklist')
+            elif 'todo' in spec:
+                t = todo(t, spec['todo'])
             test = Case(t, name)
             subsuite.addTest(test)
     return suite
