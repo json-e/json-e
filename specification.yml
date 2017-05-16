@@ -80,15 +80,42 @@ context:  {a: 'hello', b: 'world'}
 template: {message: '${a}##${b}'}
 result:   {message: 'hello##world'}
 ---
+title: string interpolation escapes
+context:  {}
+template: {message: 'a literal \\${ in a string'}
+result:   {message: 'a literal ${ in a string'}
+todo: 'https://github.com/taskcluster/json-e/issues/66'
+---
+title: string interpolation with unbalanced }
+context:  {}
+template: {message: 'tricky ${"}}}}"}'}
+result:   {message: 'tricky }}}}'}
+---
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}
-error:    true #TODO: Decide if it should be interpolated as JSON
+error:    true
 ---
 title:    can't interpolate objects
 context:  {key: {}}
 template: 'hello ${key}'
-error:    true #TODO: Decide if it should be interpolated as JSON
+error:    true
+---
+title:    booleans interpolate
+context:  {t: true, f: false}
+template: '${t} or ${f}: yeast is a bacterium'
+result:   'true or false: yeast is a bacterium'
+---
+title:    numbers interpolate
+context:  {round: 3, decimal: 3.75}
+template: '${round}, really ${decimal}'
+result:   '3, really 3.75'
+---
+title:    nulls interpolate
+context:  {nothing: null}
+template: 'big pile of ${nothing}'
+result:   'big pile of null'
+todo:     'https://github.com/taskcluster/json-e/issues/65'
 ---
 title: invalid context (1)
 context: {{a:2}: 1}
@@ -190,6 +217,64 @@ title: $if->else, else => object, interpolation, false
 context: {cond: false, key: 'world'}
 template: {$if: 'cond', else: {key: 'hello ${key}'}}
 result: {key: 'hello world'}
+---
+title: $if->then->else, empty string
+context: {cond: "", key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+---
+title: $if->then->else, nonempty string
+context: {cond: "stuff", key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
+---
+title: $if->then->else, string "0"  # once upon a time, this was false in PHP.. maybe still is
+context: {cond: "0", key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
+---
+title: $if->then->else, zero
+context: {cond: 0, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+---
+title: $if->then->else, one
+context: {cond: 1, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
+---
+title: $if->then->else, null
+context: {cond: null, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+---
+title: $if->then->else, empty array
+context: {cond: [], key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+todo: 'https://github.com/taskcluster/json-e/issues/68'
+---
+title: $if->then->else, nonempty array
+context: {cond: [1, 2], key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
+---
+title: $if->then->else, empty object
+context: {cond: {}, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+todo: 'https://github.com/taskcluster/json-e/issues/68'
+---
+title: $if->then->else, nonempty object
+context: {cond: {a: 2}, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
+---
+title: $if->then evaluating to nothing at the top level
+context: {cond: false}
+template: {$if: 'cond', then: "t"}
+result: {}
+todo: 'https://github.com/taskcluster/json-e/issues/69'
 ################################################################################
 ---
 section:  fromNow
@@ -357,10 +442,31 @@ template:
     then: {$eval: 'y.k'}
 result: [1, 3]
 ---
-title:    $map requires an array
+title:    $map requires an array, not object
 context:  {}
 template:
   $map: {a: 1, b: 2, c: 3}
+  each(y): {$eval: 'y.k'}
+error: true # can't do map on non-arrays
+---
+title:    $map requires an array, not string
+context:  {}
+template:
+  $map: "a, b, c"
+  each(y): {$eval: 'y.k'}
+error: true # can't do map on non-arrays
+---
+title:    $map requires an array, not number
+context:  {}
+template:
+  $map: 10.1
+  each(y): {$eval: 'y.k'}
+error: true # can't do map on non-arrays
+---
+title:    $map requires an array, not null
+context:  {}
+template:
+  $map: null
   each(y): {$eval: 'y.k'}
 error: true # can't do map on non-arrays
 ################################################################################
@@ -371,6 +477,17 @@ title:    simple sort
 context:  {}
 template: {$sort: [3, 4, 1, 2]}
 result:   [1, 2, 3, 4]
+---
+title:    simple sort of strings (shortest first)
+context:  {}
+template: {$sort: ['android', 'aardvark', 'add', 'adderall']}
+result:   ['aardvark', 'add', 'adderall', 'android']
+---
+title:    simple sort of multi-digit numbers
+context:  {}
+template: {$sort: [111, 22, 3]}
+result:   [3, 22, 111]
+todo: 'https://github.com/taskcluster/json-e/issues/70'
 ---
 title:    simple sort with $eval
 context:  {array: [3, 4, 1, 2]}
@@ -412,6 +529,12 @@ title:    sort requires an array (object)
 context:  {}
 template:
   $sort:  {k: 1, b: 4, x: 8}
+error: true  # $sort must be given an array
+---
+title:    sort requires an array (null)
+context:  {}
+template:
+  $sort:  null
 error: true  # $sort must be given an array
 ################################################################################
 ---
@@ -888,6 +1011,11 @@ result: 'hello world!'
 ---
 section:  expression language - basics
 ---
+title:    decimal literal
+context:  {}
+template: {$eval: '10.5'}
+result:   10.5
+---
 title:    addition
 context:  {a: 1, b: 2}
 template: {$eval: 'a + b + 7'}
@@ -1212,6 +1340,11 @@ context: {}
 template: {$eval: '"12345"[-2]'}
 result: '4'
 ---
+title: 'string indexing (noninteger)'
+context: {}
+template: {$eval: '"12345"[2.5]'}
+todo: 'https://github.com/taskcluster/json-e/issues/64'
+---
 title: 'string slicing (1)'
 context: {key: '12345'}
 template: {$eval: 'key[1:-1]'}
@@ -1222,6 +1355,21 @@ context: {key: '12345'}
 template: {$eval: 'key[-2:]'}
 result: '45'
 ---
+title: 'string slicing (noninteger first index)'
+context: {key: '12345'}
+template: {$eval: 'key[1.5:3]'}
+todo: 'https://github.com/taskcluster/json-e/issues/64'
+---
+title: 'string slicing (noninteger second index)'
+context: {key: '12345'}
+template: {$eval: 'key[1:3.5]'}
+todo: 'https://github.com/taskcluster/json-e/issues/64'
+---
+title: 'string slicing (noninteger indexes)'
+context: {key: '12345'}
+template: {$eval: 'key[1.5:3.5]'}
+todo: 'https://github.com/taskcluster/json-e/issues/64'
+---
 title: 'string slicing type error (1)'
 context: {key: '12345'}
 template: {$eval: 'key["a":]'}
@@ -1231,6 +1379,18 @@ title: 'string slicing type error (2)'
 context: {key: '12345'}
 template: {$eval: 'key[:"a"]'}
 error: true
+---
+title: 'string length attribute'
+context: {key: '12345'}
+template: {$eval: 'key.length'}
+result: 5
+todo: 'https://github.com/taskcluster/json-e/issues/63'
+---
+title: 'other string attributes are not set'
+context: {key: 'abc'}
+template: {$eval: 'key.toUpperCase()'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/63'
 ################################################################################
 ---
 section: expression language - property access
@@ -1255,6 +1415,21 @@ context: {key: {a: 1}}
 template: {$eval: 'key'}
 result: {a: 1}
 ---
+title: 'property with null value'
+context: {key: null}
+template: {$eval: 'key'}
+result: null
+---
+title: 'missing property'
+context: {key: {a: 1}}
+template: {$eval: 'key.b'}
+error: true
+---
+title: 'missing property by name'
+context: {key: {a: 1}}
+template: {$eval: 'key["b"]'}
+error: true
+---
 title: 'nested property access with object value'
 context: {key: {key2: {key3: {a: 1}}}}
 template: {$eval: 'key.key2.key3'}
@@ -1264,6 +1439,11 @@ title: 'nested property access with numeric value'
 context: {key: {key2: {key3: 1}}}
 template: {$eval: 'key["key2"]["key3"]'}
 result: 1
+---
+title: 'property access with expression value'
+context: {key: abc, values: {abc: 2, def: 3}}
+template: {$eval: 'values[key]'}
+result: 2
 ################################################################################
 ---
 section: expression language - array access
@@ -1277,6 +1457,11 @@ title: 'numeric, nonzero index'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[2]'}
 result: 3
+---
+title: 'numeric, noninteger index'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[2.5]'}
+todo: 'https://github.com/taskcluster/json-e/issues/64'
 ---
 title: 'arithemtic with results'
 context: {key: [1,2,3,4,5]}
@@ -1317,6 +1502,16 @@ title: 'nested, with arithmetic, in property access by string'
 context: {key: {key2: {key3: [1,2,3,4,5]}}}
 template: {$eval: 'key["key2"]["key3"][0] + key["key2"]["key3"][1] + key["key2"]["key3"][2] + key["key2"]["key3"][3] + key["key2"]["key3"][4]'}
 result: 15
+---
+title: 'array length'
+context: {key: [1, 3, 5]}
+template: {$eval: 'key.length'}
+result: 3
+---
+title: 'other array attributes are not available'
+context: {key: [5, 3, 1]}
+template: {$eval: 'key.sort'}
+error: true
 ################################################################################
 ---
 section: expression language - array slicing
@@ -1336,10 +1531,20 @@ context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[-5:-1]'}
 result: [1,2,3,4]
 ---
-title: 'array slicing (noninteger index)'
+title: 'array slicing (noninteger first index)'
 context: {key: [1,2,3,4,5]}
-template: {$eval: 'key[key.length / 2: key.length]'}
-result: [3,4,5]
+template: {$eval: 'key[2.5: 4]'}
+todo: 'https://github.com/taskcluster/json-e/issues/64'
+---
+title: 'array slicing (noninteger last index)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[2: 3.5]'}
+todo: 'https://github.com/taskcluster/json-e/issues/64'
+---
+title: 'array slicing (noninteger indexes)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[2.5: 3.5]'}
+todo: 'https://github.com/taskcluster/json-e/issues/64'
 ---
 title: 'array slicing (no end index)'
 context: {key: [1,2,3,4,5]}
