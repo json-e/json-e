@@ -269,6 +269,12 @@ title: $if->then->else, nonempty object
 context: {cond: {a: 2}, key: 'world'}
 template: {$if: 'cond', then: "t", else: "f"}
 result: t
+---
+title: $if->then evaluating to nothing at the top level
+context: {cond: false}
+template: {$if: 'cond', then: "t"}
+result: {}
+todo: 'https://github.com/taskcluster/json-e/issues/69'
 ################################################################################
 ---
 section:  fromNow
@@ -436,10 +442,31 @@ template:
     then: {$eval: 'y.k'}
 result: [1, 3]
 ---
-title:    $map requires an array
+title:    $map requires an array, not object
 context:  {}
 template:
   $map: {a: 1, b: 2, c: 3}
+  each(y): {$eval: 'y.k'}
+error: true # can't do map on non-arrays
+---
+title:    $map requires an array, not string
+context:  {}
+template:
+  $map: "a, b, c"
+  each(y): {$eval: 'y.k'}
+error: true # can't do map on non-arrays
+---
+title:    $map requires an array, not number
+context:  {}
+template:
+  $map: 10.1
+  each(y): {$eval: 'y.k'}
+error: true # can't do map on non-arrays
+---
+title:    $map requires an array, not null
+context:  {}
+template:
+  $map: null
   each(y): {$eval: 'y.k'}
 error: true # can't do map on non-arrays
 ################################################################################
