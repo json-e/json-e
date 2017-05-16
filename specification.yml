@@ -1371,6 +1371,21 @@ context: {key: {a: 1}}
 template: {$eval: 'key'}
 result: {a: 1}
 ---
+title: 'property with null value'
+context: {key: null}
+template: {$eval: 'key'}
+result: null
+---
+title: 'missing property'
+context: {key: {a: 1}}
+template: {$eval: 'key.b'}
+error: true
+---
+title: 'missing property by name'
+context: {key: {a: 1}}
+template: {$eval: 'key["b"]'}
+error: true
+---
 title: 'nested property access with object value'
 context: {key: {key2: {key3: {a: 1}}}}
 template: {$eval: 'key.key2.key3'}
