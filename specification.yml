@@ -213,6 +213,58 @@ title: $if->else, else => object, interpolation, false
 context: {cond: false, key: 'world'}
 template: {$if: 'cond', else: {key: 'hello ${key}'}}
 result: {key: 'hello world'}
+---
+title: $if->then->else, empty string
+context: {cond: "", key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+---
+title: $if->then->else, nonempty string
+context: {cond: "stuff", key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
+---
+title: $if->then->else, string "0"  # once upon a time, this was false in PHP.. maybe still is
+context: {cond: "0", key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
+---
+title: $if->then->else, zero
+context: {cond: 0, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+---
+title: $if->then->else, one
+context: {cond: 1, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
+---
+title: $if->then->else, null
+context: {cond: null, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+---
+title: $if->then->else, empty array
+context: {cond: [], key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+todo: 'https://github.com/taskcluster/json-e/issues/68'
+---
+title: $if->then->else, nonempty array
+context: {cond: [1, 2], key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
+---
+title: $if->then->else, empty object
+context: {cond: {}, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: f
+todo: 'https://github.com/taskcluster/json-e/issues/68'
+---
+title: $if->then->else, nonempty object
+context: {cond: {a: 2}, key: 'world'}
+template: {$if: 'cond', then: "t", else: "f"}
+result: t
 ################################################################################
 ---
 section:  fromNow
