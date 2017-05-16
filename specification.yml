@@ -474,29 +474,101 @@ context:  {}
 template: {$sort: [3, 4, 1, 2]}
 result:   [1, 2, 3, 4]
 ---
+title:    simple sort of strings (shortest first)
+context:  {}
+template: {$sort: ['android', 'aardvark', 'add', 'adderall']}
+result:   ['aardvark', 'add', 'adderall', 'android']
+---
+title:    simple sort of multi-digit numbers
+context:  {}
+template: {$sort: [111, 22, 3]}
+result:   [3, 22, 111]
+todo: 'https://github.com/taskcluster/json-e/issues/71'
+---
 title:    simple sort with $eval
 context:  {array: [3, 4, 1, 2]}
 template: {$sort: {$eval: 'array'}}
 result:   [1, 2, 3, 4]
 ---
-title:    sort by
+title:    sort by, returning number
 context:  {}
 template:
-  $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
+  $sort: [{a: 20}, {a: 10, b: []}, {a: 3}]
   by(x): 'x.a'
-result:   [{a: 1, b: []}, {a: 2}, {a: 3}]
+result:   [{a: 3}, {a: 10, b: []}, {a: 20}]
+todo: 'https://github.com/taskcluster/json-e/issues/71'
+---
+title:    sort by, returning string
+context:  {}
+template:
+  $sort: [{s: 'android'}, {s: 'add'}, {s: 'adderall'}]
+  by(x): 'x.s'
+result: [{s: 'add'}, {s: 'adderall'}, {s: 'android'}]
+todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort objects without by
 context:  {}
 template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
-error: true  # list of objects must have a 'by(x)' property
+error: true
+---
+title:    by cannot return objects
+context:  {}
+template:
+  $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
+  by(x): x
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort arrays without by
 context:  {}
 template:
   $sort: [[1,2,3], [4,5], [], [8,9,10]]
-error: true  # list of arrays must have a 'by(x)' property
+error: true
+---
+title:    by cannot return arrays
+context:  {}
+template:
+  $sort: [[1,2,3], [4,5], [], [8,9,10]]
+  by(x): x
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/71'
+---
+title:    cannot sort nulls
+context:  {}
+template: {$sort: [null, null]}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/71'
+---
+title:    cannot sort nulls, even with by
+context:  {}
+template: {$sort: [null, null], 'by(x)': 'x'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/71'
+---
+title:    cannot sort booleans
+context:  {}
+template: {$sort: [false, true]}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/71'
+---
+title:    cannot sort booleans, even with by
+context:  {}
+template: {$sort: [false, true], 'by(x)': 'x'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/71'
+---
+title:    cannot sort numbers and strings together
+context:  {}
+template: {$sort: [1, 'a']}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/71'
+---
+title:    cannot sort numbers and strings together even with by
+context:  {}
+template: {$sort: [1, 'a'], 'by(x)': 'x'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    sort requires an array (string)
 context:  {}
@@ -514,6 +586,12 @@ title:    sort requires an array (object)
 context:  {}
 template:
   $sort:  {k: 1, b: 4, x: 8}
+error: true  # $sort must be given an array
+---
+title:    sort requires an array (null)
+context:  {}
+template:
+  $sort:  null
 error: true  # $sort must be given an array
 ################################################################################
 ---
