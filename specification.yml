@@ -478,6 +478,17 @@ context:  {}
 template: {$sort: [3, 4, 1, 2]}
 result:   [1, 2, 3, 4]
 ---
+title:    simple sort of strings (shortest first)
+context:  {}
+template: {$sort: ['android', 'aardvark', 'add', 'adderall']}
+result:   ['aardvark', 'add', 'adderall', 'android']
+---
+title:    simple sort of multi-digit numbers
+context:  {}
+template: {$sort: [111, 22, 3]}
+result:   [3, 22, 111]
+todo: 'https://github.com/taskcluster/json-e/issues/70'
+---
 title:    simple sort with $eval
 context:  {array: [3, 4, 1, 2]}
 template: {$sort: {$eval: 'array'}}
@@ -518,6 +529,12 @@ title:    sort requires an array (object)
 context:  {}
 template:
   $sort:  {k: 1, b: 4, x: 8}
+error: true  # $sort must be given an array
+---
+title:    sort requires an array (null)
+context:  {}
+template:
+  $sort:  null
 error: true  # $sort must be given an array
 ################################################################################
 ---
