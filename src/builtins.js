@@ -1,4 +1,4 @@
-import BuiltinError from './error';
+import {BuiltinError} from './error';
 import fromNow from './from-now';
 import {
   isString, isNumber, isBool,
