@@ -1324,6 +1324,11 @@ title: 'nested property access with numeric value'
 context: {key: {key2: {key3: 1}}}
 template: {$eval: 'key["key2"]["key3"]'}
 result: 1
+---
+title: 'property access with expression value'
+context: {key: abc, values: {abc: 2, def: 3}}
+template: {$eval: 'values[key]'}
+result: 2
 ################################################################################
 ---
 section: expression language - array access
