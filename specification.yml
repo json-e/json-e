@@ -2782,17 +2782,17 @@ context: {key: '12345'}
 template: {$eval: 'key[-2:]'}
 result: '45'
 ---
-title: 'string slicing (noninteger first index)'
+title: 'string slicing (fractional first index)'
 context: {key: '12345'}
 template: {$eval: 'key[1.5:3]'}
 todo: 'https://github.com/taskcluster/json-e/issues/64'
 ---
-title: 'string slicing (noninteger second index)'
+title: 'string slicing (fractional second index)'
 context: {key: '12345'}
 template: {$eval: 'key[1:3.5]'}
 todo: 'https://github.com/taskcluster/json-e/issues/64'
 ---
-title: 'string slicing (noninteger indexes)'
+title: 'string slicing (fractional indexes)'
 context: {key: '12345'}
 template: {$eval: 'key[1.5:3.5]'}
 todo: 'https://github.com/taskcluster/json-e/issues/64'
@@ -2930,6 +2930,26 @@ context: {key: {key2: {key3: [1,2,3,4,5]}}}
 template: {$eval: 'key["key2"]["key3"][0] + key["key2"]["key3"][1] + key["key2"]["key3"][2] + key["key2"]["key3"][3] + key["key2"]["key3"][4]'}
 result: 15
 ---
+title: 'indexing number'
+context: {key: 123}
+template: {$eval: 'key[2]'}
+error: true
+---
+title: 'indexing null'
+context: {key: null}
+template: {$eval: 'key[2]'}
+error: true
+---
+title: 'indexing boolean'
+context: {key: true}
+template: {$eval: 'key[2]'}
+error: true
+---
+title: 'indexing object'
+context: {key: {x: 10}}
+template: {$eval: 'key[2]'}
+error: true
+---
 title: 'array length'
 context: {key: [1, 3, 5]}
 template: {$eval: 'key.length'}
@@ -3006,6 +3026,26 @@ error: true
 title: 'array slicing type error (5)'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key["a":2]'}
+error: true
+---
+title: 'slicing number'
+context: {key: 123}
+template: {$eval: 'key[2:]'}
+error: true
+---
+title: 'slicing null'
+context: {key: null}
+template: {$eval: 'key[2:]'}
+error: true
+---
+title: 'slicing boolean'
+context: {key: true}
+template: {$eval: 'key[2:]'}
+error: true
+---
+title: 'slicing object'
+context: {key: {x: 10}}
+template: {$eval: 'key[2:]'}
 error: true
 ################################################################################
 ---
