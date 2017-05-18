@@ -1126,6 +1126,16 @@ context:  {}
 template: {$eval: '10.5'}
 result:   10.5
 ---
+title:    hex literal
+context:  {}
+template: {$eval: '0xff'}
+error: true
+---
+title:    leading zeroes (not octal)
+context:  {}
+template: {$eval: '0777'}
+result: 777
+---
 title:    addition
 context:  {a: 1, b: 2}
 template: {$eval: 'a + b + 7'}
