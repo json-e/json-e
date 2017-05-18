@@ -1232,7 +1232,7 @@ template: {$eval: 'max(a, 3)'}
 result: 3
 ################################################################################
 ---
-section: expression language - arithemtic
+section: expression language - arithmetic
 ---
 title: 'addition'
 context: {a: 1, b: 2}
@@ -1304,29 +1304,941 @@ context: {a: 2, b: 3}
 template: {$eval: '2 ** 2 ** 3'}
 result: 256
 ---
-title: 'TypeError: exponentiation (1)'
-context: {a: 'hello', b: 2}
+title: 'unary negation'
+context: {a: 2}
+template: {$eval: '-a'}
+result: -2
+---
+title: 'unary plus'
+context: {a: 2}
+template: {$eval: '+a'}
+result: 2
+################################################################################
+---
+section: expression language - operator type errors
+---
+title: 'addition of strings to numbers'
+context: {a: 'a', b: 1}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of strings to null'
+context: {a: 'a', b: null}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of strings to booleans'
+context: {a: 'a', b: true}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of strings to objects'
+context: {a: 'a', b: {x: 1}}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of strings to arrays'
+context: {a: 'a', b: [1, 2]}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'subtraction of strings from strings'
+context: {a: 'a', b: 'b'}
+template: {$eval: 'a-b'}
+error: true
+---
+title: 'subtraction of strings from numbers'
+context: {a: 'a', b: 1}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of strings from null'
+context: {a: 'a', b: null}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of strings from booleans'
+context: {a: 'a', b: true}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of strings from objects'
+context: {a: 'a', b: {x: 1}}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of strings from arrays'
+context: {a: 'a', b: [1, 2]}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'multiplication of strings to strings'
+context: {a: 'a', b: 'b'}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of strings to numbers'
+context: {a: 'a', b: 1}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of strings to null'
+context: {a: 'a', b: null}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of strings to booleans'
+context: {a: 'a', b: true}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of strings to objects'
+context: {a: 'a', b: {x: 1}}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of strings to arrays'
+context: {a: 'a', b: [1, 2]}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'division of strings by strings'
+context: {a: 'a', b: 'b'}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of strings by numbers'
+context: {a: 'a', b: 1}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of strings by null'
+context: {a: 'a', b: null}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of strings by booleans'
+context: {a: 'a', b: true}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of strings by objects'
+context: {a: 'a', b: {x: 1}}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of strings by arrays'
+context: {a: 'a', b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'exponentiation of strings by strings'
+context: {a: 'a', b: 'b'}
 template: {$eval: 'a ** b'}
 error: true
 ---
-title: 'TypeError: exponentiation (2)'
-context: {a: 'hello', b: 2}
-template: {$eval: 'b ** a'}
+title: 'exponentiation of strings by numbers'
+context: {a: 'a', b: 1}
+template: {$eval: 'a ** b'}
 error: true
 ---
-title: 'TypeError: exponentiation (3)'
-context: {a: 'hello', b: 2}
-template: {$eval: '"hello" ** b'}
+title: 'exponentiation of strings by null'
+context: {a: 'a', b: null}
+template: {$eval: 'a ** b'}
 error: true
 ---
-title: 'TypeError: exponentiation (4)'
-context: {a: 'hello', b: 2}
-template: {$eval: 'b ** "hello"'}
+title: 'exponentiation of strings by booleans'
+context: {a: 'a', b: true}
+template: {$eval: 'a ** b'}
 error: true
 ---
-title: 'TypeError: exponentiation (5)'
-context: {a: 'hello', b: 2}
-template: {$eval: '2 ** "hello"'}
+title: 'exponentiation of strings by objects'
+context: {a: 'a', b: {x: 1}}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of strings by arrays'
+context: {a: 'a', b: [1, 2]}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'unary negation of string'
+context: {a: 'a'}
+template: {$eval: '-a'}
+error: true
+---
+title: 'unary plus of string'
+context: {a: 'a'}
+template: {$eval: '+a'}
+error: true
+---
+title: 'addition of numbers to strings'
+context: {a: 13, b: 'b'}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of numbers to null'
+context: {a: 13, b: null}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of numbers to booleans'
+context: {a: 13, b: true}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of numbers to objects'
+context: {a: 13, b: {x: 1}}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of numbers to arrays'
+context: {a: 13, b: [1, 2]}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'subtraction of numbers from strings'
+context: {a: 13, b: 'b'}
+template: {$eval: 'a-b'}
+error: true
+---
+title: 'subtraction of numbers from null'
+context: {a: 13, b: null}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of numbers from booleans'
+context: {a: 13, b: true}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of numbers from objects'
+context: {a: 13, b: {x: 1}}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of numbers from arrays'
+context: {a: 13, b: [1, 2]}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'multiplication of numbers to strings'
+context: {a: 13, b: 'b'}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of numbers to null'
+context: {a: 13, b: null}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of numbers to booleans'
+context: {a: 13, b: true}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of numbers to objects'
+context: {a: 13, b: {x: 1}}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of numbers to arrays'
+context: {a: 13, b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of numbers by strings'
+context: {a: 13, b: 'b'}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of numbers by null'
+context: {a: 13, b: null}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of numbers by booleans'
+context: {a: 13, b: true}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of numbers by objects'
+context: {a: 13, b: {x: 1}}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of numbers by arrays'
+context: {a: 13, b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'exponentiation of numbers by strings'
+context: {a: 13, b: 'b'}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of numbers by null'
+context: {a: 13, b: null}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of numbers by booleans'
+context: {a: 13, b: true}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of numbers by objects'
+context: {a: 13, b: {x: 1}}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of numbers by arrays'
+context: {a: 13, b: [1, 2]}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'addition of null to strings'
+context: {a: null, b: 'a'}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of null to numbers'
+context: {a: null, b: 1}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of null to null'
+context: {a: null, b: null}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of null to booleans'
+context: {a: null, b: true}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of null to objects'
+context: {a: null, b: {x: 1}}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of null to arrays'
+context: {a: null, b: [1, 2]}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'subtraction of null from strings'
+context: {a: null, b: 'b'}
+template: {$eval: 'a-b'}
+error: true
+---
+title: 'subtraction of null from numbers'
+context: {a: null, b: 1}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of null from null'
+context: {a: null, b: null}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of null from booleans'
+context: {a: null, b: true}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of null from objects'
+context: {a: null, b: {x: 1}}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of null from arrays'
+context: {a: null, b: [1, 2]}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'multiplication of null to strings'
+context: {a: null, b: 'b'}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of null to numbers'
+context: {a: null, b: 1}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of null to null'
+context: {a: null, b: null}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of null to booleans'
+context: {a: null, b: true}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of null to objects'
+context: {a: null, b: {x: 1}}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of null to arrays'
+context: {a: null, b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of null by strings'
+context: {a: null, b: 'b'}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of null by numbers'
+context: {a: null, b: 1}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of null by null'
+context: {a: null, b: null}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of null by booleans'
+context: {a: null, b: true}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of null by objects'
+context: {a: null, b: {x: 1}}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of null by arrays'
+context: {a: null, b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'exponentiation of null by strings'
+context: {a: null, b: 'b'}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of null by numbers'
+context: {a: null, b: 1}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of null by null'
+context: {a: null, b: null}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of null by booleans'
+context: {a: null, b: true}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of null by objects'
+context: {a: null, b: {x: 1}}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of null by arrays'
+context: {a: null, b: [1, 2]}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'unary negation of null'
+context: {a: null}
+template: {$eval: '-a'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/73'
+---
+title: 'unary plus of null'
+context: {a: null}
+template: {$eval: '+a'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/73'
+---
+title: 'addition of boolean to strings'
+context: {a: true, b: 'a'}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of boolean to numbers'
+context: {a: true, b: 1}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of boolean to null'
+context: {a: true, b: null}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of boolean to booleans'
+context: {a: true, b: true}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of boolean to objects'
+context: {a: true, b: {x: 1}}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of boolean to arrays'
+context: {a: true, b: [1, 2]}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'subtraction of boolean from strings'
+context: {a: true, b: 'b'}
+template: {$eval: 'a-b'}
+error: true
+---
+title: 'subtraction of boolean from numbers'
+context: {a: true, b: 1}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of boolean from null'
+context: {a: true, b: null}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of boolean from booleans'
+context: {a: true, b: true}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of boolean from objects'
+context: {a: true, b: {x: 1}}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of boolean from arrays'
+context: {a: true, b: [1, 2]}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'multiplication of boolean to strings'
+context: {a: true, b: 'b'}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of boolean to numbers'
+context: {a: true, b: 1}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of boolean to null'
+context: {a: true, b: null}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of boolean to booleans'
+context: {a: true, b: true}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of boolean to objects'
+context: {a: true, b: {x: 1}}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of boolean to arrays'
+context: {a: true, b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of boolean by strings'
+context: {a: true, b: 'b'}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of boolean by numbers'
+context: {a: true, b: 1}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of boolean by null'
+context: {a: true, b: null}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of boolean by booleans'
+context: {a: true, b: true}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of boolean by objects'
+context: {a: true, b: {x: 1}}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of boolean by arrays'
+context: {a: true, b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'exponentiation of boolean by strings'
+context: {a: true, b: 'b'}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of boolean by numbers'
+context: {a: true, b: 1}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of boolean by null'
+context: {a: true, b: null}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of boolean by booleans'
+context: {a: true, b: true}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of boolean by objects'
+context: {a: true, b: {x: 1}}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of boolean by arrays'
+context: {a: true, b: [1, 2]}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'unary negation of boolean'
+context: {a: true}
+template: {$eval: '-a'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/73'
+---
+title: 'unary plus of boolean'
+context: {a: true}
+template: {$eval: '+a'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/73'
+---
+title: 'addition of object to strings'
+context: {a: {x: 10}, b: 'a'}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of object to numbers'
+context: {a: {x: 10}, b: 1}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of object to null'
+context: {a: {x: 10}, b: null}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of object to booleans'
+context: {a: {x: 10}, b: true}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of object to objects'
+context: {a: {x: 10}, b: {x: 1}}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of object to arrays'
+context: {a: {x: 10}, b: [1, 2]}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'subtraction of object from strings'
+context: {a: {x: 10}, b: 'b'}
+template: {$eval: 'a-b'}
+error: true
+---
+title: 'subtraction of object from numbers'
+context: {a: {x: 10}, b: 1}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of object from null'
+context: {a: {x: 10}, b: null}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of object from booleans'
+context: {a: {x: 10}, b: true}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of object from objects'
+context: {a: {x: 10}, b: {x: 1}}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of object from arrays'
+context: {a: {x: 10}, b: [1, 2]}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'multiplication of object to strings'
+context: {a: {x: 10}, b: 'b'}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of object to numbers'
+context: {a: {x: 10}, b: 1}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of object to null'
+context: {a: {x: 10}, b: null}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of object to booleans'
+context: {a: {x: 10}, b: true}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of object to objects'
+context: {a: {x: 10}, b: {x: 1}}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of object to arrays'
+context: {a: {x: 10}, b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of object by strings'
+context: {a: {x: 10}, b: 'b'}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of object by numbers'
+context: {a: {x: 10}, b: 1}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of object by null'
+context: {a: {x: 10}, b: null}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of object by booleans'
+context: {a: {x: 10}, b: true}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of object by objects'
+context: {a: {x: 10}, b: {x: 1}}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of object by arrays'
+context: {a: {x: 10}, b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'exponentiation of object by strings'
+context: {a: {x: 10}, b: 'b'}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of object by numbers'
+context: {a: {x: 10}, b: 1}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of object by null'
+context: {a: {x: 10}, b: null}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of object by booleans'
+context: {a: {x: 10}, b: true}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of object by objects'
+context: {a: {x: 10}, b: {x: 1}}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of object by arrays'
+context: {a: {x: 10}, b: [1, 2]}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'unary negation of object'
+context: {a: {x: 10}}
+template: {$eval: '-a'}
+error: true
+---
+title: 'unary plus of object'
+context: {a: {x: 10}}
+template: {$eval: '+a'}
+error: true
+---
+title: 'addition of array to strings'
+context: {a: [1, 2], b: 'a'}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of array to numbers'
+context: {a: [1, 2], b: 1}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of array to null'
+context: {a: [1, 2], b: null}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of array to booleans'
+context: {a: [1, 2], b: true}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of array to objects'
+context: {a: [1, 2], b: {x: 1}}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'addition of array to arrays'
+context: {a: [1, 2], b: [1, 2]}
+template: {$eval: 'a + b'}
+error: true
+---
+title: 'subtraction of array from strings'
+context: {a: [1, 2], b: 'b'}
+template: {$eval: 'a-b'}
+error: true
+---
+title: 'subtraction of array from numbers'
+context: {a: [1, 2], b: 1}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of array from null'
+context: {a: [1, 2], b: null}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of array from booleans'
+context: {a: [1, 2], b: true}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of array from objects'
+context: {a: [1, 2], b: {x: 1}}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'subtraction of array from arrays'
+context: {a: [1, 2], b: [1, 2]}
+template: {$eval: 'a - b'}
+error: true
+---
+title: 'multiplication of array to strings'
+context: {a: [1, 2], b: 'b'}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of array to numbers'
+context: {a: [1, 2], b: 1}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of array to null'
+context: {a: [1, 2], b: null}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of array to booleans'
+context: {a: [1, 2], b: true}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of array to objects'
+context: {a: [1, 2], b: {x: 1}}
+template: {$eval: 'a * b'}
+error: true
+---
+title: 'multiplication of array to arrays'
+context: {a: [1, 2], b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of array by strings'
+context: {a: [1, 2], b: 'b'}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of array by numbers'
+context: {a: [1, 2], b: 1}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of array by null'
+context: {a: [1, 2], b: null}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of array by booleans'
+context: {a: [1, 2], b: true}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of array by objects'
+context: {a: [1, 2], b: {x: 1}}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'division of array by arrays'
+context: {a: [1, 2], b: [1, 2]}
+template: {$eval: 'a / b'}
+error: true
+---
+title: 'exponentiation of array by strings'
+context: {a: [1, 2], b: 'b'}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of array by numbers'
+context: {a: [1, 2], b: 1}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of array by null'
+context: {a: [1, 2], b: null}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of array by booleans'
+context: {a: [1, 2], b: true}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of array by objects'
+context: {a: [1, 2], b: {x: 1}}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'exponentiation of array by arrays'
+context: {a: [1, 2], b: [1, 2]}
+template: {$eval: 'a ** b'}
+error: true
+---
+title: 'unary negation of array'
+context: {a: [1, 2]}
+template: {$eval: '-a'}
+error: true
+---
+title: 'unary plus of array'
+context: {a: [1, 2]}
+template: {$eval: '+a'}
 error: true
 ################################################################################
 ---
