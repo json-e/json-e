@@ -30,16 +30,6 @@ context:  {}
 template: {$fromNow: '2 days 3 hours'}
 result:   '2017-01-21T19:27:20.974Z'
 ---
-title:    fromNow built-in
-context:  {}
-template: {$eval: fromNow("")}
-result:   '2017-01-19T16:27:20.974Z'
----
-title:    fromNow built-in 2 days 3 hours
-context:  {}
-template: {$eval: fromNow("2 days 3 hours")}
-result:   '2017-01-21T19:27:20.974Z'
----
 title:    $eval
 context:  {key: ['value', 1, 2, true, {}]}
 template: {$eval: 'key'}
@@ -693,6 +683,11 @@ context: {key1: 1, key2: 2}
 template: {$eval: 'min(2, 1, 3, 4, 5)'}
 result: 1
 ---
+title: min - TypeError
+context: {}
+template: {$eval: 'min("11")'}
+error: true
+---
 title: min (7)
 context: {}
 template: {$eval: 'min()'}
@@ -729,6 +724,11 @@ context: {key1: 1, key2: 2}
 template: {$eval: 'max(2, 1, 3, 4, 5)'}
 result: 5
 ---
+title: max - TypeError
+context: {}
+template: {$eval: 'max("12")'}
+error: true
+---
 title: max (7)
 context: {}
 template: {$eval: 'max()'}
@@ -754,6 +754,11 @@ title: sqrt (3)
 context: {}
 template: {$eval: 'sqrt(9)'}
 result: 3.0
+---
+title: sqrt - TypeError
+context: {}
+template: {$eval: 'sqrt("nine")'}
+error: true
 ---
 title: ceil (1)
 context: {key: 1.1}
@@ -795,6 +800,11 @@ context: {key: 1.0}
 template: {$eval: 'ceil(key)'}
 result: 1.0
 ---
+title: ceil - TypeError
+context: {}
+template: {$eval: 'ceil(true)'}
+error: true
+---
 title: floor (1)
 context: {key: 1.1}
 template: {$eval: 'floor(key)'}
@@ -834,6 +844,11 @@ title: floor (8)
 context: {key: 1.0}
 template: {$eval: 'floor(key)'}
 result: 1.0
+---
+title: floor - TypeError
+context: {key: null}
+template: {$eval: 'floor(key)'}
+error: true
 ---
 title: abs (1)
 context: {key: -1.1}
@@ -934,6 +949,11 @@ title: abs (20)
 context: {}
 template: {$eval: 'abs(1.0)'}
 result: 1.0
+---
+title: abs - TypeError
+context: {}
+template: {$eval: 'abs({})'}
+error: true
 ---
 title: lowercase (1)
 context: {key: 'HEllo'}
@@ -1095,6 +1115,11 @@ context: {}
 template: {$eval: 'str(true)'}
 result: 'true'
 ---
+title: str (6)
+context: {x: null}
+template: {$eval: 'str(x)'}
+error: true
+---
 title: str (7)
 context: {key: false}
 template: {$eval: 'str(key)'}
@@ -1114,6 +1139,21 @@ title: str (10)
 context: {}
 template: {$eval: 'str([1, 2, 3])'}
 result: '1,2,3'
+---
+title:    fromNow
+context:  {}
+template: {$eval: fromNow("")}
+result:   '2017-01-19T16:27:20.974Z'
+---
+title:    fromNow - 2 days 3 hours
+context:  {}
+template: {$eval: fromNow("2 days 3 hours")}
+result:   '2017-01-21T19:27:20.974Z'
+---
+title:    fromNow - TypeError
+context:  {}
+template: {$eval: fromNow(13)}
+error: true
 ---
 title: override builtin (1), uppercase
 context: {uppercase: 1}
