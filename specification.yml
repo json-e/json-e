@@ -1131,6 +1131,16 @@ context:  {}
 template: {$eval: '0xff'}
 error: true
 ---
+title:    string literal with single quote
+context:  {}
+template: {$eval: "'three!'"}
+result: 'three!'
+---
+title:    string literal with double quote
+context:  {}
+template: {$eval: '"three!"'}
+result: 'three!'
+---
 title:    leading zeroes (not octal)
 context:  {}
 template: {$eval: '0777'}
