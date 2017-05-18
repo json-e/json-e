@@ -602,6 +602,31 @@ context:  {}
 template: {$reverse: [3, 4, 1, 2]}
 result:   [2, 1, 4, 3]
 ---
+title:    reverse of an object
+context:  {}
+template: {$reverse: {a: 1}}
+error: true
+---
+title:    reverse of null
+context:  {}
+template: {$reverse: null}
+error: true
+---
+title:    reverse of a string
+context:  {}
+template: {$reverse: 'foo'}
+error: true
+---
+title:    reverse of a number
+context:  {}
+template: {$reverse: 1}
+error: true
+---
+title:    reverse of a boolean
+context:  {}
+template: {$reverse: true}
+error: true
+---
 title:    simple reverse with $eval
 context:  {key: [3, 4, 1, 2]}
 template: {$reverse: {$eval: 'key'}}
@@ -1986,6 +2011,415 @@ title: 'greater than equal (4)'
 context: {a: 1, b: 1}
 template: {$eval: "a >= b"}
 result: true
+---
+title: 'deep object equality'
+context:
+    a: {left: 1, right: {left: 2, right: 3}}
+    b: {left: 1, right: {left: 2, right: 3}}
+template: {$eval: "a == b"}
+result: true
+todo: 'https://github.com/taskcluster/json-e/issues/72'
+---
+title: 'boolean equality'
+context: {}
+template: {$eval: "true == true"}
+result: true
+---
+title: 'null equality'
+context: {a: null, b:  null}
+template: {$eval: "a == b"}
+result: true
+---
+title: 'string equality'
+context: {a: 'xyz', b:  'xyz'}
+template: {$eval: "a == b"}
+result: true
+---
+title: 'deep object inequality'
+context:
+    a: {left: 1, right: {left: 2, right: 3}}
+    b: {left: 1, right: {left: 3, right: 2}}
+template: {$eval: "a != b"}
+result: true
+todo: 'https://github.com/taskcluster/json-e/issues/72'
+---
+title: 'deep array equality'
+context:
+    a: [1, [2, 3]]
+    b: [1, [2, 3]]
+template: {$eval: "a == b"}
+result: true
+todo: 'https://github.com/taskcluster/json-e/issues/72'
+---
+title: 'deep array inequality'
+context:
+    a: [1, [2, 3]]
+    b: [1, [3, 2]]
+template: {$eval: "a != b"}
+result: true
+todo: 'https://github.com/taskcluster/json-e/issues/72'
+---
+title: ordering of string and string
+context: {a: 'abc', b: 'def'}
+template: {$eval: 'a < b'}
+result: true
+---
+title: ordering of string and number
+context: {a: 'abc', b: 27}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of string and null
+context: {a: 'abc', b: null}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of string and boolean
+context: {a: 'abc', b: true}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of string and object
+context: {a: 'abc', b: {}}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of string and array
+context: {a: 'abc', b: []}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of number and string
+context: {a: 123, b: 'def'}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of number and number
+context: {a: 123, b: 27}
+template: {$eval: 'a < b'}
+result: false
+---
+title: ordering of number and null
+context: {a: 123, b: null}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of number and boolean
+context: {a: 123, b: true}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of number and object
+context: {a: 123, b: {}}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of number and array
+context: {a: 123, b: []}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of null and string
+context: {a: null, b: 'def'}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of null and number
+context: {a: null, b: 27}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of null and null
+context: {a: null, b: null}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of null and boolean
+context: {a: null, b: true}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of null and object
+context: {a: null, b: {}}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of null and array
+context: {a: null, b: []}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of boolean and string
+context: {a: true, b: 'def'}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of boolean and number
+context: {a: true, b: 27}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of boolean and null
+context: {a: true, b: null}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of boolean and boolean
+context: {a: true, b: true}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of boolean and object
+context: {a: true, b: {}}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of boolean and array
+context: {a: true, b: []}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of object and string
+context: {a: {}, b: 'def'}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of object and number
+context: {a: {}, b: 27}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of object and null
+context: {a: {}, b: null}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of object and boolean
+context: {a: {}, b: true}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of object and object
+context: {a: {}, b: {}}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of object and array
+context: {a: {}, b: []}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of array and string
+context: {a: [], b: 'def'}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of array and number
+context: {a: [], b: 27}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of array and null
+context: {a: [], b: null}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of array and boolean
+context: {a: [], b: true}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of array and array
+context: {a: [], b: {}}
+template: {$eval: 'a < b'}
+error: true
+---
+title: ordering of array and array
+context: {a: [], b: []}
+template: {$eval: 'a < b'}
+error: true
+---
+title: equality of string and string
+context: {a: 'abc', b: 'def'}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of string and number
+context: {a: 'abc', b: 27}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of string and null
+context: {a: 'abc', b: null}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of string and boolean
+context: {a: 'abc', b: true}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of string and object
+context: {a: 'abc', b: {}}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of string and array
+context: {a: 'abc', b: []}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of number and string
+context: {a: 123, b: 'def'}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of number and number
+context: {a: 123, b: 27}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of number and null
+context: {a: 123, b: null}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of number and boolean
+context: {a: 123, b: true}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of number and object
+context: {a: 123, b: {}}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of number and array
+context: {a: 123, b: []}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of null and string
+context: {a: null, b: 'def'}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of null and number
+context: {a: null, b: 27}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of null and null
+context: {a: null, b: null}
+template: {$eval: 'a == b'}
+result: true
+---
+title: equality of null and boolean
+context: {a: null, b: true}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of null and object
+context: {a: null, b: {}}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of null and array
+context: {a: null, b: []}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of boolean and string
+context: {a: true, b: 'def'}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of boolean and number
+context: {a: true, b: 27}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of boolean and null
+context: {a: true, b: null}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of boolean and boolean
+context: {a: true, b: true}
+template: {$eval: 'a == b'}
+result: true
+---
+title: equality of boolean and object
+context: {a: true, b: {}}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of boolean and array
+context: {a: true, b: []}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of object and string
+context: {a: {}, b: 'def'}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of object and number
+context: {a: {}, b: 27}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of object and null
+context: {a: {}, b: null}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of object and boolean
+context: {a: {}, b: true}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of object and object
+context: {a: {}, b: {}}
+template: {$eval: 'a == b'}
+result: true
+todo: 'https://github.com/taskcluster/json-e/issues/72'
+---
+title: equality of object and array
+context: {a: {}, b: []}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of array and string
+context: {a: [], b: 'def'}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of array and number
+context: {a: [], b: 27}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of array and null
+context: {a: [], b: null}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of array and boolean
+context: {a: [], b: true}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of array and object
+context: {a: [], b: {}}
+template: {$eval: 'a == b'}
+result: false
+---
+title: equality of array and array
+context: {a: [], b: []}
+template: {$eval: 'a == b'}
+result: true
+todo: 'https://github.com/taskcluster/json-e/issues/72'
 ################################################################################
 ---
 section: expression language - compound literals
