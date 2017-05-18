@@ -10,12 +10,7 @@
 # {section: '...'} is encouraged to separate sections.
 #
 # Test conditions:
-#   1) Context is assumed to always functions:
-#     - max(a, b)
-#     - min(a, b)
-#   2) Time at test time is expected to be '2017-01-19T16:27:20.974Z'
-#   3) JSON is rendered to strings without whitespace and preserving order of
-#      keys
+#   1) Time at test time is expected to be '2017-01-19T16:27:20.974Z'
 ################################################################################
 ---
 section:  Initial Minimal Subset
@@ -698,6 +693,12 @@ context: {key1: 1, key2: 2}
 template: {$eval: 'min(2, 1, 3, 4, 5)'}
 result: 1
 ---
+title: min (7)
+context: {}
+template: {$eval: 'min()'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/75'
+---
 title: max (1)
 context: {key1: 1, key2: 2}
 template: {$eval: 'max(key1, key2)'}
@@ -727,6 +728,12 @@ title: max (6)
 context: {key1: 1, key2: 2}
 template: {$eval: 'max(2, 1, 3, 4, 5)'}
 result: 5
+---
+title: max (7)
+context: {}
+template: {$eval: 'max()'}
+error: true
+todo: 'https://github.com/taskcluster/json-e/issues/75'
 ---
 title: sqrt (1)
 context: {key: 4}
