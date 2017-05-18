@@ -2871,6 +2871,26 @@ title: 'property access with expression value'
 context: {key: abc, values: {abc: 2, def: 3}}
 template: {$eval: 'values[key]'}
 result: 2
+---
+title: 'property of number'
+context: {key: 123}
+template: {$eval: 'key.valueOf'}
+error: true
+---
+title: 'property of null'
+context: {key: null}
+template: {$eval: 'key.foo'}
+error: true
+---
+title: 'property of boolean'
+context: {key: null}
+template: {$eval: 'key.valueOf'}
+error: true
+---
+title: 'property of array'
+context: {key: []}
+template: {$eval: 'key.valueOf'}
+error: true
 ################################################################################
 ---
 section: expression language - array access
