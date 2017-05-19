@@ -241,3 +241,31 @@ of the context.
 * `lowercase(s)`, `uppercase(s)` -- convert string case
 * `str(x)` -- convert string, number, boolean, or array to string
 * `len(x)` -- length of a string or array
+
+### Custom Functions
+
+The context supplied to JSON-e can contain JS function objects. These will be
+available just like the built-in functions are.  For example:
+
+```js
+var context = {
+  imageData: function(img) {
+    return ...;
+  },
+};
+
+var template = {
+  title: "Trip to Hawaii",
+  thumbnail: {$eval: 'imageData("hawaii")`},
+};
+
+return jsone(template, context);
+```
+
+NOTE: Context functions are called synchrnously. Any complex asynchronous
+operations should be handled before rendering the template.
+
+NOTE: If the template is untrusted, it can pass arbitrary data to functions
+in the context, which must guard against such behavior. For example, if the
+`imageData` function above reads data from a file, it must sanitize the
+filename before opening it.
