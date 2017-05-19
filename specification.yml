@@ -1188,6 +1188,17 @@ context:  {}
 template: {$eval: '"three!"'}
 result: 'three!'
 ---
+title:    boolean literals
+context:  {}
+template: {$eval: '[true, false]'}
+result: [true, false]
+---
+title:    null literal
+context:  {}
+template: {$eval: '[null, null]'}
+result: [null, null]
+todo: 'https://github.com/taskcluster/json-e/issues/74'
+---
 title:    leading zeroes (not octal)
 context:  {}
 template: {$eval: '0777'}
