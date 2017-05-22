@@ -90,10 +90,6 @@ context:  {key: {}}
 template: 'hello ${key}'
 error:    true #TODO: Decide if it should be interpolated as JSON
 ---
-title: invalid context (1)
-context: {{a:2}: 1}
-error: true
----
 title: invalid context (2)
 context: {'a b c': 1}
 error: true
