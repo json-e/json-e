@@ -1,0 +1,366 @@
+Initial Minimal Subset: Identity
+Initial Minimal Subset: fromNow
+Initial Minimal Subset: fromNow 2 days 3 hours
+Initial Minimal Subset: fromNow built-in
+Initial Minimal Subset: fromNow built-in 2 days 3 hours
+Initial Minimal Subset: $eval
+Initial Minimal Subset: $json
+Initial Minimal Subset: string interpolation
+Initial Minimal Subset: string interpolation with object evaluation
+Initial Minimal Subset: multiple string interpolation (1)
+Initial Minimal Subset: multiple string interpolation (2)
+Initial Minimal Subset: multiple string interpolation (3)
+Initial Minimal Subset: can't interpolate arrays
+Initial Minimal Subset: can't interpolate objects
+$if-constructs: $if-then-else, true
+$if-constructs: $if-then-else, false
+$if-constructs: $if-then in array, true
+$if-constructs: $if-then in array, false
+$if-constructs: $if-then in object, true
+$if-constructs: $if-then in object, false
+$if-constructs: $if -> delete-marker, true
+$if-constructs: $if -> delete-marker, false
+$if-constructs: $if->then, then => $eval, true
+$if-constructs: $if->else, else => $eval, false
+$if-constructs: $if->then, then => ${}, true
+$if-constructs: $if->else, else => ${}, false
+$if-constructs: $if->then, then => object, true
+$if-constructs: $if->else, else => object, false
+$if-constructs: $if->then, then => object, $eval, true
+$if-constructs: $if->else, else => object, $eval, false
+$if-constructs: $if->then, then => object, interpolation, true
+$if-constructs: $if->else, else => object, interpolation, false
+fromNow: fromNow 1 hour
+fromNow: fromNow 2 hours
+fromNow: fromNow 3h
+fromNow: fromNow 1 hours
+fromNow: fromNow -1 hour
+fromNow: fromNow 1 m
+fromNow: fromNow 1m
+fromNow: fromNow 12 min
+fromNow: fromNow 12min
+fromNow: fromNow 11m
+fromNow: fromNow 11 m
+fromNow: fromNow 1 day
+$json: wrap expressions with $eval
+$json: unwrap expressions not evaluated
+$json: $eval inside array
+accessing nested objects => context: $eval
+accessing nested objects => context: $json
+accessing nested objects => context: string interpolation
+$map: simple map
+$map: map to objects
+$map: complex identifier
+$map: must wrap expressions with $eval
+$map: can take from objects
+$map: can make objects too
+$map: respects delete-marker from $if
+$map: $map requires an array
+$sort: simple sort
+$sort: simple sort with $eval
+$sort: sort by
+$sort: cannot sort objects without by
+$sort: cannot sort arrays without by
+$sort: sort requires an array (string)
+$sort: sort requires an array (number)
+$sort: sort requires an array (object)
+$reverse: simple reverse
+$reverse: simple reverse with $eval
+$reverse: simple reverse + $sort
+builtins: min (1)
+builtins: min (2)
+builtins: min (3)
+builtins: min (4)
+builtins: min (5)
+builtins: min (6)
+builtins: max (1)
+builtins: max (2)
+builtins: max (3)
+builtins: max (4)
+builtins: max (5)
+builtins: max (6)
+builtins: sqrt (1)
+builtins: sqrt (2)
+builtins: sqrt (3)
+builtins: sqrt (3)
+builtins: ceil (1)
+builtins: ceil (2)
+builtins: ceil (3)
+builtins: ceil (4)
+builtins: ceil (5)
+builtins: ceil (6)
+builtins: ceil (7)
+builtins: ceil (8)
+builtins: floor (1)
+builtins: floor (2)
+builtins: floor (3)
+builtins: floor (4)
+builtins: floor (5)
+builtins: floor (6)
+builtins: floor (7)
+builtins: floor (8)
+builtins: abs (1)
+builtins: abs (2)
+builtins: abs (3)
+builtins: abs (4)
+builtins: abs (5)
+builtins: abs (6)
+builtins: abs (7)
+builtins: abs (8)
+builtins: abs (9)
+builtins: abs (10)
+builtins: abs (11)
+builtins: abs (12)
+builtins: abs (13)
+builtins: abs (14)
+builtins: abs (15)
+builtins: abs (16)
+builtins: abs (17)
+builtins: abs (18)
+builtins: abs (19)
+builtins: abs (20)
+builtins: lowercase (1)
+builtins: lowercase (2)
+builtins: TypeError lowercase (1)
+builtins: TypeError lowercase (2)
+builtins: TypeError lowercase (3)
+builtins: TypeError lowercase (4)
+builtins: TypeError lowercase (5)
+builtins: TypeError lowercase (6)
+builtins: uppercase (1)
+builtins: uppercase (2)
+builtins: TypeError uppercase (1)
+builtins: TypeError uppercase (2)
+builtins: TypeError uppercase (3)
+builtins: TypeError uppercase (4)
+builtins: TypeError uppercase (5)
+builtins: TypeError uppercase (6)
+builtins: len (1)
+builtins: len (2)
+builtins: len (3)
+builtins: len (4)
+builtins: TypeError len (1)
+builtins: TypeError len (2)
+builtins: TypeError len (3)
+builtins: TypeError len (4)
+builtins: str (1)
+builtins: str (2)
+builtins: str (3)
+builtins: str (4)
+builtins: str (3)
+builtins: str (4)
+builtins: str (5)
+builtins: str (6)
+builtins: str (7)
+builtins: str (8)
+builtins: str (9)
+builtins: str (10)
+builtins: override builtin (1), uppercase
+builtins: override builtin (2), min
+expression language - basics: addition
+expression language - basics: multiplication
+expression language - basics: string concatenation
+expression language - basics: $eval must take string
+expression language - basics: array access [index]
+expression language - basics: array access [index]
+expression language - basics: array access [-index]
+expression language - basics: array access [-index]
+expression language - basics: array slicing [begin:end], [begin, end)
+expression language - basics: array slicing [begin:], [begin, end)
+expression language - basics: array slicing [begin:], [begin, end)
+expression language - basics: array slicing [-begin:], [begin, end)
+expression language - basics: array slicing [-begin:-end], [begin, end)
+expression language - basics: array slicing [:end], [begin, end)
+expression language - basics: array slicing [:-end], [begin, end)
+expression language - basics: function min(contextValue, contextValue)
+expression language - basics: function max(contextValue, contextValue)
+expression language - basics: function min(contextValue, value)
+expression language - basics: function max(contextValue, value)
+expression language - arithemtic: addition
+expression language - arithemtic: multiplication
+expression language - arithemtic: division (1)
+expression language - arithemtic: division (2)
+expression language - arithemtic: division (3)
+expression language - arithemtic: division (4)
+expression language - arithemtic: exponentiation (1)
+expression language - arithemtic: exponentiation (2)
+expression language - arithemtic: exponentiation (3)
+expression language - arithemtic: exponentiation (4)
+expression language - arithemtic: exponentiation, right associativity (1)
+expression language - arithemtic: exponentiation, right associativity (2)
+expression language - arithemtic: exponentiation, right associativity (3)
+expression language - arithemtic: exponentiation, right associativity (4)
+expression language - arithemtic: TypeError: exponentiation (1)
+expression language - arithemtic: TypeError: exponentiation (2)
+expression language - arithemtic: TypeError: exponentiation (3)
+expression language - arithemtic: TypeError: exponentiation (4)
+expression language - arithemtic: TypeError: exponentiation (5)
+expression language - logic: logical not (1)
+expression language - logic: logical not (2)
+expression language - logic: or operator (1)
+expression language - logic: or operator (2)
+expression language - logic: or operator (3)
+expression language - logic: or operator (4)
+expression language - logic: and operator (1)
+expression language - logic: and operator (2)
+expression language - logic: and operator (3)
+expression language - logic: and operator (4)
+expression language - logic: and operator with not operator
+expression language - logic: or operator with not operator
+expression language - logic: complex logical operation (1)
+expression language - logic: complex logical operation (2)
+expression language - logic: complex logical operation (3)
+expression language - logic: complex logical operation (4)
+expression language - string operations: string concatenation (1)
+expression language - string operations: TypeError: string + number (1)
+expression language - string operations: TypeError: string + number (2)
+expression language - string operations: TypeError: string + number (3)
+expression language - string operations: TypeError: number + string (4)
+expression language - string operations: string indexing (1)
+expression language - string operations: string indexing (2)
+expression language - string operations: string indexing (3)
+expression language - string operations: string indexing (4)
+expression language - string operations: string slicing (1)
+expression language - string operations: string slicing (2)
+expression language - string operations: string slicing type error (1)
+expression language - string operations: string slicing type error (2)
+expression language - property access: property with numeric value
+expression language - property access: property with string value
+expression language - property access: property with boolean value
+expression language - property access: property with object value
+expression language - property access: nested property access with object value
+expression language - property access: nested property access with numeric value
+expression language - array access: numeric
+expression language - array access: numeric, nonzero index
+expression language - array access: arithemtic with results
+expression language - array access: string index
+expression language - array access: nested, in property accesses
+expression language - array access: nested, in property access by string
+expression language - array access: nested, nonzero index
+expression language - array access: nested, nonzero index, in property access by string
+expression language - array access: nested, with arithmetic
+expression language - array access: nested, with arithmetic, in property access by string
+expression language - array slicing: array slicing (full slice)
+expression language - array slicing: array slicing (prefix)
+expression language - array slicing: array slicing (negative indices)
+expression language - array slicing: array slicing (noninteger index)
+expression language - array slicing: array slicing (no end index)
+expression language - array slicing: array slicing (no start index)
+expression language - array slicing: array slicing type error (1)
+expression language - array slicing: array slicing type error (2)
+expression language - array slicing: array slicing type error (3)
+expression language - array slicing: array slicing type error (4)
+expression language - array slicing: array slicing type error (5)
+expression language - function calls: function call (1)
+expression language - function calls: function call (2)
+expression language - function calls: function call (3)
+expression language - function calls: function call (4)
+expression language - function calls: function call (5)
+expression language - function calls: function call (6)
+expression language - function calls: function call (7)
+expression language - function calls: function call (8)
+expression language - function calls: function call (9)
+expression language - function calls: function call (10)
+expression language - function calls: function call (11)
+expression language - function calls: function call (12)
+expression language - in operator: in operator on string, success (1)
+expression language - in operator: in operator on string, failure (2)
+expression language - in operator: in operator on string, success (3)
+expression language - in operator: in operator on string, failure (4)
+expression language - in operator: in operator on string, failure (5)
+expression language - in operator: in operator on array, success (1)
+expression language - in operator: in operator on array, success (2)
+expression language - in operator: in operator on array, success (3)
+expression language - in operator: in operator on array, success (3)
+expression language - in operator: in operator on array, failure (1)
+expression language - in operator: in operator on array, failure (2)
+expression language - in operator: in operator on array, failure (2)
+expression language - in operator: in operator on array, failure (4)
+expression language - in operator: in operator on object, success (1)
+expression language - in operator: in operator on object, success (2)
+expression language - in operator: in operator on object, success (3)
+expression language - in operator: in operator on object, failure (1)
+expression language - in operator: in operator on object, failure (2)
+expression language - in operator: in operator on object, failure (3)
+expression language - in operator: in operator on object, failure (4)
+expression language - in operator: TypeError: in operator on Object, error (1)
+expression language - in operator: TypeError: in operator on Object, error (2)
+expression language - in operator: TypeError: in operator on Object, error (3)
+expression language - in operator: TypeError: in operator on Array, error (1)
+expression language - in operator: TypeError: in operator on String, error (1)
+expression language - in operator: TypeError: in operator on String, error (2)
+expression language - in operator: TypeError: in operator on String, error (3)
+expression language - in operator: TypeError: in operator on Array, error (2)
+expression language - comparisons: equality (1)
+expression language - comparisons: equality (2)
+expression language - comparisons: equality (3)
+expression language - comparisons: equality (4)
+expression language - comparisons: in-equality (1)
+expression language - comparisons: in-equality (2)
+expression language - comparisons: in-equality (3)
+expression language - comparisons: in-equality (4)
+expression language - comparisons: less than (1)
+expression language - comparisons: less than (2)
+expression language - comparisons: less than (3)
+expression language - comparisons: less than (4)
+expression language - comparisons: less than (5)
+expression language - comparisons: less than (6)
+expression language - comparisons: greater than (1)
+expression language - comparisons: greater than (2)
+expression language - comparisons: greater than (3)
+expression language - comparisons: greater than (4)
+expression language - comparisons: greater than (5)
+expression language - comparisons: greater than (6)
+expression language - comparisons: less than equal (1)
+expression language - comparisons: less than equal (2)
+expression language - comparisons: less than equal (3)
+expression language - comparisons: less than equal (4)
+expression language - comparisons: greater than equal (1)
+expression language - comparisons: greater than equal (2)
+expression language - comparisons: greater than equal (3)
+expression language - comparisons: greater than equal (4)
+expression language - compound literals: parse list (1)
+expression language - compound literals: parse list (2)
+expression language - compound literals: parse list (3)
+expression language - compound literals: parse list (4)
+expression language - compound literals: parse object (1)
+expression language - compound literals: parse object (2)
+expression language - compound literals: parse object (3)
+expression language - compound literals: parse object (4)
+expression language - compound literals: parse object (5)
+expression language - compound literals: parse object (6)
+expression language - compound literals: parse object (7)
+expression language - compound literals: parse object (8)
+expression language - compound literals: parse object (9)
+expression language - compound literals: parse object (10)
+expression language - compound literals: parse object (11)
+expression language - compound literals: parse object (12)
+expression language - errors: unary - type error
+expression language - errors: unary + type error
+expression language - errors: undefined variable
+expression language - errors: missing closing parenthesis
+expression language - errors: missing opening parenthesis
+expression language - errors: missing closing "
+expression language - errors: missing opening "
+expression language - errors: Infix + type error
+expression language - errors: Infix - type error
+expression language - errors: Infix * type error
+expression language - errors: Infix / type error
+expression language - errors: Infix - type error
+expression language - errors: Infix * type error
+expression language - errors: Infix / type error
+expression language - errors: Infix ** type error
+expression language - errors: Infix ** type error
+expression language - errors: Infix < type error
+expression language - errors: Infix > type error
+expression language - errors: Infix <= type error
+expression language - errors: Infix >= type error
+expression language - errors: Infix < type error
+expression language - errors: Infix > type error
+expression language - errors: Infix <= type error
+expression language - errors: Infix >= type error
+expression language - errors: Prefix logical not type error
+expression language - errors: Infix or type error (1)
+expression language - errors: Infix or type error (2)
+expression language - errors: Infix and type error (1)
+expression language - errors: Infix and type error (2)
