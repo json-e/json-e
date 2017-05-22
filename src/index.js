@@ -87,10 +87,6 @@ constructs.$map = (template, context) => {
 constructs.$merge = (template, context) => {
   let value = render(template['$merge'], context);
 
-  if (!isArray(value) && !isArray(template['$merge'])) {
-    throw jsonTemplateError('$merge value must evaluate to an array\n', template);
-  }
-
   if (!isArray(value)) {
     throw jsonTemplateError('$merge requires array as value\n', template);
   }
