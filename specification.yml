@@ -2324,7 +2324,7 @@ result: true
 ---
 title: 'or operator (1)'
 context: {tt: true, ff: false}
-template: {$eval: 'tt || ff'}
+template: {$eval: 'tt || tt'}
 result: true
 ---
 title: 'or operator (2)'
