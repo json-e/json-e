@@ -364,3 +364,447 @@ expression language - errors: Infix or type error (1)
 expression language - errors: Infix or type error (2)
 expression language - errors: Infix and type error (1)
 expression language - errors: Infix and type error (2)
+Initial Minimal Subset: string interpolation escapes
+Initial Minimal Subset: string interpolation with unbalanced }
+Initial Minimal Subset: booleans interpolate
+Initial Minimal Subset: numbers interpolate
+Initial Minimal Subset: nulls interpolate
+$if-constructs: $if->then->else, empty string
+$if-constructs: $if->then->else, nonempty string
+$if-constructs: $if->then->else, string "0"
+$if-constructs: $if->then->else, zero
+$if-constructs: $if->then->else, one
+$if-constructs: $if->then->else, null
+$if-constructs: $if->then->else, empty array
+$if-constructs: $if->then->else, nonempty array
+$if-constructs: $if->then->else, empty object
+$if-constructs: $if->then->else, nonempty object
+$if-constructs: $if->then evaluating to nothing at the top level is an error
+$map: $map requires an array, not object
+$map: $map requires an array, not string
+$map: $map requires an array, not number
+$map: $map requires an array, not null
+$sort: simple sort of strings (shortest first)
+$sort: simple sort of multi-digit numbers
+$sort: sort by, returning number
+$sort: sort by, returning string
+$sort: by cannot return objects
+$sort: by cannot return arrays
+$sort: cannot sort nulls
+$sort: cannot sort nulls, even with by
+$sort: cannot sort booleans
+$sort: cannot sort booleans, even with by
+$sort: cannot sort numbers and strings together
+$sort: cannot sort numbers and strings together even with by
+$sort: sort requires an array (null)
+$reverse: reverse of an object
+$reverse: reverse of null
+$reverse: reverse of a string
+$reverse: reverse of a number
+$reverse: reverse of a boolean
+$eval: $eval of an array
+$eval: $eval of an object
+$eval: $eval of null
+$eval: $eval of a number
+$eval: $eval of a boolean
+builtins: min - TypeError
+builtins: min (7)
+builtins: max - TypeError
+builtins: max (7)
+builtins: sqrt - TypeError
+builtins: ceil - TypeError
+builtins: floor - TypeError
+builtins: abs - TypeError
+builtins: fromNow
+builtins: fromNow - 2 days 3 hours
+builtins: fromNow - TypeError
+expression language - basics: decimal literal
+expression language - basics: hex literal
+expression language - basics: string literal with single quote
+expression language - basics: string literal with double quote
+expression language - basics: boolean literals
+expression language - basics: null literal
+expression language - basics: leading zeroes (not octal)
+expression language - arithmetic: addition
+expression language - arithmetic: multiplication
+expression language - arithmetic: division (1)
+expression language - arithmetic: division (2)
+expression language - arithmetic: division (3)
+expression language - arithmetic: division (4)
+expression language - arithmetic: exponentiation (1)
+expression language - arithmetic: exponentiation (2)
+expression language - arithmetic: exponentiation (3)
+expression language - arithmetic: exponentiation (4)
+expression language - arithmetic: exponentiation, right associativity (1)
+expression language - arithmetic: exponentiation, right associativity (2)
+expression language - arithmetic: exponentiation, right associativity (3)
+expression language - arithmetic: exponentiation, right associativity (4)
+expression language - arithmetic: unary negation
+expression language - arithmetic: unary plus
+expression language - operator type errors: addition of strings to numbers
+expression language - operator type errors: addition of strings to null
+expression language - operator type errors: addition of strings to booleans
+expression language - operator type errors: addition of strings to objects
+expression language - operator type errors: addition of strings to arrays
+expression language - operator type errors: subtraction of strings from strings
+expression language - operator type errors: subtraction of strings from numbers
+expression language - operator type errors: subtraction of strings from null
+expression language - operator type errors: subtraction of strings from booleans
+expression language - operator type errors: subtraction of strings from objects
+expression language - operator type errors: subtraction of strings from arrays
+expression language - operator type errors: multiplication of strings to strings
+expression language - operator type errors: multiplication of strings to numbers
+expression language - operator type errors: multiplication of strings to null
+expression language - operator type errors: multiplication of strings to booleans
+expression language - operator type errors: multiplication of strings to objects
+expression language - operator type errors: multiplication of strings to arrays
+expression language - operator type errors: division of strings by strings
+expression language - operator type errors: division of strings by numbers
+expression language - operator type errors: division of strings by null
+expression language - operator type errors: division of strings by booleans
+expression language - operator type errors: division of strings by objects
+expression language - operator type errors: division of strings by arrays
+expression language - operator type errors: exponentiation of strings by strings
+expression language - operator type errors: exponentiation of strings by numbers
+expression language - operator type errors: exponentiation of strings by null
+expression language - operator type errors: exponentiation of strings by booleans
+expression language - operator type errors: exponentiation of strings by objects
+expression language - operator type errors: exponentiation of strings by arrays
+expression language - operator type errors: unary negation of string
+expression language - operator type errors: unary plus of string
+expression language - operator type errors: addition of numbers to strings
+expression language - operator type errors: addition of numbers to null
+expression language - operator type errors: addition of numbers to booleans
+expression language - operator type errors: addition of numbers to objects
+expression language - operator type errors: addition of numbers to arrays
+expression language - operator type errors: subtraction of numbers from strings
+expression language - operator type errors: subtraction of numbers from null
+expression language - operator type errors: subtraction of numbers from booleans
+expression language - operator type errors: subtraction of numbers from objects
+expression language - operator type errors: subtraction of numbers from arrays
+expression language - operator type errors: multiplication of numbers to strings
+expression language - operator type errors: multiplication of numbers to null
+expression language - operator type errors: multiplication of numbers to booleans
+expression language - operator type errors: multiplication of numbers to objects
+expression language - operator type errors: multiplication of numbers to arrays
+expression language - operator type errors: division of numbers by strings
+expression language - operator type errors: division of numbers by null
+expression language - operator type errors: division of numbers by booleans
+expression language - operator type errors: division of numbers by objects
+expression language - operator type errors: division of numbers by arrays
+expression language - operator type errors: exponentiation of numbers by strings
+expression language - operator type errors: exponentiation of numbers by null
+expression language - operator type errors: exponentiation of numbers by booleans
+expression language - operator type errors: exponentiation of numbers by objects
+expression language - operator type errors: exponentiation of numbers by arrays
+expression language - operator type errors: addition of null to strings
+expression language - operator type errors: addition of null to numbers
+expression language - operator type errors: addition of null to null
+expression language - operator type errors: addition of null to booleans
+expression language - operator type errors: addition of null to objects
+expression language - operator type errors: addition of null to arrays
+expression language - operator type errors: subtraction of null from strings
+expression language - operator type errors: subtraction of null from numbers
+expression language - operator type errors: subtraction of null from null
+expression language - operator type errors: subtraction of null from booleans
+expression language - operator type errors: subtraction of null from objects
+expression language - operator type errors: subtraction of null from arrays
+expression language - operator type errors: multiplication of null to strings
+expression language - operator type errors: multiplication of null to numbers
+expression language - operator type errors: multiplication of null to null
+expression language - operator type errors: multiplication of null to booleans
+expression language - operator type errors: multiplication of null to objects
+expression language - operator type errors: multiplication of null to arrays
+expression language - operator type errors: division of null by strings
+expression language - operator type errors: division of null by numbers
+expression language - operator type errors: division of null by null
+expression language - operator type errors: division of null by booleans
+expression language - operator type errors: division of null by objects
+expression language - operator type errors: division of null by arrays
+expression language - operator type errors: exponentiation of null by strings
+expression language - operator type errors: exponentiation of null by numbers
+expression language - operator type errors: exponentiation of null by null
+expression language - operator type errors: exponentiation of null by booleans
+expression language - operator type errors: exponentiation of null by objects
+expression language - operator type errors: exponentiation of null by arrays
+expression language - operator type errors: unary negation of null
+expression language - operator type errors: unary plus of null
+expression language - operator type errors: addition of boolean to strings
+expression language - operator type errors: addition of boolean to numbers
+expression language - operator type errors: addition of boolean to null
+expression language - operator type errors: addition of boolean to booleans
+expression language - operator type errors: addition of boolean to objects
+expression language - operator type errors: addition of boolean to arrays
+expression language - operator type errors: subtraction of boolean from strings
+expression language - operator type errors: subtraction of boolean from numbers
+expression language - operator type errors: subtraction of boolean from null
+expression language - operator type errors: subtraction of boolean from booleans
+expression language - operator type errors: subtraction of boolean from objects
+expression language - operator type errors: subtraction of boolean from arrays
+expression language - operator type errors: multiplication of boolean to strings
+expression language - operator type errors: multiplication of boolean to numbers
+expression language - operator type errors: multiplication of boolean to null
+expression language - operator type errors: multiplication of boolean to booleans
+expression language - operator type errors: multiplication of boolean to objects
+expression language - operator type errors: multiplication of boolean to arrays
+expression language - operator type errors: division of boolean by strings
+expression language - operator type errors: division of boolean by numbers
+expression language - operator type errors: division of boolean by null
+expression language - operator type errors: division of boolean by booleans
+expression language - operator type errors: division of boolean by objects
+expression language - operator type errors: division of boolean by arrays
+expression language - operator type errors: exponentiation of boolean by strings
+expression language - operator type errors: exponentiation of boolean by numbers
+expression language - operator type errors: exponentiation of boolean by null
+expression language - operator type errors: exponentiation of boolean by booleans
+expression language - operator type errors: exponentiation of boolean by objects
+expression language - operator type errors: exponentiation of boolean by arrays
+expression language - operator type errors: unary negation of boolean
+expression language - operator type errors: unary plus of boolean
+expression language - operator type errors: addition of object to strings
+expression language - operator type errors: addition of object to numbers
+expression language - operator type errors: addition of object to null
+expression language - operator type errors: addition of object to booleans
+expression language - operator type errors: addition of object to objects
+expression language - operator type errors: addition of object to arrays
+expression language - operator type errors: subtraction of object from strings
+expression language - operator type errors: subtraction of object from numbers
+expression language - operator type errors: subtraction of object from null
+expression language - operator type errors: subtraction of object from booleans
+expression language - operator type errors: subtraction of object from objects
+expression language - operator type errors: subtraction of object from arrays
+expression language - operator type errors: multiplication of object to strings
+expression language - operator type errors: multiplication of object to numbers
+expression language - operator type errors: multiplication of object to null
+expression language - operator type errors: multiplication of object to booleans
+expression language - operator type errors: multiplication of object to objects
+expression language - operator type errors: multiplication of object to arrays
+expression language - operator type errors: division of object by strings
+expression language - operator type errors: division of object by numbers
+expression language - operator type errors: division of object by null
+expression language - operator type errors: division of object by booleans
+expression language - operator type errors: division of object by objects
+expression language - operator type errors: division of object by arrays
+expression language - operator type errors: exponentiation of object by strings
+expression language - operator type errors: exponentiation of object by numbers
+expression language - operator type errors: exponentiation of object by null
+expression language - operator type errors: exponentiation of object by booleans
+expression language - operator type errors: exponentiation of object by objects
+expression language - operator type errors: exponentiation of object by arrays
+expression language - operator type errors: unary negation of object
+expression language - operator type errors: unary plus of object
+expression language - operator type errors: addition of array to strings
+expression language - operator type errors: addition of array to numbers
+expression language - operator type errors: addition of array to null
+expression language - operator type errors: addition of array to booleans
+expression language - operator type errors: addition of array to objects
+expression language - operator type errors: addition of array to arrays
+expression language - operator type errors: subtraction of array from strings
+expression language - operator type errors: subtraction of array from numbers
+expression language - operator type errors: subtraction of array from null
+expression language - operator type errors: subtraction of array from booleans
+expression language - operator type errors: subtraction of array from objects
+expression language - operator type errors: subtraction of array from arrays
+expression language - operator type errors: multiplication of array to strings
+expression language - operator type errors: multiplication of array to numbers
+expression language - operator type errors: multiplication of array to null
+expression language - operator type errors: multiplication of array to booleans
+expression language - operator type errors: multiplication of array to objects
+expression language - operator type errors: multiplication of array to arrays
+expression language - operator type errors: division of array by strings
+expression language - operator type errors: division of array by numbers
+expression language - operator type errors: division of array by null
+expression language - operator type errors: division of array by booleans
+expression language - operator type errors: division of array by objects
+expression language - operator type errors: division of array by arrays
+expression language - operator type errors: exponentiation of array by strings
+expression language - operator type errors: exponentiation of array by numbers
+expression language - operator type errors: exponentiation of array by null
+expression language - operator type errors: exponentiation of array by booleans
+expression language - operator type errors: exponentiation of array by objects
+expression language - operator type errors: exponentiation of array by arrays
+expression language - operator type errors: unary negation of array
+expression language - operator type errors: unary plus of array
+expression language - logic: string not
+expression language - logic: number not
+expression language - logic: null not
+expression language - logic: object not
+expression language - logic: array not
+expression language - logic: string and string
+expression language - logic: string or string
+expression language - logic: string and number
+expression language - logic: string or number
+expression language - logic: string and null
+expression language - logic: string or null
+expression language - logic: string and boolean
+expression language - logic: string or boolean
+expression language - logic: string and object
+expression language - logic: string or object
+expression language - logic: string and array
+expression language - logic: string or array
+expression language - logic: number and string
+expression language - logic: number or string
+expression language - logic: number and number
+expression language - logic: number or number
+expression language - logic: number and null
+expression language - logic: number or null
+expression language - logic: number and boolean
+expression language - logic: number or boolean
+expression language - logic: number and object
+expression language - logic: number or object
+expression language - logic: number and array
+expression language - logic: number or array
+expression language - logic: null and string
+expression language - logic: null or string
+expression language - logic: null and number
+expression language - logic: null or number
+expression language - logic: null and null
+expression language - logic: null or null
+expression language - logic: null and boolean
+expression language - logic: null or boolean
+expression language - logic: null and object
+expression language - logic: null or object
+expression language - logic: null and array
+expression language - logic: null or array
+expression language - logic: boolean and string
+expression language - logic: boolean or string
+expression language - logic: boolean and number
+expression language - logic: boolean or number
+expression language - logic: boolean and null
+expression language - logic: boolean or null
+expression language - logic: boolean and boolean
+expression language - logic: boolean or boolean
+expression language - logic: boolean and object
+expression language - logic: boolean or object
+expression language - logic: boolean and array
+expression language - logic: boolean or array
+expression language - logic: object and string
+expression language - logic: object or string
+expression language - logic: object and number
+expression language - logic: object or number
+expression language - logic: object and null
+expression language - logic: object or null
+expression language - logic: object and boolean
+expression language - logic: object or boolean
+expression language - logic: object and object
+expression language - logic: object or object
+expression language - logic: object and array
+expression language - logic: object or array
+expression language - logic: array and string
+expression language - logic: array or string
+expression language - logic: array and number
+expression language - logic: array or number
+expression language - logic: array and null
+expression language - logic: array or null
+expression language - logic: array and boolean
+expression language - logic: array or boolean
+expression language - logic: array and object
+expression language - logic: array or object
+expression language - logic: array and array
+expression language - logic: array or array
+expression language - string operations: string length attribute
+expression language - string operations: other string attributes are not set
+expression language - property access: missing property
+expression language - property access: missing property by name
+expression language - property access: property access with expression value
+expression language - property access: property of number
+expression language - property access: property of null
+expression language - property access: property of boolean
+expression language - property access: property of array
+expression language - array access: indexing number
+expression language - array access: indexing null
+expression language - array access: indexing boolean
+expression language - array access: indexing object
+expression language - array access: array length
+expression language - array access: other array attributes are not available
+expression language - array slicing: slicing number
+expression language - array slicing: slicing null
+expression language - array slicing: slicing boolean
+expression language - array slicing: slicing object
+expression language - comparisons: deep object equality
+expression language - comparisons: boolean equality
+expression language - comparisons: null equality
+expression language - comparisons: string equality
+expression language - comparisons: deep object inequality
+expression language - comparisons: deep array equality
+expression language - comparisons: deep array inequality
+expression language - comparisons: ordering of string and string
+expression language - comparisons: ordering of string and number
+expression language - comparisons: ordering of string and null
+expression language - comparisons: ordering of string and boolean
+expression language - comparisons: ordering of string and object
+expression language - comparisons: ordering of string and array
+expression language - comparisons: ordering of number and string
+expression language - comparisons: ordering of number and number
+expression language - comparisons: ordering of number and null
+expression language - comparisons: ordering of number and boolean
+expression language - comparisons: ordering of number and object
+expression language - comparisons: ordering of number and array
+expression language - comparisons: ordering of null and string
+expression language - comparisons: ordering of null and number
+expression language - comparisons: ordering of null and null
+expression language - comparisons: ordering of null and boolean
+expression language - comparisons: ordering of null and object
+expression language - comparisons: ordering of null and array
+expression language - comparisons: ordering of boolean and string
+expression language - comparisons: ordering of boolean and number
+expression language - comparisons: ordering of boolean and null
+expression language - comparisons: ordering of boolean and boolean
+expression language - comparisons: ordering of boolean and object
+expression language - comparisons: ordering of boolean and array
+expression language - comparisons: ordering of object and string
+expression language - comparisons: ordering of object and number
+expression language - comparisons: ordering of object and null
+expression language - comparisons: ordering of object and boolean
+expression language - comparisons: ordering of object and object
+expression language - comparisons: ordering of object and array
+expression language - comparisons: ordering of array and string
+expression language - comparisons: ordering of array and number
+expression language - comparisons: ordering of array and null
+expression language - comparisons: ordering of array and boolean
+expression language - comparisons: ordering of array and array
+expression language - comparisons: ordering of array and array
+expression language - comparisons: equality of string and string
+expression language - comparisons: equality of string and number
+expression language - comparisons: equality of string and null
+expression language - comparisons: equality of string and boolean
+expression language - comparisons: equality of string and object
+expression language - comparisons: equality of string and array
+expression language - comparisons: equality of number and string
+expression language - comparisons: equality of number and number
+expression language - comparisons: equality of number and null
+expression language - comparisons: equality of number and boolean
+expression language - comparisons: equality of number and object
+expression language - comparisons: equality of number and array
+expression language - comparisons: equality of null and string
+expression language - comparisons: equality of null and number
+expression language - comparisons: equality of null and null
+expression language - comparisons: equality of null and boolean
+expression language - comparisons: equality of null and object
+expression language - comparisons: equality of null and array
+expression language - comparisons: equality of boolean and string
+expression language - comparisons: equality of boolean and number
+expression language - comparisons: equality of boolean and null
+expression language - comparisons: equality of boolean and boolean
+expression language - comparisons: equality of boolean and object
+expression language - comparisons: equality of boolean and array
+expression language - comparisons: equality of object and string
+expression language - comparisons: equality of object and number
+expression language - comparisons: equality of object and null
+expression language - comparisons: equality of object and boolean
+expression language - comparisons: equality of object and object
+expression language - comparisons: equality of object and array
+expression language - comparisons: equality of array and string
+expression language - comparisons: equality of array and number
+expression language - comparisons: equality of array and null
+expression language - comparisons: equality of array and boolean
+expression language - comparisons: equality of array and object
+expression language - comparisons: equality of array and array
+expression language - string operations: string indexing (noninteger)
+expression language - string operations: string slicing (fractional first index)
+expression language - string operations: string slicing (fractional second index)
+expression language - string operations: string slicing (fractional indexes)
+expression language - array access: numeric, noninteger index
+expression language - array slicing: array slicing (noninteger first index)
+expression language - array slicing: array slicing (noninteger last index)
+expression language - array slicing: array slicing (noninteger indexes)

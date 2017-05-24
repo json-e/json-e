@@ -39,4 +39,4 @@ class BuiltinError extends BaseError {
   }
 }
 
-export default {SyntaxError, InterpreterError, TemplateError, BuiltinError};
+export {SyntaxError, InterpreterError, TemplateError, BuiltinError};

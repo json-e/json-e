@@ -5,7 +5,7 @@
 import PrattParser from './prattparser';
 import {isString, isNumber, isBool,
   isArray, isObject, isFunction} from './type-utils';
-import InterpreterError from './error';
+import {InterpreterError} from './error';
 
 let expectationError = (operator, expectation) => new InterpreterError(`'${operator}' expects '${expectation}'`);
 
