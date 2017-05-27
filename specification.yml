@@ -686,7 +686,6 @@ title:    simple sort of multi-digit numbers
 context:  {}
 template: {$sort: [111, 22, 3]}
 result:   [3, 22, 111]
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    simple sort with $eval
 context:  {array: [3, 4, 1, 2]}

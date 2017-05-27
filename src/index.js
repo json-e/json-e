@@ -171,6 +171,17 @@ operators.$sort = (template, context) => {
     if (needBy) {
       throw jsonTemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays\n', template);
     }
+
+    if (value.some(v => isNumber(v))) {
+      return value.sort((left, right) => {
+        if (left <= right) {
+          return false;
+        }
+
+        return true;
+      });
+    }
+
     return value.sort();
   }
 
