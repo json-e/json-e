@@ -91,13 +91,7 @@ constructs.$merge = (template, context) => {
     throw jsonTemplateError('$merge requires array as value\n', template);
   }
 
-  let obj = {};
-
-  value.forEach(function(x) {
-    Object.assign(obj, x);
-  });
-
-  return obj;
+  return Object.assign({}, ...value);
 };
 
 constructs.$reverse = (template, context) => {
