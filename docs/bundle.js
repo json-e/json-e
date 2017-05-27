@@ -320,6 +320,10 @@ var _getIterator2 = require('babel-runtime/core-js/get-iterator');
 
 var _getIterator3 = _interopRequireDefault(_getIterator2);
 
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+
 var _defineProperty2 = require('babel-runtime/helpers/defineProperty');
 
 var _defineProperty3 = _interopRequireDefault(_defineProperty2);
@@ -410,29 +414,8 @@ constructs.$if = function (template, context) {
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
 };
 
-constructs.$switch = function (template, context) {
-  if (!(0, _typeUtils.isString)(template['$switch'])) {
-    throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
-  }
-  var c = _interpreter2.default.parse(template['$switch'], context);
-  return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
-};
-
 constructs.$json = function (template, context) {
   return (0, _stringify2.default)(render(template['$json'], context));
-};
-
-constructs.$reverse = function (template, context) {
-  var value = render(template['$reverse'], context);
-
-  if (!(0, _typeUtils.isArray)(value) && !(0, _typeUtils.isArray)(template['$reverse'])) {
-    throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
-  }
-
-  if (!(0, _typeUtils.isArray)(value)) {
-    throw jsonTemplateError('$reverse requires array as value\n', template);
-  }
-  return value.reverse();
 };
 
 constructs.$map = function (template, context) {
@@ -466,21 +449,24 @@ constructs.$map = function (template, context) {
 constructs.$merge = function (template, context) {
   var value = render(template['$merge'], context);
 
-  if (!(0, _typeUtils.isArray)(value) && !(0, _typeUtils.isArray)(template['$merge'])) {
-    throw jsonTemplateError('$merge value must evaluate to an array\n', template);
-  }
-
   if (!(0, _typeUtils.isArray)(value)) {
     throw jsonTemplateError('$merge requires array as value\n', template);
   }
 
-  var obj = {};
+  return _assign2.default.apply(Object, [{}].concat((0, _toConsumableArray3.default)(value)));
+};
 
-  value.forEach(function (x) {
-    (0, _assign2.default)(obj, x);
-  });
+constructs.$reverse = function (template, context) {
+  var value = render(template['$reverse'], context);
 
-  return obj;
+  if (!(0, _typeUtils.isArray)(value) && !(0, _typeUtils.isArray)(template['$reverse'])) {
+    throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
+  }
+
+  if (!(0, _typeUtils.isArray)(value)) {
+    throw jsonTemplateError('$reverse requires array as value\n', template);
+  }
+  return value.reverse();
 };
 
 constructs.$sort = function (template, context) {
@@ -517,6 +503,14 @@ constructs.$sort = function (template, context) {
     }
     return true;
   });
+};
+
+constructs.$switch = function (template, context) {
+  if (!(0, _typeUtils.isString)(template['$switch'])) {
+    throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
+  }
+  var c = _interpreter2.default.parse(template['$switch'], context);
+  return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
 };
 
 var render = function render(template, context) {
@@ -594,7 +588,7 @@ exports.default = function (template) {
 };
 
 
-},{"./builtins":2,"./error":3,"./from-now":4,"./interpreter":6,"./type-utils":9,"assert":120,"babel-runtime/core-js/get-iterator":11,"babel-runtime/core-js/json/stringify":12,"babel-runtime/core-js/object/assign":13,"babel-runtime/core-js/object/keys":17,"babel-runtime/helpers/defineProperty":23}],6:[function(require,module,exports){
+},{"./builtins":2,"./error":3,"./from-now":4,"./interpreter":6,"./type-utils":9,"assert":120,"babel-runtime/core-js/get-iterator":11,"babel-runtime/core-js/json/stringify":12,"babel-runtime/core-js/object/assign":13,"babel-runtime/core-js/object/keys":17,"babel-runtime/helpers/defineProperty":23,"babel-runtime/helpers/toConsumableArray":26}],6:[function(require,module,exports){
 'use strict';
 
 var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
