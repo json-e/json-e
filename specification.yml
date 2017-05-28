@@ -357,6 +357,14 @@ template: {message: 'hello ${key.key2}', 'k-${key.key3}': true}
 result:   {message: 'hello world', 'k-1': true}
 ################################################################################
 ---
+section: $let
+---
+title:    simple let
+template: {$let: {ts: 100, foo: 200,}, in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
+context: {}
+result:   [300, -100, 20000]
+################################################################################
+---
 section:  $map
 ---
 title:    simple map

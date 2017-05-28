@@ -45,8 +45,6 @@ var _typeof3 = _interopRequireDefault(_typeof2);
 
 var _error = require('./error');
 
-var _error2 = _interopRequireDefault(_error);
-
 var _fromNow = require('./from-now');
 
 var _fromNow2 = _interopRequireDefault(_fromNow);
@@ -65,7 +63,7 @@ var types = {
 };
 
 var builtinError = function builtinError(builtin, expectation) {
-  return new _error2.default(builtin + ' expects ' + expectation);
+  return new _error.BuiltinError(builtin + ' expects ' + expectation);
 };
 
 var builtins = {};
@@ -174,6 +172,7 @@ exports.default = builtins;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.BuiltinError = exports.TemplateError = exports.InterpreterError = exports.SyntaxError = undefined;
 
 var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
 
@@ -278,7 +277,10 @@ var BuiltinError = function (_BaseError3) {
   return BuiltinError;
 }(BaseError);
 
-exports.default = { SyntaxError: SyntaxError, InterpreterError: InterpreterError, TemplateError: TemplateError, BuiltinError: BuiltinError };
+exports.SyntaxError = SyntaxError;
+exports.InterpreterError = InterpreterError;
+exports.TemplateError = TemplateError;
+exports.BuiltinError = BuiltinError;
 
 
 },{"babel-runtime/core-js/object/get-prototype-of":16,"babel-runtime/helpers/classCallCheck":21,"babel-runtime/helpers/inherits":24,"babel-runtime/helpers/possibleConstructorReturn":25,"es6-error":119}],4:[function(require,module,exports){
@@ -324,13 +326,13 @@ var _defineProperty2 = require('babel-runtime/helpers/defineProperty');
 
 var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 
-var _assign = require('babel-runtime/core-js/object/assign');
-
-var _assign2 = _interopRequireDefault(_assign);
-
 var _keys = require('babel-runtime/core-js/object/keys');
 
 var _keys2 = _interopRequireDefault(_keys);
+
+var _assign = require('babel-runtime/core-js/object/assign');
+
+var _assign2 = _interopRequireDefault(_assign);
 
 var _stringify = require('babel-runtime/core-js/json/stringify');
 
@@ -412,6 +414,13 @@ constructs.$if = function (template, context) {
 
 constructs.$json = function (template, context) {
   return (0, _stringify2.default)(render(template['$json'], context));
+};
+
+constructs.$let = function (template, context) {
+  var variables = template['$let'];
+  context = (0, _assign2.default)(context, variables);
+
+  return render(template.in, context);
 };
 
 constructs.$map = function (template, context) {
@@ -601,12 +610,10 @@ var _typeUtils = require('./type-utils');
 
 var _error = require('./error');
 
-var _error2 = _interopRequireDefault(_error);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var expectationError = function expectationError(operator, expectation) {
-  return new _error2.default('\'' + operator + '\' expects \'' + expectation + '\'');
+  return new _error.InterpreterError('\'' + operator + '\' expects \'' + expectation + '\'');
 }; /*
    * Author: Jonas Finnemann Jensen
    * Github: https://github.com/jonasfj
@@ -672,12 +679,12 @@ var accessProperty = function accessProperty(left, a, b, isInterval) {
     if (isInterval) {
       b = b === null ? left.length : b;
       if (!(0, _typeUtils.isNumber)(a) || !(0, _typeUtils.isNumber)(b)) {
-        throw new _error2.default('cannot perform interval access with non-integers');
+        throw new _error.InterpreterError('cannot perform interval access with non-integers');
       }
       return left.slice(a, b);
     }
     if (!(0, _typeUtils.isNumber)(a)) {
-      throw new _error2.default('should access arrays using integers only');
+      throw new _error.InterpreterError('should access arrays using integers only');
     }
 
     // for -ve index access
@@ -687,17 +694,17 @@ var accessProperty = function accessProperty(left, a, b, isInterval) {
 
   // if we reach here it means we are accessing property value from object
   if (!(0, _typeUtils.isObject)(left)) {
-    throw new _error2.default('cannot access properties from non-objects');
+    throw new _error.InterpreterError('cannot access properties from non-objects');
   }
 
   if (!left.hasOwnProperty(a)) {
-    throw new _error2.default('\'' + a + '\' not found in ' + (0, _stringify2.default)(left, null, '\t'));
+    throw new _error.InterpreterError('\'' + a + '\' not found in ' + (0, _stringify2.default)(left, null, '\t'));
   }
 
   if ((0, _typeUtils.isString)(a)) {
     return left[a];
   }
-  throw new _error2.default('cannot use non strings/numbers as keys');
+  throw new _error.InterpreterError('cannot use non strings/numbers as keys');
 };
 
 var parseString = function parseString(str) {
@@ -781,7 +788,7 @@ prefixRules['identifier'] = function (token, ctx) {
   if (ctx.context.hasOwnProperty(token.value)) {
     return ctx.context[token.value];
   }
-  throw new _error2.default('can access own properties of objects');
+  throw new _error.InterpreterError('can access own properties of objects');
 };
 
 prefixRules['['] = function (token, ctx) {
@@ -840,7 +847,7 @@ infixRules['**'] = function (left, token, ctx) {
   var right = ctx.parse('**-right-associative');
   testMathOperands(operator, left, right);
   if ((typeof left === 'undefined' ? 'undefined' : (0, _typeof3.default)(left)) !== (typeof right === 'undefined' ? 'undefined' : (0, _typeof3.default)(right))) {
-    throw new _error2.default('TypeError: ' + (typeof left === 'undefined' ? 'undefined' : (0, _typeof3.default)(left)) + ' ' + operator + ' ' + (typeof right === 'undefined' ? 'undefined' : (0, _typeof3.default)(right)));
+    throw new _error.InterpreterError('TypeError: ' + (typeof left === 'undefined' ? 'undefined' : (0, _typeof3.default)(left)) + ' ' + operator + ' ' + (typeof right === 'undefined' ? 'undefined' : (0, _typeof3.default)(right)));
   }
   return Math.pow(left, right);
 };
@@ -855,7 +862,7 @@ infixRules['.'] = function (left, token, ctx) {
     if (left.hasOwnProperty(key)) {
       return left[key];
     }
-    throw new _error2.default('can access own properties of objects');
+    throw new _error.InterpreterError('can access own properties of objects');
   }
   throw expectationError('infix: .', 'objects');
 };
@@ -979,12 +986,10 @@ var _assert2 = _interopRequireDefault(_assert);
 
 var _error = require('./error');
 
-var _error2 = _interopRequireDefault(_error);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var syntaxRuleError = function syntaxRuleError(token, expects) {
-  return new _error2.default('Found \'' + token.value + '\' expected \'' + expects + '\'', token);
+  return new _error.SyntaxError('Found \'' + token.value + '\' expected \'' + expects + '\'', token);
 }; /*
    * Author: Jonas Finnemann Jensen
    * Github: https://github.com/jonasfj

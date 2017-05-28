@@ -60,6 +60,13 @@ constructs.$json = (template, context) => {
   return JSON.stringify(render(template['$json'], context));
 };
 
+constructs.$let = (template, context) => {
+  let variables = template['$let'];
+  context = Object.assign(context, variables);
+
+  return render(template.in, context);
+};
+
 constructs.$map = (template, context) => {
   let value = render(template['$map'], context);
   if (!isArray(value)) {
