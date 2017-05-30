@@ -380,6 +380,7 @@ $if-constructs: $if->then->else, nonempty array
 $if-constructs: $if->then->else, empty object
 $if-constructs: $if->then->else, nonempty object
 $if-constructs: $if->then evaluating to nothing at the top level is an error
+$let: simple let
 $map: $map requires an array, not object
 $map: $map requires an array, not string
 $map: $map requires an array, not number

@@ -62,13 +62,13 @@ constructs.$json = (template, context) => {
 
 constructs.$let = (template, context) => {
   let variables = template['$let'];
-  context = Object.assign(context, variables);
+  var context_copy = Object.assign(context, variables);
 
   if (template.in == undefined) {
     throw jsonTemplateError('$let operator requires `in` clause\n', template);
   }
 
-  return render(template.in, context);
+  return render(template.in, context_copy);
 };
 
 constructs.$map = (template, context) => {
