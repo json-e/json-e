@@ -410,29 +410,8 @@ constructs.$if = function (template, context) {
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
 };
 
-constructs.$switch = function (template, context) {
-  if (!(0, _typeUtils.isString)(template['$switch'])) {
-    throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
-  }
-  var c = _interpreter2.default.parse(template['$switch'], context);
-  return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
-};
-
 constructs.$json = function (template, context) {
   return (0, _stringify2.default)(render(template['$json'], context));
-};
-
-constructs.$reverse = function (template, context) {
-  var value = render(template['$reverse'], context);
-
-  if (!(0, _typeUtils.isArray)(value) && !(0, _typeUtils.isArray)(template['$reverse'])) {
-    throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
-  }
-
-  if (!(0, _typeUtils.isArray)(value)) {
-    throw jsonTemplateError('$reverse requires array as value\n', template);
-  }
-  return value.reverse();
 };
 
 constructs.$map = function (template, context) {
@@ -461,6 +440,19 @@ constructs.$map = function (template, context) {
   }).filter(function (v) {
     return v !== deleteMarker;
   });
+};
+
+constructs.$reverse = function (template, context) {
+  var value = render(template['$reverse'], context);
+
+  if (!(0, _typeUtils.isArray)(value) && !(0, _typeUtils.isArray)(template['$reverse'])) {
+    throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
+  }
+
+  if (!(0, _typeUtils.isArray)(value)) {
+    throw jsonTemplateError('$reverse requires array as value\n', template);
+  }
+  return value.reverse();
 };
 
 constructs.$sort = function (template, context) {
@@ -497,6 +489,14 @@ constructs.$sort = function (template, context) {
     }
     return true;
   });
+};
+
+constructs.$switch = function (template, context) {
+  if (!(0, _typeUtils.isString)(template['$switch'])) {
+    throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
+  }
+  var c = _interpreter2.default.parse(template['$switch'], context);
+  return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
 };
 
 var render = function render(template, context) {
