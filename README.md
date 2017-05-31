@@ -156,8 +156,8 @@ is also accepted.
 
 ### `$let`
 
-The `$let` operator appends to the scope of the context previously defined
-variables analogous to the `where` clause in Haskell.
+The `$let` operator evaluates an expression using a context amended with the
+given values. It is analogous to the Haskell `where` clause.
 
 ```yaml
 context: {}
