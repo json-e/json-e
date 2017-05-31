@@ -30,6 +30,9 @@ $if-constructs: $if->then, then => object, $eval, true
 $if-constructs: $if->else, else => object, $eval, false
 $if-constructs: $if->then, then => object, interpolation, true
 $if-constructs: $if->else, else => object, interpolation, false
+$flatten: simple flatten
+$flatten: flatten empty array
+$flatten: flatten empty array of arrays
 fromNow: fromNow 1 hour
 fromNow: fromNow 2 hours
 fromNow: fromNow 3h

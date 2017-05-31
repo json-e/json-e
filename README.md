@@ -138,6 +138,16 @@ template: {key: {$if: 'cond', then: 2}, other: 3}
 result: {other: 3}
 ```
 
+### `$flatten`
+
+The `$flatten` operator flattens an array of arrays into one array.
+
+```yaml
+context: {}
+template: {$flatten: [[1, 2], [3, 4], [5]]}
+result:   [1, 2, 3, 4, 5]
+```
+
 ### `$fromNow`
 
 The `$fromNow` operator is a shorthand for the built-in function `fromNow`. It
