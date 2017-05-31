@@ -811,3 +811,8 @@ expression language - array access: numeric, noninteger index
 expression language - array slicing: array slicing (noninteger first index)
 expression language - array slicing: array slicing (noninteger last index)
 expression language - array slicing: array slicing (noninteger indexes)
+$flatten: flatten null
+$flatten: flatten an object
+$flatten: flatten an array of strings
+$flatten: flatten an array of numbers
+$flatten: flatten mixed types

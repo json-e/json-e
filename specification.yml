@@ -275,9 +275,24 @@ context:  {}
 template: {$flatten: [[]]}
 result:   []
 ---
-title:    flatten nothing
+title:    flatten null
 context:  {}
-template: {$flatten: }
+template: {$flatten: null}
+error:    true
+---
+title:    flatten an object
+context:  {}
+template: {$flatten: {a: 1, b: 2}}
+error:    true
+---
+title:    flatten an array of strings
+context:  {}
+template: {$flatten: ["a", "b"]}
+error:    true
+---
+title:    flatten an array of numbers
+context:  {}
+template: {$flatten: [1, 2]}
 error:    true
 ---
 title:    flatten mixed types
