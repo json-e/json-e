@@ -181,6 +181,18 @@ The array is the value of the `$map` property, and the expression to evaluate
 is given by `each(var)` where `var` is the name of the variable containing each
 element.
 
+### `$merge`
+
+The `$merge` constructor merges an array of objects, returning a single object
+that combines all of the objects in the array, where the right-side objects
+overwrite the values of the left-side ones.
+
+```yaml
+context:  {}
+template: {$merge: [{a: 1, b: 1}, {b: 2, c: 3}, {d: 4}]}
+result:   {a: 1, b: 2, c: 3, d: 4}
+```
+
 ### `$sort`
 
 The `$sort` operator sorts the given array. It takes a `by(var)` property which

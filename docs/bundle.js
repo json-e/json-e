@@ -463,6 +463,16 @@ constructs.$map = function (template, context) {
   });
 };
 
+constructs.$merge = function (template, context) {
+  var value = render(template['$merge'], context);
+
+  if (!(0, _typeUtils.isArray)(value)) {
+    throw jsonTemplateError('$merge requires array as value\n', template);
+  }
+
+  return _assign2.default.apply(Object, [{}].concat((0, _toConsumableArray3.default)(value)));
+};
+
 constructs.$reverse = function (template, context) {
   var value = render(template['$reverse'], context);
 

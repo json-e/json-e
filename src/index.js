@@ -94,6 +94,16 @@ constructs.$map = (template, context) => {
               .filter(v => v !== deleteMarker);
 };
 
+constructs.$merge = (template, context) => {
+  let value = render(template['$merge'], context);
+
+  if (!isArray(value)) {
+    throw jsonTemplateError('$merge requires array as value\n', template);
+  }
+
+  return Object.assign({}, ...value);
+};
+
 constructs.$reverse = (template, context) => {
   let value = render(template['$reverse'], context);
 
