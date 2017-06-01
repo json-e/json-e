@@ -334,6 +334,10 @@ var _assign = require('babel-runtime/core-js/object/assign');
 
 var _assign2 = _interopRequireDefault(_assign);
 
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+
 var _stringify = require('babel-runtime/core-js/json/stringify');
 
 var _stringify2 = _interopRequireDefault(_stringify);
@@ -395,6 +399,21 @@ constructs.$eval = function (template, context) {
   return _interpreter2.default.parse(template['$eval'], context);
 };
 
+constructs.$flatten = function (template, context) {
+  var _ref;
+
+  var value = render(template['$flatten'], context);
+
+  // Value must be array of arrays
+  if (!((0, _typeUtils.isArray)(value) && value.some(function (v) {
+    return (0, _typeUtils.isArray)(v);
+  }))) {
+    throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
+  }
+
+  return (_ref = []).concat.apply(_ref, (0, _toConsumableArray3.default)(value));
+};
+
 constructs.$fromNow = function (template, context) {
   if (!(0, _typeUtils.isString)(template['$fromNow'])) {
     throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
@@ -418,9 +437,18 @@ constructs.$json = function (template, context) {
 
 constructs.$let = function (template, context) {
   var variables = template['$let'];
-  context = (0, _assign2.default)(context, variables);
 
-  return render(template.in, context);
+  var context_copy = (0, _assign2.default)(context, variables);
+
+  if (variables === null || (0, _typeUtils.isArray)(variables) || !(0, _typeUtils.isObject)(variables)) {
+    throw jsonTemplateError('$let operator requires an object as the context\n', template);
+  }
+
+  if (template.in == undefined) {
+    throw jsonTemplateError('$let operator requires `in` clause\n', template);
+  }
+
+  return render(template.in, context_copy);
 };
 
 constructs.$map = function (template, context) {
@@ -583,7 +611,7 @@ exports.default = function (template) {
 };
 
 
-},{"./builtins":2,"./error":3,"./from-now":4,"./interpreter":6,"./type-utils":9,"assert":120,"babel-runtime/core-js/get-iterator":11,"babel-runtime/core-js/json/stringify":12,"babel-runtime/core-js/object/assign":13,"babel-runtime/core-js/object/keys":17,"babel-runtime/helpers/defineProperty":23}],6:[function(require,module,exports){
+},{"./builtins":2,"./error":3,"./from-now":4,"./interpreter":6,"./type-utils":9,"assert":120,"babel-runtime/core-js/get-iterator":11,"babel-runtime/core-js/json/stringify":12,"babel-runtime/core-js/object/assign":13,"babel-runtime/core-js/object/keys":17,"babel-runtime/helpers/defineProperty":23,"babel-runtime/helpers/toConsumableArray":26}],6:[function(require,module,exports){
 'use strict';
 
 var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');

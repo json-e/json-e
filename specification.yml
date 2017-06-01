@@ -258,6 +258,34 @@ error: true
 todo: 'https://github.com/taskcluster/json-e/issues/69'
 ################################################################################
 ---
+section:  $flatten
+---
+title:    simple flatten
+context:  {}
+template: {$flatten: [[1, 2], [3, 4], [5]]}
+result:   [1, 2, 3, 4, 5]
+---
+title:    flatten empty array
+context:  {}
+template: {$flatten: []}
+error:    true
+---
+title:    flatten empty array of arrays
+context:  {}
+template: {$flatten: [[]]}
+result:   []
+---
+title:    flatten nothing
+context:  {}
+template: {$flatten: }
+error:    true
+---
+title:    flatten mixed types
+context:  {}
+template: {$flatten: [[1, 2], [['a', 'b']], [{}], [[]]]}
+result:   [1, 2, ['a', 'b'], {}, []]
+################################################################################
+---
 section:  fromNow
 ---
 title:    fromNow 1 hour
