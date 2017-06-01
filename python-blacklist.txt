@@ -33,6 +33,8 @@ $if-constructs: $if->else, else => object, interpolation, false
 $flatten: simple flatten
 $flatten: flatten empty array
 $flatten: flatten empty array of arrays
+$flatten: flatten nothing
+$flatten: flatten mixed types
 fromNow: fromNow 1 hour
 fromNow: fromNow 2 hours
 fromNow: fromNow 3h
