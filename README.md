@@ -138,6 +138,16 @@ template: {key: {$if: 'cond', then: 2}, other: 3}
 result: {other: 3}
 ```
 
+### `$flatten`
+
+The `$flatten` operator flattens an array of arrays into one array.
+
+```yaml
+context: {}
+template: {$flatten: [[1, 2], [3, 4], [5]]}
+result:   [1, 2, 3, 4, 5]
+```
+
 ### `$fromNow`
 
 The `$fromNow` operator is a shorthand for the built-in function `fromNow`. It
@@ -166,6 +176,10 @@ template:
   each(x): {$eval: 'x + a'}
 result:   [3, 5, 7]
 ```
+
+The array is the value of the `$map` property, and the expression to evaluate
+is given by `each(var)` where `var` is the name of the variable containing each
+element.
 
 ### `$merge`
 

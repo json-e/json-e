@@ -39,6 +39,17 @@ constructs.$eval = (template, context) => {
   return interpreter.parse(template['$eval'], context);
 };
 
+constructs.$flatten = (template, context) => {
+  let value = render(template['$flatten'], context);
+
+  // Value must be array of arrays
+  if (!(isArray(value) && value.some(v => isArray(v)))) {
+    throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
+  }
+
+  return [].concat(...value);
+};
+
 constructs.$fromNow = (template, context) => {
   if (!isString(template['$fromNow'])) {
     throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
@@ -81,7 +92,6 @@ constructs.$map = (template, context) => {
 
   return value.map(v => render(each, Object.assign({}, context, {[x]: v})))
               .filter(v => v !== deleteMarker);
-
 };
 
 constructs.$merge = (template, context) => {

@@ -31,8 +31,101 @@ tasks:
           yarn &&
           yarn test
     metadata:
-      name: json-e test run
-      description: Run library test suite
+      name: json-e node 6 test run
+      description: Run library test suite - node 6
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+          - push
+        branches:
+          - master
+    payload:
+      maxRunTime: 3600
+      image: 'python:2.7'
+      command:
+        - /bin/bash
+        - '--login'
+        - '-c'
+        - >-
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          pip install -e . &&
+          python setup.py test
+    metadata:
+      name: json-e py27 test run
+      description: Run library test suite - python 2.7
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+          - push
+        branches:
+          - master
+    payload:
+      maxRunTime: 3600
+      image: 'python:3.6'
+      command:
+        - /bin/bash
+        - '--login'
+        - '-c'
+        - >-
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          pip install -e . &&
+          python setup.py test
+    metadata:
+      name: json-e py36 test run
+      description: Run library test suite - python 3.6
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+          - push
+        branches:
+          - master
+    payload:
+      maxRunTime: 3600
+      image: 'node:6'
+      command:
+        - /bin/bash
+        - '--login'
+        - '-c'
+        - >-
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          mv docs/bundle.js docs/bundle.diff.js &&
+          npm install &&
+          npm install -g babel-compile browserify &&
+          npm run-script build-demo &&
+          diff docs/bundle.js docs/bundle.diff.js
+    metadata:
+      name: docs/bundle.js test
+      description: Check if bundle.js is updated
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
   - provisionerId: '{{ taskcluster.docker.provisionerId }}'

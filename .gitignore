@@ -41,3 +41,6 @@ jspm_packages
 lib/
 
 yarn.lock
+*.pyc
+.eggs
+json_e.egg-info
