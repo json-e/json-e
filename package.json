@@ -27,6 +27,7 @@
     "babel-cli": "^6.24.1",
     "babel-compile": "^2.0.0",
     "babel-preset-taskcluster": "^3.0.0",
+    "browserify": "^14.4.0",
     "eslint-config-taskcluster": "^2.0.0",
     "eslint-plugin-taskcluster": "^1.0.2",
     "mocha": "^3.2.0",
