@@ -1591,6 +1591,36 @@ context: {a: 'a'}
 template: {$eval: '+a'}
 error: true
 ---
+title:    'unary negation of true'
+template: {$eval: '-true'}
+context:  {}
+error:    true
+---
+title:    'unary plus of true'
+template: {$eval: '+true'}
+context:  {}
+error:    true
+---
+title:    'unary negation of false'
+template: {$eval: '-false'}
+context:  {}
+error:    true
+---
+title:    'unary plus of false'
+template: {$eval: '+false'}
+context:  {}
+error:    true
+---
+title:    'unary negation of null'
+template: {$eval: '-null'}
+context:  {}
+error:    true
+---
+title:    'unary plus of null'
+template: {$eval: '+null'}
+context:  {}
+error:    true
+---
 title: 'addition of numbers to strings'
 context: {a: 13, b: 'b'}
 template: {$eval: 'a + b'}

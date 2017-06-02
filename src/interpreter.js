@@ -152,20 +152,22 @@ prefixRules['!'] = (token, ctx) => {
 
 prefixRules['-'] = (token, ctx) => {
   let v = ctx.parse('unary');
-  let result = -v;
-  if (isNaN(result)) {
+  
+  if (!isNumber(v)) {
     throw expectationError('unary: -', 'number');
   }
-  return result;
+
+  return -v;
 };
 
 prefixRules['+'] = (token, ctx) => {
   let v = ctx.parse('unary');
-  let result = +v;
-  if (isNaN(result)) {
+
+  if (!isNumber(v)) {
     throw expectationError('unary: +', 'number');
   }
-  return result;
+
+  return +v;
 };
 
 prefixRules['identifier'] = (token, ctx) => {
