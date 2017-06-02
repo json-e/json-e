@@ -790,7 +790,7 @@ prefixRules['!'] = function (token, ctx) {
 
 prefixRules['-'] = function (token, ctx) {
   var v = ctx.parse('unary');
-  console.log(v);
+
   if (!(0, _typeUtils.isNumber)(v)) {
     throw expectationError('unary: -', 'number');
   }
