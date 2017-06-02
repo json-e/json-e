@@ -553,7 +553,26 @@ operators.$sort = function (template, context) {
     if (needBy) {
       throw jsonTemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays\n', template);
     }
-    return value.sort();
+
+    return value.sort(function (left, right) {
+      if ((0, _typeUtils.isNumber)(left) && !(0, _typeUtils.isNumber)(right)) {
+        return -1;
+      }
+
+      if ((0, _typeUtils.isNumber)(right) && !(0, _typeUtils.isNumber)(left)) {
+        return 1;
+      }
+
+      if (left < right) {
+        return -1;
+      }
+
+      if (left > right) {
+        return 1;
+      }
+
+      return 0;
+    });
   }
 
   var x = match[1];
