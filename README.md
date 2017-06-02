@@ -263,3 +263,37 @@ of the context.
 * `lowercase(s)`, `uppercase(s)` -- convert string case
 * `str(x)` -- convert string, number, boolean, or array to string
 * `len(x)` -- length of a string or array
+
+# Development and testing
+
+The npm packages `browserify` and `babel-compile` are required for
+development. You can use the following commands to install these packages
+globally on your system.
+
+```bash
+sudo npm install -g babel-compile browserify
+```
+
+You can run `./test.sh` to run json-e's unit tests and the `bundle.js` check.
+This is a breakdown of the commands inside the `test.sh` file.
+
+```bash
+# Run JavaScript unit tests
+npm test
+
+# Run Python unit tests
+python setup.py test
+
+# bundle.js check. This section makes sure that
+# the demo website's bundle.js file is updated.
+mv docs/bundle.js docs/bundle.diff.js
+npm run-script build-demo
+diff docs/bundle.js docs/bundle.diff.js
+```
+
+You can also run the following command to
+update the demo website bundle.js file.
+
+```bash
+npm run-script build-demo
+```
