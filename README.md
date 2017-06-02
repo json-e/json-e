@@ -266,13 +266,8 @@ of the context.
 
 # Development and testing
 
-The npm packages `browserify` and `babel-compile` are required for
-development. You can use the following commands to install these packages
-globally on your system.
-
-```bash
-sudo npm install -g babel-compile browserify
-```
+You should run `npm install` to install the required packages for json-e's
+execution and development.
 
 You can run `./test.sh` to run json-e's unit tests and the `bundle.js` check.
 This is a breakdown of the commands inside the `test.sh` file.
