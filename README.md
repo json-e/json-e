@@ -1,4 +1,4 @@
-# JSON-e
+# [JSON-e](taskcluster.github.io/json-e)
 
 JSON-e is a data-structure parameterization system written for embedding
 context in JSON objects.
