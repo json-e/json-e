@@ -687,6 +687,11 @@ context:  {}
 template: {$sort: [111, 22, 3]}
 result:   [3, 22, 111]
 ---
+title:    sort of mixed array
+context:  {}
+template: {$sort: [1, "2", 2, 3, "111", "112"]}
+result:   [1, 2, 3, "111", "112", "2"]
+---
 title:    simple sort with $eval
 context:  {array: [3, 4, 1, 2]}
 template: {$sort: {$eval: 'array'}}

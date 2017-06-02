@@ -172,17 +172,25 @@ operators.$sort = (template, context) => {
       throw jsonTemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays\n', template);
     }
 
-    if (value.some(v => isNumber(v))) {
-      return value.sort((left, right) => {
-        if (left <= right) {
-          return false;
-        }
+    return value.sort((left, right) => {
+      if (isNumber(left) && !isNumber(right)) {
+        return -1;
+      }
 
-        return true;
-      });
-    }
+      if (isNumber(right) && !isNumber(left)) {
+        return 1;
+      }
 
-    return value.sort();
+      if (left < right) {
+        return -1;
+      }
+
+      if (left > right) {
+        return 1;
+      }
+
+      return 0;
+    });
   }
 
   let x = match[1];
