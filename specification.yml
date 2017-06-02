@@ -403,7 +403,7 @@ context:  {x: 1, y: 2, z: 3}
 result:   43
 ---
 title:    let without in
-template: {$let: {x: 1, y: 2}, {$eval: "x + y"}}
+template: {$let: {x: 1, y: 2}, a: {$eval: "x + y"}}
 context:  {}
 error:    true
 ---
