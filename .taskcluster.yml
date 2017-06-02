@@ -120,7 +120,6 @@ tasks:
           git checkout {{event.head.sha}} &&
           mv docs/bundle.js docs/bundle.diff.js &&
           npm install &&
-          npm install -g babel-compile browserify &&
           npm run-script build-demo &&
           diff docs/bundle.js docs/bundle.diff.js
     metadata:
