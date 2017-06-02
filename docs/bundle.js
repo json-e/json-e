@@ -599,7 +599,7 @@ exports.default = function (template) {
   (0, _assert2.default)(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   var result = render(template, context);
   if (result === deleteMarker) {
-    return undefined;
+    return null;
   }
   return result;
 };
