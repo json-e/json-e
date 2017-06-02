@@ -177,7 +177,7 @@ operators.$sort = (template, context) => {
         return -1;
       }
 
-      if (isNumber(right) && !isNumber(left)) {
+      if (!isNumber(left) && isNumber(right)) {
         return 1;
       }
 
