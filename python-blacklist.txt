@@ -481,6 +481,12 @@ expression language - operator type errors: exponentiation of strings by objects
 expression language - operator type errors: exponentiation of strings by arrays
 expression language - operator type errors: unary negation of string
 expression language - operator type errors: unary plus of string
+expression language - operator type errors: unary negation of true
+expression language - operator type errors: unary plus of true
+expression language - operator type errors: unary negation of false
+expression language - operator type errors: unary plus of false
+expression language - operator type errors: unary negation of null
+expression language - operator type errors: unary plus of null
 expression language - operator type errors: addition of numbers to strings
 expression language - operator type errors: addition of numbers to null
 expression language - operator type errors: addition of numbers to booleans

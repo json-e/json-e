@@ -790,20 +790,22 @@ prefixRules['!'] = function (token, ctx) {
 
 prefixRules['-'] = function (token, ctx) {
   var v = ctx.parse('unary');
-  var result = -v;
-  if (isNaN(result)) {
+
+  if (!(0, _typeUtils.isNumber)(v)) {
     throw expectationError('unary: -', 'number');
   }
-  return result;
+
+  return -v;
 };
 
 prefixRules['+'] = function (token, ctx) {
   var v = ctx.parse('unary');
-  var result = +v;
-  if (isNaN(result)) {
+
+  if (!(0, _typeUtils.isNumber)(v)) {
     throw expectationError('unary: +', 'number');
   }
-  return result;
+
+  return +v;
 };
 
 prefixRules['identifier'] = function (token, ctx) {
