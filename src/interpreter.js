@@ -231,12 +231,12 @@ infixRules['**'] = (left, token, ctx) => {
 infixRules['['] = (left, token, ctx) => parseInterval(left, token, ctx);
 
 infixRules['.'] = (left, token, ctx) => {
-  if (isObject(left)) {
+  if (isObject(left) && !isArray(left)) {
     let key = ctx.require('identifier').value;
     if (left.hasOwnProperty(key)) {
       return left[key];
     }
-    throw new InterpreterError('can access own properties of objects');
+    throw new InterpreterError('can only access own properties of objects');
   }
   throw expectationError('infix: .', 'objects');
 };

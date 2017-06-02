@@ -723,7 +723,6 @@ expression language - logic: array and object
 expression language - logic: array or object
 expression language - logic: array and array
 expression language - logic: array or array
-expression language - string operations: string length attribute
 expression language - string operations: other string attributes are not set
 expression language - property access: missing property
 expression language - property access: missing property by name
@@ -834,3 +833,7 @@ $flatten: flatten an object
 $flatten: flatten an array of strings
 $flatten: flatten an array of numbers
 $flatten: flatten mixed types
+expression language - string operations: string length attribute is an error
+expression language - array access: array length property is an error
+expression language - string operations: string length attribute is an error even by index
+expression language - array access: array length property is an error even by index

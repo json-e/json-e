@@ -2993,11 +2993,15 @@ context: {key: '12345'}
 template: {$eval: 'key[:"a"]'}
 error: true
 ---
-title: 'string length attribute'
+title: 'string length attribute is an error'
 context: {key: '12345'}
 template: {$eval: 'key.length'}
-result: 5
-todo: 'https://github.com/taskcluster/json-e/issues/63'
+error: true
+---
+title: 'string length attribute is an error even by index'
+context: {key: '12345'}
+template: {$eval: 'key["length"]'}
+error: true
 ---
 title: 'other string attributes are not set'
 context: {key: 'abc'}
@@ -3156,10 +3160,15 @@ context: {key: {x: 10}}
 template: {$eval: 'key[2]'}
 error: true
 ---
-title: 'array length'
+title: 'array length property is an error'
 context: {key: [1, 3, 5]}
 template: {$eval: 'key.length'}
-result: 3
+error: true
+---
+title: 'array length property is an error even by index'
+context: {key: [1, 3, 5]}
+template: {$eval: 'key["length"]'}
+error: true
 ---
 title: 'other array attributes are not available'
 context: {key: [5, 3, 1]}
