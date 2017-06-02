@@ -559,7 +559,7 @@ operators.$sort = function (template, context) {
         return -1;
       }
 
-      if ((0, _typeUtils.isNumber)(right) && !(0, _typeUtils.isNumber)(left)) {
+      if (!(0, _typeUtils.isNumber)(left) && (0, _typeUtils.isNumber)(right)) {
         return 1;
       }
 
