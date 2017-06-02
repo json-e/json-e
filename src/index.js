@@ -193,7 +193,7 @@ export default (template, context = {}) => {
   assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   let result = render(template, context);
   if (result === deleteMarker) {
-    return undefined;
+    return null;
   }
   return result;
 };
