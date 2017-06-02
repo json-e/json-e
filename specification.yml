@@ -513,6 +513,29 @@ template:
 error: true # can't do map on non-arrays
 ################################################################################
 ---
+section:  $merge
+---
+title:    simple merge
+context:  {}
+template: {$merge: [{a: 1, b: 1}, {b: 2, c: 3}, {d: 4}]}
+result:   {a: 1, b: 2, c: 3, d: 4}
+---
+title:    merge empty array
+context:  {}
+template: {$merge: []}
+result:   {}
+---
+title:    merge empty array with empty object
+context:  {}
+template: {$merge: [{}]}
+result:   {}
+---
+title:    merge null
+context:  {}
+template: {$merge: null}
+error:    true
+################################################################################
+---
 section:  $sort
 ---
 title:    simple sort

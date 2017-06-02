@@ -33,6 +33,8 @@ $if-constructs: $if->else, else => object, interpolation, false
 $flatten: simple flatten
 $flatten: flatten empty array
 $flatten: flatten empty array of arrays
+$flatten: flatten nothing
+$flatten: flatten mixed types
 fromNow: fromNow 1 hour
 fromNow: fromNow 2 hours
 fromNow: fromNow 3h
@@ -59,6 +61,10 @@ $map: can take from objects
 $map: can make objects too
 $map: respects delete-marker from $if
 $map: $map requires an array
+$merge: simple merge
+$merge: merge empty array
+$merge: merge empty array with empty object
+$merge: merge null
 $sort: simple sort
 $sort: simple sort with $eval
 $sort: sort by
