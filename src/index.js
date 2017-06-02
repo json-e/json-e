@@ -71,6 +71,22 @@ constructs.$json = (template, context) => {
   return JSON.stringify(render(template['$json'], context));
 };
 
+constructs.$let = (template, context) => {
+  let variables = template['$let'];
+
+  var context_copy = Object.assign(context, variables);
+
+  if (variables === null || isArray(variables) || !isObject(variables)) {
+    throw jsonTemplateError('$let operator requires an object as the context\n', template);
+  }
+
+  if (template.in == undefined) {
+    throw jsonTemplateError('$let operator requires `in` clause\n', template);
+  }
+
+  return render(template.in, context_copy);
+};
+
 constructs.$map = (template, context) => {
   let value = render(template['$map'], context);
   if (!isArray(value)) {

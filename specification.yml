@@ -399,6 +399,39 @@ template: {message: 'hello ${key.key2}', 'k-${key.key3}': true}
 result:   {message: 'hello world', 'k-1': true}
 ################################################################################
 ---
+section: $let
+---
+title:    simple let
+template: {$let: {ts: 100, foo: 200,}, in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
+context:  {}
+result:   [300, -100, 20000]
+---
+title:    context overriding
+template: {$let: {x: 20}, in: {$eval: "x + y"}}
+context:  {x: 10, y: 1}
+result:   21
+---
+title:    nested let
+template: {$let: {x: 20, y: 10}, in: {$let: {x: 30}, in: {$eval: "x + y + z"}}}
+context:  {x: 1, y: 2, z: 3}
+result:   43
+---
+title:    let without in
+template: {$let: {x: 1, y: 2}, a: {$eval: "x + y"}}
+context:  {}
+error:    true
+---
+title:    let array
+template: {$let: [1, 2], in: {$eval: "1 + 2"}}
+context:  {}
+error:    true
+---
+title:    let null
+template: {$let: null, in: {$eval: "1 + 2"}}
+context:  {}
+error:    true
+################################################################################
+---
 section:  $map
 ---
 title:    simple map

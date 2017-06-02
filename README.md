@@ -164,10 +164,26 @@ result:   '2017-01-19T16:27:20.974Z'
 The available units are `day`, `hour`, and `minute`, for all of which a plural
 is also accepted.
 
+### `$let`
+
+The `$let` operator evaluates an expression using a context amended with the
+given values. It is analogous to the Haskell `where` clause.
+
+```yaml
+context: {}
+template: {$let: {ts : 100, foo: 200},
+           in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
+result: [300, -100, 20000]
+```
+
+The `$let` operator here added the `ts` and `foo` variables to the scope of
+the context and accordingly evaluated the `in` clause using those variables
+to return the correct result.
+
 ### `$map`
 
 The `$map` operator evaluates an expression for each value of the given array,
-constructing the result as an array of the evaluated values
+constructing the result as an array of the evaluated values.
 
 ```yaml
 context:  {a: 1}

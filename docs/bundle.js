@@ -326,13 +326,13 @@ var _defineProperty2 = require('babel-runtime/helpers/defineProperty');
 
 var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 
-var _assign = require('babel-runtime/core-js/object/assign');
-
-var _assign2 = _interopRequireDefault(_assign);
-
 var _keys = require('babel-runtime/core-js/object/keys');
 
 var _keys2 = _interopRequireDefault(_keys);
+
+var _assign = require('babel-runtime/core-js/object/assign');
+
+var _assign2 = _interopRequireDefault(_assign);
 
 var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
@@ -433,6 +433,22 @@ constructs.$if = function (template, context) {
 
 constructs.$json = function (template, context) {
   return (0, _stringify2.default)(render(template['$json'], context));
+};
+
+constructs.$let = function (template, context) {
+  var variables = template['$let'];
+
+  var context_copy = (0, _assign2.default)(context, variables);
+
+  if (variables === null || (0, _typeUtils.isArray)(variables) || !(0, _typeUtils.isObject)(variables)) {
+    throw jsonTemplateError('$let operator requires an object as the context\n', template);
+  }
+
+  if (template.in == undefined) {
+    throw jsonTemplateError('$let operator requires `in` clause\n', template);
+  }
+
+  return render(template.in, context_copy);
 };
 
 constructs.$map = function (template, context) {
