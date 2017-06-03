@@ -20,7 +20,19 @@ let interpolate = (string, context) => {
     if (isArray(v.result) || isObject(v.result)) {
       throw new TemplateError('cannot interpolate array/object: ' + string);
     }
-    result += remaining.slice(0, offset) + v.result.toString();
+
+    result += remaining.slice(0, offset);
+
+    // We can't use JSON.stringify(), which would parse null correctly,
+    // because it ignores double quotes in strings. For example,
+    // JSON.stringify('hello "world"') will return 'hello world' instead of
+    // 'hello "world"'
+    if (v.result === null) {
+      result += 'null';
+    } else {
+      result += v.result.toString();
+    }
+
     remaining = remaining.slice(offset + v.offset + 1);
   }
   result += remaining;
