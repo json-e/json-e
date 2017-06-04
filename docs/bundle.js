@@ -583,6 +583,10 @@ var render = function render(template, context) {
 
       var value = render(template[key], context);
       if (value !== deleteMarker) {
+        if (key.startsWith('$$') && constructs.hasOwnProperty(key.substr(1))) {
+          key = key.substr(1);
+        }
+
         result[interpolate(key, context)] = value;
       }
     }
@@ -897,12 +901,12 @@ infixRules['['] = function (left, token, ctx) {
 };
 
 infixRules['.'] = function (left, token, ctx) {
-  if ((0, _typeUtils.isObject)(left)) {
+  if ((0, _typeUtils.isObject)(left) && !(0, _typeUtils.isArray)(left)) {
     var key = ctx.require('identifier').value;
     if (left.hasOwnProperty(key)) {
       return left[key];
     }
-    throw new _error.InterpreterError('can access own properties of objects');
+    throw new _error.InterpreterError('can only access own properties of objects');
   }
   throw expectationError('infix: .', 'objects');
 };

@@ -257,6 +257,69 @@ template: {$if: 'cond', then: "t"}
 result:   null
 ################################################################################
 ---
+section:  escape operators
+---
+title:    escape $eval
+context:  {}
+template: {$$eval: "1+2"}
+result:   {$eval: "1+2"}
+---
+title:    escape $flatten
+context:  {}
+template: {$$flatten: [[1, 2], [3, 4], [5]]}
+result:   {$flatten: [[1, 2], [3, 4], [5]]}
+---
+title:    escape $fromNow
+context:  {}
+template: {$$fromNow: "2 days"}
+result:   {$fromNow: "2 days"}
+---
+title:    escape $if
+context:  {}
+template: {$$if: false}
+result:   {$if: false}
+---
+title:    escape $json
+context:  {}
+template: {$$json: [1, 2, 3]}
+result:   {$json: [1, 2, 3]}
+---
+title:    escape $let
+context:  {}
+template: {$$let: {ts: 100, foo: 200}, in: [{$$eval: "ts+foo"}]}
+result:   {$let: {ts: 100, foo: 200}, in: [{$eval: "ts+foo"}]}
+---
+title:    escape $map
+context:  {}
+template: {$$map: [2, 4, 6], each(x): {$$eval: "x + a"}}
+result:   {$map: [2, 4, 6], each(x): {$eval: "x + a"}}
+---
+title:    escape $merge
+context:  {}
+template: {$$merge: [{a: 1}, {a: 2}]}
+result:   {$merge: [{a: 1}, {a: 2}]}
+---
+title:    escape $reverse
+context:  {}
+template: {$$reverse: [3, 2, 1]}
+result:   {$reverse: [3, 2, 1]}
+---
+title:    escape $sort
+context:  {}
+template: {$$sort: [3, 2, 1]}
+result:   {$sort: [3, 2, 1]}
+---
+title:    interpolate non-json-e operator
+context:  {}
+template: {$nothing: 1}
+result:   {$nothing: 1}
+---
+title:    escape non-json-e operator
+context:  {}
+template: {$$nothing: 1}
+result:   {$$nothing: 1}
+################################################################################
+---
 section:  $flatten
 ---
 title:    simple flatten
