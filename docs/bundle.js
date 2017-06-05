@@ -602,6 +602,10 @@ var render = function render(template, context) {
 
       var value = render(template[key], context);
       if (value !== deleteMarker) {
+        if (key.startsWith('$$') && constructs.hasOwnProperty(key.substr(1))) {
+          key = key.substr(1);
+        }
+
         result[interpolate(key, context)] = value;
       }
     }

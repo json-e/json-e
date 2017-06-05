@@ -181,7 +181,7 @@ given values. It is analogous to the Haskell `where` clause.
 
 ```yaml
 context: {}
-template: {$let: {ts : 100, foo: 200},
+template: {$let: {ts: 100, foo: 200},
            in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
 result: [300, -100, 20000]
 ```
@@ -241,6 +241,16 @@ The `$reverse` operator simply reverses the given array.
 context:  {}
 template: {$reverse: [3, 4, 1, 2]}
 result:   [2, 1, 4, 3]
+```
+
+## Escaping operators
+
+You can use `$$` to escape json-e operators. For example:
+
+```yaml
+context:  {}
+template: {$$reverse: [3, 2, {$$eval: '2 - 1'}, 0]}
+result:   {$reverse: [3, 2, {$eval: '2 - 1'}, 0]}
 ```
 
 ## Expressions
