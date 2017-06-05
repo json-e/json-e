@@ -8,6 +8,10 @@ import {
 import builtins from './builtins';
 import TemplateError from './error';
 
+let flattenDeep = (a) => {
+  return Array.isArray(a) ? [].concat(...a.map(flattenDeep)) : a;
+};
+
 let jsonTemplateError = (msg, template) => new TemplateError(msg + JSON.stringify(template, null, '\t'));
 
 let interpolate = (string, context) => {
@@ -48,6 +52,17 @@ constructs.$flatten = (template, context) => {
   }
 
   return [].concat(...value);
+};
+
+constructs.$flattenDeep = (template, context) => {
+  let value = render(template['$flattenDeep'], context);
+
+  // Value must be array of arrays
+  if (!(isArray(value) && value.some(v => isArray(v)))) {
+    throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
+  }
+
+  return flattenDeep(value);
 };
 
 constructs.$fromNow = (template, context) => {

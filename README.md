@@ -143,9 +143,19 @@ result: {other: 3}
 The `$flatten` operator flattens an array of arrays into one array.
 
 ```yaml
-context: {}
+context:  {}
 template: {$flatten: [[1, 2], [3, 4], [5]]}
 result:   [1, 2, 3, 4, 5]
+```
+
+### `$flattenDeep`
+
+The `$flattenDeep` operator deeply flattens an array of arrays into one array.
+
+```yaml
+context:  {}
+template: {$flattenDeep: [[1, [2, [3]]]]}
+result:   [1, 2, 3]
 ```
 
 ### `$fromNow`
