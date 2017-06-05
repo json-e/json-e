@@ -5,7 +5,7 @@
 import PrattParser from './prattparser';
 import {isString, isNumber, isBool,
   isArray, isObject, isFunction} from './type-utils';
-import InterpreterError from './error';
+import {InterpreterError} from './error';
 
 let expectationError = (operator, expectation) => new InterpreterError(`'${operator}' expects '${expectation}'`);
 
@@ -152,20 +152,22 @@ prefixRules['!'] = (token, ctx) => {
 
 prefixRules['-'] = (token, ctx) => {
   let v = ctx.parse('unary');
-  let result = -v;
-  if (isNaN(result)) {
+  
+  if (!isNumber(v)) {
     throw expectationError('unary: -', 'number');
   }
-  return result;
+
+  return -v;
 };
 
 prefixRules['+'] = (token, ctx) => {
   let v = ctx.parse('unary');
-  let result = +v;
-  if (isNaN(result)) {
+
+  if (!isNumber(v)) {
     throw expectationError('unary: +', 'number');
   }
-  return result;
+
+  return +v;
 };
 
 prefixRules['identifier'] = (token, ctx) => {
@@ -229,12 +231,12 @@ infixRules['**'] = (left, token, ctx) => {
 infixRules['['] = (left, token, ctx) => parseInterval(left, token, ctx);
 
 infixRules['.'] = (left, token, ctx) => {
-  if (isObject(left)) {
+  if (isObject(left) && !isArray(left)) {
     let key = ctx.require('identifier').value;
     if (left.hasOwnProperty(key)) {
       return left[key];
     }
-    throw new InterpreterError('can access own properties of objects');
+    throw new InterpreterError('can only access own properties of objects');
   }
   throw expectationError('infix: .', 'objects');
 };

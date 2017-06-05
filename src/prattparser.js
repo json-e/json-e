@@ -5,7 +5,7 @@
 
 import Tokenizer from './tokenizer';
 import assert from 'assert';
-import SyntaxError from './error';
+import {SyntaxError} from './error';
 
 let syntaxRuleError = (token, expects) => new SyntaxError(`Found '${token.value}' expected '${expects}'`, token);
 

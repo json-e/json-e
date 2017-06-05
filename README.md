@@ -1,4 +1,4 @@
-# JSON-e
+# [JSON-e](https://taskcluster.github.io/json-e)
 
 JSON-e is a data-structure parameterization system written for embedding
 context in JSON objects.
@@ -138,6 +138,16 @@ template: {key: {$if: 'cond', then: 2}, other: 3}
 result: {other: 3}
 ```
 
+### `$flatten`
+
+The `$flatten` operator flattens an array of arrays into one array.
+
+```yaml
+context: {}
+template: {$flatten: [[1, 2], [3, 4], [5]]}
+result:   [1, 2, 3, 4, 5]
+```
+
 ### `$fromNow`
 
 The `$fromNow` operator is a shorthand for the built-in function `fromNow`. It
@@ -154,10 +164,26 @@ result:   '2017-01-19T16:27:20.974Z'
 The available units are `day`, `hour`, and `minute`, for all of which a plural
 is also accepted.
 
+### `$let`
+
+The `$let` operator evaluates an expression using a context amended with the
+given values. It is analogous to the Haskell `where` clause.
+
+```yaml
+context: {}
+template: {$let: {ts : 100, foo: 200},
+           in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
+result: [300, -100, 20000]
+```
+
+The `$let` operator here added the `ts` and `foo` variables to the scope of
+the context and accordingly evaluated the `in` clause using those variables
+to return the correct result.
+
 ### `$map`
 
 The `$map` operator evaluates an expression for each value of the given array,
-constructing the result as an array of the evaluated values
+constructing the result as an array of the evaluated values.
 
 ```yaml
 context:  {a: 1}
@@ -170,6 +196,18 @@ result:   [3, 5, 7]
 The array is the value of the `$map` property, and the expression to evaluate
 is given by `each(var)` where `var` is the name of the variable containing each
 element.
+
+### `$merge`
+
+The `$merge` constructor merges an array of objects, returning a single object
+that combines all of the objects in the array, where the right-side objects
+overwrite the values of the left-side ones.
+
+```yaml
+context:  {}
+template: {$merge: [{a: 1, b: 1}, {b: 2, c: 3}, {d: 4}]}
+result:   {a: 1, b: 2, c: 3, d: 4}
+```
 
 ### `$sort`
 
@@ -269,3 +307,32 @@ NOTE: If the template is untrusted, it can pass arbitrary data to functions
 in the context, which must guard against such behavior. For example, if the
 `imageData` function above reads data from a file, it must sanitize the
 filename before opening it.
+
+# Development and testing
+
+You should run `npm install` to install the required packages for json-e's
+execution and development.
+
+You can run `./test.sh` to run json-e's unit tests and the `bundle.js` check.
+This is a breakdown of the commands inside the `test.sh` file.
+
+```bash
+# Run JavaScript unit tests
+npm test
+
+# Run Python unit tests
+python setup.py test
+
+# bundle.js check. This section makes sure that
+# the demo website's bundle.js file is updated.
+mv docs/bundle.js docs/bundle.diff.js
+npm run-script build-demo
+diff docs/bundle.js docs/bundle.diff.js
+```
+
+You can also run the following command to
+update the demo website bundle.js file.
+
+```bash
+npm run-script build-demo
+```

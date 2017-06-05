@@ -39,6 +39,17 @@ constructs.$eval = (template, context) => {
   return interpreter.parse(template['$eval'], context);
 };
 
+constructs.$flatten = (template, context) => {
+  let value = render(template['$flatten'], context);
+
+  // Value must be array of arrays
+  if (!(isArray(value) && value.some(v => isArray(v)))) {
+    throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
+  }
+
+  return [].concat(...value);
+};
+
 constructs.$fromNow = (template, context) => {
   if (!isString(template['$fromNow'])) {
     throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
@@ -58,6 +69,22 @@ constructs.$if = (template, context) => {
 
 constructs.$json = (template, context) => {
   return JSON.stringify(render(template['$json'], context));
+};
+
+constructs.$let = (template, context) => {
+  let variables = template['$let'];
+
+  var context_copy = Object.assign(context, variables);
+
+  if (variables === null || isArray(variables) || !isObject(variables)) {
+    throw jsonTemplateError('$let operator requires an object as the context\n', template);
+  }
+
+  if (template.in == undefined) {
+    throw jsonTemplateError('$let operator requires `in` clause\n', template);
+  }
+
+  return render(template.in, context_copy);
 };
 
 constructs.$map = (template, context) => {
@@ -81,7 +108,16 @@ constructs.$map = (template, context) => {
 
   return value.map(v => render(each, Object.assign({}, context, {[x]: v})))
               .filter(v => v !== deleteMarker);
+};
 
+constructs.$merge = (template, context) => {
+  let value = render(template['$merge'], context);
+
+  if (!isArray(value)) {
+    throw jsonTemplateError('$merge requires array as value\n', template);
+  }
+
+  return Object.assign({}, ...value);
 };
 
 constructs.$reverse = (template, context) => {
@@ -173,7 +209,7 @@ export default (template, context = {}) => {
   assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   let result = render(template, context);
   if (result === deleteMarker) {
-    return undefined;
+    return null;
   }
   return result;
 };
