@@ -334,13 +334,13 @@ var _assign = require('babel-runtime/core-js/object/assign');
 
 var _assign2 = _interopRequireDefault(_assign);
 
-var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
-
-var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
-
 var _stringify = require('babel-runtime/core-js/json/stringify');
 
 var _stringify2 = _interopRequireDefault(_stringify);
+
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
 
 var _interpreter = require('./interpreter');
 
@@ -365,6 +365,12 @@ var _error = require('./error');
 var _error2 = _interopRequireDefault(_error);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var flattenDeep = function flattenDeep(a) {
+  var _ref;
+
+  return Array.isArray(a) ? (_ref = []).concat.apply(_ref, (0, _toConsumableArray3.default)(a.map(flattenDeep))) : a;
+};
 
 var jsonTemplateError = function jsonTemplateError(msg, template) {
   return new _error2.default(msg + (0, _stringify2.default)(template, null, '\t'));
@@ -400,7 +406,7 @@ constructs.$eval = function (template, context) {
 };
 
 constructs.$flatten = function (template, context) {
-  var _ref;
+  var _ref2;
 
   var value = render(template['$flatten'], context);
 
@@ -411,7 +417,20 @@ constructs.$flatten = function (template, context) {
     throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
   }
 
-  return (_ref = []).concat.apply(_ref, (0, _toConsumableArray3.default)(value));
+  return (_ref2 = []).concat.apply(_ref2, (0, _toConsumableArray3.default)(value));
+};
+
+constructs.$flattenDeep = function (template, context) {
+  var value = render(template['$flattenDeep'], context);
+
+  // Value must be array of arrays
+  if (!((0, _typeUtils.isArray)(value) && value.some(function (v) {
+    return (0, _typeUtils.isArray)(v);
+  }))) {
+    throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
+  }
+
+  return flattenDeep(value);
 };
 
 constructs.$fromNow = function (template, context) {
@@ -897,12 +916,12 @@ infixRules['['] = function (left, token, ctx) {
 };
 
 infixRules['.'] = function (left, token, ctx) {
-  if ((0, _typeUtils.isObject)(left)) {
+  if ((0, _typeUtils.isObject)(left) && !(0, _typeUtils.isArray)(left)) {
     var key = ctx.require('identifier').value;
     if (left.hasOwnProperty(key)) {
       return left[key];
     }
-    throw new _error.InterpreterError('can access own properties of objects');
+    throw new _error.InterpreterError('can only access own properties of objects');
   }
   throw expectationError('infix: .', 'objects');
 };

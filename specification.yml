@@ -300,6 +300,49 @@ template: {$flatten: [[1, 2], [['a', 'b']], [{}], [[]]]}
 result:   [1, 2, ['a', 'b'], {}, []]
 ################################################################################
 ---
+section:  $flattenDeep
+---
+title:    simple flattenDeep
+context:  {}
+template: {$flattenDeep: [[1, [2, [3]]]]}
+result:   [1, 2, 3]
+---
+title:    flattenDeep empty array
+context:  {}
+template: {$flattenDeep: []}
+error:    true
+---
+title:    flattenDeep empty array of arrays
+context:  {}
+template: {$flattenDeep: [[]]}
+result:   []
+---
+title:    flattenDeep null
+context:  {}
+template: {$flattenDeep: null}
+error:    true
+---
+title:    flattenDeep an object
+context:  {}
+template: {$flattenDeep: {a: 1, b: 2}}
+error:    true
+---
+title:    flattenDeep an array of strings
+context:  {}
+template: {$flattenDeep: ["a", "b"]}
+error:    true
+---
+title:    flattenDeep an array of numbers
+context:  {}
+template: {$flattenDeep: [1, 2]}
+error:    true
+---
+title:    flattenDeep mixed types
+context:  {}
+template: {$flattenDeep: [[1, 2], [['a', 'b']], [{}], [[]]]}
+result:   [1, 2, 'a', 'b', {}]
+################################################################################
+---
 section:  fromNow
 ---
 title:    fromNow 1 hour

@@ -35,6 +35,14 @@ $flatten: flatten empty array
 $flatten: flatten empty array of arrays
 $flatten: flatten nothing
 $flatten: flatten mixed types
+$flattenDeep: simple flattenDeep
+$flattenDeep: flattenDeep empty array
+$flattenDeep: flattenDeep empty array of arrays
+$flattenDeep: flattenDeep null
+$flattenDeep: flattenDeep an object
+$flattenDeep: flattenDeep an array of strings
+$flattenDeep: flattenDeep an array of numbers
+$flattenDeep: flattenDeep mixed types
 fromNow: fromNow 1 hour
 fromNow: fromNow 2 hours
 fromNow: fromNow 3h
