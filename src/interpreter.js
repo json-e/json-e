@@ -9,6 +9,24 @@ import {InterpreterError} from './error';
 
 let expectationError = (operator, expectation) => new InterpreterError(`'${operator}' expects '${expectation}'`);
 
+let isEqual = (a, b) =>  {
+  if (isArray(a) && isArray(b) && a.length === b.length) {
+    for (let i = 0; i < a.length; i++) {
+      if (!isEqual(a[i], b[i])) { return false; }
+    }
+    return true;
+  }
+  if (isObject(a) && isObject(b) && !isArray(a) && !isArray(b)) {
+    let keys = Object.keys(a).sort();
+    if (!isEqual(keys, Object.keys(b).sort())) { return false; }
+    for (let k of keys) {
+      if (!isEqual(a[k], b[k])) { return false; }
+    }
+    return true;
+  }
+  return a === b;
+};
+
 let parseList = (ctx, separator, terminator) => {
   let list = [];
   if (!ctx.attempt(terminator)) {
@@ -259,8 +277,8 @@ infixRules['>='] = infixRules['<'] =  infixRules['>']
       case '<=': return left <= right;
       case '>':  return left > right;
       case '<':  return left < right;
-      case '==': return left === right;
-      case '!=': return left !== right;
+      case '==': return isEqual(left, right);
+      case '!=': return !isEqual(left, right);
       default:   throw new Error('no rule for comparison operator: ' + operator);
     }
   };

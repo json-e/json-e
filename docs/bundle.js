@@ -628,10 +628,6 @@ var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
 var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
 
-var _keys = require('babel-runtime/core-js/object/keys');
-
-var _keys2 = _interopRequireDefault(_keys);
-
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
@@ -639,6 +635,14 @@ var _typeof3 = _interopRequireDefault(_typeof2);
 var _stringify = require('babel-runtime/core-js/json/stringify');
 
 var _stringify2 = _interopRequireDefault(_stringify);
+
+var _getIterator2 = require('babel-runtime/core-js/get-iterator');
+
+var _getIterator3 = _interopRequireDefault(_getIterator2);
+
+var _keys = require('babel-runtime/core-js/object/keys');
+
+var _keys2 = _interopRequireDefault(_keys);
 
 var _prattparser = require('./prattparser');
 
@@ -657,6 +661,52 @@ var expectationError = function expectationError(operator, expectation) {
    * Github: https://github.com/jonasfj
    */
 
+
+var isEqual = function isEqual(a, b) {
+  if ((0, _typeUtils.isArray)(a) && (0, _typeUtils.isArray)(b) && a.length === b.length) {
+    for (var i = 0; i < a.length; i++) {
+      if (!isEqual(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if ((0, _typeUtils.isObject)(a) && (0, _typeUtils.isObject)(b) && !(0, _typeUtils.isArray)(a) && !(0, _typeUtils.isArray)(b)) {
+    var keys = (0, _keys2.default)(a).sort();
+    if (!isEqual(keys, (0, _keys2.default)(b).sort())) {
+      return false;
+    }
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = (0, _getIterator3.default)(keys), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var k = _step.value;
+
+        if (!isEqual(a[k], b[k])) {
+          return false;
+        }
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    return true;
+  }
+  return a === b;
+};
 
 var parseList = function parseList(ctx, separator, terminator) {
   var list = [];
@@ -897,12 +947,12 @@ infixRules['['] = function (left, token, ctx) {
 };
 
 infixRules['.'] = function (left, token, ctx) {
-  if ((0, _typeUtils.isObject)(left)) {
+  if ((0, _typeUtils.isObject)(left) && !(0, _typeUtils.isArray)(left)) {
     var key = ctx.require('identifier').value;
     if (left.hasOwnProperty(key)) {
       return left[key];
     }
-    throw new _error.InterpreterError('can access own properties of objects');
+    throw new _error.InterpreterError('can only access own properties of objects');
   }
   throw expectationError('infix: .', 'objects');
 };
@@ -928,9 +978,9 @@ infixRules['=='] = infixRules['!='] = infixRules['<='] = infixRules['>='] = infi
     case '<':
       return left < right;
     case '==':
-      return left === right;
+      return isEqual(left, right);
     case '!=':
-      return left !== right;
+      return !isEqual(left, right);
     default:
       throw new Error('no rule for comparison operator: ' + operator);
   }
@@ -989,7 +1039,7 @@ module.exports = new _prattparser2.default({
 });
 
 
-},{"./error":3,"./prattparser":7,"./type-utils":9,"babel-runtime/core-js/json/stringify":13,"babel-runtime/core-js/object/keys":18,"babel-runtime/helpers/toConsumableArray":27,"babel-runtime/helpers/typeof":28}],7:[function(require,module,exports){
+},{"./error":3,"./prattparser":7,"./type-utils":9,"babel-runtime/core-js/get-iterator":12,"babel-runtime/core-js/json/stringify":13,"babel-runtime/core-js/object/keys":18,"babel-runtime/helpers/toConsumableArray":27,"babel-runtime/helpers/typeof":28}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
