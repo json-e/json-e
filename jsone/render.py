@@ -60,9 +60,54 @@ def fromNow(template, context):
     return shared.fromNow(offset)
 
 
-@construct('$ifxxx')
+# TODO: eval the value
+#@construct('$if')
 def ifConstruct(template, context):
-    offset = renderValue(template['$if'], context)
+    condition = renderValue(template['$if'], context)
+    try:
+        if condition:
+            rv = template['then']
+        else:
+            rv = template['else']
+    except KeyError:
+        return DeleteMarker
+    return renderValue(rv, context)
+
+@construct('$json')
+def jsonConstruct(template, context):
+    value = renderValue(template['$json'], context)
+    return json.dumps(value, separators=(',', ':'))
+
+
+# TODO: requires $eval
+#@construct('$let')
+def let(template, context):
+    print(context)
+    variables = renderValue(template['$let'], context)
+    if not isinstance(variables, dict):
+        raise JSONTemplateError("$let value must evaluate to an object")
+    subcontext = context.copy()
+    subcontext.update(variables)
+    try:
+        in_expression = template['in']
+    except KeyError:
+        raise JSONTemplateError("$let operator requires an `in` clause")
+    return renderValue(in_expression, subcontext)
+
+
+# TODO: requires $eval
+#@construct('$map')
+
+@construct('$merge')
+def merge(template, context):
+    value = renderValue(template['$merge'], context)
+    # TODO: checkType function
+    if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
+        raise JSONTemplateError("$reverse value must evaluate to an array of objects")
+    v = dict()
+    for e in value:
+        v.update(e)
+    return v
 
 
 @construct('$reverse')
@@ -74,10 +119,14 @@ def reverse(template, context):
     return list(reversed(value))
 
 
-@construct('$json')
-def jsonConstruct(template, context):
-    value = renderValue(template['$json'], context)
-    return json.dumps(value, separators=(',', ':'))
+# awaiting https://github.com/taskcluster/json-e/issues/71
+#@construct('$sort')
+def sort(template, context):
+    value = renderValue(template['$sort'], context)
+    # TODO: checkType function
+    if not isinstance(value, list):
+        raise JSONTemplateError("$sort value must evaluate to an array")
+    return list(sorted(value))
 
 
 def renderValue(template, context):
@@ -91,7 +140,7 @@ def renderValue(template, context):
             return template
         if len(matches) > 1:
             raise JSONTemplateError("only one construct allowed")
-        return constructs[matches[0]](template, basestring)
+        return constructs[matches[0]](template, context)
 
     elif isinstance(template, list):
         rendered = (renderValue(e, context) for e in template)

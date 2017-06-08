@@ -40,10 +40,6 @@ $map: can take from objects
 $map: can make objects too
 $map: respects delete-marker from $if
 $map: $map requires an array
-$merge: simple merge
-$merge: merge empty array
-$merge: merge empty array with empty object
-$merge: merge null
 $sort: simple sort
 $sort: simple sort of strings (shortest first)
 $sort: simple sort of multi-digit numbers
