@@ -1,10 +1,8 @@
-Initial Minimal Subset: Identity
 Initial Minimal Subset: fromNow
 Initial Minimal Subset: fromNow 2 days 3 hours
 Initial Minimal Subset: fromNow built-in
 Initial Minimal Subset: fromNow built-in 2 days 3 hours
 Initial Minimal Subset: $eval
-Initial Minimal Subset: $json
 Initial Minimal Subset: string interpolation
 Initial Minimal Subset: string interpolation with object evaluation
 Initial Minimal Subset: multiple string interpolation (1)
@@ -30,11 +28,7 @@ $if operator: $if->then, then => object, $eval, true
 $if operator: $if->else, else => object, $eval, false
 $if operator: $if->then, then => object, interpolation, true
 $if operator: $if->else, else => object, interpolation, false
-$flatten: simple flatten
-$flatten: flatten empty array
-$flatten: flatten empty array of arrays
-$flatten: flatten nothing
-$flatten: flatten mixed types
+$if operator: $if->then evaluating to nothing at the top level is null
 $flattenDeep: simple flattenDeep
 $flattenDeep: flattenDeep empty array
 $flattenDeep: flattenDeep empty array of arrays
@@ -57,7 +51,6 @@ fromNow: fromNow 11m
 fromNow: fromNow 11 m
 fromNow: fromNow 1 day
 $json: wrap expressions with $eval
-$json: unwrap expressions not evaluated
 $json: $eval inside array
 accessing nested objects => context: $eval
 accessing nested objects => context: $json
@@ -85,7 +78,6 @@ $sort: cannot sort arrays without by
 $sort: sort requires an array (string)
 $sort: sort requires an array (number)
 $sort: sort requires an array (object)
-$reverse: simple reverse
 $reverse: simple reverse with $eval
 $reverse: simple reverse + $sort
 builtins: min (1)
@@ -251,6 +243,7 @@ expression language - property access: property with boolean value
 expression language - property access: property with object value
 expression language - property access: nested property access with object value
 expression language - property access: nested property access with numeric value
+expression language - property access: property with null value
 expression language - array access: numeric
 expression language - array access: numeric, nonzero index
 expression language - array access: arithemtic with results
@@ -420,8 +413,6 @@ escape operators: escape $map
 escape operators: escape $merge
 escape operators: escape $reverse
 escape operators: escape $sort
-escape operators: interpolate non-json-e operator
-escape operators: escape non-json-e operator
 $let: simple let
 $let: context overriding
 $let: nested let
@@ -445,11 +436,6 @@ $sort: cannot sort booleans, even with by
 $sort: cannot sort numbers and strings together
 $sort: cannot sort numbers and strings together even with by
 $sort: sort requires an array (null)
-$reverse: reverse of an object
-$reverse: reverse of null
-$reverse: reverse of a string
-$reverse: reverse of a number
-$reverse: reverse of a boolean
 $eval: $eval of an array
 $eval: $eval of an object
 $eval: $eval of null
@@ -865,12 +851,6 @@ expression language - array access: numeric, noninteger index
 expression language - array slicing: array slicing (noninteger first index)
 expression language - array slicing: array slicing (noninteger last index)
 expression language - array slicing: array slicing (noninteger indexes)
-$flatten: flatten null
-$flatten: flatten an object
-$flatten: flatten an array of strings
-$flatten: flatten an array of numbers
-$flatten: flatten mixed types
-$flatten: flatten mixed levels
 expression language - string operations: string length attribute is an error
 expression language - array access: array length property is an error
 expression language - string operations: string length attribute is an error even by index
