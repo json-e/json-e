@@ -108,6 +108,7 @@ result:   'big pile of null'
 ---
 title: invalid context (2)
 context: {'a b c': 1}
+template: {}
 error: true
 ################################################################################
 ---

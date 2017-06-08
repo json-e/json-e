@@ -5,6 +5,12 @@ def make_test_suite():
     import unittest
     import yaml
     import jsone
+    import dateutil.parser
+
+    # monkey-patch utcnow to return a fixed date
+    TEST_DATE = dateutil.parser.parse('2017-01-19T16:27:20.974Z')
+    import jsone.shared
+    jsone.shared.utcnow = lambda: TEST_DATE
 
     def todo(test, reason):
         "Wrap a test that should not pass yet"
@@ -22,12 +28,13 @@ def make_test_suite():
             exc, res = None, None
             try:
                 res = jsone.render(spec['template'], spec['context'])
-            except Exception as e:
+            except jsone.JSONTemplateError as e:
                 exc = e
             if 'error' in spec:
                 assert exc, "expected exception"
             else:
-                assert res == spec['result']
+                assert res == spec['result'], \
+                    '{!r} != {!r}'.format(res, spec['result'])
         return test
 
     # we have a temporary blacklist of tests expected to fail for Python; this
@@ -77,5 +84,6 @@ if __name__ == "__main__":
         license='MPL2',
         tests_require=[
             "PyYAML",
+            "python-dateutil",
         ]
     )

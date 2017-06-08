@@ -1,5 +1,3 @@
-Initial Minimal Subset: fromNow
-Initial Minimal Subset: fromNow 2 days 3 hours
 Initial Minimal Subset: fromNow built-in
 Initial Minimal Subset: fromNow built-in 2 days 3 hours
 Initial Minimal Subset: $eval
@@ -29,27 +27,6 @@ $if operator: $if->else, else => object, $eval, false
 $if operator: $if->then, then => object, interpolation, true
 $if operator: $if->else, else => object, interpolation, false
 $if operator: $if->then evaluating to nothing at the top level is null
-$flattenDeep: simple flattenDeep
-$flattenDeep: flattenDeep empty array
-$flattenDeep: flattenDeep empty array of arrays
-$flattenDeep: flattenDeep null
-$flattenDeep: flattenDeep an object
-$flattenDeep: flattenDeep an array of strings
-$flattenDeep: flattenDeep an array of numbers
-$flattenDeep: flattenDeep mixed types
-$flattenDeep: flattenDeep mixed levels
-fromNow: fromNow 1 hour
-fromNow: fromNow 2 hours
-fromNow: fromNow 3h
-fromNow: fromNow 1 hours
-fromNow: fromNow -1 hour
-fromNow: fromNow 1 m
-fromNow: fromNow 1m
-fromNow: fromNow 12 min
-fromNow: fromNow 12min
-fromNow: fromNow 11m
-fromNow: fromNow 11 m
-fromNow: fromNow 1 day
 $json: wrap expressions with $eval
 $json: $eval inside array
 accessing nested objects => context: $eval

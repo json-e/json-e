@@ -1,61 +1,17 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
-import json as jsonmodule
+import re
 
+from .constructs import constructs
+from .shared import JSONTemplateError, DeleteMarker
 
-class DeleteMarker:
-    pass
-
-
-class JSONTemplateError(Exception):
-    pass
-
-
-constructs = {}
-
-
-def construct(fn):
-    constructs['$' + fn.__name__] = fn
-    return fn
-
-
-@construct
-def eval(template, context):
-    # TODO: actually evaluate
-    return template['$eval']
-
-
-@construct
-def flatten(template, context):
-    value = template['$flatten']
-    if not isinstance(value, list):
-        raise JSONTemplateError('$flatten value must evaluate to an array of arrays')
-    def gen():
-        for e in value:
-            if isinstance(e, list):
-                for e2 in e:
-                    yield e2
-            else:
-                yield e
-    return list(gen())
-
-
-@construct
-def reverse(template, context):
-    value = template['$reverse']
-    # TODO: checkType function
-    if not isinstance(value, list):
-        raise JSONTemplateError("$reverse value must evaluate to an array")
-    return list(reversed(value))
-
-
-@construct
-def json(template, context):
-    return jsonmodule.dumps(template['$json'], separators=(',', ':'))
+_context_re = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*$')
 
 
 def render(template, context):
-    # TODO: check context keys + test
+    if not all(_context_re.match(c) for c in context):
+        raise JSONTemplateError('top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
+
     def recur(template, context):
         if isinstance(template, basestring):
             # TODO: interpolate
