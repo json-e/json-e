@@ -65,16 +65,17 @@ def make_test_suite():
     return suite
 
 
-setup(name='json-e',
-    version='1.0.0', ## TODO: extract from package.json
-    description='A data-structure parameterization system written for embedding context in JSON objects',
-    author='Dustin J. Mitchell',
-    url='https://github.com/mozilla/build-fwunit',
-    author_email='dustin@mozilla.com',
-    packages=find_packages(),
-    test_suite='setup.make_test_suite',
-    license='MPL2',
-    tests_require=[
-        "PyYAML",
-    ]
-)
+if __name__ == "__main__":
+    setup(name='json-e',
+        version='1.0.0', ## TODO: extract from package.json
+        description='A data-structure parameterization system written for embedding context in JSON objects',
+        author='Dustin J. Mitchell',
+        url='https://github.com/mozilla/build-fwunit',
+        author_email='dustin@mozilla.com',
+        packages=find_packages(),
+        test_suite='setup.make_test_suite',
+        license='MPL2',
+        tests_require=[
+            "PyYAML",
+        ]
+    )
