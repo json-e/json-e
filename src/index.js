@@ -23,10 +23,7 @@ let interpolate = (string, context) => {
 
     result += remaining.slice(0, offset);
 
-    // We can't use JSON.stringify(), which would parse null correctly,
-    // because it ignores double quotes in strings. For example,
-    // JSON.stringify('hello "world"') will return 'hello world' instead of
-    // 'hello "world"'
+    // toString renders null as an empty string, which is not what we want
     if (v.result === null) {
       result += 'null';
     } else {
