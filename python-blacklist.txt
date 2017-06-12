@@ -376,15 +376,9 @@ $if operator: $if->then->else, nonempty array
 $if operator: $if->then->else, empty object
 $if operator: $if->then->else, nonempty object
 $if operator: $if->then evaluating to nothing at the top level is an error
-escape operators: escape $eval
-escape operators: escape $flatten
-escape operators: escape $fromNow
 escape operators: escape $if
-escape operators: escape $json
 escape operators: escape $let
 escape operators: escape $map
-escape operators: escape $merge
-escape operators: escape $reverse
 escape operators: escape $sort
 $let: simple let
 $let: context overriding

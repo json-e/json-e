@@ -136,16 +136,22 @@ def renderValue(template, context):
 
     elif isinstance(template, dict):
         matches = [k for k in template if k in constructs]
-        if not matches:
-            return template
-        if len(matches) > 1:
-            raise JSONTemplateError("only one construct allowed")
-        return constructs[matches[0]](template, context)
+        if matches:
+            if len(matches) > 1:
+                raise JSONTemplateError("only one construct allowed")
+            return constructs[matches[0]](template, context)
+        def updated():
+            for k, v in template.viewitems():
+                if k.startswith('$$') and k[1:] in constructs:
+                    k = k[1:]
+                v = renderValue(v, context)
+                if v is not DeleteMarker:
+                    yield k, v
+        return dict(updated())
 
     elif isinstance(template, list):
         rendered = (renderValue(e, context) for e in template)
         return [e for e in rendered if e is not DeleteMarker]
 
     else:
-        # TODO: copy, unquote $$
         return template
