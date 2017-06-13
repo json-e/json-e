@@ -329,6 +329,10 @@ var _getIterator2 = require('babel-runtime/core-js/get-iterator');
 
 var _getIterator3 = _interopRequireDefault(_getIterator2);
 
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
+
 var _defineProperty2 = require('babel-runtime/helpers/defineProperty');
 
 var _defineProperty3 = _interopRequireDefault(_defineProperty2);
@@ -546,48 +550,60 @@ operators.$sort = function (template, context) {
     return k !== '$sort';
   })[0];
   var match = /^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(byKey);
-  if (!match) {
+  var by = void 0;
+  if (match) {
+    var contextClone = (0, _assign2.default)({}, context);
+    var x = match[1];
+    var byExpr = template[byKey];
+    by = function by(value) {
+      contextClone[x] = value;
+      return _interpreter2.default.parse(byExpr, contextClone);
+    };
+  } else {
     var needBy = value.some(function (v) {
       return (0, _typeUtils.isArray)(v) || (0, _typeUtils.isObject)(v);
     });
     if (needBy) {
       throw jsonTemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays\n', template);
     }
-
-    return value.sort(function (left, right) {
-      if ((0, _typeUtils.isNumber)(left) && !(0, _typeUtils.isNumber)(right)) {
-        return -1;
-      }
-
-      if (!(0, _typeUtils.isNumber)(left) && (0, _typeUtils.isNumber)(right)) {
-        return 1;
-      }
-
-      if (left < right) {
-        return -1;
-      }
-
-      if (left > right) {
-        return 1;
-      }
-
-      return 0;
-    });
+    by = function by(value) {
+      return value;
+    };
   }
 
-  var x = match[1];
-  var by = template[byKey];
-  var contextClone = (0, _assign2.default)({}, context);
+  // tag each value with its `by` value (schwartzian tranform)
+  var tagged = value.map(function (e) {
+    return [by(e), e];
+  });
 
-  return value.sort(function (left, right) {
-    contextClone[x] = left;
-    left = _interpreter2.default.parse(by, contextClone);
-    contextClone[x] = right;
-    right = _interpreter2.default.parse(by, contextClone);
-    if (left <= right) {
-      return false;
+  // check types of the `by` values
+  if (tagged.length > 0) {
+    var eltType = (0, _typeof3.default)(tagged[0][0]);
+    console.log(eltType);
+    console.log(eltType !== 'number' && eltType !== 'string');
+    console.log(tagged.some(function (e) {
+      return eltType !== (0, _typeof3.default)(e[0]);
+    }));
+    if (eltType !== 'number' && eltType !== 'string' || tagged.some(function (e) {
+      return eltType !== (0, _typeof3.default)(e[0]);
+    })) {
+      throw jsonTemplateError('$sort requires all sorted values have the same type', template);
     }
-    return true;
+  }
+
+  // finish the schwartzian transform
+  return tagged.sort(function (a, b) {
+    a = a[0];
+    b = b[0];
+    if (a < b) {
+      return -1;
+    }
+    if (a > b) {
+      return 1;
+    }
+    return 0;
+  }).map(function (e) {
+    return e[1];
   });
 };
 
@@ -670,7 +686,7 @@ exports.default = function (template) {
 };
 
 
-},{"./builtins":2,"./error":3,"./from-now":4,"./interpreter":6,"./type-utils":9,"assert":10,"babel-runtime/core-js/get-iterator":12,"babel-runtime/core-js/json/stringify":13,"babel-runtime/core-js/object/assign":15,"babel-runtime/core-js/object/keys":19,"babel-runtime/helpers/defineProperty":25,"babel-runtime/helpers/toConsumableArray":28}],6:[function(require,module,exports){
+},{"./builtins":2,"./error":3,"./from-now":4,"./interpreter":6,"./type-utils":9,"assert":10,"babel-runtime/core-js/get-iterator":12,"babel-runtime/core-js/json/stringify":13,"babel-runtime/core-js/object/assign":15,"babel-runtime/core-js/object/keys":19,"babel-runtime/helpers/defineProperty":25,"babel-runtime/helpers/toConsumableArray":28,"babel-runtime/helpers/typeof":29}],6:[function(require,module,exports){
 'use strict';
 
 var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');

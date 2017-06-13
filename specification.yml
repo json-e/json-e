@@ -690,7 +690,7 @@ result:   [3, 22, 111]
 title:    sort of mixed array
 context:  {}
 template: {$sort: [1, "2", 2, 3, "111", "112"]}
-result:   [1, 2, 3, "111", "112", "2"]
+error:    true
 ---
 title:    simple sort with $eval
 context:  {array: [3, 4, 1, 2]}
@@ -703,7 +703,6 @@ template:
   $sort: [{a: 20}, {a: 10, b: []}, {a: 3}]
   by(x): 'x.a'
 result:   [{a: 3}, {a: 10, b: []}, {a: 20}]
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    sort by, returning string
 context:  {}
@@ -711,7 +710,6 @@ template:
   $sort: [{s: 'android'}, {s: 'add'}, {s: 'adderall'}]
   by(x): 'x.s'
 result: [{s: 'add'}, {s: 'adderall'}, {s: 'android'}]
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort objects without by
 context:  {}
@@ -725,7 +723,6 @@ template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
   by(x): x
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort arrays without by
 context:  {}
@@ -739,43 +736,36 @@ template:
   $sort: [[1,2,3], [4,5], [], [8,9,10]]
   by(x): x
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort nulls
 context:  {}
 template: {$sort: [null, null]}
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort nulls, even with by
 context:  {}
 template: {$sort: [null, null], 'by(x)': 'x'}
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort booleans
 context:  {}
 template: {$sort: [false, true]}
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort booleans, even with by
 context:  {}
 template: {$sort: [false, true], 'by(x)': 'x'}
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort numbers and strings together
 context:  {}
 template: {$sort: [1, 'a']}
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    cannot sort numbers and strings together even with by
 context:  {}
 template: {$sort: [1, 'a'], 'by(x)': 'x'}
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/71'
 ---
 title:    sort requires an array (string)
 context:  {}

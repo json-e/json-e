@@ -166,47 +166,48 @@ operators.$sort = (template, context) => {
 
   let byKey = Object.keys(template).filter(k => k !== '$sort')[0];
   let match = /^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(byKey);
-  if (!match) {
+  let by;
+  if (match) {
+    let contextClone = Object.assign({}, context);
+    let x = match[1];
+    let byExpr = template[byKey];
+    by = value => {
+      contextClone[x] = value;
+      return interpreter.parse(byExpr, contextClone);
+    };
+  } else {
     let needBy = value.some(v => isArray(v) || isObject(v));
     if (needBy) {
       throw jsonTemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays\n', template);
     }
-
-    return value.sort((left, right) => {
-      if (isNumber(left) && !isNumber(right)) {
-        return -1;
-      }
-
-      if (!isNumber(left) && isNumber(right)) {
-        return 1;
-      }
-
-      if (left < right) {
-        return -1;
-      }
-
-      if (left > right) {
-        return 1;
-      }
-
-      return 0;
-    });
+    by = value => value;
   }
 
-  let x = match[1];
-  let by = template[byKey];
-  let contextClone = Object.assign({}, context);
+  // tag each value with its `by` value (schwartzian tranform)
+  let tagged = value.map(e => [by(e), e]);
 
-  return value.sort((left, right) => {
-    contextClone[x] = left;
-    left = interpreter.parse(by, contextClone);
-    contextClone[x] = right;
-    right = interpreter.parse(by, contextClone);
-    if (left <= right) {
-      return false;
+  // check types of the `by` values
+  if (tagged.length > 0) {
+    let eltType = typeof tagged[0][0];
+    console.log(eltType);
+    console.log(eltType !== 'number' && eltType !== 'string');
+    console.log(tagged.some(e => eltType !== typeof e[0]));
+    if (eltType !== 'number' && eltType !== 'string' ||
+        tagged.some(e => eltType !== typeof e[0])) {
+      throw jsonTemplateError('$sort requires all sorted values have the same type', template);
     }
-    return true;
-  });
+  }
+
+  // finish the schwartzian transform
+  return tagged
+    .sort((a, b) => {
+      a = a[0];
+      b = b[0];
+      if (a < b) { return -1; }
+      if (a > b) { return 1; }
+      return 0;
+    })
+    .map(e => e[1]);
 };
 
 let render = (template, context) => {
