@@ -24,7 +24,16 @@ let interpolate = (string, context) => {
     if (isArray(v.result) || isObject(v.result)) {
       throw new TemplateError('cannot interpolate array/object: ' + string);
     }
-    result += remaining.slice(0, offset) + v.result.toString();
+
+    result += remaining.slice(0, offset);
+
+    // toString renders null as an empty string, which is not what we want
+    if (v.result === null) {
+      result += 'null';
+    } else {
+      result += v.result.toString();
+    }
+
     remaining = remaining.slice(offset + v.offset + 1);
   }
   result += remaining;

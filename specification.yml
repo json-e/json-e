@@ -100,7 +100,6 @@ title:    nulls interpolate
 context:  {nothing: null}
 template: 'big pile of ${nothing}'
 result:   'big pile of null'
-todo:     'https://github.com/taskcluster/json-e/issues/65'
 ---
 title: invalid context (2)
 context: {'a b c': 1}
