@@ -71,6 +71,8 @@ var builtins = {};
 var define = function define(name, context, _ref) {
   var _ref$argumentTests = _ref.argumentTests,
       argumentTests = _ref$argumentTests === undefined ? [] : _ref$argumentTests,
+      _ref$minArgs = _ref.minArgs,
+      minArgs = _ref$minArgs === undefined ? false : _ref$minArgs,
       _ref$variadic = _ref.variadic,
       variadic = _ref$variadic === undefined ? null : _ref$variadic,
       invoke = _ref.invoke;
@@ -81,6 +83,10 @@ var define = function define(name, context, _ref) {
 
     if (!variadic && args.length < argumentTests.length) {
       throw builtinError('builtin: ' + name, args.toString() + ', arguments too less');
+    }
+
+    if (minArgs && args.length < minArgs) {
+      throw builtinError('builtin: ' + name + ': expected at least ' + minArgs + ' arguments');
     }
 
     if (variadic) {
@@ -107,6 +113,7 @@ var define = function define(name, context, _ref) {
     throw new Error(name + ' in Math undefined');
   }
   define(name, builtins, {
+    minArgs: 1,
     variadic: 'number',
     invoke: function invoke() {
       return Math[name].apply(Math, arguments);
@@ -564,14 +571,6 @@ constructs.$sort = function (template, context) {
     }
     return true;
   });
-};
-
-constructs.$switch = function (template, context) {
-  if (!(0, _typeUtils.isString)(template['$switch'])) {
-    throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
-  }
-  var c = _interpreter2.default.parse(template['$switch'], context);
-  return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
 };
 
 var render = function render(template, context) {
