@@ -6,7 +6,7 @@ import {
   isArray, isObject, isFunction,
 } from './type-utils';
 import builtins from './builtins';
-import TemplateError from './error';
+import {TemplateError} from './error';
 
 let flattenDeep = (a) => {
   return Array.isArray(a) ? [].concat(...a.map(flattenDeep)) : a;
@@ -75,10 +75,11 @@ constructs.$flattenDeep = (template, context) => {
 };
 
 constructs.$fromNow = (template, context) => {
-  if (!isString(template['$fromNow'])) {
+  let value = render(template['$fromNow'], context);
+  if (!isString(value)) {
     throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
   }
-  return fromNow(template['$fromNow']);
+  return fromNow(value);
 };
 
 constructs.$if = (template, context) => {

@@ -466,6 +466,16 @@ title:    fromNow 1 day
 context:  {}
 template: {$fromNow: '1 day'}
 result:   '2017-01-20T16:27:20.974Z'
+---
+title:    fromNow of non-string
+context:  {}
+template: {$fromNow: 13}
+error:    true
+---
+title:    fromNow with eval
+context:  {ttl: 24}
+template: {$fromNow: {$eval: 'str(ttl) + " hours"'}}
+result:   '2017-01-20T16:27:20.974Z'
 ################################################################################
 ---
 section:  $json

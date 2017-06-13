@@ -866,3 +866,5 @@ expression language - string operations: string length attribute is an error
 expression language - array access: array length property is an error
 expression language - string operations: string length attribute is an error even by index
 expression language - array access: array length property is an error even by index
+fromNow: fromNow with eval
+fromNow: fromNow of non-string
