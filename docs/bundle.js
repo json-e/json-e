@@ -410,16 +410,16 @@ var interpolate = function interpolate(string, context) {
 // Object used to indicate deleteMarker
 var deleteMarker = {};
 
-var constructs = {};
+var operators = {};
 
-constructs.$eval = function (template, context) {
+operators.$eval = function (template, context) {
   if (!(0, _typeUtils.isString)(template['$eval'])) {
     throw jsonTemplateError('$eval can evaluate string expressions only\n', template);
   }
   return _interpreter2.default.parse(template['$eval'], context);
 };
 
-constructs.$flatten = function (template, context) {
+operators.$flatten = function (template, context) {
   var _ref2;
 
   var value = render(template['$flatten'], context);
@@ -434,7 +434,7 @@ constructs.$flatten = function (template, context) {
   return (_ref2 = []).concat.apply(_ref2, (0, _toConsumableArray3.default)(value));
 };
 
-constructs.$flattenDeep = function (template, context) {
+operators.$flattenDeep = function (template, context) {
   var value = render(template['$flattenDeep'], context);
 
   // Value must be array of arrays
@@ -447,7 +447,7 @@ constructs.$flattenDeep = function (template, context) {
   return flattenDeep(value);
 };
 
-constructs.$fromNow = function (template, context) {
+operators.$fromNow = function (template, context) {
   var value = render(template['$fromNow'], context);
   if (!(0, _typeUtils.isString)(value)) {
     throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
@@ -455,7 +455,7 @@ constructs.$fromNow = function (template, context) {
   return (0, _fromNow2.default)(value);
 };
 
-constructs.$if = function (template, context) {
+operators.$if = function (template, context) {
   if (!(0, _typeUtils.isString)(template['$if'])) {
     throw jsonTemplateError('$if can evaluate string expressions only\n', template);
   }
@@ -465,11 +465,11 @@ constructs.$if = function (template, context) {
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
 };
 
-constructs.$json = function (template, context) {
+operators.$json = function (template, context) {
   return (0, _stringify2.default)(render(template['$json'], context));
 };
 
-constructs.$let = function (template, context) {
+operators.$let = function (template, context) {
   var variables = template['$let'];
 
   var context_copy = (0, _assign2.default)(context, variables);
@@ -485,7 +485,7 @@ constructs.$let = function (template, context) {
   return render(template.in, context_copy);
 };
 
-constructs.$map = function (template, context) {
+operators.$map = function (template, context) {
   var value = render(template['$map'], context);
   if (!(0, _typeUtils.isArray)(value)) {
     throw jsonTemplateError('$map requires array as value\n', template);
@@ -513,7 +513,7 @@ constructs.$map = function (template, context) {
   });
 };
 
-constructs.$merge = function (template, context) {
+operators.$merge = function (template, context) {
   var value = render(template['$merge'], context);
 
   if (!(0, _typeUtils.isArray)(value)) {
@@ -523,7 +523,7 @@ constructs.$merge = function (template, context) {
   return _assign2.default.apply(Object, [{}].concat((0, _toConsumableArray3.default)(value)));
 };
 
-constructs.$reverse = function (template, context) {
+operators.$reverse = function (template, context) {
   var value = render(template['$reverse'], context);
 
   if (!(0, _typeUtils.isArray)(value) && !(0, _typeUtils.isArray)(template['$reverse'])) {
@@ -536,7 +536,7 @@ constructs.$reverse = function (template, context) {
   return value.reverse();
 };
 
-constructs.$sort = function (template, context) {
+operators.$sort = function (template, context) {
   var value = render(template['$sort'], context);
   if (!(0, _typeUtils.isArray)(value)) {
     throw jsonTemplateError('$sort requires array as value\n', template);
@@ -587,14 +587,14 @@ var render = function render(template, context) {
     });
   }
 
-  var matches = (0, _keys2.default)(constructs).filter(function (c) {
+  var matches = (0, _keys2.default)(operators).filter(function (c) {
     return template.hasOwnProperty(c);
   });
   if (matches.length > 1) {
-    throw jsonTemplateError('only one construct allowed\n', template);
+    throw jsonTemplateError('only one operator allowed\n', template);
   }
   if (matches.length === 1) {
-    return constructs[matches[0]](template, context);
+    return operators[matches[0]](template, context);
   }
 
   // clone object
@@ -609,7 +609,7 @@ var render = function render(template, context) {
 
       var value = render(template[key], context);
       if (value !== deleteMarker) {
-        if (key.startsWith('$$') && constructs.hasOwnProperty(key.substr(1))) {
+        if (key.startsWith('$$') && operators.hasOwnProperty(key.substr(1))) {
           key = key.substr(1);
         }
 
