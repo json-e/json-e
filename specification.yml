@@ -895,7 +895,6 @@ title: min (7)
 context: {}
 template: {$eval: 'min()'}
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/75'
 ---
 title: max (1)
 context: {key1: 1, key2: 2}
@@ -936,7 +935,6 @@ title: max (7)
 context: {}
 template: {$eval: 'max()'}
 error: true
-todo: 'https://github.com/taskcluster/json-e/issues/75'
 ---
 title: sqrt (1)
 context: {key: 4}

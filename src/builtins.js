@@ -18,9 +18,18 @@ let builtinError = (builtin, expectation) => new BuiltinError(`${builtin} expect
 
 let builtins = {};
 
-let define = (name, context, {argumentTests = [], variadic = null, invoke}) => context[name] = (...args) => {
+let define = (name, context, {
+  argumentTests = [],
+  minArgs = false,
+  variadic = null,
+  invoke,
+}) => context[name] = (...args) => {
   if (!variadic && args.length < argumentTests.length) {
     throw builtinError(`builtin: ${name}`, `${args.toString()}, arguments too less`);
+  }
+
+  if (minArgs && args.length < minArgs) {
+    throw builtinError(`builtin: ${name}: expected at least ${minArgs} arguments`);
   }
 
   if (variadic) {
@@ -42,6 +51,7 @@ let define = (name, context, {argumentTests = [], variadic = null, invoke}) => c
     throw new Error(`${name} in Math undefined`);
   }
   define(name, builtins, {
+    minArgs: 1,
     variadic: 'number',
     invoke: (...args) => Math[name](...args),
   });
