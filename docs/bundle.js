@@ -71,6 +71,8 @@ var builtins = {};
 var define = function define(name, context, _ref) {
   var _ref$argumentTests = _ref.argumentTests,
       argumentTests = _ref$argumentTests === undefined ? [] : _ref$argumentTests,
+      _ref$minArgs = _ref.minArgs,
+      minArgs = _ref$minArgs === undefined ? false : _ref$minArgs,
       _ref$variadic = _ref.variadic,
       variadic = _ref$variadic === undefined ? null : _ref$variadic,
       invoke = _ref.invoke;
@@ -81,6 +83,10 @@ var define = function define(name, context, _ref) {
 
     if (!variadic && args.length < argumentTests.length) {
       throw builtinError('builtin: ' + name, args.toString() + ', arguments too less');
+    }
+
+    if (minArgs && args.length < minArgs) {
+      throw builtinError('builtin: ' + name + ': expected at least ' + minArgs + ' arguments');
     }
 
     if (variadic) {
@@ -107,6 +113,7 @@ var define = function define(name, context, _ref) {
     throw new Error(name + ' in Math undefined');
   }
   define(name, builtins, {
+    minArgs: 1,
     variadic: 'number',
     invoke: function invoke() {
       return Math[name].apply(Math, arguments);
@@ -910,7 +917,11 @@ prefixRules['identifier'] = function (token, ctx) {
   if (ctx.context.hasOwnProperty(token.value)) {
     return ctx.context[token.value];
   }
-  throw new _error.InterpreterError('can access own properties of objects');
+  throw new _error.InterpreterError('unknown context value ' + token.value);
+};
+
+prefixRules['null'] = function (token, ctx) {
+  return null;
 };
 
 prefixRules['['] = function (token, ctx) {
@@ -1064,7 +1075,7 @@ module.exports = new _prattparser2.default({
     identifier: '[a-zA-Z_][a-zA-Z_0-9]*',
     string: '\'[^\']*\'|"[^"]*"'
   },
-  tokens: ['**'].concat((0, _toConsumableArray3.default)('+-*/[].(){}:,'.split('')), ['>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in', 'number', 'identifier', 'string']),
+  tokens: ['**'].concat((0, _toConsumableArray3.default)('+-*/[].(){}:,'.split('')), ['>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in', 'null', 'number', 'identifier', 'string']),
   precedence: [['in'], ['||'], ['&&'], ['==', '!='], ['>=', '<=', '<', '>'], ['+', '-'], ['*', '/'], ['**-right-associative'], ['**'], ['[', '.'], ['('], ['unary']],
   prefixRules: prefixRules,
   infixRules: infixRules
