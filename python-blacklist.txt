@@ -312,6 +312,15 @@ expression language - comparisons: equality (1)
 expression language - comparisons: equality (2)
 expression language - comparisons: equality (3)
 expression language - comparisons: equality (4)
+expression language - comparisons: equality (5)
+expression language - comparisons: object equality, true
+expression language - comparisons: object equality, false
+expression language - comparisons: object in-equality, true
+expression language - comparisons: object in-equality, false
+expression language - comparisons: complex object equality, true
+expression language - comparisons: complex object equality, false
+expression language - comparisons: complex object in-equality, true
+expression language - comparisons: complex object in-equality, false
 expression language - comparisons: in-equality (1)
 expression language - comparisons: in-equality (2)
 expression language - comparisons: in-equality (3)

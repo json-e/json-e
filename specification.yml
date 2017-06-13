@@ -3585,15 +3585,60 @@ context: {a: 1, b: 1}
 template: {$eval: '1 == 2'}
 result: false
 ---
-title: 'equality (3)'
+title:    equality (3)
+context:  {}
+template: {$eval: '4 == 3.2 + 0.8'}
+result:   true
+---
+title: 'equality (4)'
 context: {a: 1, b: 1}
 template: {$eval: 'a == b'}
 result: true
 ---
-title: 'equality (4)'
+title: 'equality (5)'
 context: {a: 1, b: 2}
 template: {$eval: 'a == b'}
 result: false
+---
+title:    object equality, true
+context:  {a: {x: 1, y: 2}, b: {x: 1, y: 2}}
+template: {$eval: 'a == b'}
+result:   true
+---
+title:    object equality, false
+context:  {a: {x: 1, y: 2}, b: {x: 2, y: 2}}
+template: {$eval: 'a == b'}
+result:   false
+---
+title:    object in-equality, true
+context:  {a: {x: 1, y: 2}, b: {x: 2, y: 2}}
+template: {$eval: 'a != b'}
+result:   true
+---
+title:    object in-equality, false
+context:  {a: {x: 1, y: 2}, b: {x: 1, y: 2}}
+template: {$eval: 'a != b'}
+result:   false
+---
+title:    complex object equality, true
+context:  {a: {x: 1, y: {e: {g: {1}}}}, b: {x: 1, y: {e: {g: {1}}}}}
+template: {$eval: 'a == b'}
+result:   true
+---
+title:    complex object equality, false
+context:  {a: {x: 1, y: {e: {g: {1}}}}, b: {x: 1, y: {e: {g: {2}}}}}
+template: {$eval: 'a == b'}
+result:   false
+---
+title:    complex object in-equality, true
+context:  {a: {x: 1, y: {e: {g: {1}}}}, b: {x: 1, y: {e: {g: {2}}}}}
+template: {$eval: 'a != b'}
+result:   true
+---
+title:    complex object in-equality, false
+context:  {a: {x: 1, y: {e: {g: {1}}}}, b: {x: 1, y: {e: {g: {1}}}}}
+template: {$eval: 'a != b'}
+result:   false
 ---
 title: 'in-equality (1)'
 context: {a: 1, b: 1}
@@ -3721,7 +3766,6 @@ context:
     b: {left: 1, right: {left: 2, right: 3}}
 template: {$eval: "a == b"}
 result: true
-todo: 'https://github.com/taskcluster/json-e/issues/72'
 ---
 title: 'boolean equality'
 context: {}
@@ -3744,7 +3788,6 @@ context:
     b: {left: 1, right: {left: 3, right: 2}}
 template: {$eval: "a != b"}
 result: true
-todo: 'https://github.com/taskcluster/json-e/issues/72'
 ---
 title: 'deep array equality'
 context:
@@ -3752,7 +3795,6 @@ context:
     b: [1, [2, 3]]
 template: {$eval: "a == b"}
 result: true
-todo: 'https://github.com/taskcluster/json-e/issues/72'
 ---
 title: 'deep array inequality'
 context:
@@ -3760,7 +3802,6 @@ context:
     b: [1, [3, 2]]
 template: {$eval: "a != b"}
 result: true
-todo: 'https://github.com/taskcluster/json-e/issues/72'
 ---
 title: ordering of string and string
 context: {a: 'abc', b: 'def'}
@@ -4086,7 +4127,6 @@ title: equality of object and object
 context: {a: {}, b: {}}
 template: {$eval: 'a == b'}
 result: true
-todo: 'https://github.com/taskcluster/json-e/issues/72'
 ---
 title: equality of object and array
 context: {a: {}, b: []}
@@ -4122,7 +4162,6 @@ title: equality of array and array
 context: {a: [], b: []}
 template: {$eval: 'a == b'}
 result: true
-todo: 'https://github.com/taskcluster/json-e/issues/72'
 ################################################################################
 ---
 section: expression language - compound literals
