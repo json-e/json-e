@@ -189,14 +189,6 @@ constructs.$sort = (template, context) => {
   });
 };
 
-constructs.$switch = (template, context) => {
-  if (!isString(template['$switch'])) {
-    throw jsonTemplateError('$switch can evaluate string expressions only\n', template);
-  }
-  let c = interpreter.parse(template['$switch'], context);
-  return template.hasOwnProperty(c) ? render(template[c], context) : deleteMarker;
-};
-
 let render = (template, context) => {
   if (isNumber(template) || isBool(template)) {
     return template;
