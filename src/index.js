@@ -43,16 +43,16 @@ let interpolate = (string, context) => {
 // Object used to indicate deleteMarker
 let deleteMarker = {};
 
-let constructs = {};
+let operators = {};
 
-constructs.$eval = (template, context) => {
+operators.$eval = (template, context) => {
   if (!isString(template['$eval'])) {
     throw jsonTemplateError('$eval can evaluate string expressions only\n', template);
   }
   return interpreter.parse(template['$eval'], context);
 };
 
-constructs.$flatten = (template, context) => {
+operators.$flatten = (template, context) => {
   let value = render(template['$flatten'], context);
 
   // Value must be array of arrays
@@ -63,7 +63,7 @@ constructs.$flatten = (template, context) => {
   return [].concat(...value);
 };
 
-constructs.$flattenDeep = (template, context) => {
+operators.$flattenDeep = (template, context) => {
   let value = render(template['$flattenDeep'], context);
 
   // Value must be array of arrays
@@ -74,7 +74,7 @@ constructs.$flattenDeep = (template, context) => {
   return flattenDeep(value);
 };
 
-constructs.$fromNow = (template, context) => {
+operators.$fromNow = (template, context) => {
   let value = render(template['$fromNow'], context);
   if (!isString(value)) {
     throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
@@ -82,7 +82,7 @@ constructs.$fromNow = (template, context) => {
   return fromNow(value);
 };
 
-constructs.$if = (template, context) => {
+operators.$if = (template, context) => {
   if (!isString(template['$if'])) {
     throw jsonTemplateError('$if can evaluate string expressions only\n', template);
   }
@@ -92,11 +92,11 @@ constructs.$if = (template, context) => {
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
 };
 
-constructs.$json = (template, context) => {
+operators.$json = (template, context) => {
   return JSON.stringify(render(template['$json'], context));
 };
 
-constructs.$let = (template, context) => {
+operators.$let = (template, context) => {
   let variables = template['$let'];
 
   var context_copy = Object.assign(context, variables);
@@ -112,7 +112,7 @@ constructs.$let = (template, context) => {
   return render(template.in, context_copy);
 };
 
-constructs.$map = (template, context) => {
+operators.$map = (template, context) => {
   let value = render(template['$map'], context);
   if (!isArray(value)) {
     throw jsonTemplateError('$map requires array as value\n', template);
@@ -135,7 +135,7 @@ constructs.$map = (template, context) => {
               .filter(v => v !== deleteMarker);
 };
 
-constructs.$merge = (template, context) => {
+operators.$merge = (template, context) => {
   let value = render(template['$merge'], context);
 
   if (!isArray(value)) {
@@ -145,7 +145,7 @@ constructs.$merge = (template, context) => {
   return Object.assign({}, ...value);
 };
 
-constructs.$reverse = (template, context) => {
+operators.$reverse = (template, context) => {
   let value = render(template['$reverse'], context);
 
   if (!isArray(value) && !isArray(template['$reverse'])) {
@@ -158,7 +158,7 @@ constructs.$reverse = (template, context) => {
   return value.reverse();
 };
 
-constructs.$sort = (template, context) => {
+operators.$sort = (template, context) => {
   let value = render(template['$sort'], context);
   if (!isArray(value)) {
     throw jsonTemplateError('$sort requires array as value\n', template);
@@ -201,12 +201,12 @@ let render = (template, context) => {
     return template.map((v) => render(v, context)).filter((v) => v !== deleteMarker);
   }
 
-  let matches = Object.keys(constructs).filter(c => template.hasOwnProperty(c));
+  let matches = Object.keys(operators).filter(c => template.hasOwnProperty(c));
   if (matches.length > 1) {
-    throw jsonTemplateError('only one construct allowed\n', template);
+    throw jsonTemplateError('only one operator allowed\n', template);
   }
   if (matches.length === 1) {
-    return constructs[matches[0]](template, context);
+    return operators[matches[0]](template, context);
   }
 
   // clone object
@@ -214,7 +214,7 @@ let render = (template, context) => {
   for (let key of Object.keys(template)) {
     let value = render(template[key], context);
     if (value !== deleteMarker) {
-      if (key.startsWith('$$') && constructs.hasOwnProperty(key.substr(1))) {
+      if (key.startsWith('$$') && operators.hasOwnProperty(key.substr(1))) {
         key = key.substr(1);
       }
 

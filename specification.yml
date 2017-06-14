@@ -106,7 +106,7 @@ context: {'a b c': 1}
 error: true
 ################################################################################
 ---
-section:  $if-constructs
+section:  $if operator
 ---
 title:    $if-then-else, true
 context:  {cond: true}

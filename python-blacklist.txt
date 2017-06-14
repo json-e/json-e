@@ -12,24 +12,24 @@ Initial Minimal Subset: multiple string interpolation (2)
 Initial Minimal Subset: multiple string interpolation (3)
 Initial Minimal Subset: can't interpolate arrays
 Initial Minimal Subset: can't interpolate objects
-$if-constructs: $if-then-else, true
-$if-constructs: $if-then-else, false
-$if-constructs: $if-then in array, true
-$if-constructs: $if-then in array, false
-$if-constructs: $if-then in object, true
-$if-constructs: $if-then in object, false
-$if-constructs: $if -> delete-marker, true
-$if-constructs: $if -> delete-marker, false
-$if-constructs: $if->then, then => $eval, true
-$if-constructs: $if->else, else => $eval, false
-$if-constructs: $if->then, then => ${}, true
-$if-constructs: $if->else, else => ${}, false
-$if-constructs: $if->then, then => object, true
-$if-constructs: $if->else, else => object, false
-$if-constructs: $if->then, then => object, $eval, true
-$if-constructs: $if->else, else => object, $eval, false
-$if-constructs: $if->then, then => object, interpolation, true
-$if-constructs: $if->else, else => object, interpolation, false
+$if operator: $if-then-else, true
+$if operator: $if-then-else, false
+$if operator: $if-then in array, true
+$if operator: $if-then in array, false
+$if operator: $if-then in object, true
+$if operator: $if-then in object, false
+$if operator: $if -> delete-marker, true
+$if operator: $if -> delete-marker, false
+$if operator: $if->then, then => $eval, true
+$if operator: $if->else, else => $eval, false
+$if operator: $if->then, then => ${}, true
+$if operator: $if->else, else => ${}, false
+$if operator: $if->then, then => object, true
+$if operator: $if->else, else => object, false
+$if operator: $if->then, then => object, $eval, true
+$if operator: $if->else, else => object, $eval, false
+$if operator: $if->then, then => object, interpolation, true
+$if operator: $if->else, else => object, interpolation, false
 $flatten: simple flatten
 $flatten: flatten empty array
 $flatten: flatten empty array of arrays
@@ -395,17 +395,17 @@ Initial Minimal Subset: string interpolation with unbalanced }
 Initial Minimal Subset: booleans interpolate
 Initial Minimal Subset: numbers interpolate
 Initial Minimal Subset: nulls interpolate
-$if-constructs: $if->then->else, empty string
-$if-constructs: $if->then->else, nonempty string
-$if-constructs: $if->then->else, string "0"
-$if-constructs: $if->then->else, zero
-$if-constructs: $if->then->else, one
-$if-constructs: $if->then->else, null
-$if-constructs: $if->then->else, empty array
-$if-constructs: $if->then->else, nonempty array
-$if-constructs: $if->then->else, empty object
-$if-constructs: $if->then->else, nonempty object
-$if-constructs: $if->then evaluating to nothing at the top level is an error
+$if operator: $if->then->else, empty string
+$if operator: $if->then->else, nonempty string
+$if operator: $if->then->else, string "0"
+$if operator: $if->then->else, zero
+$if operator: $if->then->else, one
+$if operator: $if->then->else, null
+$if operator: $if->then->else, empty array
+$if operator: $if->then->else, nonempty array
+$if operator: $if->then->else, empty object
+$if operator: $if->then->else, nonempty object
+$if operator: $if->then evaluating to nothing at the top level is an error
 escape operators: escape $eval
 escape operators: escape $flatten
 escape operators: escape $fromNow

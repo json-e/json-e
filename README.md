@@ -209,7 +209,7 @@ element.
 
 ### `$merge`
 
-The `$merge` constructor merges an array of objects, returning a single object
+The `$merge` operator merges an array of objects, returning a single object
 that combines all of the objects in the array, where the right-side objects
 overwrite the values of the left-side ones.
 
