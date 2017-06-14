@@ -1,6 +1,7 @@
 let utils = {
   isString:   expr => typeof expr === 'string',
   isNumber:   expr => typeof expr === 'number',
+  isInteger:  expr => typeof expr === 'number' && Number.isInteger(expr),
   isBool:     expr => typeof expr === 'boolean',
   isArray:    expr => expr instanceof Array,
   isObject:   expr => expr instanceof Object,

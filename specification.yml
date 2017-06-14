@@ -3069,7 +3069,7 @@ result: '4'
 title: 'string indexing (noninteger)'
 context: {}
 template: {$eval: '"12345"[2.5]'}
-todo: 'https://github.com/taskcluster/json-e/issues/64'
+error: true
 ---
 title: 'string slicing (1)'
 context: {key: '12345'}
@@ -3081,20 +3081,20 @@ context: {key: '12345'}
 template: {$eval: 'key[-2:]'}
 result: '45'
 ---
-title: 'string slicing (fractional first index)'
+title: 'string slicing (noninteger first index)'
 context: {key: '12345'}
 template: {$eval: 'key[1.5:3]'}
-todo: 'https://github.com/taskcluster/json-e/issues/64'
+error: true
 ---
-title: 'string slicing (fractional second index)'
+title: 'string slicing (noninteger second index)'
 context: {key: '12345'}
 template: {$eval: 'key[1:3.5]'}
-todo: 'https://github.com/taskcluster/json-e/issues/64'
+error: true
 ---
-title: 'string slicing (fractional indexes)'
+title: 'string slicing (noninteger indexes)'
 context: {key: '12345'}
 template: {$eval: 'key[1.5:3.5]'}
-todo: 'https://github.com/taskcluster/json-e/issues/64'
+error: true
 ---
 title: 'string slicing type error (1)'
 context: {key: '12345'}
@@ -3211,7 +3211,7 @@ result: 3
 title: 'numeric, noninteger index'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[2.5]'}
-todo: 'https://github.com/taskcluster/json-e/issues/64'
+error: true
 ---
 title: 'arithemtic with results'
 context: {key: [1,2,3,4,5]}
@@ -3309,17 +3309,22 @@ result: [1,2,3,4]
 title: 'array slicing (noninteger first index)'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[2.5: 4]'}
-todo: 'https://github.com/taskcluster/json-e/issues/64'
+error: true
 ---
 title: 'array slicing (noninteger last index)'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[2: 3.5]'}
-todo: 'https://github.com/taskcluster/json-e/issues/64'
+error: true
 ---
 title: 'array slicing (noninteger indexes)'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[2.5: 3.5]'}
-todo: 'https://github.com/taskcluster/json-e/issues/64'
+error: true
+---
+title: 'array slicing (floor)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[:floor(len(key)/2)]'}
+result: [1, 2]
 ---
 title: 'array slicing (no end index)'
 context: {key: [1,2,3,4,5]}

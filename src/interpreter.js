@@ -3,7 +3,7 @@
 * Github: https://github.com/jonasfj
 */
 import PrattParser from './prattparser';
-import {isString, isNumber, isBool,
+import {isString, isNumber, isInteger, isBool,
   isArray, isObject, isFunction} from './type-utils';
 import {InterpreterError} from './error';
 
@@ -83,12 +83,12 @@ let accessProperty = (left, a, b, isInterval) => {
   if (isArray(left) || isString(left)) {
     if (isInterval) {
       b = b === null ? left.length : b;
-      if (!isNumber(a) || !isNumber(b)) {
+      if (!isInteger(a) || !isInteger(b)) {
         throw new InterpreterError('cannot perform interval access with non-integers');
       }
       return left.slice(a, b);
     }
-    if (!isNumber(a)) {
+    if (!isInteger(a)) {
       throw new InterpreterError('should access arrays using integers only');
     }
 

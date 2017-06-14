@@ -868,3 +868,7 @@ expression language - string operations: string length attribute is an error eve
 expression language - array access: array length property is an error even by index
 fromNow: fromNow with eval
 fromNow: fromNow of non-string
+expression language - string operations: string slicing (noninteger first index)
+expression language - string operations: string slicing (noninteger second index)
+expression language - string operations: string slicing (noninteger indexes)
+expression language - array slicing: array slicing (floor)
