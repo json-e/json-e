@@ -5,23 +5,23 @@ import json as json
 from .shared import JSONTemplateError, DeleteMarker
 from . import shared
 
-constructs = {}
+operators = {}
 
 
-def construct(name):
+def operator(name):
     def wrap(fn):
-        constructs[name] = fn
+        operators[name] = fn
         return fn
     return wrap
 
 
-@construct('$eval')
+@operator('$eval')
 def eval(template, context):
     # TODO: actually evaluate
     return template['$eval']
 
 
-@construct('$flatten')
+@operator('$flatten')
 def flatten(template, context):
     value = template['$flatten']
     if not isinstance(value, list):
@@ -37,7 +37,7 @@ def flatten(template, context):
     return list(gen())
 
 
-@construct('$flattenDeep')
+@operator('$flattenDeep')
 def flattenDeep(template, context):
     value = template['$flattenDeep']
     if not isinstance(value, list):
@@ -54,14 +54,14 @@ def flattenDeep(template, context):
     return list(gen(value))
 
 
-@construct('$fromNow')
+@operator('$fromNow')
 def fromNow(template, context):
     offset = renderValue(template['$fromNow'], context)
     return shared.fromNow(offset)
 
 
 # TODO: eval the value
-#@construct('$if')
+#@operator('$if')
 def ifConstruct(template, context):
     condition = renderValue(template['$if'], context)
     try:
@@ -73,14 +73,14 @@ def ifConstruct(template, context):
         return DeleteMarker
     return renderValue(rv, context)
 
-@construct('$json')
+@operator('$json')
 def jsonConstruct(template, context):
     value = renderValue(template['$json'], context)
     return json.dumps(value, separators=(',', ':'))
 
 
 # TODO: requires $eval
-#@construct('$let')
+#@operator('$let')
 def let(template, context):
     print(context)
     variables = renderValue(template['$let'], context)
@@ -96,9 +96,9 @@ def let(template, context):
 
 
 # TODO: requires $eval
-#@construct('$map')
+#@operator('$map')
 
-@construct('$merge')
+@operator('$merge')
 def merge(template, context):
     value = renderValue(template['$merge'], context)
     # TODO: checkType function
@@ -110,7 +110,7 @@ def merge(template, context):
     return v
 
 
-@construct('$reverse')
+@operator('$reverse')
 def reverse(template, context):
     value = renderValue(template['$reverse'], context)
     # TODO: checkType function
@@ -120,7 +120,7 @@ def reverse(template, context):
 
 
 # awaiting https://github.com/taskcluster/json-e/issues/71
-#@construct('$sort')
+#@operator('$sort')
 def sort(template, context):
     value = renderValue(template['$sort'], context)
     # TODO: checkType function
@@ -135,14 +135,14 @@ def renderValue(template, context):
         return template
 
     elif isinstance(template, dict):
-        matches = [k for k in template if k in constructs]
+        matches = [k for k in template if k in operators]
         if matches:
             if len(matches) > 1:
-                raise JSONTemplateError("only one construct allowed")
-            return constructs[matches[0]](template, context)
+                raise JSONTemplateError("only one operator allowed")
+            return operators[matches[0]](template, context)
         def updated():
             for k, v in template.viewitems():
-                if k.startswith('$$') and k[1:] in constructs:
+                if k.startswith('$$') and k[1:] in operators:
                     k = k[1:]
                 v = renderValue(v, context)
                 if v is not DeleteMarker:
