@@ -70,6 +70,14 @@ The bit inside the `${..}` is an expression, and must evaluate to something
 that interpolates obviously into a string (so, a string, number, boolean, or
 null). The expression syntax is described in more detail below.
 
+Note that object keys can be interpolated, too:
+
+```yaml
+context: {name: 'foo', value: 'bar'}
+template: {"tc_${name}": "${value}"}
+result: {"tc_foo": "bar"}
+```
+
 ## Operators
 
 JSON-e defines a bunch of operators. Each is represented as an object with a
