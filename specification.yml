@@ -71,6 +71,11 @@ template: {message: 'a literal \\${ in a string'}
 result:   {message: 'a literal ${ in a string'}
 todo: 'https://github.com/taskcluster/json-e/issues/66'
 ---
+title: string interpolation of keys
+context: {name: 'foo', value: 'bar'}
+template: {"tc_${name}": "${value}"}
+result: {"tc_foo": "bar"}
+---
 title: string interpolation with unbalanced }
 context:  {}
 template: {message: 'tricky ${"}}}}"}'}

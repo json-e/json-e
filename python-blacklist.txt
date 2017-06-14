@@ -872,3 +872,4 @@ expression language - string operations: string slicing (noninteger first index)
 expression language - string operations: string slicing (noninteger second index)
 expression language - string operations: string slicing (noninteger indexes)
 expression language - array slicing: array slicing (floor)
+Initial Minimal Subset: string interpolation of keys
