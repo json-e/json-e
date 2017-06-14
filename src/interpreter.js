@@ -192,7 +192,11 @@ prefixRules['identifier'] = (token, ctx) => {
   if (ctx.context.hasOwnProperty(token.value)) {
     return ctx.context[token.value];
   }
-  throw new InterpreterError('can access own properties of objects');
+  throw new InterpreterError(`unknown context value ${token.value}`);
+};
+
+prefixRules['null'] = (token, ctx) => {
+  return null;
 };
 
 prefixRules['['] = (token, ctx) => parseList(ctx, ',', ']');
@@ -329,7 +333,8 @@ module.exports = new PrattParser({
   tokens: [
     '**', ...'+-*/[].(){}:,'.split(''),
     '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
-    'true', 'false', 'in', 'number', 'identifier', 'string',
+    'true', 'false', 'in', 'null', 'number',
+    'identifier', 'string',
   ],
   precedence: [
     ['in'],

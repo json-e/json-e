@@ -1408,7 +1408,6 @@ title:    null literal
 context:  {}
 template: {$eval: '[null, null]'}
 result: [null, null]
-todo: 'https://github.com/taskcluster/json-e/issues/74'
 ---
 title:    leading zeroes (not octal)
 context:  {}

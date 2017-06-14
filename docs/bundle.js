@@ -908,7 +908,11 @@ prefixRules['identifier'] = function (token, ctx) {
   if (ctx.context.hasOwnProperty(token.value)) {
     return ctx.context[token.value];
   }
-  throw new _error.InterpreterError('can access own properties of objects');
+  throw new _error.InterpreterError('unknown context value ' + token.value);
+};
+
+prefixRules['null'] = function (token, ctx) {
+  return null;
 };
 
 prefixRules['['] = function (token, ctx) {
@@ -1062,7 +1066,7 @@ module.exports = new _prattparser2.default({
     identifier: '[a-zA-Z_][a-zA-Z_0-9]*',
     string: '\'[^\']*\'|"[^"]*"'
   },
-  tokens: ['**'].concat((0, _toConsumableArray3.default)('+-*/[].(){}:,'.split('')), ['>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in', 'number', 'identifier', 'string']),
+  tokens: ['**'].concat((0, _toConsumableArray3.default)('+-*/[].(){}:,'.split('')), ['>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in', 'null', 'number', 'identifier', 'string']),
   precedence: [['in'], ['||'], ['&&'], ['==', '!='], ['>=', '<=', '<', '>'], ['+', '-'], ['*', '/'], ['**-right-associative'], ['**'], ['[', '.'], ['('], ['unary']],
   prefixRules: prefixRules,
   infixRules: infixRules
