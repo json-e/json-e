@@ -369,8 +369,6 @@ var _builtins2 = _interopRequireDefault(_builtins);
 
 var _error = require('./error');
 
-var _error2 = _interopRequireDefault(_error);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var flattenDeep = function flattenDeep(a) {
@@ -380,7 +378,7 @@ var flattenDeep = function flattenDeep(a) {
 };
 
 var jsonTemplateError = function jsonTemplateError(msg, template) {
-  return new _error2.default(msg + (0, _stringify2.default)(template, null, '\t'));
+  return new _error.TemplateError(msg + (0, _stringify2.default)(template, null, '\t'));
 };
 
 var interpolate = function interpolate(string, context) {
@@ -391,7 +389,7 @@ var interpolate = function interpolate(string, context) {
   while ((offset = remaining.search(/\${/g)) !== -1) {
     var v = _interpreter2.default.parseUntilTerminator(remaining.slice(offset), 2, '}', context);
     if ((0, _typeUtils.isArray)(v.result) || (0, _typeUtils.isObject)(v.result)) {
-      throw new _error2.default('cannot interpolate array/object: ' + string);
+      throw new _error.TemplateError('cannot interpolate array/object: ' + string);
     }
 
     result += remaining.slice(0, offset);
@@ -450,10 +448,11 @@ constructs.$flattenDeep = function (template, context) {
 };
 
 constructs.$fromNow = function (template, context) {
-  if (!(0, _typeUtils.isString)(template['$fromNow'])) {
+  var value = render(template['$fromNow'], context);
+  if (!(0, _typeUtils.isString)(value)) {
     throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
   }
-  return (0, _fromNow2.default)(template['$fromNow']);
+  return (0, _fromNow2.default)(value);
 };
 
 constructs.$if = function (template, context) {
