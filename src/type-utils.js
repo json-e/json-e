@@ -4,7 +4,7 @@ let utils = {
   isInteger:  expr => typeof expr === 'number' && Number.isInteger(expr),
   isBool:     expr => typeof expr === 'boolean',
   isArray:    expr => expr instanceof Array,
-  isObject:   expr => expr instanceof Object,
+  isObject:   expr => expr instanceof Object && !(expr instanceof Array),
   isFunction: expr => expr instanceof Function,
   isJSON:     expr => {
     if (utils.isString(expr) || utils.isNumber(expr) || utils.isBool(expr) || expr === null) {
@@ -32,7 +32,7 @@ let utils = {
   isTruthy: expr => {
     return expr!== null && (
       utils.isArray(expr) && expr.length > 0 ||
-      utils.isObject(expr) && !(expr instanceof Array) && Object.keys(expr).length > 0 ||
+      utils.isObject(expr) && Object.keys(expr).length > 0 ||
       utils.isString(expr) && expr.length > 0 ||
       utils.isNumber(expr) && expr !== 0 ||
       utils.isBool(expr) && expr

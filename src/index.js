@@ -102,7 +102,7 @@ operators.$let = (template, context) => {
 
   var context_copy = Object.assign(context, variables);
 
-  if (variables === null || isArray(variables) || !isObject(variables)) {
+  if (!isObject(variables)) {
     throw jsonTemplateError('$let operator requires an object as the context\n', template);
   }
 

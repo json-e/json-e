@@ -16,7 +16,7 @@ let isEqual = (a, b) =>  {
     }
     return true;
   }
-  if (isObject(a) && isObject(b) && !isArray(a) && !isArray(b)) {
+  if (isObject(a) && isObject(b)) {
     let keys = Object.keys(a).sort();
     if (!isEqual(keys, Object.keys(b).sort())) { return false; }
     for (let k of keys) {
@@ -253,7 +253,7 @@ infixRules['**'] = (left, token, ctx) => {
 infixRules['['] = (left, token, ctx) => parseInterval(left, token, ctx);
 
 infixRules['.'] = (left, token, ctx) => {
-  if (isObject(left) && !isArray(left)) {
+  if (isObject(left)) {
     let key = ctx.require('identifier').value;
     if (left.hasOwnProperty(key)) {
       return left[key];
@@ -301,7 +301,7 @@ infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
 
 infixRules['in'] = (left, token, ctx) => {
   let right = ctx.parse(token.kind);
-  if (isObject(right) && !isArray(right)) {
+  if (isObject(right)) {
     if (isNumber(left)) {
       throw expectationError('Infix: in', 'String query on Object');
     }
