@@ -4,7 +4,7 @@
 */
 import PrattParser from './prattparser';
 import {isString, isNumber, isInteger, isBool,
-  isArray, isObject, isFunction} from './type-utils';
+  isArray, isObject, isFunction, isTruthy} from './type-utils';
 import {InterpreterError} from './error';
 
 let expectationError = (operator, expectation) => new InterpreterError(`'${operator}' expects '${expectation}'`);
@@ -164,8 +164,7 @@ prefixRules['number'] = (token, ctx) => {
 
 prefixRules['!'] = (token, ctx) => {
   let operand = ctx.parse('unary');
-  testLogicalOperand('!', operand);
-  return !operand;
+  return !isTruthy(operand);
 };
 
 prefixRules['-'] = (token, ctx) => {
@@ -290,11 +289,9 @@ infixRules['>='] = infixRules['<'] =  infixRules['>']
 infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
   let operator = token.kind;
   let right = ctx.parse(operator);
-  testLogicalOperand(operator, left);
-  testLogicalOperand(operator, right);
   switch (operator) {
-    case '||':  return left || right;
-    case '&&':  return left && right;
+    case '||':  return isTruthy(left) || isTruthy(right);
+    case '&&':  return isTruthy(left) && isTruthy(right);
     default:    throw new Error('no rule for boolean operator: ' + operator);
   }
 };
