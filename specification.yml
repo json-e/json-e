@@ -237,7 +237,6 @@ title: $if->then->else, empty array
 context: {cond: [], key: 'world'}
 template: {$if: 'cond', then: "t", else: "f"}
 result: f
-todo: 'https://github.com/taskcluster/json-e/issues/68'
 ---
 title: $if->then->else, nonempty array
 context: {cond: [1, 2], key: 'world'}
@@ -248,7 +247,6 @@ title: $if->then->else, empty object
 context: {cond: {}, key: 'world'}
 template: {$if: 'cond', then: "t", else: "f"}
 result: f
-todo: 'https://github.com/taskcluster/json-e/issues/68'
 ---
 title: $if->then->else, nonempty object
 context: {cond: {a: 2}, key: 'world'}

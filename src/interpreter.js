@@ -127,7 +127,7 @@ let testComparisonOperands = (operator, left, right) => {
 
   let test = ['>=', '<=', '<', '>'].some(v => v === operator)
               && (isNumber(left) && isNumber(right) || isString(left) && isString(right));
-  
+
   if (!test) {
     throw expectationError(`infix: ${operator}`, `numbers/strings ${operator} numbers/strings`);
   }
@@ -136,8 +136,8 @@ let testComparisonOperands = (operator, left, right) => {
 
 let testMathOperands = (operator, left, right) => {
   if (operator === '+' && !(isNumber(left) && isNumber(right) || isString(left) && isString(right))) {
-    throw expectationError('infix: +', 'number/string + number/string'); 
-  } 
+    throw expectationError('infix: +', 'number/string + number/string');
+  }
   if (['-', '*', '/', '**'].some(v => v === operator) && !(isNumber(left) && isNumber(right))) {
     throw expectationError(`infix: ${operator}`, `number ${operator} number`);
   }
@@ -170,7 +170,7 @@ prefixRules['!'] = (token, ctx) => {
 
 prefixRules['-'] = (token, ctx) => {
   let v = ctx.parse('unary');
-  
+
   if (!isNumber(v)) {
     throw expectationError('unary: -', 'number');
   }
@@ -202,8 +202,8 @@ prefixRules['null'] = (token, ctx) => {
 prefixRules['['] = (token, ctx) => parseList(ctx, ',', ']');
 
 prefixRules['('] = (token, ctx) => {
-  let v = ctx.parse(); 
-  ctx.require(')'); 
+  let v = ctx.parse();
+  ctx.require(')');
   return v;
 };
 
@@ -270,8 +270,8 @@ infixRules['('] =  (left, token, ctx) => {
   throw expectationError('infix: f(args)', 'f to be function');
 };
 
-infixRules['=='] = infixRules['!='] = infixRules['<='] = 
-infixRules['>='] = infixRules['<'] =  infixRules['>'] 
+infixRules['=='] = infixRules['!='] = infixRules['<='] =
+infixRules['>='] = infixRules['<'] =  infixRules['>']
   =  (left, token, ctx) => {
     let operator = token.kind;
     let right = ctx.parse(operator);
@@ -340,8 +340,8 @@ module.exports = new PrattParser({
     ['in'],
     ['||'],
     ['&&'],
-  	['==', '!='],
-  	['>=', '<=', '<', '>'],
+    ['==', '!='],
+    ['>=', '<=', '<', '>'],
     ['+', '-'],
     ['*', '/'],
     ['**-right-associative'],

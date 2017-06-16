@@ -4,6 +4,7 @@ import assert from 'assert';
 import {
   isString, isNumber, isBool,
   isArray, isObject, isFunction,
+  isTruthy,
 } from './type-utils';
 import builtins from './builtins';
 import {TemplateError} from './error';
@@ -86,7 +87,7 @@ operators.$if = (template, context) => {
   if (!isString(template['$if'])) {
     throw jsonTemplateError('$if can evaluate string expressions only\n', template);
   }
-  if (interpreter.parse(template['$if'], context)) {
+  if (isTruthy(interpreter.parse(template['$if'], context))) {
     return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
   }
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;

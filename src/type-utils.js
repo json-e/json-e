@@ -29,6 +29,15 @@ let utils = {
     }
     return false;
   },
+  isTruthy: expr => {
+    return expr!== null && (
+      utils.isArray(expr) && expr.length > 0 ||
+      utils.isObject(expr) && !(expr instanceof Array) && Object.keys(expr).length > 0 ||
+      utils.isString(expr) && expr.length > 0 ||
+      utils.isNumber(expr) && expr !== 0 ||
+      utils.isBool(expr) && expr
+    );
+  },
 };
 
 module.exports = utils;
