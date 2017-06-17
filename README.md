@@ -322,13 +322,13 @@ var context = {
 
 var template = {
   title: "Trip to Hawaii",
-  thumbnail: {$eval: 'imageData("hawaii")`},
+  thumbnail: {$eval: 'imageData("hawaii")'},
 };
 
 return jsone(template, context);
 ```
 
-NOTE: Context functions are called synchrnously. Any complex asynchronous
+NOTE: Context functions are called synchronously. Any complex asynchronous
 operations should be handled before rendering the template.
 
 NOTE: If the template is untrusted, it can pass arbitrary data to functions
