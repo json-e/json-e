@@ -81,6 +81,16 @@ html, body, #root {
   border: 1px solid #333;
 }
 
+.notes {
+  color: var(--gray4);
+  font-size: 0.7em;
+  padding-left: 0.7em;
+}
+
+.notes .clicky {
+  cursor: pointer;
+}
+
 pre {
   background-color: #eee;
   padding: 1em;

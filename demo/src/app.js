@@ -14,6 +14,7 @@ import 'codemirror/addon/lint/yaml-lint';
 import CodeMirror from '@skidding/react-codemirror';
 import sections from 'sections';
 import ReactMarkdown from 'react-markdown';
+import CopyToClipboard from 'react-copy-to-clipboard';
 
 window.jsyaml = jsyaml; // Making this available to yaml linter
 const codeMirrorOptions = {
@@ -64,6 +65,8 @@ class DemoBlock extends React.Component {
         this.state = {
           context: jsyaml.safeDump(literal.context),
           template: jsyaml.safeDump(literal.template),
+          copied: false,
+          changed: false,
         }
       } else {
         this.demo = false;
@@ -79,6 +82,7 @@ class DemoBlock extends React.Component {
       jsyaml.safeLoad(context);
       this.setState({
         context,
+        changed: true,
       });
     } catch (err) {
       if (err.name !== 'YAMLException') {
@@ -93,6 +97,7 @@ class DemoBlock extends React.Component {
       jsyaml.safeLoad(template);
       this.setState({
         template,
+        changed: true,
       });
     } catch (err) {
       if (err.name !== 'YAMLException') {
@@ -111,19 +116,35 @@ class DemoBlock extends React.Component {
         </pre>
       );
     }
+    const playgroundLink = `
+${document.location.origin}${document.location.pathname}?template=${encodeURIComponent(this.state.template)}&context=${encodeURIComponent(this.state.context)}#playground
+`.trim();
     return (
-      <div className="codeblocks">
-        <div>
-          <Heading level={4}>Template</Heading>
-          <CodeMirror value={this.state.template} onChange={template => this.updateTemplate(template)} options={codeMirrorOptions} />
+      <div>
+        <div className="codeblocks">
+          <div>
+            <Heading level={5}>Template</Heading>
+            <CodeMirror value={this.state.template} onChange={template => this.updateTemplate(template)} options={codeMirrorOptions} />
+          </div>
+          <div>
+            <Heading level={5}>Context</Heading>
+            <CodeMirror value={this.state.context} onChange={context => this.updateContext(context)} options={codeMirrorOptions} />
+          </div>
+          <div>
+            <Heading level={5}>Results</Heading>
+            <Jsone context={this.state.context} template={this.state.template} />
+          </div>
         </div>
-        <div>
-          <Heading level={4}>Context</Heading>
-          <CodeMirror value={this.state.context} onChange={context => this.updateContext(context)} options={codeMirrorOptions} />
-        </div>
-        <div>
-          <Heading level={4}>Results</Heading>
-          <Jsone context={this.state.context} template={this.state.template} />
+        <div className='notes'>
+          { this.state.changed &&
+            <CopyToClipboard text={playgroundLink}
+              onCopy={() => this.setState({copied: true})}
+            >
+              <span className="clicky">copy link to this example</span>
+            </CopyToClipboard>
+          }
+          <Space width={1}/>
+          { this.state.copied && <span>copied to clipboard!</span> }
         </div>
       </div>
     );
@@ -136,7 +157,7 @@ class SidebarLink extends React.Component {
   }
   render() {
     return (
-      <li key={this.props.section.anchor}>
+      <li>
         <a href={'#' + this.props.section.anchor}>
           <ReactMarkdown source={this.props.section.title}/>
         </a>
@@ -152,7 +173,7 @@ class Section extends React.Component {
 
   render() {
     return (
-      <div key={this.props.section.anchor} id={this.props.section.anchor} className="demo">
+      <div id={this.props.section.anchor} className="demo">
         <Divider width={50} />
         <ReactMarkdown source={this.props.section.heading}/>
         <ReactMarkdown
@@ -187,6 +208,20 @@ export default class App extends React.Component {
         this.interfaceExample = section;
       }
     }
+
+    const params = new URLSearchParams(document.location.search.substring(1));
+    let tmpl = '{}';
+    let ctx = '{}';
+    if (params.get('template') && params.get('context')) {
+      try {
+        tmpl = jsyaml.safeDump(jsyaml.safeLoad(params.get('template')));
+        ctx = jsyaml.safeDump(jsyaml.safeLoad(params.get('context')));
+      } catch (err) {
+        if (err.name !== 'YAMLException') {
+          throw err;
+        }
+      }
+    }
     this.playground = {
       anchor: 'playground',
       title: 'Playground',
@@ -195,8 +230,10 @@ export default class App extends React.Component {
 You can experiment with it here and view examples of all of the language
 features below!
 \`\`\`yaml
-template: ${'{}'}
-context: ${'{}'}
+template:
+  ${tmpl}
+context:
+  ${ctx}
 result: {}
 \`\`\`
       `,
@@ -221,7 +258,7 @@ result: {}
               <SidebarLink section={this.interfaceExample}/>
               <SidebarLink section={this.playground}/>
               {
-                this.demos.map(demo => <SidebarLink section={demo}/>)
+                this.demos.map(demo => <SidebarLink key={demo.anchor} section={demo}/>)
               }
             </ul>
             <Footer>
@@ -241,6 +278,15 @@ result: {}
             </div>
           </aside>
           <div className="content">
+            <div style={{paddingBottom: '25px'}}>
+              <Button rounded href={'https://www.mozilla.org/en-US/MPL/'}>
+               MPL License
+              </Button>
+              <Space x={1} />
+              <Button rounded href={'https://github.com/taskcluster/json-e'}>
+               Github
+              </Button>
+            </div>
             <p>
               JSON-e is a data-structure parameterization system written for embedding context in JSON objects.
             </p>
@@ -259,7 +305,7 @@ result: {}
             <Section section={this.interfaceExample}/>
             <Section section={this.playground}/>
             {
-              this.demos.map(demo => <Section section={demo}/>)
+              this.demos.map(demo => <Section key={demo.anchor} section={demo}/>)
             }
           </div>
         </div>
