@@ -1,5 +1,5 @@
 import assert from 'assert';
-import SyntaxError from './error';
+import {SyntaxError} from './error';
 
 let escapeRegex = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 

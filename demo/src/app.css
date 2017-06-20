@@ -1,0 +1,300 @@
+@import "~codemirror/lib/codemirror.css";
+@import "~codemirror/addon/lint/lint.css";
+@import "~codemirror/theme/ambiance.css";
+
+html, body, #root {
+  font-family: system; /* Defined below with jonathantneal's system */
+  margin: 0;
+  padding: 0;
+}
+
+.wrap {
+  height: 100vh;
+  display: flex;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+}
+
+.sidebar, .content {
+  overflow-y: scroll;
+  padding: 2em;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: var(--base);
+  color: var(--gray0);
+}
+
+.sidebar a {
+  color: var(--gray0);
+  text-decoration: none;
+}
+
+.sidebar ul {
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li {
+  list-style: none;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  text-align: right;
+}
+
+.sidebar ul li + li {
+  border-top: 1px solid var(--teal2);
+}
+
+.sidebar ul li p {
+  margin: 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 4;
+}
+
+.demo {
+  flex: 1;
+}
+
+.codeblocks {
+  display: flex;
+  flex-direction: row;
+}
+
+.codeblocks > div {
+  flex: 1 1;
+  padding: 0.5em;
+}
+
+.codeblocks .CodeMirror {
+  height: 150px;
+  border: 1px solid #333;
+}
+
+.notes {
+  color: var(--gray4);
+  font-size: 0.7em;
+  padding-left: 0.7em;
+}
+
+.notes .clicky {
+  cursor: pointer;
+}
+
+pre {
+  background-color: #eee;
+  padding: 1em;
+  border-top: 1px solid var(--base);
+  border-bottom: 1px solid var(--base);
+}
+
+@media (max-width: 800px) {
+  .main {
+    flex-direction: column;
+  }
+}
+
+/* https://palx.jxnblk.com/0c7 */
+:root {
+  --base: #0c7;
+  --black: #33423c;
+  --gray0: #f8f9f9;
+  --gray1: #ebeeec;
+  --gray2: #dce1df;
+  --gray3: #ccd4d1;
+  --gray4: #bbc6c1;
+  --gray5: #a8b6b0;
+  --gray6: #92a39c;
+  --gray7: #788d84;
+  --gray8: #577166;
+  --gray9: #33423c;
+  --teal0: #e3f9ef;
+  --teal1: #c4f3df;
+  --teal2: #a1eccc;
+  --teal3: #78e4b5;
+  --teal4: #45d999;
+  --teal5: #00cc74;
+  --teal6: #00b868;
+  --teal7: #00a25c;
+  --teal8: #00864c;
+  --teal9: #006137;
+  --cyan0: #e2f7f9;
+  --cyan1: #c3eff3;
+  --cyan2: #a0e6ec;
+  --cyan3: #76dce3;
+  --cyan4: #43cfd9;
+  --cyan5: #00becc;
+  --cyan6: #00abb8;
+  --cyan7: #0096a2;
+  --cyan8: #007d86;
+  --cyan9: #005a61;
+  --blue0: #e5eef9;
+  --blue1: #c9dcf4;
+  --blue2: #a9c7ed;
+  --blue3: #83aee6;
+  --blue4: #518ddc;
+  --blue5: #0058cc;
+  --blue6: #004fb7;
+  --blue7: #0045a0;
+  --blue8: #003883;
+  --blue9: #00275b;
+  --indigo0: #ebeafa;
+  --indigo1: #d6d4f6;
+  --indigo2: #bdb9f1;
+  --indigo3: #9f99ea;
+  --indigo4: #756de1;
+  --indigo5: #0e00cc;
+  --indigo6: #0c00b8;
+  --indigo7: #0b00a1;
+  --indigo8: #090086;
+  --indigo9: #060060;
+  --violet0: #f3e9fa;
+  --violet1: #e6d1f5;
+  --violet2: #d7b5f0;
+  --violet3: #c593e9;
+  --violet4: #ac64e0;
+  --violet5: #7700cc;
+  --violet6: #6b00b8;
+  --violet7: #5e00a1;
+  --violet8: #4d0085;
+  --violet9: #37005f;
+  --fuschia0: #fae9f9;
+  --fuschia1: #f5d1f2;
+  --fuschia2: #f0b6eb;
+  --fuschia3: #e994e2;
+  --fuschia4: #e066d6;
+  --fuschia5: #cc00bb;
+  --fuschia6: #b800a9;
+  --fuschia7: #a20094;
+  --fuschia8: #86007b;
+  --fuschia9: #610059;
+  --pink0: #fae9f0;
+  --pink1: #f6d2e1;
+  --pink2: #f0b6ce;
+  --pink3: #e994b8;
+  --pink4: #e06699;
+  --pink5: #cc0055;
+  --pink6: #b8004c;
+  --pink7: #a20043;
+  --pink8: #860038;
+  --pink9: #610028;
+  --red0: #faeae9;
+  --red1: #f5d3d0;
+  --red2: #f0b9b4;
+  --red3: #e99891;
+  --red4: #df6d62;
+  --red5: #cc1100;
+  --red6: #b80f00;
+  --red7: #a10d00;
+  --red8: #850b00;
+  --red9: #5f0700;
+  --orange0: #f9efe1;
+  --orange1: #f2dec1;
+  --orange2: #ebcb9d;
+  --orange3: #e3b574;
+  --orange4: #d99a42;
+  --orange5: #cc7700;
+  --orange6: #b86b00;
+  --orange7: #a15e00;
+  --orange8: #854d00;
+  --orange9: #5f3700;
+  --yellow0: #f6f8de;
+  --yellow1: #ecf1ba;
+  --yellow2: #e2e993;
+  --yellow3: #d6e068;
+  --yellow4: #c9d737;
+  --yellow5: #bbcc00;
+  --yellow6: #a9b800;
+  --yellow7: #94a200;
+  --yellow8: #7b8600;
+  --yellow9: #596100;
+  --lime0: #ebf9e1;
+  --lime1: #d5f2c0;
+  --lime2: #bceb9b;
+  --lime3: #a0e270;
+  --lime4: #7ed83e;
+  --lime5: #55cc00;
+  --lime6: #4cb800;
+  --lime7: #43a200;
+  --lime8: #388600;
+  --lime9: #286100;
+  --green0: #e4f9e6;
+  --green1: #c7f3ca;
+  --green2: #a5edab;
+  --green3: #7de585;
+  --green4: #4ada56;
+  --green5: #00cc11;
+  --green6: #00b80f;
+  --green7: #00a20d;
+  --green8: #00860b;
+  --green9: #006108
+}
+
+/*! system-font.css v1.1.0 | CC0-1.0 License | github.com/jonathantneal/system-font-face */
+
+@font-face {
+  font-family: system;
+  font-style: normal;
+  font-weight: 300;
+  src: local(".SFNSText-Light"), local(".HelveticaNeueDeskInterface-Light"), local(".LucidaGrandeUI"), local("Segoe UI Light"), local("Ubuntu Light"), local("Roboto-Light"), local("DroidSans"), local("Tahoma");
+}
+
+@font-face {
+  font-family: system;
+  font-style: italic;
+  font-weight: 300;
+  src: local(".SFNSText-LightItalic"), local(".HelveticaNeueDeskInterface-Italic"), local(".LucidaGrandeUI"), local("Segoe UI Light Italic"), local("Ubuntu Light Italic"), local("Roboto-LightItalic"), local("DroidSans"), local("Tahoma");
+}
+
+@font-face {
+  font-family: system;
+  font-style: normal;
+  font-weight: 400;
+  src: local(".SFNSText-Regular"), local(".HelveticaNeueDeskInterface-Regular"), local(".LucidaGrandeUI"), local("Segoe UI"), local("Ubuntu"), local("Roboto-Regular"), local("DroidSans"), local("Tahoma");
+}
+
+@font-face {
+  font-family: system;
+  font-style: italic;
+  font-weight: 400;
+  src: local(".SFNSText-Italic"), local(".HelveticaNeueDeskInterface-Italic"), local(".LucidaGrandeUI"), local("Segoe UI Italic"), local("Ubuntu Italic"), local("Roboto-Italic"), local("DroidSans"), local("Tahoma");
+}
+
+@font-face {
+  font-family: system;
+  font-style: normal;
+  font-weight: 500;
+  src: local(".SFNSText-Medium"), local(".HelveticaNeueDeskInterface-MediumP4"), local(".LucidaGrandeUI"), local("Segoe UI Semibold"), local("Ubuntu Medium"), local("Roboto-Medium"), local("DroidSans-Bold"), local("Tahoma Bold");
+}
+
+@font-face {
+  font-family: system;
+  font-style: italic;
+  font-weight: 500;
+  src: local(".SFNSText-MediumItalic"), local(".HelveticaNeueDeskInterface-MediumItalicP4"), local(".LucidaGrandeUI"), local("Segoe UI Semibold Italic"), local("Ubuntu Medium Italic"), local("Roboto-MediumItalic"), local("DroidSans-Bold"), local("Tahoma Bold");
+}
+
+@font-face {
+  font-family: system;
+  font-style: normal;
+  font-weight: 700;
+  src: local(".SFNSText-Bold"), local(".HelveticaNeueDeskInterface-Bold"), local(".LucidaGrandeUI"), local("Segoe UI Bold"), local("Ubuntu Bold"), local("Roboto-Bold"), local("DroidSans-Bold"), local("Tahoma Bold");
+}
+
+@font-face {
+  font-family: system;
+  font-style: italic;
+  font-weight: 700;
+  src: local(".SFNSText-BoldItalic"), local(".HelveticaNeueDeskInterface-BoldItalic"), local(".LucidaGrandeUI"), local("Segoe UI Bold Italic"), local("Ubuntu Bold Italic"), local("Roboto-BoldItalic"), local("DroidSans-Bold"), local("Tahoma Bold");
+}
+

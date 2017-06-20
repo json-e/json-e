@@ -10,9 +10,12 @@ npm test
 # Python unit tests
 python setup.py test
 
-# bundle.js check. Note that the new bundle.js is not deleted
-mv docs/bundle.js docs/bundle.diff.js
-npm run-script build-demo
-diff docs/bundle.js docs/bundle.diff.js
+# docs site check. ensures that you've updated the docs before pushing
+yarn build-demo
+if [[ $(git status --porcelain  -- ./docs) ]]; then
+  echo "The docs site needs to be checked in!"
+  exit 1
+else
+  exit 0
+fi
 
-rm docs/bundle.diff.js

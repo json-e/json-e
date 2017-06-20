@@ -118,7 +118,7 @@ result:   '["a", "b", 3, 4]'
 
 ### `$if` - `then` - `else`
 
-The `$if` operator supports conditionals. It evalates the given value, and
+The `$if` operator supports conditionals. It evaluates the given value, and
 replaces itself with the `then` or `else` properties. If either property is
 omitted, then the expression is omitted from the parent object.
 

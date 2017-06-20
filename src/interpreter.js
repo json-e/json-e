@@ -320,7 +320,7 @@ infixRules['in'] = (left, token, ctx) => {
   return right.indexOf(left) !== -1;
 };
 
-module.exports = new PrattParser({
+export default new PrattParser({
   ignore: '\\s+', // ignore all whitespace including \n
   patterns: {
     number:     '[0-9]+(?:\\.[0-9]+)?',
