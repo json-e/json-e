@@ -55,9 +55,8 @@ operators.$eval = (template, context) => {
 operators.$flatten = (template, context) => {
   let value = render(template['$flatten'], context);
 
-  // Value must be array of arrays
-  if (!(isArray(value) && value.some(v => isArray(v)))) {
-    throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
+  if (!isArray(value)) {
+    throw jsonTemplateError('$flatten requires array as value\n', template);
   }
 
   return [].concat(...value);
@@ -66,9 +65,8 @@ operators.$flatten = (template, context) => {
 operators.$flattenDeep = (template, context) => {
   let value = render(template['$flattenDeep'], context);
 
-  // Value must be array of arrays
-  if (!(isArray(value) && value.some(v => isArray(v)))) {
-    throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
+  if (!isArray(value)) {
+    throw jsonTemplateError('$flattenDeep requires array as value\n', template);
   }
 
   return flattenDeep(value);

@@ -334,7 +334,7 @@ result:   [1, 2, 3, 4, 5]
 title:    flatten empty array
 context:  {}
 template: {$flatten: []}
-error:    true
+result:   []
 ---
 title:    flatten empty array of arrays
 context:  {}
@@ -354,17 +354,22 @@ error:    true
 title:    flatten an array of strings
 context:  {}
 template: {$flatten: ["a", "b"]}
-error:    true
+result:   ["a", "b"]
 ---
 title:    flatten an array of numbers
 context:  {}
 template: {$flatten: [1, 2]}
-error:    true
+result:   [1, 2]
 ---
 title:    flatten mixed types
 context:  {}
 template: {$flatten: [[1, 2], [['a', 'b']], [{}], [[]]]}
 result:   [1, 2, ['a', 'b'], {}, []]
+---
+title:    flatten mixed levels
+context:  {}
+template: {$flatten: [[1, [2, 3]], [4], 5]}
+result:   [1, [2, 3], 4, 5]
 ################################################################################
 ---
 section:  $flattenDeep
@@ -377,7 +382,7 @@ result:   [1, 2, 3]
 title:    flattenDeep empty array
 context:  {}
 template: {$flattenDeep: []}
-error:    true
+result:   []
 ---
 title:    flattenDeep empty array of arrays
 context:  {}
@@ -397,17 +402,22 @@ error:    true
 title:    flattenDeep an array of strings
 context:  {}
 template: {$flattenDeep: ["a", "b"]}
-error:    true
+result:   ["a", "b"]
 ---
 title:    flattenDeep an array of numbers
 context:  {}
 template: {$flattenDeep: [1, 2]}
-error:    true
+result:   [1, 2]
 ---
 title:    flattenDeep mixed types
 context:  {}
 template: {$flattenDeep: [[1, 2], [['a', 'b']], [{}], [[]]]}
 result:   [1, 2, 'a', 'b', {}]
+---
+title:    flattenDeep mixed levels
+context:  {}
+template: {$flattenDeep: [[1, [2, 3]], [4], 5]}
+result:   [1, 2, 3, 4, 5]
 ################################################################################
 ---
 section:  fromNow
