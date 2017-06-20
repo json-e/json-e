@@ -237,7 +237,6 @@ title: $if->then->else, empty array
 context: {cond: [], key: 'world'}
 template: {$if: 'cond', then: "t", else: "f"}
 result: f
-todo: 'https://github.com/taskcluster/json-e/issues/68'
 ---
 title: $if->then->else, nonempty array
 context: {cond: [1, 2], key: 'world'}
@@ -248,7 +247,6 @@ title: $if->then->else, empty object
 context: {cond: {}, key: 'world'}
 template: {$if: 'cond', then: "t", else: "f"}
 result: f
-todo: 'https://github.com/taskcluster/json-e/issues/68'
 ---
 title: $if->then->else, nonempty object
 context: {cond: {a: 2}, key: 'world'}
@@ -2634,237 +2632,257 @@ result: true
 title: 'string not'
 context: {a: 'abc'}
 template: {$eval: "!a"}
-error: true
+result: false
+---
+title: 'empty string not'
+context: {a: ''}
+template: {$eval: "!a"}
+result: true
 ---
 title: 'number not'
 context: {a: 123}
 template: {$eval: "!a"}
-error: true
+result: false
+---
+title: 'zero not'
+context: {a: 0}
+template: {$eval: "!a"}
+result: true
 ---
 title: 'null not'
 context: {a: null}
 template: {$eval: "!a"}
-error: true
+result: true
 ---
 title: 'object not'
 context: {a: {x: 1}}
 template: {$eval: "!a"}
-error: true
+result: false
+---
+title: 'empty object not'
+context: {a: {}}
+template: {$eval: "!a"}
+result: true
 ---
 title: 'array not'
 context: {a: [1, 2]}
 template: {$eval: "!a"}
-error: true
+result: false
+---
+title: 'empty array not'
+context: {a: []}
+template: {$eval: "!a"}
+result: true
 ---
 title: 'string and string'
 context: {a: 'abc', b: 'abc'}
 template: {$eval: "a && b"}
-error: true
+result: true
 ---
 title: 'string or string'
 context: {a: 'abc', b: 'abc'}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'string and number'
 context: {a: 'abc', b: 123}
 template: {$eval: "a && b"}
-error: true
+result: true
 ---
 title: 'string or number'
 context: {a: 'abc', b: 123}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'string and null'
 context: {a: 'abc', b: null}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'string or null'
 context: {a: 'abc', b: null}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'string and boolean'
 context: {a: 'abc', b: true}
 template: {$eval: "a && b"}
-error: true
+result: true
 ---
 title: 'string or boolean'
 context: {a: 'abc', b: true}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'string and object'
 context: {a: 'abc', b: {}}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'string or object'
 context: {a: 'abc', b: {}}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'string and array'
 context: {a: 'abc', b: []}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'string or array'
 context: {a: 'abc', b: []}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'number and string'
 context: {a: 345, b: 'abc'}
 template: {$eval: "a && b"}
-error: true
+result: true
 ---
 title: 'number or string'
 context: {a: 345, b: 'abc'}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'number and number'
 context: {a: 345, b: 123}
 template: {$eval: "a && b"}
-error: true
+result: true
 ---
 title: 'number or number'
 context: {a: 345, b: 123}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'number and null'
 context: {a: 345, b: null}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'number or null'
 context: {a: 345, b: null}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'number and boolean'
 context: {a: 345, b: true}
 template: {$eval: "a && b"}
-error: true
+result: true
 ---
 title: 'number or boolean'
 context: {a: 345, b: true}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'number and object'
 context: {a: 345, b: {}}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'number or object'
 context: {a: 345, b: {}}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'number and array'
 context: {a: 345, b: []}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'number or array'
 context: {a: 345, b: []}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'null and string'
 context: {a: null, b: 'abc'}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'null or string'
 context: {a: null, b: 'abc'}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'null and number'
 context: {a: null, b: 123}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'null or number'
 context: {a: null, b: 123}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'null and null'
 context: {a: null, b: null}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'null or null'
 context: {a: null, b: null}
 template: {$eval: "a || b"}
-error: true
+result: false
 ---
 title: 'null and boolean'
 context: {a: null, b: true}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'null or boolean'
 context: {a: null, b: true}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'null and object'
 context: {a: null, b: {}}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'null or object'
 context: {a: null, b: {}}
 template: {$eval: "a || b"}
-error: true
+result: false
 ---
 title: 'null and array'
 context: {a: null, b: []}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'null or array'
 context: {a: null, b: []}
 template: {$eval: "a || b"}
-error: true
+result: false
 ---
 title: 'boolean and string'
 context: {a: true, b: 'abc'}
 template: {$eval: "a && b"}
-error: true
+result: true
 ---
 title: 'boolean or string'
 context: {a: true, b: 'abc'}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'boolean and number'
 context: {a: true, b: 123}
 template: {$eval: "a && b"}
-error: true
+result: true
 ---
 title: 'boolean or number'
 context: {a: true, b: 123}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'boolean and null'
 context: {a: true, b: null}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'boolean or null'
 context: {a: true, b: null}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'boolean and boolean'
 context: {a: true, b: true}
@@ -2879,142 +2897,142 @@ result: true
 title: 'boolean and object'
 context: {a: true, b: {}}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'boolean or object'
 context: {a: true, b: {}}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'boolean and array'
 context: {a: true, b: []}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'boolean or array'
 context: {a: true, b: []}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'object and string'
 context: {a: {}, b: 'abc'}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'object or string'
 context: {a: {}, b: 'abc'}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'object and number'
 context: {a: {}, b: 123}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'object or number'
 context: {a: {}, b: 123}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'object and null'
 context: {a: {}, b: null}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'object or null'
 context: {a: {}, b: null}
 template: {$eval: "a || b"}
-error: true
+result: false
 ---
 title: 'object and boolean'
 context: {a: {}, b: true}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'object or boolean'
 context: {a: {}, b: true}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'object and object'
 context: {a: {}, b: {}}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'object or object'
 context: {a: {}, b: {}}
 template: {$eval: "a || b"}
-error: true
+result: false
 ---
 title: 'object and array'
 context: {a: {}, b: []}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'object or array'
 context: {a: {}, b: []}
 template: {$eval: "a || b"}
-error: true
+result: false
 ---
 title: 'array and string'
 context: {a: [], b: 'abc'}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'array or string'
 context: {a: [], b: 'abc'}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'array and number'
 context: {a: [], b: 123}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'array or number'
 context: {a: [], b: 123}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'array and null'
 context: {a: [], b: null}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'array or null'
 context: {a: [], b: null}
 template: {$eval: "a || b"}
-error: true
+result: false
 ---
 title: 'array and boolean'
 context: {a: [], b: true}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'array or boolean'
 context: {a: [], b: true}
 template: {$eval: "a || b"}
-error: true
+result: true
 ---
 title: 'array and object'
 context: {a: [], b: {}}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'array or object'
 context: {a: [], b: {}}
 template: {$eval: "a || b"}
-error: true
+result: false
 ---
 title: 'array and array'
 context: {a: [], b: []}
 template: {$eval: "a && b"}
-error: true
+result: false
 ---
 title: 'array or array'
 context: {a: [], b: []}
 template: {$eval: "a || b"}
-error: true
+result: false
 ################################################################################
 ---
 section: expression language - string operations
@@ -4380,29 +4398,4 @@ error: true
 title: 'Infix >= type error'
 context: {}
 template: {$eval: '3 >= "hello"'}
-error: true
----
-title: 'Prefix logical not type error'
-context: {key: 'hello'}
-template: {$eval: '!key'}
-error: true
----
-title: 'Infix or type error (1)'
-context: {tt: true, key: 'hello'}
-template: {$eval: 'tt || key'}
-error: true
----
-title: 'Infix or type error (2)'
-context: {tt: true, key: 'hello'}
-template: {$eval: 'key || tt'}
-error: true
----
-title: 'Infix and type error (1)'
-context: {tt: true, key: 'hello'}
-template: {$eval: 'tt && key'}
-error: true
----
-title: 'Infix and type error (2)'
-context: {tt: true, key: 'hello'}
-template: {$eval: 'key && tt'}
 error: true

@@ -463,7 +463,7 @@ operators.$if = function (template, context) {
   if (!(0, _typeUtils.isString)(template['$if'])) {
     throw jsonTemplateError('$if can evaluate string expressions only\n', template);
   }
-  if (_interpreter2.default.parse(template['$if'], context)) {
+  if ((0, _typeUtils.isTruthy)(_interpreter2.default.parse(template['$if'], context))) {
     return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
   }
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
@@ -478,7 +478,7 @@ operators.$let = function (template, context) {
 
   var context_copy = (0, _assign2.default)(context, variables);
 
-  if (variables === null || (0, _typeUtils.isArray)(variables) || !(0, _typeUtils.isObject)(variables)) {
+  if (!(0, _typeUtils.isObject)(variables)) {
     throw jsonTemplateError('$let operator requires an object as the context\n', template);
   }
 
@@ -736,7 +736,7 @@ var isEqual = function isEqual(a, b) {
     }
     return true;
   }
-  if ((0, _typeUtils.isObject)(a) && (0, _typeUtils.isObject)(b) && !(0, _typeUtils.isArray)(a) && !(0, _typeUtils.isArray)(b)) {
+  if ((0, _typeUtils.isObject)(a) && (0, _typeUtils.isObject)(b)) {
     var keys = (0, _keys2.default)(a).sort();
     if (!isEqual(keys, (0, _keys2.default)(b).sort())) {
       return false;
@@ -915,8 +915,7 @@ prefixRules['number'] = function (token, ctx) {
 
 prefixRules['!'] = function (token, ctx) {
   var operand = ctx.parse('unary');
-  testLogicalOperand('!', operand);
-  return !operand;
+  return !(0, _typeUtils.isTruthy)(operand);
 };
 
 prefixRules['-'] = function (token, ctx) {
@@ -1016,7 +1015,7 @@ infixRules['['] = function (left, token, ctx) {
 };
 
 infixRules['.'] = function (left, token, ctx) {
-  if ((0, _typeUtils.isObject)(left) && !(0, _typeUtils.isArray)(left)) {
+  if ((0, _typeUtils.isObject)(left)) {
     var key = ctx.require('identifier').value;
     if (left.hasOwnProperty(key)) {
       return left[key];
@@ -1058,13 +1057,11 @@ infixRules['=='] = infixRules['!='] = infixRules['<='] = infixRules['>='] = infi
 infixRules['||'] = infixRules['&&'] = function (left, token, ctx) {
   var operator = token.kind;
   var right = ctx.parse(operator);
-  testLogicalOperand(operator, left);
-  testLogicalOperand(operator, right);
   switch (operator) {
     case '||':
-      return left || right;
+      return (0, _typeUtils.isTruthy)(left) || (0, _typeUtils.isTruthy)(right);
     case '&&':
-      return left && right;
+      return (0, _typeUtils.isTruthy)(left) && (0, _typeUtils.isTruthy)(right);
     default:
       throw new Error('no rule for boolean operator: ' + operator);
   }
@@ -1072,7 +1069,7 @@ infixRules['||'] = infixRules['&&'] = function (left, token, ctx) {
 
 infixRules['in'] = function (left, token, ctx) {
   var right = ctx.parse(token.kind);
-  if ((0, _typeUtils.isObject)(right) && !(0, _typeUtils.isArray)(right)) {
+  if ((0, _typeUtils.isObject)(right)) {
     if ((0, _typeUtils.isNumber)(left)) {
       throw expectationError('Infix: in', 'String query on Object');
     }
@@ -1556,7 +1553,7 @@ var utils = {
     return expr instanceof Array;
   },
   isObject: function isObject(expr) {
-    return expr instanceof Object;
+    return expr instanceof Object && !(expr instanceof Array);
   },
   isFunction: function isFunction(expr) {
     return expr instanceof Function;
@@ -1607,6 +1604,9 @@ var utils = {
       return result;
     }
     return false;
+  },
+  isTruthy: function isTruthy(expr) {
+    return expr !== null && (utils.isArray(expr) && expr.length > 0 || utils.isObject(expr) && (0, _keys2.default)(expr).length > 0 || utils.isString(expr) && expr.length > 0 || utils.isNumber(expr) && expr !== 0 || utils.isBool(expr) && expr);
   }
 };
 

@@ -679,10 +679,14 @@ expression language - operator type errors: exponentiation of array by arrays
 expression language - operator type errors: unary negation of array
 expression language - operator type errors: unary plus of array
 expression language - logic: string not
+expression language - logic: empty string not
 expression language - logic: number not
+expression language - logic: zero not
 expression language - logic: null not
 expression language - logic: object not
+expression language - logic: empty object not
 expression language - logic: array not
+expression language - logic: empty array not
 expression language - logic: string and string
 expression language - logic: string or string
 expression language - logic: string and number

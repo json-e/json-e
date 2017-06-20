@@ -4,7 +4,7 @@
 */
 import PrattParser from './prattparser';
 import {isString, isNumber, isInteger, isBool,
-  isArray, isObject, isFunction} from './type-utils';
+  isArray, isObject, isFunction, isTruthy} from './type-utils';
 import {InterpreterError} from './error';
 
 let expectationError = (operator, expectation) => new InterpreterError(`'${operator}' expects '${expectation}'`);
@@ -16,7 +16,7 @@ let isEqual = (a, b) =>  {
     }
     return true;
   }
-  if (isObject(a) && isObject(b) && !isArray(a) && !isArray(b)) {
+  if (isObject(a) && isObject(b)) {
     let keys = Object.keys(a).sort();
     if (!isEqual(keys, Object.keys(b).sort())) { return false; }
     for (let k of keys) {
@@ -127,7 +127,7 @@ let testComparisonOperands = (operator, left, right) => {
 
   let test = ['>=', '<=', '<', '>'].some(v => v === operator)
               && (isNumber(left) && isNumber(right) || isString(left) && isString(right));
-  
+
   if (!test) {
     throw expectationError(`infix: ${operator}`, `numbers/strings ${operator} numbers/strings`);
   }
@@ -136,8 +136,8 @@ let testComparisonOperands = (operator, left, right) => {
 
 let testMathOperands = (operator, left, right) => {
   if (operator === '+' && !(isNumber(left) && isNumber(right) || isString(left) && isString(right))) {
-    throw expectationError('infix: +', 'number/string + number/string'); 
-  } 
+    throw expectationError('infix: +', 'number/string + number/string');
+  }
   if (['-', '*', '/', '**'].some(v => v === operator) && !(isNumber(left) && isNumber(right))) {
     throw expectationError(`infix: ${operator}`, `number ${operator} number`);
   }
@@ -164,13 +164,12 @@ prefixRules['number'] = (token, ctx) => {
 
 prefixRules['!'] = (token, ctx) => {
   let operand = ctx.parse('unary');
-  testLogicalOperand('!', operand);
-  return !operand;
+  return !isTruthy(operand);
 };
 
 prefixRules['-'] = (token, ctx) => {
   let v = ctx.parse('unary');
-  
+
   if (!isNumber(v)) {
     throw expectationError('unary: -', 'number');
   }
@@ -202,8 +201,8 @@ prefixRules['null'] = (token, ctx) => {
 prefixRules['['] = (token, ctx) => parseList(ctx, ',', ']');
 
 prefixRules['('] = (token, ctx) => {
-  let v = ctx.parse(); 
-  ctx.require(')'); 
+  let v = ctx.parse();
+  ctx.require(')');
   return v;
 };
 
@@ -253,7 +252,7 @@ infixRules['**'] = (left, token, ctx) => {
 infixRules['['] = (left, token, ctx) => parseInterval(left, token, ctx);
 
 infixRules['.'] = (left, token, ctx) => {
-  if (isObject(left) && !isArray(left)) {
+  if (isObject(left)) {
     let key = ctx.require('identifier').value;
     if (left.hasOwnProperty(key)) {
       return left[key];
@@ -270,8 +269,8 @@ infixRules['('] =  (left, token, ctx) => {
   throw expectationError('infix: f(args)', 'f to be function');
 };
 
-infixRules['=='] = infixRules['!='] = infixRules['<='] = 
-infixRules['>='] = infixRules['<'] =  infixRules['>'] 
+infixRules['=='] = infixRules['!='] = infixRules['<='] =
+infixRules['>='] = infixRules['<'] =  infixRules['>']
   =  (left, token, ctx) => {
     let operator = token.kind;
     let right = ctx.parse(operator);
@@ -290,18 +289,16 @@ infixRules['>='] = infixRules['<'] =  infixRules['>']
 infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
   let operator = token.kind;
   let right = ctx.parse(operator);
-  testLogicalOperand(operator, left);
-  testLogicalOperand(operator, right);
   switch (operator) {
-    case '||':  return left || right;
-    case '&&':  return left && right;
+    case '||':  return isTruthy(left) || isTruthy(right);
+    case '&&':  return isTruthy(left) && isTruthy(right);
     default:    throw new Error('no rule for boolean operator: ' + operator);
   }
 };
 
 infixRules['in'] = (left, token, ctx) => {
   let right = ctx.parse(token.kind);
-  if (isObject(right) && !isArray(right)) {
+  if (isObject(right)) {
     if (isNumber(left)) {
       throw expectationError('Infix: in', 'String query on Object');
     }
@@ -340,8 +337,8 @@ module.exports = new PrattParser({
     ['in'],
     ['||'],
     ['&&'],
-  	['==', '!='],
-  	['>=', '<=', '<', '>'],
+    ['==', '!='],
+    ['>=', '<=', '<', '>'],
     ['+', '-'],
     ['*', '/'],
     ['**-right-associative'],
