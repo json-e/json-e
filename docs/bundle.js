@@ -428,11 +428,8 @@ operators.$flatten = function (template, context) {
 
   var value = render(template['$flatten'], context);
 
-  // Value must be array of arrays
-  if (!((0, _typeUtils.isArray)(value) && value.some(function (v) {
-    return (0, _typeUtils.isArray)(v);
-  }))) {
-    throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
+  if (!(0, _typeUtils.isArray)(value)) {
+    throw jsonTemplateError('$flatten requires array as value\n', template);
   }
 
   return (_ref2 = []).concat.apply(_ref2, (0, _toConsumableArray3.default)(value));
@@ -441,11 +438,8 @@ operators.$flatten = function (template, context) {
 operators.$flattenDeep = function (template, context) {
   var value = render(template['$flattenDeep'], context);
 
-  // Value must be array of arrays
-  if (!((0, _typeUtils.isArray)(value) && value.some(function (v) {
-    return (0, _typeUtils.isArray)(v);
-  }))) {
-    throw jsonTemplateError('$flatten requires array of arrays as value\n', template);
+  if (!(0, _typeUtils.isArray)(value)) {
+    throw jsonTemplateError('$flattenDeep requires array as value\n', template);
   }
 
   return flattenDeep(value);

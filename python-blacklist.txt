@@ -43,6 +43,7 @@ $flattenDeep: flattenDeep an object
 $flattenDeep: flattenDeep an array of strings
 $flattenDeep: flattenDeep an array of numbers
 $flattenDeep: flattenDeep mixed types
+$flattenDeep: flattenDeep mixed levels
 fromNow: fromNow 1 hour
 fromNow: fromNow 2 hours
 fromNow: fromNow 3h
@@ -869,6 +870,7 @@ $flatten: flatten an object
 $flatten: flatten an array of strings
 $flatten: flatten an array of numbers
 $flatten: flatten mixed types
+$flatten: flatten mixed levels
 expression language - string operations: string length attribute is an error
 expression language - array access: array length property is an error
 expression language - string operations: string length attribute is an error even by index
