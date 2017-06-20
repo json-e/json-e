@@ -12,10 +12,10 @@ python setup.py test
 
 # docs site check. ensures that you've updated the docs before pushing
 yarn build-demo
-if [[ $(git status --porcelain  -- ./docs) ]]; then
+if [[ -z $(git status --porcelain -- ./docs) ]]; then
+  exit 0
+else
   echo "The docs site needs to be checked in!"
   exit 1
-else
-  exit 0
 fi
 
