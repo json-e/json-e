@@ -124,8 +124,8 @@ Anything else will be true.
 
 ```yaml
 context: {a: null, b: [], c: {}, d: "", e: 0, f: false}
-template: {$if: 'a || b || c || d || e || f', then: "uh oh", else: "falsey" }
-result: "falsey"
+template: {$if: 'a || b || c || d || e || f', then: "uh oh", else: "falsy" }
+result: "falsy"
 ```
 
 ### `$if` - `then` - `else`
