@@ -42,11 +42,14 @@ def builtin(name, variadic=None, argument_tests=None, minArgs=None):
 def number(v):
     return isinstance(v, (int, float)) and not isinstance(v, bool)
 
+
 def string(v):
     return isinstance(v, basestring)
 
+
 def string_or_array(v):
     return isinstance(v, (basestring, list))
+
 
 def anything(v):
     return isinstance(v, (basestring, int, float, list))
@@ -57,28 +60,31 @@ def anything(v):
 builtin('min', variadic=number, minArgs=1)(min)
 builtin('max', variadic=number, minArgs=1)(max)
 builtin('sqrt', argument_tests=[number])(math.sqrt)
-builtin('ceil', argument_tests=[number])(math.ceil)
-builtin('floor', argument_tests=[number])(math.floor)
 builtin('abs', argument_tests=[number])(abs)
+
+
+@builtin('ceil', argument_tests=[number])
+def ceil(v):
+    return int(math.ceil(v))
+
+
+@builtin('floor', argument_tests=[number])
+def floor(v):
+    return int(math.floor(v))
+
 
 @builtin('lowercase', argument_tests=[string])
 def lowercase(v):
     return v.lower()
 
+
 @builtin('uppercase', argument_tests=[string])
 def lowercase(v):
     return v.upper()
 
+
 builtin('len', argument_tests=[string_or_array])(len)
 
-@builtin('str', argument_tests=[anything])
-def to_str(v):
-    if isinstance(v, bool):
-        return {True: 'true', False: 'false'}[v]
-    elif isinstance(v, list):
-        return ','.join(to_str(e) for e in v)
-    else:
-        return str(v)
 
 @builtin('str', argument_tests=[anything])
 def to_str(v):
@@ -88,5 +94,18 @@ def to_str(v):
         return ','.join(to_str(e) for e in v)
     else:
         return str(v)
+
+
+@builtin('str', argument_tests=[anything])
+def to_str(v):
+    if isinstance(v, bool):
+        return {True: 'true', False: 'false'}[v]
+    elif isinstance(v, list):
+        return ','.join(to_str(e) for e in v)
+    elif v is None:
+        return 'null'
+    else:
+        return str(v)
+
 
 builtin('fromNow', argument_tests=[string])(shared.fromNow)

@@ -6,6 +6,7 @@ import datetime
 # this will be overridden in tests
 utcnow = datetime.datetime.utcnow
 
+
 class DeleteMarker:
     pass
 
@@ -13,17 +14,19 @@ class DeleteMarker:
 class JSONTemplateError(Exception):
     pass
 
+
 # Regular expression matching: X days Y hours Z minutes
 # todo: support hr, wk, yr
 FROMNOW_RE = re.compile(''.join([
-   '^(\s*(?P<years>\d+)\s*y(ears?)?)?',
-   '(\s*(?P<months>\d+)\s*mo(nths?)?)?',
-   '(\s*(?P<weeks>\d+)\s*w(eeks?)?)?',
-   '(\s*(?P<days>\d+)\s*d(ays?)?)?',
-   '(\s*(?P<hours>\d+)\s*h(ours?)?)?',
-   '(\s*(?P<minutes>\d+)\s*m(in(utes?)?)?)?\s*',
-   '(\s*(?P<seconds>\d+)\s*s(ec(onds?)?)?)?\s*$',
+    '^(\s*(?P<years>\d+)\s*y(ears?)?)?',
+    '(\s*(?P<months>\d+)\s*mo(nths?)?)?',
+    '(\s*(?P<weeks>\d+)\s*w(eeks?)?)?',
+    '(\s*(?P<days>\d+)\s*d(ays?)?)?',
+    '(\s*(?P<hours>\d+)\s*h(ours?)?)?',
+    '(\s*(?P<minutes>\d+)\s*m(in(utes?)?)?)?\s*',
+    '(\s*(?P<seconds>\d+)\s*s(ec(onds?)?)?)?\s*$',
 ]))
+
 
 def fromNow(offset):
     # copied from taskcluster-client.py
@@ -75,7 +78,9 @@ def fromNow(offset):
 
     return stringDate(utcnow() + delta if future else utcnow() - delta)
 
+
 datefmt_re = re.compile(r'(\.[0-9]{3})[0-9]*\+00:00')
+
 
 def stringDate(date):
     # Convert to isoFormat

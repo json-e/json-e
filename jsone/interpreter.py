@@ -21,6 +21,7 @@ OPERATORS = {
     '||': lambda a, b: bool(a or b),
 }
 
+
 class ExpressionError(JSONTemplateError):
 
     @classmethod
@@ -132,7 +133,8 @@ class ExpressionEvaluator(PrattParser):
         right = pc.parse(token.kind)
         if not isinstance(right, (basestring, int, float)) or isinstance(right, bool):
             raise ExpressionError.expectation('+', 'number or string')
-        if type(right) != type(left) and (isinstance(left, basestring) or isinstance(right, basestring)):
+        if type(right) != type(left) and \
+                (isinstance(left, basestring) or isinstance(right, basestring)):
             raise ExpressionError.expectation('+', 'matching types')
         return left + right
 
@@ -195,7 +197,8 @@ class ExpressionEvaluator(PrattParser):
     def inequality(self, left, token, pc):
         op = token.kind
         right = pc.parse(op)
-        if type(left) != type(right) or not (isinstance(left, (int, float, basestring)) and not isinstance(left, bool)):
+        if type(left) != type(right) or \
+                not (isinstance(left, (int, float, basestring)) and not isinstance(left, bool)):
             raise ExpressionError.expectation(op, 'matching types')
         return OPERATORS[op](left, right)
 
@@ -203,18 +206,22 @@ class ExpressionEvaluator(PrattParser):
     def contains(self, left, token, pc):
         right = pc.parse(token.kind)
         if (isinstance(right, dict) and not isinstance(left, basestring)) \
-            or (isinstance(right, list) and not isinstance(left, (bool, types.NoneType, int, float, basestring))):
+                or (isinstance(right, list) and
+                    not isinstance(left, (bool, types.NoneType, int, float, basestring))):
             raise ExpressionError.expectation('in', 'scalar value, collection')
         try:
             return left in right
         except TypeError:
             raise ExpressionError.expectation('in', 'scalar value, collection')
 
+
 def isNumber(v):
     return isinstance(v, (int, float)) and not isinstance(v, bool)
 
+
 def parseString(v):
     return v[1:-1]
+
 
 def parseList(pc, separator, terminator):
     rv = []
@@ -225,6 +232,7 @@ def parseList(pc, separator, terminator):
                 break
         pc.require(terminator)
     return rv
+
 
 def parseObject(pc):
     rv = {}
@@ -242,6 +250,7 @@ def parseObject(pc):
                 break
         pc.require('}')
     return rv
+
 
 def accessProperty(value, a, b, is_interval):
     if isinstance(value, (list, basestring)):

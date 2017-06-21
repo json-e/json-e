@@ -1,9 +1,11 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import re
+import types
 import json as json
 from .shared import JSONTemplateError, DeleteMarker
 from . import shared
+from . import builtins
 from .interpreter import ExpressionEvaluator
 
 operators = {}
@@ -16,14 +18,40 @@ def operator(name):
     return wrap
 
 
-def evaluate_expression(expr, context):
+def evaluateExpression(expr, context):
     evaluator = ExpressionEvaluator(context)
     return evaluator.parse(expr)
 
 
+def interpolate(string, context):
+    try:
+        offset = string.index('${')
+    except ValueError:
+        return string
+
+    result = []
+    evaluator = ExpressionEvaluator(context)
+
+    while True:
+        result.append(string[:offset])
+        string = string[offset + 2:]
+        parsed, offset = evaluator.parseUntilTerminator(string, '}')
+        if isinstance(parsed, (list, dict)):
+            raise JSONTemplateError('cannot interpolate array/object: ' + string)
+        result.append(builtins.to_str(parsed))
+        string = string[offset + 1:]
+        try:
+            offset = string.index('${')
+        except ValueError:
+            result.append(string)
+            break
+
+    return ''.join(result)
+
+
 @operator('$eval')
 def eval(template, context):
-    return evaluate_expression(renderValue(template['$eval'], context), context)
+    return evaluateExpression(renderValue(template['$eval'], context), context)
 
 
 @operator('$flatten')
@@ -62,13 +90,14 @@ def flattenDeep(template, context):
 @operator('$fromNow')
 def fromNow(template, context):
     offset = renderValue(template['$fromNow'], context)
+    if not isinstance(offset, basestring):
+        raise JSONTemplateError("$fromnow expects a string")
     return shared.fromNow(offset)
 
 
-# TODO: eval the value
-#@operator('$if')
+@operator('$if')
 def ifConstruct(template, context):
-    condition = renderValue(template['$if'], context)
+    condition = evaluateExpression(template['$if'], context)
     try:
         if condition:
             rv = template['then']
@@ -78,16 +107,15 @@ def ifConstruct(template, context):
         return DeleteMarker
     return renderValue(rv, context)
 
+
 @operator('$json')
 def jsonConstruct(template, context):
     value = renderValue(template['$json'], context)
     return json.dumps(value, separators=(',', ':'))
 
 
-# TODO: requires $eval
-#@operator('$let')
+@operator('$let')
 def let(template, context):
-    print(context)
     variables = renderValue(template['$let'], context)
     if not isinstance(variables, dict):
         raise JSONTemplateError("$let value must evaluate to an object")
@@ -100,13 +128,33 @@ def let(template, context):
     return renderValue(in_expression, subcontext)
 
 
-# TODO: requires $eval
-#@operator('$map')
+@operator('$map')
+def map(template, context):
+    value = renderValue(template['$map'], context)
+    if not isinstance(value, list):
+        raise JSONTemplateError("$map value must evaluate to an array")
+
+    each_keys = [k for k in template if k.startswith('each(')]
+    if len(each_keys) != 1:
+        raise JSONTemplateError("$map requires exactly one other property, each(..)")
+    each_key = each_keys[0]
+    each_var = each_key[5:-1]
+    each_template = template[each_key]
+
+    def gen():
+        subcontext = context.copy()
+        for elt in value:
+            subcontext[each_var] = elt
+            elt = renderValue(each_template, subcontext)
+            if elt is not DeleteMarker:
+                yield elt
+
+    return list(gen())
+
 
 @operator('$merge')
 def merge(template, context):
     value = renderValue(template['$merge'], context)
-    # TODO: checkType function
     if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
         raise JSONTemplateError("$reverse value must evaluate to an array of objects")
     v = dict()
@@ -118,26 +166,52 @@ def merge(template, context):
 @operator('$reverse')
 def reverse(template, context):
     value = renderValue(template['$reverse'], context)
-    # TODO: checkType function
     if not isinstance(value, list):
         raise JSONTemplateError("$reverse value must evaluate to an array")
     return list(reversed(value))
 
 
-# awaiting https://github.com/taskcluster/json-e/issues/71
-#@operator('$sort')
+@operator('$sort')
 def sort(template, context):
     value = renderValue(template['$sort'], context)
-    # TODO: checkType function
     if not isinstance(value, list):
         raise JSONTemplateError("$sort value must evaluate to an array")
-    return list(sorted(value))
+
+    # handle by(..) if given, applying the schwartzian transform
+    by_keys = [k for k in template if k.startswith('by(')]
+    if len(by_keys) == 1:
+        by_key = by_keys[0]
+        by_var = by_key[3:-1]
+        by_expr = template[by_key]
+
+        def xform():
+            subcontext = context.copy()
+            for e in value:
+                subcontext[by_var] = e
+                yield evaluateExpression(by_expr, subcontext), e
+        to_sort = list(xform())
+    elif len(by_keys) == 0:
+        to_sort = [(e, e) for e in value]
+    else:
+        raise JSONTemplateError('only one by(..) is allowed')
+
+    # check types
+    try:
+        eltype = type(to_sort[0][0])
+    except IndexError:
+        return []
+    if eltype in (list, dict, bool, types.NoneType):
+        raise JSONTemplateError('$sort values must be sortable')
+    if not all(isinstance(e[0], eltype) for e in to_sort):
+        raise JSONTemplateError('$sorted values must all have the same type')
+
+    # unzip the schwartzian transform
+    return list(e[1] for e in sorted(to_sort))
 
 
 def renderValue(template, context):
     if isinstance(template, basestring):
-        # TODO: interpolate
-        return template
+        return interpolate(template, context)
 
     elif isinstance(template, dict):
         matches = [k for k in template if k in operators]
@@ -145,10 +219,13 @@ def renderValue(template, context):
             if len(matches) > 1:
                 raise JSONTemplateError("only one operator allowed")
             return operators[matches[0]](template, context)
+
         def updated():
             for k, v in template.viewitems():
                 if k.startswith('$$') and k[1:] in operators:
                     k = k[1:]
+                else:
+                    k = interpolate(k, context)
                 v = renderValue(v, context)
                 if v is not DeleteMarker:
                     yield k, v

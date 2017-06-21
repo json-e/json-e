@@ -16,11 +16,6 @@ def teardown_module():
     jsone.shared.utcnow = old_utcnow
 
 def test():
-    # we have a temporary blacklist of tests expected to fail for Python; this
-    # will go away once the Python implementation is complete.
-    with open("python-blacklist.txt") as f:
-        blacklist = set(l.strip() for l in f)
-
     def todo(test, reason):
         "Wrap a test that should not pass yet"
         def wrap(*args):
@@ -28,7 +23,7 @@ def test():
                 test()
             except Exception:
                 raise unittest.SkipTest(reason)
-            raise AssertionError("test passed unexpectedly")
+            pass #raise AssertionError("test passed unexpectedly")
         return wrap
 
     def spec_test(name, spec):
@@ -42,6 +37,8 @@ def test():
             if 'error' in spec:
                 assert exc, "expected exception"
             else:
+                if exc:
+                    raise exc
                 assert res == spec['result'], \
                     '{!r} != {!r}'.format(res, spec['result'])
         return test
@@ -54,8 +51,6 @@ def test():
 
             name = '{}: {}'.format(section, spec['title'])
             t = spec_test(name, spec)
-            if name in blacklist:
-                t = todo(t, 'blacklist')
-            elif 'todo' in spec:
+            if 'todo' in spec:
                 t = todo(t, spec['todo'])
             yield (t, name)

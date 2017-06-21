@@ -100,7 +100,7 @@ class PrattParser(object):
         pc = ParseContext(self, source, self._generate_tokens(source))
         result = pc.parse()
         token = pc.attempt()
-        if token.kind != teminator:
+        if token.kind != terminator:
             raise SyntaxError.unexpected(token.kind, [terminator])
         return (result, token.start)
 
@@ -120,11 +120,6 @@ class PrattParser(object):
             indexes = filter(lambda x: x[1] is not None, enumerate(mo.groups()))
             if indexes:
                 idx = indexes[0][0]
-                print(Token(
-                    kind=self.tokens[idx],
-                    value=mo.group(idx + 1),  # (mo.group is 1-based)
-                    start=start,
-                    end=offset))
                 yield Token(
                     kind=self.tokens[idx],
                     value=mo.group(idx + 1),  # (mo.group is 1-based)
