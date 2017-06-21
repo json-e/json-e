@@ -4,6 +4,7 @@ import re
 import json as json
 from .shared import JSONTemplateError, DeleteMarker
 from . import shared
+from .interpreter import ExpressionEvaluator
 
 operators = {}
 
@@ -15,10 +16,14 @@ def operator(name):
     return wrap
 
 
+def evaluate_expression(expr, context):
+    evaluator = ExpressionEvaluator(context)
+    return evaluator.parse(expr)
+
+
 @operator('$eval')
 def eval(template, context):
-    # TODO: actually evaluate
-    return template['$eval']
+    return evaluate_expression(renderValue(template['$eval'], context), context)
 
 
 @operator('$flatten')
