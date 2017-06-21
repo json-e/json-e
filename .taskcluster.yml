@@ -118,10 +118,9 @@ tasks:
           cd repo &&
           git config advice.detachedHead false &&
           git checkout {{event.head.sha}} &&
-          mv docs/bundle.js docs/bundle.diff.js &&
           npm install &&
           npm run-script build-demo &&
-          diff docs/bundle.js docs/bundle.diff.js
+          [[ -z $(git status --porcelain -- ./docs) ]]
     metadata:
       name: docs/bundle.js test
       description: Check if bundle.js is updated

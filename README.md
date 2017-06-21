@@ -116,6 +116,18 @@ template: {$json: [a, b, {$eval: 'a+b'}, 4]}
 result:   '["a", "b", 3, 4]'
 ```
 
+### Truthiness
+
+Many values can be evaluated in context where booleans are required,
+not just booleans themselves. JSON-e defines the following values as false.
+Anything else will be true.
+
+```yaml
+context: {a: null, b: [], c: {}, d: "", e: 0, f: false}
+template: {$if: 'a || b || c || d || e || f', then: "uh oh", else: "falsy" }
+result: "falsy"
+```
+
 ### `$if` - `then` - `else`
 
 The `$if` operator supports conditionals. It evaluates the given value, and
