@@ -2,7 +2,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import math
 from .interpreter import ExpressionError
-from . import shared
+from .shared import string, fromNow
 
 builtins = {}
 
@@ -39,51 +39,51 @@ def builtin(name, variadic=None, argument_tests=None, minArgs=None):
     return wrap
 
 
-def number(v):
+def is_number(v):
     return isinstance(v, (int, float)) and not isinstance(v, bool)
 
 
-def string(v):
-    return isinstance(v, basestring)
+def is_string(v):
+    return isinstance(v, string)
 
 
-def string_or_array(v):
-    return isinstance(v, (basestring, list))
+def is_string_or_array(v):
+    return isinstance(v, (string, list))
 
 
 def anything(v):
-    return isinstance(v, (basestring, int, float, list))
+    return isinstance(v, (string, int, float, list))
 
 # ---
 
 
-builtin('min', variadic=number, minArgs=1)(min)
-builtin('max', variadic=number, minArgs=1)(max)
-builtin('sqrt', argument_tests=[number])(math.sqrt)
-builtin('abs', argument_tests=[number])(abs)
+builtin('min', variadic=is_number, minArgs=1)(min)
+builtin('max', variadic=is_number, minArgs=1)(max)
+builtin('sqrt', argument_tests=[is_number])(math.sqrt)
+builtin('abs', argument_tests=[is_number])(abs)
 
 
-@builtin('ceil', argument_tests=[number])
+@builtin('ceil', argument_tests=[is_number])
 def ceil(v):
     return int(math.ceil(v))
 
 
-@builtin('floor', argument_tests=[number])
+@builtin('floor', argument_tests=[is_number])
 def floor(v):
     return int(math.floor(v))
 
 
-@builtin('lowercase', argument_tests=[string])
+@builtin('lowercase', argument_tests=[is_string])
 def lowercase(v):
     return v.lower()
 
 
-@builtin('uppercase', argument_tests=[string])
+@builtin('uppercase', argument_tests=[is_string])
 def lowercase(v):
     return v.upper()
 
 
-builtin('len', argument_tests=[string_or_array])(len)
+builtin('len', argument_tests=[is_string_or_array])(len)
 
 
 @builtin('str', argument_tests=[anything])
@@ -108,4 +108,4 @@ def to_str(v):
         return str(v)
 
 
-builtin('fromNow', argument_tests=[string])(shared.fromNow)
+builtin('fromNow', argument_tests=[is_string])(fromNow)

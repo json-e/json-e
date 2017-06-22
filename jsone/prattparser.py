@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import re
 from collections import namedtuple
 from .shared import JSONTemplateError
+from .six import with_metaclass, viewitems
 
 
 class SyntaxError(JSONTemplateError):
@@ -44,7 +45,7 @@ class PrattParserMeta(type):
         # set up rules based on decorated methods
         infix_rules = cls.infix_rules = {}
         prefix_rules = cls.prefix_rules = {}
-        for prop, value in body.viewitems():
+        for prop, value in viewitems(body):
             if hasattr(value, 'prefix_kinds'):
                 for kind in value.prefix_kinds:
                     prefix_rules[kind] = value
@@ -70,9 +71,7 @@ class PrattParserMeta(type):
         }
 
 
-class PrattParser(object):
-
-    __metaclass__ = PrattParserMeta
+class PrattParser(with_metaclass(PrattParserMeta, object)):
 
     # regular expression for ignored input (e.g., whitespace)
     ignore = None
@@ -116,7 +115,7 @@ class PrattParser(object):
             offset += mo.end()
 
             # figure out which token matched (note that idx is 0-based)
-            indexes = filter(lambda x: x[1] is not None, enumerate(mo.groups()))
+            indexes = list(filter(lambda x: x[1] is not None, enumerate(mo.groups())))
             if indexes:
                 idx = indexes[0][0]
                 yield Token(

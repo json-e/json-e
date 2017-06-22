@@ -96,3 +96,9 @@ def stringDate(date):
     if date.utcoffset() is None and string[-1] != 'Z':
         return string + 'Z'
     return string
+
+# the base class for strings, regardless of python version
+try:
+    string = basestring
+except NameError:
+    string = str

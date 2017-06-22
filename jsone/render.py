@@ -1,12 +1,12 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import re
-import types
 import json as json
-from .shared import JSONTemplateError, DeleteMarker
+from .shared import JSONTemplateError, DeleteMarker, string
 from . import shared
 from . import builtins
 from .interpreter import ExpressionEvaluator
+from .six import viewitems
 
 operators = {}
 
@@ -90,7 +90,7 @@ def flattenDeep(template, context):
 @operator('$fromNow')
 def fromNow(template, context):
     offset = renderValue(template['$fromNow'], context)
-    if not isinstance(offset, basestring):
+    if not isinstance(offset, string):
         raise JSONTemplateError("$fromnow expects a string")
     return shared.fromNow(offset)
 
@@ -200,7 +200,7 @@ def sort(template, context):
         eltype = type(to_sort[0][0])
     except IndexError:
         return []
-    if eltype in (list, dict, bool, types.NoneType):
+    if eltype in (list, dict, bool, type(None)):
         raise JSONTemplateError('$sort values must be sortable')
     if not all(isinstance(e[0], eltype) for e in to_sort):
         raise JSONTemplateError('$sorted values must all have the same type')
@@ -210,7 +210,7 @@ def sort(template, context):
 
 
 def renderValue(template, context):
-    if isinstance(template, basestring):
+    if isinstance(template, string):
         return interpolate(template, context)
 
     elif isinstance(template, dict):
@@ -221,7 +221,7 @@ def renderValue(template, context):
             return operators[matches[0]](template, context)
 
         def updated():
-            for k, v in template.viewitems():
+            for k, v in viewitems(template):
                 if k.startswith('$$') and k[1:] in operators:
                     k = k[1:]
                 else:

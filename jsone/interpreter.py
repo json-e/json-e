@@ -1,9 +1,8 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from .prattparser import PrattParser, infix, prefix
-from .shared import JSONTemplateError
+from .shared import JSONTemplateError, string
 import operator
-import types
 import json
 
 OPERATORS = {
@@ -62,7 +61,7 @@ class ExpressionEvaluator(PrattParser):
         self.context = context
 
     def parse(self, expression):
-        if not isinstance(expression, basestring):
+        if not isinstance(expression, string):
             raise ExpressionError('expression to be evaluated must be a string')
         return super(ExpressionEvaluator, self).parse(expression)
 
@@ -128,13 +127,13 @@ class ExpressionEvaluator(PrattParser):
 
     @infix("+")
     def plus(self, left, token, pc):
-        if not isinstance(left, (basestring, int, float)) or isinstance(left, bool):
+        if not isinstance(left, (string, int, float)) or isinstance(left, bool):
             raise ExpressionError.expectation('+', 'number or string')
         right = pc.parse(token.kind)
-        if not isinstance(right, (basestring, int, float)) or isinstance(right, bool):
+        if not isinstance(right, (string, int, float)) or isinstance(right, bool):
             raise ExpressionError.expectation('+', 'number or string')
         if type(right) != type(left) and \
-                (isinstance(left, basestring) or isinstance(right, basestring)):
+                (isinstance(left, string) or isinstance(right, string)):
             raise ExpressionError.expectation('+', 'matching types')
         return left + right
 
@@ -198,16 +197,16 @@ class ExpressionEvaluator(PrattParser):
         op = token.kind
         right = pc.parse(op)
         if type(left) != type(right) or \
-                not (isinstance(left, (int, float, basestring)) and not isinstance(left, bool)):
+                not (isinstance(left, (int, float, string)) and not isinstance(left, bool)):
             raise ExpressionError.expectation(op, 'matching types')
         return OPERATORS[op](left, right)
 
     @infix("in")
     def contains(self, left, token, pc):
         right = pc.parse(token.kind)
-        if (isinstance(right, dict) and not isinstance(left, basestring)) \
+        if (isinstance(right, dict) and not isinstance(left, string)) \
                 or (isinstance(right, list) and
-                    not isinstance(left, (bool, types.NoneType, int, float, basestring))):
+                    not isinstance(left, (bool, type(None), int, float, string))):
             raise ExpressionError.expectation('in', 'scalar value, collection')
         try:
             return left in right
@@ -253,7 +252,7 @@ def parseObject(pc):
 
 
 def accessProperty(value, a, b, is_interval):
-    if isinstance(value, (list, basestring)):
+    if isinstance(value, (list, string)):
         if is_interval:
             if b is None:
                 b = len(value)
