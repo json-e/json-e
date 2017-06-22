@@ -1,12 +1,18 @@
+import json
+import os
 from setuptools import setup, find_packages
 
+package_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'package.json')
+with open(package_json) as f:
+    version = json.load(f)['version']
+
 setup(name='json-e',
-    version='1.0.0', ## TODO: extract from package.json
+    version=version,
     description='A data-structure parameterization system written for embedding context in JSON objects',
     author='Dustin J. Mitchell',
-    url='https://github.com/taskcluster/json-e',
+    url='https://taskcluster.github.io/json-e/',
     author_email='dustin@mozilla.com',
-    packages=find_packages(),
+    packages=find_packages('', exclude=['test']),
     test_suite='nose.collector',
     license='MPL2',
     tests_require=[
