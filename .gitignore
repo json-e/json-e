@@ -44,4 +44,4 @@ yarn.lock
 *.pyc
 .eggs
 json_e.egg-info
-docs/bundle.diff.js
+docs/*

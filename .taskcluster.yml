@@ -48,6 +48,36 @@ tasks:
           - master
     payload:
       maxRunTime: 3600
+      image: 'node:8'
+      command:
+        - /bin/bash
+        - '--login'
+        - '-c'
+        - >-
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          yarn &&
+          yarn test
+    metadata:
+      name: json-e node 8 test run
+      description: Run library test suite - node 8
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+          - push
+        branches:
+          - master
+    payload:
+      maxRunTime: 3600
       image: 'python:2.7'
       command:
         - /bin/bash
@@ -100,15 +130,16 @@ tasks:
     extra:
       github:
         events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
           - push
         branches:
           - master
+    scopes:
+      - secrets:get:repo:github.com/taskcluster/json-e
     payload:
+      features:
+        taskclusterProxy: true
       maxRunTime: 3600
-      image: 'node:6'
+      image: 'node:8'
       command:
         - /bin/bash
         - '--login'
@@ -118,12 +149,12 @@ tasks:
           cd repo &&
           git config advice.detachedHead false &&
           git checkout {{event.head.sha}} &&
-          npm install &&
-          npm run-script build-demo &&
-          [[ -z $(git status --porcelain -- ./docs) ]]
+          yarn &&
+          yarn build-demo &&
+          ./deploy.sh
     metadata:
-      name: docs/bundle.js test
-      description: Check if bundle.js is updated
+      name: demo site build and deploy
+      description: build and publish a new demo site
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
   - provisionerId: '{{ taskcluster.docker.provisionerId }}'
