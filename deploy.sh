@@ -12,7 +12,7 @@ if [ "$GITHUB_BRANCH" != "$SOURCE_BRANCH" ]; then
 fi
 
 SHA=`git rev-parse --short HEAD`
-GITHUB_PROJECT="github.com/$GITHUB_BASE_NAME/$GITHBUB_BASE_REPO_NAME"
+GITHUB_PROJECT="github.com/$GITHUB_BASE_USER/$GITHBUB_BASE_REPO_NAME"
 
 SECRETS_URL="taskcluster/secrets/v1/secret/repo:$GITHUB_PROJECT"
 BASE64_DEPLOY_KEY=$(curl ${SECRET_URL} | python -c 'import json, sys; a = json.load(sys.stdin); print a["secret"]["base64DeployKey"]')
