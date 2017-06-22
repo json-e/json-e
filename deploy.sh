@@ -12,8 +12,8 @@ if [ "$GITHUB_BRANCH" != "$SOURCE_BRANCH" ]; then
 fi
 
 SHA=`git rev-parse --short HEAD`
-GITHUB_PROJECT=$(echo $GITHUB_BASE_REPO_URL | sed 's/^https:\/\///' | sed 's/.git$//')
-SECRETS_URL="taskcluster/secrets/v1/secret/repo:$GITHUB_PROJECT"
+GITHUB_PROJECT=$(echo $GITHUB_BASE_REPO_URL | sed 's/lhttps:\/\/github.com\///' | sed 's/.git$//')
+SECRETS_URL="taskcluster/secrets/v1/secret/repo:github.com/$GITHUB_PROJECT"
 
 echo "Using project: $GITHUB_PROJECT"
 echo "Using secrets: $SECRETS_URL"
@@ -29,7 +29,7 @@ git init
 git config user.name "Taskcluster Github"
 git config user.email "taskcluster-notifications+jsone-demo@mozilla.com"
 
-git remote add upstream "git@$GITHUB_PROJECT.git"
+git remote add upstream "git@github.com:$GITHUB_PROJECT.git"
 git fetch upstream
 git reset "upstream/$TARGET_BRANCH"
 
