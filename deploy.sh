@@ -13,8 +13,11 @@ fi
 
 SHA=`git rev-parse --short HEAD`
 GITHUB_PROJECT="github.com/$GITHUB_BASE_USER/$GITHUB_BASE_REPO_NAME"
-
 SECRETS_URL="taskcluster/secrets/v1/secret/repo:$GITHUB_PROJECT"
+
+echo "Using project: $GITHUB_PROJECT"
+echo "Using secrets: $SECRETS_URL"
+
 BASE64_DEPLOY_KEY=$(curl ${SECRETS_URL} | python -c 'import json, sys; a = json.load(sys.stdin); print a["secret"]["base64DeployKey"]')
 echo "$BASE64_DEPLOY_KEY" | base64 -d > /deploy_key
 chmod 600 /deploy_key
