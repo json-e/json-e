@@ -23,7 +23,7 @@ def test():
                 test()
             except Exception:
                 raise unittest.SkipTest(reason)
-            pass #raise AssertionError("test passed unexpectedly")
+            raise AssertionError("test passed unexpectedly")
         return wrap
 
     def spec_test(name, spec):
@@ -51,6 +51,6 @@ def test():
 
             name = '{}: {}'.format(section, spec['title'])
             t = spec_test(name, spec)
-            if 'todo' in spec:
-                t = todo(t, spec['todo'])
+            if 'todo' in spec and 'python' in spec['todo']:
+                t = todo(t, spec['todo']['python'])
             yield (t, name)
