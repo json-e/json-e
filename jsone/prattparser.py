@@ -2,7 +2,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import re
 from collections import namedtuple
-from .tokenizer import Tokenizer, TokenError
 from .shared import JSONTemplateError
 
 
