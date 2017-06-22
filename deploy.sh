@@ -12,7 +12,7 @@ if [ "$GITHUB_BRANCH" != "$SOURCE_BRANCH" ]; then
 fi
 
 SHA=`git rev-parse --short HEAD`
-GITHUB_PROJECT=$(echo $GITHUB_BASE_REPO_URL | sed 's/https:\/\///')
+GITHUB_PROJECT=$(echo $GITHUB_BASE_REPO_URL | sed 's/^https:\/\///' | sed 's/.git$//')
 SECRETS_URL="taskcluster/secrets/v1/secret/repo:$GITHUB_PROJECT"
 
 echo "Using project: $GITHUB_PROJECT"
