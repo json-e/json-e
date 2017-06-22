@@ -129,6 +129,7 @@ tasks:
     workerType: '{{ taskcluster.docker.workerType }}'
     extra:
       github:
+        env: true
         events:
           - push
         branches:
