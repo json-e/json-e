@@ -9,13 +9,13 @@ builtins = {}
 
 def builtin(name, variadic=None, argument_tests=None, minArgs=None):
     def wrap(fn):
-        def bad():
-            raise ExpressionError('invalid arguments to {}'.format(name))
+        def bad(reason=None):
+            raise ExpressionError((reason or 'invalid arguments to {}').format(name))
         if variadic:
             def invoke(args):
                 if minArgs:
                     if len(args) < minArgs:
-                        bad()
+                        bad("too few arguments to {}")
                 for arg in args:
                     if not variadic(arg):
                         bad()
