@@ -45,3 +45,5 @@ yarn.lock
 .eggs
 json_e.egg-info
 docs/*
+build/
+dist/
