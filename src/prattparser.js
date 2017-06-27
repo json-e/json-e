@@ -15,6 +15,7 @@ class PrattParser {
          precedence, prefixRules, infixRules} = Object.assign({}, {
            ignore: null,
            patterns: {},
+           // NOTE: order matters for tokens - first match is used
            tokens: [],
            precedence: [],
            prefixRules: {},

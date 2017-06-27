@@ -79,7 +79,8 @@ class PrattParser(with_metaclass(PrattParserMeta, object)):
     # regular expressions for tokens that do not match themselves
     patterns = {}
 
-    # all token kinds
+    # all token kinds (note that order matters - the first matching token
+    # will be returned)
     tokens = []
 
     # precedence of tokens, as a list of lists, from lowest to highest
