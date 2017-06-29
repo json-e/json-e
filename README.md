@@ -78,6 +78,8 @@ template: {"tc_${name}": "${value}"}
 result: {"tc_foo": "bar"}
 ```
 
+The string `${` can be escaped as `$${`.
+
 ## Operators
 
 JSON-e defines a bunch of operators. Each is represented as an object with a

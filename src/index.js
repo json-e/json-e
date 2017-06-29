@@ -20,22 +20,27 @@ let interpolate = (string, context) => {
   let begin = 0;
   let remaining = string;
   let offset;
-  while ((offset = remaining.search(/\${/g)) !== -1) {
-    let v = interpreter.parseUntilTerminator(remaining.slice(offset), 2, '}', context);
-    if (isArray(v.result) || isObject(v.result)) {
-      throw new TemplateError('cannot interpolate array/object: ' + string);
-    }
-
+  while ((offset = remaining.search(/\$?\${/g)) !== -1) {
     result += remaining.slice(0, offset);
 
-    // toString renders null as an empty string, which is not what we want
-    if (v.result === null) {
-      result += 'null';
-    } else {
-      result += v.result.toString();
-    }
+    if (remaining[offset+1] != '$') {
+      let v = interpreter.parseUntilTerminator(remaining.slice(offset), 2, '}', context);
+      if (isArray(v.result) || isObject(v.result)) {
+        throw new TemplateError('cannot interpolate array/object: ' + string);
+      }
 
-    remaining = remaining.slice(offset + v.offset + 1);
+      // toString renders null as an empty string, which is not what we want
+      if (v.result === null) {
+        result += 'null';
+      } else {
+        result += v.result.toString();
+      }
+
+      remaining = remaining.slice(offset + v.offset + 1);
+    } else {
+      result += '${';
+      remaining = remaining.slice(offset + 3);
+    }
   }
   result += remaining;
   return result;
