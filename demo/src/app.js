@@ -72,8 +72,8 @@ export default class App extends React.Component {
     let ctx = '{}';
     if (params.get('template') && params.get('context')) {
       try {
-        tmpl = jsyaml.safeDump(jsyaml.safeLoad(params.get('template')));
-        ctx = jsyaml.safeDump(jsyaml.safeLoad(params.get('context')));
+        tmpl = JSON.stringify(jsyaml.safeLoad(params.get('template')));
+        ctx = JSON.stringify(jsyaml.safeLoad(params.get('context')));
       } catch (err) {
         if (err.name !== 'YAMLException') {
           throw err;
