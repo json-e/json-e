@@ -23,26 +23,30 @@ def evaluateExpression(expr, context):
     return evaluator.parse(expr)
 
 
+_interpolation_start_re = re.compile(r'\$?\${')
 def interpolate(string, context):
-    try:
-        offset = string.index('${')
-    except ValueError:
+    mo = _interpolation_start_re.search(string)
+    if not mo:
         return string
 
     result = []
     evaluator = ExpressionEvaluator(context)
 
     while True:
-        result.append(string[:offset])
-        string = string[offset + 2:]
-        parsed, offset = evaluator.parseUntilTerminator(string, '}')
-        if isinstance(parsed, (list, dict)):
-            raise JSONTemplateError('cannot interpolate array/object: ' + string)
-        result.append(builtins.to_str(parsed))
-        string = string[offset + 1:]
-        try:
-            offset = string.index('${')
-        except ValueError:
+        result.append(string[:mo.start()])
+        if mo.group() != '$${':
+            string = string[mo.end():]
+            parsed, offset = evaluator.parseUntilTerminator(string, '}')
+            if isinstance(parsed, (list, dict)):
+                raise JSONTemplateError('cannot interpolate array/object: ' + string)
+            result.append(builtins.to_str(parsed))
+            string = string[offset + 1:]
+        else:  # found `$${`
+            result.append('${')
+            string = string[mo.end():]
+
+        mo = _interpolation_start_re.search(string)
+        if not mo:
             result.append(string)
             break
 

@@ -58,7 +58,7 @@ result:   {message: 'hello world'}
 title: multiple string interpolation (2)
 context:  {a: 'hello', b: 'world'}
 template: {message: '${a}$$${b}'}
-result:   {message: 'hello$$world'}
+result:   {message: 'hello$${b}'}
 ---
 title: multiple string interpolation (3)
 context:  {a: 'hello', b: 'world'}
@@ -67,11 +67,8 @@ result:   {message: 'hello##world'}
 ---
 title: string interpolation escapes
 context:  {}
-template: {message: 'a literal \\${ in a string'}
-result:   {message: 'a literal ${ in a string'}
-todo:
-    javascript: 'https://github.com/taskcluster/json-e/issues/66'
-    python: 'https://github.com/taskcluster/json-e/issues/66'
+template: {message: 'a literal $${in a string}'}
+result:   {message: 'a literal ${in a string}'}
 ---
 title: string interpolation of keys
 context: {name: 'foo', value: 'bar'}
