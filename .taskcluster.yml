@@ -1,9 +1,4 @@
 version: 0
-metadata:
-  name: json-e
-  description: 'Helpers for testing taskcluster'
-  owner: '{{ event.head.user.email }}'
-  source: '{{ event.head.repo.url }}'
 tasks:
   - provisionerId: '{{ taskcluster.docker.provisionerId }}'
     workerType: '{{ taskcluster.docker.workerType }}'
