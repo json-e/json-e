@@ -16,16 +16,6 @@ def teardown_module():
     jsone.shared.utcnow = old_utcnow
 
 def test():
-    def todo(test, reason):
-        "Wrap a test that should not pass yet"
-        def wrap(*args):
-            try:
-                test()
-            except Exception:
-                raise unittest.SkipTest(reason)
-            raise AssertionError("test passed unexpectedly")
-        return wrap
-
     def spec_test(name, spec):
         "Make a test function for a case from specification.yml"
         def test(*args):
@@ -51,6 +41,4 @@ def test():
 
             name = '{}: {}'.format(section, spec['title'])
             t = spec_test(name, spec)
-            if 'todo' in spec and 'python' in spec['todo']:
-                t = todo(t, spec['todo']['python'])
             yield (t, name)
