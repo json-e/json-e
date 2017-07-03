@@ -101,7 +101,7 @@ operators.$json = (template, context) => {
 };
 
 operators.$let = (template, context) => {
-  let variables = template['$let'];
+  let variables = render(template['$let'], context);
 
   var context_copy = Object.assign(context, variables);
 
