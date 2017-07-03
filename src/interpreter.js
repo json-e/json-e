@@ -113,10 +113,7 @@ let accessProperty = (left, a, b, isInterval) => {
 };
 
 let parseString = (str) => {
-  if (str[0] === '"') {
-    return str.replace('"', '\"').slice(1, -1);
-  }
-  return str.replace('\"', '"').slice(1, -1);
+  return str.slice(1, -1);
 };
 
 let testComparisonOperands = (operator, left, right) => {
