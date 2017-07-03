@@ -2066,15 +2066,11 @@ title: 'unary negation of null'
 context: {a: null}
 template: {$eval: '-a'}
 error: true
-todo:
-    javascript: 'https://github.com/taskcluster/json-e/issues/73'
 ---
 title: 'unary plus of null'
 context: {a: null}
 template: {$eval: '+a'}
 error: true
-todo:
-    javascript: 'https://github.com/taskcluster/json-e/issues/73'
 ---
 title: 'addition of boolean to strings'
 context: {a: true, b: 'a'}
@@ -2230,15 +2226,11 @@ title: 'unary negation of boolean'
 context: {a: true}
 template: {$eval: '-a'}
 error: true
-todo:
-    javascript: 'https://github.com/taskcluster/json-e/issues/73'
 ---
 title: 'unary plus of boolean'
 context: {a: true}
 template: {$eval: '+a'}
 error: true
-todo:
-    javascript: 'https://github.com/taskcluster/json-e/issues/73'
 ---
 title: 'addition of object to strings'
 context: {a: {x: 10}, b: 'a'}
@@ -3150,8 +3142,6 @@ title: 'other string attributes are not set'
 context: {key: 'abc'}
 template: {$eval: 'key.toUpperCase()'}
 error: true
-todo:
-    javascript: 'https://github.com/taskcluster/json-e/issues/63'
 ################################################################################
 ---
 section: expression language - property access
