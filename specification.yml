@@ -534,6 +534,16 @@ template: {$let: {ts: 100, foo: 200,}, in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}
 context:  {}
 result:   [300, -100, 20000]
 ---
+title:    let with evaluated values
+template: {$let: {thirty: {$eval: "10 + 20"}}, in: {$eval: "thirty+5"}}
+context:  {}
+result:   35
+---
+title:    let with evaluated context
+template: {$let: {$eval: '{"thirty": 10 + 20}'}, in: {$eval: "thirty+5"}}
+context:  {}
+result:   35
+---
 title:    context overriding
 template: {$let: {x: 20}, in: {$eval: "x + y"}}
 context:  {x: 10, y: 1}

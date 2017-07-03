@@ -23,12 +23,13 @@ def test():
             try:
                 res = jsone.render(spec['template'], spec['context'])
             except jsone.JSONTemplateError as e:
+                if 'error' not in spec:
+                    raise
                 exc = e
             if 'error' in spec:
                 assert exc, "expected exception"
             else:
-                if exc:
-                    raise exc
+                assert not exc
                 assert res == spec['result'], \
                     '{!r} != {!r}'.format(res, spec['result'])
         return test
