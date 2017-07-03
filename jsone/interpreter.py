@@ -35,12 +35,12 @@ class ExpressionEvaluator(PrattParser):
         'number': '[0-9]+(?:\\.[0-9]+)?',
         'identifier': '[a-zA-Z_][a-zA-Z_0-9]*',
         'string': '\'[^\']*\'|"[^"]*"',
-        # disambiguate '* *' from '**'
-        '*': '\*(?!\*)',
     }
-    tokens = list('+-*/[].(){}:,') + [
-        '**', '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true',
-        'false', 'in', 'null', 'number', 'identifier', 'string']
+    tokens = [
+        '**', '+', '-', '*', '/', '[', ']', '.', '(', ')', '{', '}', ':', ',',
+        '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in',
+        'null', 'number', 'identifier', 'string',
+    ]
     precedence = [
         ['in'],
         ['||'],
