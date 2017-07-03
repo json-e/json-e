@@ -1406,6 +1406,16 @@ context:  {}
 template: {$eval: '"three!"'}
 result: 'three!'
 ---
+title:    string literal escape with backslash (not supported)
+context:  {}
+template: {$eval: '"backslash\\"maybe"'}
+error: true
+---
+title:    string literal escape with doubling (not supported)
+context:  {}
+template: {$eval: '"doubled""maybe"'}
+error: true
+---
 title:    boolean literals
 context:  {}
 template: {$eval: '[true, false]'}
