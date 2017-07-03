@@ -40,11 +40,7 @@ suite('json-e', () => {
         assert(!c.error, 'Expected an error');
         assume(result).eql(c.result);
       };
-      if (c.todo && c.todo.javascript) {
-        test.skip(c.title, t);
-      } else {
-        test(c.title, t);
-      }
+      test(c.title, t);
     });
   }));
 });
