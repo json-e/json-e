@@ -60,7 +60,7 @@ def eval(template, context):
 
 @operator('$flatten')
 def flatten(template, context):
-    value = template['$flatten']
+    value = renderValue(template['$flatten'], context)
     if not isinstance(value, list):
         raise JSONTemplateError('$flatten value must evaluate to an array of arrays')
 
@@ -76,7 +76,7 @@ def flatten(template, context):
 
 @operator('$flattenDeep')
 def flattenDeep(template, context):
-    value = template['$flattenDeep']
+    value = renderValue(template['$flattenDeep'], context)
     if not isinstance(value, list):
         raise JSONTemplateError('$flatten value must evaluate to an array')
 

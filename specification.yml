@@ -339,6 +339,11 @@ context:  {}
 template: {$flatten: [[]]}
 result:   []
 ---
+title:    flatten evaluated value
+context:  {}
+template: {$flatten: {$eval: '[[1], [2, 3]]'}}
+result:   [1, 2, 3]
+---
 title:    flatten null
 context:  {}
 template: {$flatten: null}
@@ -381,6 +386,11 @@ title:    flattenDeep empty array
 context:  {}
 template: {$flattenDeep: []}
 result:   []
+---
+title:    evaluated value
+context:  {}
+template: {$flattenDeep: {$eval: '[[1], [2, [3]]]'}}
+result:   [1, 2, 3]
 ---
 title:    flattenDeep empty array of arrays
 context:  {}
@@ -612,6 +622,13 @@ template:
   each(y): {$eval: 'y.k'}
 result:   [1, 2, 3]
 ---
+title:    value is rendered
+context:  {a: 1}
+template:
+  $map: {$eval: '[{k: 1}, {k: 2}, {k: 3}]'}
+  each(y): {$eval: 'y.k'}
+result:   [1, 2, 3]
+---
 title:    can make objects too
 context:  {a: 1}
 template:
@@ -670,6 +687,11 @@ section:  $merge
 title:    simple merge
 context:  {}
 template: {$merge: [{a: 1, b: 1}, {b: 2, c: 3}, {d: 4}]}
+result:   {a: 1, b: 2, c: 3, d: 4}
+---
+title:    value is evaluated
+context:  {defaults: {d: 4}}
+template: {$merge: [{a: 1, b: 1}, {b: 2, c: 3}, {$eval: defaults}]}
 result:   {a: 1, b: 2, c: 3, d: 4}
 ---
 title:    merge empty array
@@ -817,6 +839,11 @@ context:  {}
 template: {$reverse: [3, 4, 1, 2]}
 result:   [2, 1, 4, 3]
 ---
+title:    value is rendered
+context:  {}
+template: {$reverse: {$eval: '[99, 999, 9]'}}
+result:   [9, 999, 99]
+---
 title:    reverse of an object
 context:  {}
 template: {$reverse: {a: 1}}
@@ -854,6 +881,11 @@ result:   [4, 3, 2, 1]
 ################################################################################
 ---
 section: $eval
+---
+title: $eval of $eval
+context: {}
+template: {$eval: {$eval: '"13"'}}
+result: 13
 ---
 title: $eval of an array
 context: {key1: 1, key2: 2}

@@ -52,10 +52,11 @@ let deleteMarker = {};
 let operators = {};
 
 operators.$eval = (template, context) => {
-  if (!isString(template['$eval'])) {
+  let value = render(template['$eval'], context);
+  if (!isString(value)) {
     throw jsonTemplateError('$eval can evaluate string expressions only\n', template);
   }
-  return interpreter.parse(template['$eval'], context);
+  return interpreter.parse(value, context);
 };
 
 operators.$flatten = (template, context) => {
