@@ -4260,6 +4260,26 @@ title: equality of array and array
 context: {a: [], b: []}
 template: {$eval: 'a == b'}
 result: true
+---
+title: equality of functions
+context: {}
+template: {$eval: 'min == min'}
+result: true
+---
+title: inequality of functions
+context: {}
+template: {$eval: 'min == max'}
+result: false
+---
+title: equality of function and string
+context: {}
+template: {$eval: 'min == "min"'}
+result: false
+---
+title: equality of function and number
+context: {}
+template: {$eval: 'min == 13'}
+result: false
 ################################################################################
 ---
 section: expression language - compound literals
