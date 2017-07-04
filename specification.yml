@@ -490,6 +490,41 @@ context:  {}
 template: {$fromNow: '1 day'}
 result:   '2017-01-20T16:27:20.974Z'
 ---
+title:    fromNow 2 days
+context:  {}
+template: {$fromNow: '2 days'}
+result:   '2017-01-21T16:27:20.974Z'
+---
+title:    fromNow 1 second
+context:  {}
+template: {$fromNow: '1 second'}
+result:   '2017-01-19T16:27:21.974Z'
+---
+title:    fromNow 1 week
+context:  {}
+template: {$fromNow: '1 week'}
+result:   '2017-01-26T16:27:20.974Z'
+---
+title:    fromNow 1 month
+context:  {}
+template: {$fromNow: '1 month'}
+result:   '2017-02-18T16:27:20.974Z'
+---
+title:    fromNow 30 mo
+context:  {}
+template: {$fromNow: '30 mo'}
+result:   '2019-07-08T16:27:20.974Z'
+---
+title:    fromNow -30 mo
+context:  {}
+template: {$fromNow: '-30 mo'}
+result:   '2014-08-03T16:27:20.974Z'
+---
+title:    fromNow 1 year
+context:  {}
+template: {$fromNow: '1 year'}
+result:   '2018-01-19T16:27:20.974Z'
+---
 title:    fromNow of non-string
 context:  {}
 template: {$fromNow: 13}
