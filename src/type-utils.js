@@ -35,7 +35,8 @@ let utils = {
       utils.isObject(expr) && Object.keys(expr).length > 0 ||
       utils.isString(expr) && expr.length > 0 ||
       utils.isNumber(expr) && expr !== 0 ||
-      utils.isBool(expr) && expr
+      utils.isBool(expr) && expr ||
+      utils.isFunction(expr)
     );
   },
 };

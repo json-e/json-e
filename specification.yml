@@ -253,6 +253,11 @@ context: {cond: {a: 2}, key: 'world'}
 template: {$if: 'cond', then: "t", else: "f"}
 result: t
 ---
+title: $if->then->else, function
+context: {}
+template: {$if: 'min', then: "t", else: "f"}
+result: t
+---
 title:    $if->then evaluating to nothing at the top level is null
 context:  {cond: false}
 template: {$if: 'cond', then: "t"}
@@ -2731,6 +2736,11 @@ title: 'empty array not'
 context: {a: []}
 template: {$eval: "!a"}
 result: true
+---
+title: 'function not'
+context: {}
+template: {$eval: "!min"}
+result: false
 ---
 title: 'string and string'
 context: {a: 'abc', b: 'abc'}
