@@ -16,6 +16,9 @@ let isEqual = (a, b) =>  {
     }
     return true;
   }
+  if (isFunction(a)) {
+    return a === b;
+  }
   if (isObject(a) && isObject(b)) {
     let keys = Object.keys(a).sort();
     if (!isEqual(keys, Object.keys(b).sort())) { return false; }
