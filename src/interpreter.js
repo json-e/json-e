@@ -299,25 +299,21 @@ infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
 infixRules['in'] = (left, token, ctx) => {
   let right = ctx.parse(token.kind);
   if (isObject(right)) {
-    if (isNumber(left)) {
-      throw expectationError('Infix: in', 'String query on Object');
+    if (!isString(left)) {
+      throw expectationError('Infix: in-object', 'string on left side');
     }
     right = Object.keys(right);
+  } else if (isString(right)) {
+    if (!isString(left)) {
+      throw expectationError('Infix: in-string', 'string on left side');
+    }
+    // short-circuit to indexOf since this is a substring operation
+    return right.indexOf(left) !== -1;
+  } else if (!isArray(right)) {
+    throw expectationError('Infix: in', 'Array, string, or object on right side');
   }
 
-  if (!(isArray(right) || isString(right))) {
-    throw expectationError('Infix: in', 'array/string/object to perform lookup');
-  }
-
-  if (isArray(right) && !(isNumber(left) || isString(left))) {
-    throw expectationError('Infix: in', 'String/Number query on Array');
-  }
-
-  if (isString(right) && !isString(left)) {
-    throw expectationError('Infix: in', 'String query on String');
-  }
-
-  return right.indexOf(left) !== -1;
+  return right.some(r => isEqual(left, r));
 };
 
 export default new PrattParser({

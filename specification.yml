@@ -3645,10 +3645,10 @@ context: {key: {a: 1, b: 2}}
 template: {$eval: '1 in key'}
 error: true
 ---
-title: 'TypeError: in operator on Array, error (1)'
+title: 'TypeError: in operator on Array, Array not found'
 context: {key: [2,3,4]}
 template: {$eval: '[] in key'}
-error: true
+result: false
 ---
 title: 'TypeError: in operator on String, error (1)'
 context: {key: 'hello world!'}
@@ -3665,10 +3665,45 @@ context: {key: 'hello world!'}
 template: {$eval: '1 in key'}
 error: true
 ---
-title: 'TypeError: in operator on Array, error (2)'
+title: 'TypeError: in operator on Array, object not found'
 context: {key: [2,3,4]}
 template: {$eval: '{} in key'}
+result: false
+---
+title: 'no type conversion from num to string in array'
+context: {}
+template: {$eval: '5 in ["5", "five"]'}
+result: false
+---
+title: 'no type conversion from string to num in array'
+context: {}
+template: {$eval: '"5" in [5]'}
+result: false
+---
+title: 'cannot search for num in object'
+context: {}
+template: {$eval: '5 in {"5": "five"}'}
 error: true
+---
+title: 'deep equality, object on left side, found'
+context: {}
+template: {$eval: '{a: 45} in ["string", 46, {a: 45}]'}
+result: true
+---
+title: 'deep equality, object on left side, not found'
+context: {}
+template: {$eval: '{a: {b: 13}} in ["string", 46, {a: {b: 14}}]'}
+result: false
+---
+title: 'deep equality, Array on left side, found'
+context: {}
+template: {$eval: '[44, 45] in ["string", 46, [44, 45]]'}
+result: true
+---
+title: 'deep equality, Array on left side, not found'
+context: {}
+template: {$eval: '[44, 45] in ["string", 46, [44]]'}
+result: false
 ################################################################################
 ---
 section: expression language - comparisons
