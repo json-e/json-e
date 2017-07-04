@@ -3241,7 +3241,7 @@ error: true
 title: 'missing property by name'
 context: {key: {a: 1}}
 template: {$eval: 'key["b"]'}
-error: true
+result: null
 ---
 title: 'nested property access with object value'
 context: {key: {key2: {key3: {a: 1}}}}
@@ -3305,6 +3305,16 @@ title: 'string index'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key["a"]'}
 error: true
+---
+title: 'too-large index'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[999]'}
+error: true
+---
+title: 'negative index'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[-1]'}
+result: 5
 ---
 title: 'nested, in property accesses'
 context: {key: {key2: {key3: [1,2,3,4,5]}}}

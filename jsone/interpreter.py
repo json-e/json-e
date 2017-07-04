@@ -267,13 +267,18 @@ def accessProperty(value, a, b, is_interval):
         else:
             try:
                 return value[a]
+            except IndexError:
+                raise ExpressionError('index out of bounds')
             except TypeError:
                 raise ExpressionError.expectation('[..]', 'integer')
 
     if not isinstance(value, dict):
         raise ExpressionError.expectation('[..]', 'object, array, or string')
+    if not isinstance(a, string):
+        raise ExpressionError.expectation('[..]', 'string index')
 
     try:
         return value[a]
     except KeyError:
-        raise ExpressionError('{} not found in {}'.format(a, json.dumps(value)))
+        return None
+        #raise ExpressionError('{} not found in {}'.format(a, json.dumps(value)))

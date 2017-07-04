@@ -300,6 +300,7 @@ supports the following:
 * Boolean operators (`||`, `&&`, `!`)
 * Identifiers referring to variables (matching `/[a-zA-Z_][a-zA-Z_0-9]*/`)
 * Object property access: `obj.prop` or `obj["prop"]`
+  * `obj,prop` is an error if there is no such property; in the same case `obj["prop"]` evaluates to `null`.
 * Array and string indexing and slicing with Python semantics
   * `array[1]` -- second element of array (zero-indexed)
   * `array[1:4]` -- second through fourth elements of the array (the slice includes the left index and excludes the right index)
