@@ -3248,6 +3248,13 @@ context: {key: abc, values: {abc: 2, def: 3}}
 template: {$eval: 'values[key]'}
 result: 2
 ---
+title: 'property access with number'
+context:
+  obj: {'13': 15}
+  key: 13 # note that this is the number 13, yet the object key is a string as required by JSON
+template: {$eval: 'obj[key]'}
+error: true
+---
 title: 'property of number'
 context: {key: 123}
 template: {$eval: 'key.valueOf'}
