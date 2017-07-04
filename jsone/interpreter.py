@@ -204,10 +204,14 @@ class ExpressionEvaluator(PrattParser):
     @infix("in")
     def contains(self, left, token, pc):
         right = pc.parse(token.kind)
-        if (isinstance(right, dict) and not isinstance(left, string)) \
-                or (isinstance(right, list) and
-                    not isinstance(left, (bool, type(None), int, float, string))):
-            raise ExpressionError.expectation('in', 'scalar value, collection')
+        if isinstance(right, dict):
+            if not isinstance(left, string):
+                raise ExpressionError.expectation('in-object', 'string on left side')
+        elif isinstance(right, string):
+            if not isinstance(left, string):
+                raise ExpressionError.expectation('in-string', 'string on left side')
+        elif not isinstance(right, list):
+            raise ExpressionError.expectation('in', 'Array, string, or object on right side')
         try:
             return left in right
         except TypeError:
