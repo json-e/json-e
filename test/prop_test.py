@@ -41,13 +41,19 @@ def js(when, template, context):
     returncode = proc.wait()
     if returncode:
         return Exception
-    return json.loads(stdout.decode('utf-8'))
+    try:
+        return json.loads(stdout.decode('utf-8'))
+    except Exception:
+        print(stdout.decode('utf-8'))
+        print(stderr.decode('utf-8'))
+        raise
 
 
 def make_strategies():
     identifiers = lambda: text(alphabet='$' + string.ascii_lowercase, min_size=1, max_size=8)
     prefixed_identifiers = lambda: identifiers().filter(lambda i: '$' + i)
-    operators = lambda: sampled_from(list(defined_operators))
+    # exempt $json from operators since it is known to behave differently
+    operators = lambda: sampled_from(list(o for o in defined_operators if o != '$json'))
     builtins = lambda: sampled_from(list(defined_builtins))
 
     def expressions():
