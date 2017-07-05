@@ -67,7 +67,8 @@ def make_strategies():
         strings = lambda: (
             text(max_size=5).map(lambda s: '"' + s.replace('"', '') + '"') |
             text(max_size=5).map(lambda s: "'" + s.replace("'", "") + "'"))
-        tokens = lambda: simple_tokens() | numbers() | identifiers() | builtins() | strings()
+        each_by_and_variables = lambda: sampled_from(['each(x)', 'each(y)', 'by(x)' 'by(y)', 'x', 'y'])
+        tokens = lambda: simple_tokens() | numbers() | identifiers() | builtins() | strings() | each_by_and_variables()
 
         # .. now put those together into lists and join with whitespace
         return lists(tokens()).map(lambda l: ' '.join(l))
