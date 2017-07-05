@@ -84,15 +84,6 @@ def stringDate(date):
     string = datefmt_re.sub(r'\1Z', string)
     return string
 
-    # If there is no timezone and no Z added, we'll add one at the end.
-    # This is just to be fully compliant with:
-    # https://tools.ietf.org/html/rfc3339#section-5.6
-    if string.endswith('+00:00'):
-        return string[:-6] + 'Z'
-    if date.utcoffset() is None and string[-1] != 'Z':
-        return string + 'Z'
-    return string
-
 # the base class for strings, regardless of python version
 try:
     string = basestring
