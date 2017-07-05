@@ -75,7 +75,7 @@ def fromNow(offset):
     return stringDate(utcnow() + delta if future else utcnow() - delta)
 
 
-datefmt_re = re.compile(r'(\.[0-9]{3})[0-9]*\+00:00')
+datefmt_re = re.compile(r'(\.[0-9]{3})[0-9]*(\+00:00)?')
 
 
 def stringDate(date):
