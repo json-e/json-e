@@ -143,7 +143,7 @@ operators.$map = (template, context) => {
 operators.$merge = (template, context) => {
   let value = render(template['$merge'], context);
 
-  if (!isArray(value)) {
+  if (!isArray(value) || value.some(o => !isObject(o))) {
     throw jsonTemplateError('$merge requires array as value\n', template);
   }
 

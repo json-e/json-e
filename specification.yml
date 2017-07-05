@@ -713,6 +713,11 @@ title:    merge null
 context:  {}
 template: {$merge: null}
 error:    true
+---
+title: $merge [null]
+template: {$merge: [null]}
+context: {}
+error: true
 ################################################################################
 ---
 section:  $sort
