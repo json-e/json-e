@@ -83,7 +83,7 @@ def make_strategies():
         lambda children: lists(children) | dictionaries(properties(), children))
 
     return dict(
-        when=integers(min_value=1399283355, max_value=1699283363),
+        when=floats(min_value=1399283355.0, max_value=1699283363.0, allow_nan=False, allow_infinity=False),
         template=json_strategy(),
         context=dictionaries(prefixed_identifiers(), json_strategy()))
 
