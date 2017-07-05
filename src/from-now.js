@@ -1,24 +1,53 @@
-// Regular expression matching a timespan on the form:
-// X days Y hours Z minutes
-const timespanExpression = new RegExp([
-  '^(?:\\s*(-|\\+))?',
-  '(?:\\s*(\\d+)\\s*d(?:ays?)?)?',
-  '(?:\\s*(\\d+)\\s*h(?:(?:ours?)|r)?)?',
-  '(?:\\s*(\\d+)\\s*m(?:(?:in(?:utes?)?)?)?)?',
+// Regular expression matching:
+// A years B months C days D hours E minutes F seconds
+var timeExp = new RegExp([
+  '^(\\s*(-|\\+))?',
+  '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
+  '(\\s*(\\d+)\\s*mo(nths?)?)?',
+  '(\\s*(\\d+)\\s*w((eeks?)|k)?)?',
+  '(\\s*(\\d+)\\s*d(ays?)?)?',
+  '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
+  '(\\s*(\\d+)\\s*m(in(utes?)?)?)?',
+  '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
   '\\s*$',
 ].join(''), 'i');
 
-// Render timespan fromNow as JSON timestamp
-export default (timespan = '', reference = Date.now()) => {
-  let m = timespanExpression.exec(timespan);
-  if (!m) {
-    throw new Error('Invalid timespan expression: ' + timespan);
+/** Parse time string */
+var parseTime = function(str) {
+  // Parse the string
+  var match = timeExp.exec(str || '');
+  if (!match) {
+    throw new Error('String: \'' + str + '\' isn\'t a time expression');
   }
-  let neg = m[1] === '-' ? - 1 : 1;
-  let days = parseInt(m[2] || 0, 10);
-  let hours = parseInt(m[3] || 0, 10);
-  let minutes = parseInt(m[4] || 0, 10);
-  return new Date(
-    reference + neg * ((days * 24 + hours) * 60 + minutes) * 60 * 1000,
-  ).toJSON();
+  // Negate if needed
+  var neg = match[2] === '-' ? - 1 : 1;
+  // Return parsed values
+  return {
+    years:    parseInt(match[4]   || 0, 10) * neg,
+    months:   parseInt(match[8]   || 0, 10) * neg,
+    weeks:    parseInt(match[11]  || 0, 10) * neg,
+    days:     parseInt(match[15]  || 0, 10) * neg,
+    hours:    parseInt(match[18]  || 0, 10) * neg,
+    minutes:  parseInt(match[22]  || 0, 10) * neg,
+    seconds:  parseInt(match[25]  || 0, 10) * neg,
+  };
+};
+
+// Render timespan fromNow as JSON timestamp
+export default (timespan = '', reference = new Date()) => {
+  let offset = parseTime(timespan);
+
+  // represent months and years as 30 and 365 days, respectively
+  offset.days += 30 * offset.months;
+  offset.days += 365 * offset.years;
+
+  var retval = new Date(
+    reference.getTime()
+    + offset.weeks   * 7 * 24 * 60 * 60 * 1000
+    + offset.days        * 24 * 60 * 60 * 1000
+    + offset.hours            * 60 * 60 * 1000
+    + offset.minutes               * 60 * 1000
+    + offset.seconds                    * 1000
+  );
+  return retval.toJSON();
 };
