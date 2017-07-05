@@ -97,6 +97,9 @@ let accessProperty = (left, a, b, isInterval) => {
 
     // for -ve index access
     a = a < 0 ? (left.length + a) % left.length : a;
+    if (a >= left.length) {
+      throw new InterpreterError('index out of bounds');
+    }
     return left[a];
   }
 
@@ -105,14 +108,15 @@ let accessProperty = (left, a, b, isInterval) => {
     throw new InterpreterError('cannot access properties from non-objects');
   }
 
-  if (!left.hasOwnProperty(a)) {
-    throw new InterpreterError(`'${a}' not found in ${JSON.stringify(left, null, '\t')}`);
+  if (!isString(a)) {
+    throw new InterpreterError('object keys must be strings');
   }
 
-  if (isString(a)) {
+  if (left.hasOwnProperty(a)) {
     return left[a];
+  } else {
+    return null;
   }
-  throw new InterpreterError('cannot use non strings/numbers as keys');
 };
 
 let parseString = (str) => {
@@ -257,7 +261,7 @@ infixRules['.'] = (left, token, ctx) => {
     if (left.hasOwnProperty(key)) {
       return left[key];
     }
-    throw new InterpreterError('can only access own properties of objects');
+    throw new InterpreterError('object has no property ' + key);
   }
   throw expectationError('infix: .', 'objects');
 };
