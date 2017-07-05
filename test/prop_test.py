@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 import string
+import datetime
 
 from nose.tools import eq_
 from hypothesis import given, settings
@@ -11,20 +12,28 @@ import jsone
 from jsone.render import operators as defined_operators
 from jsone.builtins import builtins as defined_builtins
 
+def setup_module():
+    global old_utcnow
+    old_utcnow = jsone.shared.utcnow
 
-def py(template, context):
+def teardown_module():
+    jsone.shared.utcnow = old_utcnow
+
+def py(when, template, context):
+    when = datetime.datetime.utcfromtimestamp(when)
+    jsone.shared.utcnow = lambda: when
     try:
         return jsone.render(template, context)
     except jsone.JSONTemplateError:
         return Exception
 
 
-def js(template, context):
+def js(when, template, context):
     input = json.dumps({'template': template, 'context': context})
     command = ['node', '-e', ' '.join([
-        'var jsone = require("./lib").default, fs = require("fs");',
+        'var jsone = require("./lib").default, fs = require("fs"), tk = require("timekeeper");',
         'var input = JSON.parse(fs.readFileSync("/dev/stdin").toString());',
-        'console.error(JSON.stringify(input));',
+        'tk.freeze(new Date(' + str(when) + '000));',
         'var output = JSON.stringify(jsone(input.template, input.context));',
         'console.log(output);'])]
     proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -67,12 +76,14 @@ def make_strategies():
         lambda children: lists(children) | dictionaries(properties(), children))
 
     return dict(
+        when=integers(min_value=1399283355, max_value=1699283363),
         template=json_strategy(),
         context=dictionaries(prefixed_identifiers(), json_strategy()))
 
 
 if os.environ.get('RUN_PROP_TESTS'):
+    @settings(max_examples=1000000, timeout=3600)
     @given(**make_strategies())
-    def test_json(template, context):
-        eq_(py(template, context), js(template, context))
+    def test_json(when, template, context):
+        eq_(py(when, template, context), js(when, template, context))
 
