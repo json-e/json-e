@@ -216,7 +216,7 @@ operators.$sort = (template, context) => {
 };
 
 let render = (template, context) => {
-  if (isNumber(template) || isBool(template)) {
+  if (isNumber(template) || isBool(template) || template === null) {
     return template;
   }
   if (isString(template)) {
