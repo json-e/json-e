@@ -47,3 +47,4 @@ json_e.egg-info
 docs/*
 build/
 dist/
+.hypothesis/

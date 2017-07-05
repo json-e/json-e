@@ -16,6 +16,7 @@ setup(name='json-e',
     test_suite='nose.collector',
     license='MPL2',
     tests_require=[
+        "hypothesis",
         "nose",
         "PyYAML",
         "python-dateutil",
