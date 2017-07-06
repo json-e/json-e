@@ -1,6 +1,6 @@
 {
   "name": "json-e",
-  "version": "1.0.0",
+  "version": "0.9.0",
   "description": "json parameterization module inspired from json-parameterization",
   "main": "./dist/index.js",
   "scripts": {

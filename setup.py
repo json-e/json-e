@@ -12,7 +12,7 @@ setup(name='json-e',
     author='Dustin J. Mitchell',
     url='https://taskcluster.github.io/json-e/',
     author_email='dustin@mozilla.com',
-    packages=find_packages('', exclude=['test']),
+    packages=['jsone'],
     test_suite='nose.collector',
     license='MPL2',
     tests_require=[
