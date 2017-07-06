@@ -1593,6 +1593,31 @@ context: {a: [1,2,3,4]}
 template: {$eval: 'a[:-2]'}
 result: [1,2]
 ---
+title: array slice partially out of range
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[2:10]'}
+result: [3,4]
+---
+title: array slice completely out of range
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[8:10]'}
+result: []
+---
+title: array slice negative out of range
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[2:-10]'}
+result: []
+---
+title: array slice negative range
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[2:-3]'}
+result: []
+---
+title: array slice reverse range
+context: {a: [1,2,3,4]}
+template: {$eval: 'a[3:2]'}
+result: []
+---
 title: function min(contextValue, contextValue)
 context: {a: 1, b: 2}
 template: {$eval: 'min(a, b)'}
