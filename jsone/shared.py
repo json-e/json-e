@@ -75,22 +75,13 @@ def fromNow(offset):
     return stringDate(utcnow() + delta if future else utcnow() - delta)
 
 
-datefmt_re = re.compile(r'(\.[0-9]{3})[0-9]*\+00:00')
+datefmt_re = re.compile(r'(\.[0-9]{3})[0-9]*(\+00:00)?')
 
 
 def stringDate(date):
     # Convert to isoFormat
     string = date.isoformat()
     string = datefmt_re.sub(r'\1Z', string)
-    return string
-
-    # If there is no timezone and no Z added, we'll add one at the end.
-    # This is just to be fully compliant with:
-    # https://tools.ietf.org/html/rfc3339#section-5.6
-    if string.endswith('+00:00'):
-        return string[:-6] + 'Z'
-    if date.utcoffset() is None and string[-1] != 'Z':
-        return string + 'Z'
     return string
 
 # the base class for strings, regardless of python version
