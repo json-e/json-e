@@ -1593,11 +1593,6 @@ context: {a: [1,2,3,4]}
 template: {$eval: 'a[:-2]'}
 result: [1,2]
 ---
-title: array index out of range
-context: {a: [1,2,3,4]}
-template: {$eval: 'a[10]'}
-error: true
----
 title: array slice partially out of range
 context: {a: [1,2,3,4]}
 template: {$eval: 'a[2:10]'}
