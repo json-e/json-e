@@ -136,6 +136,9 @@ tasks:
           - master
     scopes:
       - secrets:get:repo:github.com/taskcluster/json-e
+    routes:
+      - notify.email.taskcluster-notifications@mozilla.com.on-failed
+      - notify.email.taskcluster-notifications@mozilla.com.on-exception
     payload:
       features:
         taskclusterProxy: true
