@@ -1,4 +1,8 @@
+# we don't actually want to test here, but Travis can't just release things..
 language: node_js
+node_js:
+    - 6
+
 deploy:
   provider: npm
   email: taskcluster-accounts@mozilla.com
