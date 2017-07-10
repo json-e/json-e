@@ -101,6 +101,10 @@ operators.$json = (template, context) => {
   return JSON.stringify(render(template['$json'], context));
 };
 
+operators.$dumps = (template, context) => {
+  return JSON.stringify(render(template['$dumps'], context));
+};
+
 operators.$let = (template, context) => {
   let variables = render(template['$let'], context);
 

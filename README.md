@@ -126,6 +126,9 @@ template: {$json: [a, b, {$eval: 'a+b'}, 4]}
 result:   '["a", "b", 3, 4]'
 ```
 
+The name `$dumps` is allowed as a synonym of `$json`, but its use is
+not recommended -- `$json` is the preferred spelling.
+
 ### Truthiness
 
 Many values can be evaluated in context where booleans are required,
