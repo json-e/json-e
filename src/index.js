@@ -194,9 +194,6 @@ operators.$sort = (template, context) => {
   // check types of the `by` values
   if (tagged.length > 0) {
     let eltType = typeof tagged[0][0];
-    console.log(eltType);
-    console.log(eltType !== 'number' && eltType !== 'string');
-    console.log(tagged.some(e => eltType !== typeof e[0]));
     if (eltType !== 'number' && eltType !== 'string' ||
         tagged.some(e => eltType !== typeof e[0])) {
       throw jsonTemplateError('$sort requires all sorted values have the same type', template);
