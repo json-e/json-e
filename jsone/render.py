@@ -118,6 +118,12 @@ def jsonConstruct(template, context):
     return json.dumps(value, separators=(',', ':'))
 
 
+@operator('$dumps')
+def jsonConstruct(template, context):
+    value = renderValue(template['$dumps'], context)
+    return json.dumps(value, separators=(',', ':'))
+
+
 @operator('$let')
 def let(template, context):
     variables = renderValue(template['$let'], context)

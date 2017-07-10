@@ -557,6 +557,11 @@ title:    $eval inside array
 context:  {a: 1, b: 2}
 template: {$json: [2, 5, {$eval: 'a + b + 7'}]}
 result:   '[2,5,10]'
+---
+title:    deprecated $dumps
+context:  {}
+template: {$dumps: [2, 5]}
+result:   '[2,5]'
 ################################################################################
 ---
 section: accessing nested objects => context
