@@ -1,13 +1,13 @@
-import interpreter from './interpreter';
-import fromNow from './from-now';
-import assert from 'assert';
-import {
+var interpreter = require('./interpreter');
+var fromNow = require('./from-now');
+var assert = require('assert');
+var {
   isString, isNumber, isBool,
   isArray, isObject, isFunction,
   isTruthy,
-} from './type-utils';
-import builtins from './builtins';
-import {TemplateError} from './error';
+} = require('./type-utils');
+var builtins = require('./builtins');
+var {TemplateError} = require('./error');
 
 let flattenDeep = (a) => {
   return Array.isArray(a) ? [].concat(...a.map(flattenDeep)) : a;
@@ -246,7 +246,7 @@ let render = (template, context) => {
   return result;
 };
 
-export default (template, context = {}) => {
+module.exports = (template, context = {}) => {
   let test = Object.keys(context).every(v => /^[a-zA-Z_][a-zA-Z0-9_]*$/.exec(v)[0]);
   context = Object.assign({}, builtins, context);
   assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');

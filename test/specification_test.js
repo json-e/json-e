@@ -1,11 +1,11 @@
-import yaml from 'js-yaml';
-import fs from 'fs';
-import path from 'path';
-import _ from 'lodash';
-import assert from 'assert';
-import tk from 'timekeeper';
-import assume from 'assume';
-import jsone from '../lib/';
+var yaml = require('js-yaml');
+var fs = require('fs');
+var path = require('path');
+var _ = require('lodash');
+var assert = require('assert');
+var tk = require('timekeeper');
+var assume = require('assume');
+var jsone = require('../src/');
 
 const SPEC_FILE = path.join(__dirname, '../specification.yml');
 const TEST_DATE = new Date('2017-01-19T16:27:20.974Z');

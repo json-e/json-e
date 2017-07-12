@@ -1,5 +1,5 @@
-import assert from 'assert';
-import {SyntaxError} from './error';
+var assert = require('assert');
+var {SyntaxError} = require('./error');
 
 let escapeRegex = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
@@ -91,4 +91,4 @@ class Tokenizer {
 }
 
 // Export Tokenizer
-export default Tokenizer;
+module.exports = Tokenizer;

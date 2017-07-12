@@ -34,7 +34,7 @@ var parseTime = function(str) {
 };
 
 // Render timespan fromNow as JSON timestamp
-export default (timespan = '', reference = new Date()) => {
+module.exports = (timespan = '', reference = new Date()) => {
   let offset = parseTime(timespan);
 
   // represent months and years as 30 and 365 days, respectively

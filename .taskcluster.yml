@@ -193,3 +193,33 @@ tasks:
       description: "Upload documentation for this project"
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+          - push
+        branches:
+          - master
+    payload:
+      maxRunTime: 3600
+      image: 'node:6'
+      command:
+        - /bin/bash
+        - '--login'
+        - '-c'
+        - >-
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          yarn &&
+          bash package-test.sh
+    metadata:
+      name: json-e node packaging test
+      description: Build a package and try using it as a library
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
