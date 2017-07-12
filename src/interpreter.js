@@ -2,10 +2,10 @@
 * Author: Jonas Finnemann Jensen
 * Github: https://github.com/jonasfj
 */
-import PrattParser from './prattparser';
-import {isString, isNumber, isInteger, isBool,
-  isArray, isObject, isFunction, isTruthy} from './type-utils';
-import {InterpreterError} from './error';
+var PrattParser = require('./prattparser');
+var {isString, isNumber, isInteger, isBool,
+  isArray, isObject, isFunction, isTruthy} = require('./type-utils');
+var {InterpreterError} = require('./error');
 
 let expectationError = (operator, expectation) => new InterpreterError(`'${operator}' expects '${expectation}'`);
 
@@ -320,7 +320,7 @@ infixRules['in'] = (left, token, ctx) => {
   return right.some(r => isEqual(left, r));
 };
 
-export default new PrattParser({
+module.exports = new PrattParser({
   ignore: '\\s+', // ignore all whitespace including \n
   patterns: {
     number:     '[0-9]+(?:\\.[0-9]+)?',

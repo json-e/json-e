@@ -1,6 +1,4 @@
-import lint from 'mocha-eslint';
-
-lint([
+require('mocha-eslint')([
   'src/*.js',
   'test/*.js',
 ]);

@@ -1,4 +1,4 @@
-import ExtendableError from 'es6-error';
+var ExtendableError = require('es6-error');
 
 class SyntaxError extends ExtendableError {
   constructor(message, {start, end}) {
@@ -39,4 +39,4 @@ class BuiltinError extends BaseError {
   }
 }
 
-export {SyntaxError, InterpreterError, TemplateError, BuiltinError};
+module.exports = {SyntaxError, InterpreterError, TemplateError, BuiltinError};

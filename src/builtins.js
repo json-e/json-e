@@ -1,9 +1,9 @@
-import {BuiltinError} from './error';
-import fromNow from './from-now';
-import {
+var {BuiltinError} = require('./error');
+var fromNow = require('./from-now');
+var {
   isString, isNumber, isBool,
   isArray, isObject, isJSON,
-} from './type-utils';
+} = require('./type-utils');
 
 let types = {
   string: isString,
@@ -94,4 +94,4 @@ define('fromNow', builtins, {
   invoke: str => fromNow(str),
 });
 
-export default builtins;
+module.exports = builtins;
