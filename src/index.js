@@ -17,7 +17,6 @@ let jsonTemplateError = (msg, template) => new TemplateError(msg + JSON.stringif
 
 let interpolate = (string, context) => {
   let result = '';
-  let begin = 0;
   let remaining = string;
   let offset;
   while ((offset = remaining.search(/\$?\${/g)) !== -1) {
