@@ -135,8 +135,10 @@ def let(template, context):
 @operator('$map')
 def map(template, context):
     value = renderValue(template['$map'], context)
-    if not isinstance(value, list):
-        raise JSONTemplateError("$map value must evaluate to an array")
+    if not isinstance(value, list) and not isinstance(value, dict):
+        raise JSONTemplateError("$map value must evaluate to an array or object")
+
+    is_obj = isinstance(value, dict)
 
     each_keys = [k for k in template if k.startswith('each(')]
     if len(each_keys) != 1:
@@ -144,6 +146,9 @@ def map(template, context):
     each_key = each_keys[0]
     each_var = each_key[5:-1]
     each_template = template[each_key]
+
+    if is_obj:
+        value = [{'key': v[0], 'val': v[1]} for v in value.items()]
 
     def gen():
         subcontext = context.copy()
@@ -153,7 +158,13 @@ def map(template, context):
             if elt is not DeleteMarker:
                 yield elt
 
-    return list(gen())
+    if is_obj:
+        v = dict()
+        for e in gen():
+            v.update(e)
+        return v
+    else:
+        return list(gen())
 
 
 @operator('$merge')

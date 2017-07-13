@@ -693,12 +693,19 @@ template:
     then: {$eval: 'y.k'}
 result: [1, 3]
 ---
-title:    $map requires an array, not object
+title:    $map works on array or object
 context:  {}
 template:
   $map: {a: 1, b: 2, c: 3}
-  each(y): {$eval: 'y.k'}
-error: true # can't do map on non-arrays
+  each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
+result: {ax: 2, bx: 3, cx: 4}
+---
+title:    $map can add new keys to object
+context:  {}
+template:
+  $map: {a: 1, b: 2, c: 3}
+  each(y): {'${y.key}': {$eval: 'y.val'}, '${y.key}x': {$eval: 'y.val + 1'}}
+result: {a: 1, b: 2, c: 3, ax: 2, bx: 3, cx: 4}
 ---
 title:    $map requires an array, not string
 context:  {}
