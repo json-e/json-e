@@ -316,15 +316,15 @@ context:  {}
 template: {$$sort: [3, 2, 1]}
 result:   {$sort: [3, 2, 1]}
 ---
-title:    interpolate non-json-e operator
+title:    reserved $-keywords
 context:  {}
 template: {$nothing: 1}
-result:   {$nothing: 1}
+error:    true
 ---
 title:    escape non-json-e operator
 context:  {}
 template: {$$nothing: 1}
-result:   {$$nothing: 1}
+result:   {$nothing: 1}
 ################################################################################
 ---
 section:  $flatten
