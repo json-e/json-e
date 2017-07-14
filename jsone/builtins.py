@@ -52,7 +52,7 @@ def is_string_or_array(v):
 
 
 def anything(v):
-    return isinstance(v, (string, int, float, list))
+    return isinstance(v, (string, int, float, list, dict)) or v is None or callable(v)
 
 # ---
 
@@ -109,3 +109,20 @@ def to_str(v):
 
 
 builtin('fromNow', argument_tests=[is_string])(fromNow)
+
+@builtin('typeof', argument_tests=[anything])
+def typeof(v):
+    if isinstance(v, bool):
+        return 'boolean'
+    elif isinstance(v, string):
+        return 'string'
+    elif isinstance(v, (int, float)):
+        return 'number'
+    elif isinstance(v, list):
+        return 'array'
+    elif isinstance(v, dict):
+        return 'object'
+    elif v is None:
+        return None
+    elif callable(v):
+        return 'function'

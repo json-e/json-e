@@ -1423,7 +1423,7 @@ result: 'true'
 title: str (6)
 context: {x: null}
 template: {$eval: 'str(x)'}
-error: true
+result: 'null'
 ---
 title: str (7)
 context: {key: false}
@@ -1459,6 +1459,61 @@ title:    fromNow - TypeError
 context:  {}
 template: {$eval: fromNow(13)}
 error: true
+---
+title:    typeof str
+context:  {}
+template: {$eval: typeof('abc')}
+result: string
+---
+title:    typeof number (int)
+context:  {}
+template: {$eval: typeof(4)}
+result: number
+---
+title:    typeof number (float)
+context:  {}
+template: {$eval: typeof(4.0)}
+result: number
+---
+title:    typeof boolean (true)
+context:  {}
+template: {$eval: typeof(true)}
+result: boolean
+---
+title:    typeof boolean (false)
+context:  {}
+template: {$eval: typeof(false)}
+result: boolean
+---
+title:    typeof array (empty)
+context:  {}
+template: {$eval: 'typeof([])'}
+result: array
+---
+title:    typeof array
+context:  {}
+template: {$eval: 'typeof([1, 2, 3])'}
+result: array
+---
+title:    typeof object
+context:  {}
+template: {$eval: 'typeof({})'}
+result: object
+---
+title:    typeof null
+context:  {}
+template: {$eval: 'typeof(null)'}
+result: null
+---
+title:    typeof null in if
+context:  {}
+template: {$if: 'typeof(null) == null', then: 'foo', else: 'bar'}
+result: foo
+---
+title:    typeof function
+context:  {}
+template: {$eval: 'typeof(typeof)'}
+result: function
 ---
 title: override builtin (1), uppercase
 context: {uppercase: 1}

@@ -3,6 +3,7 @@ var fromNow = require('./from-now');
 var {
   isString, isNumber, isBool,
   isArray, isObject, isJSON,
+  isNull, isFunction,
 } = require('./type-utils');
 
 let types = {
@@ -12,6 +13,8 @@ let types = {
   array: isArray,
   object: isObject,
   json: isJSON,
+  null: isNull,
+  function: isFunction,
 };
 
 let builtinError = (builtin, expectation) => new BuiltinError(`${builtin} expects ${expectation}`);
@@ -25,7 +28,7 @@ let define = (name, context, {
   invoke,
 }) => context[name] = (...args) => {
   if (!variadic && args.length < argumentTests.length) {
-    throw builtinError(`builtin: ${name}`, `${args.toString()}, arguments too less`);
+    throw builtinError(`builtin: ${name}`, `${args.toString()}, too few arguments`);
   }
 
   if (minArgs && args.length < minArgs) {
@@ -79,8 +82,13 @@ define('uppercase', builtins, {
 });
 
 define('str', builtins, {
-  argumentTests: ['string|number|boolean|array'],
-  invoke: obj => obj.toString(),
+  argumentTests: ['string|number|boolean|array|null'],
+  invoke: obj => {
+    if (obj === null) {
+      return 'null';
+    }
+    return obj.toString();
+  },
 });
 
 define('len', builtins, {
@@ -92,6 +100,21 @@ define('len', builtins, {
 define('fromNow', builtins, {
   argumentTests: ['string'],
   invoke: str => fromNow(str),
+});
+
+define('typeof', builtins, {
+  argumentTests: ['string|number|boolean|array|object|null|function'],
+  invoke: x => {
+    for (type of ['string', 'number', 'boolean', 'array', 'object', 'function']) {
+      if (types[type](x)) {
+        return type;
+      }
+    }
+    if (types['null'](x)) {
+      return null;
+    }
+    throw builtinError('builtin: typeof', `argument ${x} to be a valid json-e type. found ${typeof arg}`);
+  },
 });
 
 module.exports = builtins;
