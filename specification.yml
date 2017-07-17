@@ -1637,6 +1637,21 @@ title: function max(contextValue, value)
 context: {a: 1, b: 2}
 template: {$eval: 'max(a, 3)'}
 result: 3
+---
+title: identifier beginning with in
+context: {input: 6}
+template: {$eval: 'input + 1'}
+result: 7
+---
+title: identifier beginning with true / false
+context: {true_facts: true, false_lies: false}
+template: {$eval: 'true_facts || false_lies'}
+result: true
+---
+title: identifier beginning with null
+context: {null_hypothesis: "no difference"}
+template: {$eval: 'null_hypothesis'}
+result: "no difference"
 ################################################################################
 ---
 section: expression language - arithmetic
