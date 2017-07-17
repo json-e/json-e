@@ -400,3 +400,13 @@ update the demo website bundle.js file.
 ```bash
 npm run-script build-demo
 ```
+
+# Development Notes
+
+## Making a Release
+
+* Update the version, commit, and tag -- `npm patch` (or minor or major, depending)
+* Push to release the JS version -- `git push && git push --tags`
+* Release to PyPi:
+  * `python setup.py sdist`
+  * `twine upload dist/json-e-<version>.tar.gz`
