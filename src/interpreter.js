@@ -326,6 +326,11 @@ module.exports = new PrattParser({
     number:     '[0-9]+(?:\\.[0-9]+)?',
     identifier: '[a-zA-Z_][a-zA-Z_0-9]*',
     string:     '\'[^\']*\'|"[^"]*"',
+    // avoid matching these as prefixes of identifiers e.g., `insinutations`
+    true: 'true(?![a-zA-Z_0-9])',
+    false: 'false(?![a-zA-Z_0-9])',
+    in: 'in(?![a-zA-Z_0-9])',
+    null: 'null(?![a-zA-Z_0-9])',
   },
   tokens: [
     '**', ...'+-*/[].(){}:,'.split(''),
