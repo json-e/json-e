@@ -118,8 +118,8 @@ operators.$let = (template, context) => {
 
 operators.$map = (template, context) => {
   let value = render(template['$map'], context);
-  if (!isArray(value)) {
-    throw jsonTemplateError('$map requires array as value\n', template);
+  if (!isArray(value) && !isObject(value)) {
+    throw jsonTemplateError('$map requires array or object as value\n', template);
   }
 
   if (Object.keys(template).length !== 2) {
@@ -135,8 +135,20 @@ operators.$map = (template, context) => {
   let x = match[1];
   let each = template[eachKey];
 
-  return value.map(v => render(each, Object.assign({}, context, {[x]: v})))
+  let object = isObject(value);
+
+  if (object) {
+    value = Object.keys(value).map(key => ({key, val: value[key]}));
+  }
+
+  value = value.map(v => render(each, Object.assign({}, context, {[x]: v})))
               .filter(v => v !== deleteMarker);
+
+  if (object) {
+    return value.reduce((a, o) => Object.assign(a, o), {});
+  } else {
+    return value;
+  }
 };
 
 operators.$merge = (template, context) => {

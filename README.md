@@ -222,8 +222,12 @@ to return the correct result.
 
 ### `$map`
 
-The `$map` operator evaluates an expression for each value of the given array,
-constructing the result as an array of the evaluated values.
+The `$map` operator evaluates an expression for each value of the given array or object,
+constructing the result as an array or object of the evaluated values.
+
+Given an array, map returns an array, and given an object, the result is an object. When
+given an object, the value of your `each` should be an object and each will be merged
+internally to give the resulting object. If keys intersect, later keys will win.
 
 ```yaml
 context:  {a: 1}
@@ -233,9 +237,18 @@ template:
 result:   [3, 5, 7]
 ```
 
-The array is the value of the `$map` property, and the expression to evaluate
+```yaml
+context:  {}
+template:
+  $map: {a: 1, b: 2, c: 3}
+  each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
+result: {ax: 2, bx: 3, cx: 4}
+```
+
+The array or object is the value of the `$map` property, and the expression to evaluate
 is given by `each(var)` where `var` is the name of the variable containing each
-element.
+element. In the case of iterating over an object, `var` will be an object with two keys:
+`key` and `val`. These keys correspond to a key in the object and its corresponding value.
 
 ### `$merge`
 
