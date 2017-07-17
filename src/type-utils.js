@@ -3,8 +3,9 @@ let utils = {
   isNumber:   expr => typeof expr === 'number',
   isInteger:  expr => typeof expr === 'number' && Number.isInteger(expr),
   isBool:     expr => typeof expr === 'boolean',
+  isNull:     expr => expr === null,
   isArray:    expr => expr instanceof Array,
-  isObject:   expr => expr instanceof Object && !(expr instanceof Array),
+  isObject:   expr => expr instanceof Object && !(expr instanceof Array) && !(expr instanceof Function),
   isFunction: expr => expr instanceof Function,
   isJSON:     expr => {
     if (utils.isString(expr) || utils.isNumber(expr) || utils.isBool(expr) || expr === null) {
