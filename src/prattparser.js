@@ -54,7 +54,12 @@ class PrattParser {
     let ctx = new Context(this, source, context, offset);
     let result = ctx.parse();
     let next = ctx.attempt();
-    if (next.kind !== terminator) {
+    if (!next) {
+      // string ended without the terminator
+      let errorLocation = source.length;
+      throw new SyntaxError(`Found end of string, expected ${terminator}`,
+                            {start: errorLocation, end: errorLocation});
+    } else if (next.kind !== terminator) {
       throw syntaxRuleError(next, terminator);
     }
     return {result, offset: next.start};
