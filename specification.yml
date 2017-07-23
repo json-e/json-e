@@ -539,6 +539,11 @@ title:    fromNow with eval
 context:  {ttl: 24}
 template: {$fromNow: {$eval: 'str(ttl) + " hours"'}}
 result:   '2017-01-20T16:27:20.974Z'
+---
+title:    fromNow with reference
+context:  {now: '2019-01-01T01:00:00.123Z'}
+template: {$fromNow: '3 mo', from: {$eval: now}}
+result:   '2019-04-01T01:00:00.123Z'
 ################################################################################
 ---
 section:  $json
@@ -1461,6 +1466,11 @@ title:    fromNow - 2 days 3 hours
 context:  {}
 template: {$eval: fromNow("2 days 3 hours")}
 result:   '2017-01-21T19:27:20.974Z'
+---
+title:    fromNow with reference
+context:  {}
+template: {$eval: "fromNow('1 day', '2017-01-01T01:00:00.123Z')"}
+result:   '2017-01-02T01:00:00.123Z'
 ---
 title:    fromNow - TypeError
 context:  {}

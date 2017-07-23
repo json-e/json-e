@@ -98,8 +98,9 @@ define('len', builtins, {
 
 // Miscellaneous
 define('fromNow', builtins, {
-  argumentTests: ['string'],
-  invoke: str => fromNow(str),
+  variadic: 'string',
+  minArgs: 1,
+  invoke: (str, reference) => fromNow(str, reference),
 });
 
 define('typeof', builtins, {

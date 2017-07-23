@@ -80,10 +80,14 @@ operators.$flattenDeep = (template, context) => {
 
 operators.$fromNow = (template, context) => {
   let value = render(template['$fromNow'], context);
+  let reference;
+  if (template['from']) {
+    reference = render(template['from'], context);
+  }
   if (!isString(value)) {
     throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
   }
-  return fromNow(value);
+  return fromNow(value, reference);
 };
 
 operators.$if = (template, context) => {
