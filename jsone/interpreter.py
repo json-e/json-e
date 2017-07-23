@@ -189,7 +189,7 @@ class ExpressionEvaluator(PrattParser):
         if not callable(left):
             raise ExpressionError('function call', 'callable')
         args = parseList(pc, ',', ')')
-        return left(args)
+        return left(*args)
 
     @infix('==', '!=', '||', '&&')
     def equality_and_logic(self, left, token, pc):
