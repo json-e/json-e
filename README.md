@@ -41,7 +41,27 @@ console.log(jsone(template, context));
 // -> 3
 ```
 
-# Language
+The Python distribution exposes a `render` function:
+
+```python
+import jsone
+
+var template = {"a": {"$eval": "foo.bar"}}
+var context = {"foo": {"bar": "zoo"}}
+print(jsone(template, contxt))
+# -> {"a": "zoo"}
+```
+
+and also allows custom functions in the context:
+
+```python
+var template = {"$eval": "foo(1)"}
+var context = {"foo": lambda x: x + 2}
+print(jsone(template, contxt))
+# -> 3
+```
+
+# Language Reference
 
 The examples here are given in YAML for ease of reading.  Of course, the
 rendering operation takes place on the parsed data, so the input format is

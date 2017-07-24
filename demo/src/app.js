@@ -60,7 +60,7 @@ export default class App extends React.Component {
           break;
         }
         this.demos.push(section);
-      } else if (section.heading === '# Language') {
+      } else if (section.heading === '# Language Reference') {
         active = true;
       } else if (section.heading === '# Interface') {
         this.interfaceExample = section;
