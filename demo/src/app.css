@@ -1,6 +1,6 @@
 @import "~codemirror/lib/codemirror.css";
 @import "~codemirror/addon/lint/lint.css";
-@import "~codemirror/theme/ambiance.css";
+@import "~codemirror/theme/elegant.css";
 
 html, body, #root {
   font-family: system; /* Defined below with jonathantneal's system */
