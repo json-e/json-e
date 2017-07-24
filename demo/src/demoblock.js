@@ -27,7 +27,6 @@ class Jsone extends React.Component {
     super(props);
     this.cmOptions = defaults({
       readOnly: 'nocursor',
-      mode: {name: "javascript", json: true},
       gutters: []
     }, codeMirrorOptions);
   }
@@ -39,7 +38,7 @@ class Jsone extends React.Component {
         jsyaml.safeLoad(this.props.context)
       );
       return (
-        <CodeMirror value={JSON.stringify(res, null, 2)} options={this.cmOptions} />
+        <CodeMirror value={jsyaml.safeDump(res)} options={this.cmOptions} />
       );
     } catch (err) {
       return (
