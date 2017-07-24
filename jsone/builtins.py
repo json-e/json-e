@@ -12,7 +12,7 @@ def builtin(name, variadic=None, argument_tests=None, minArgs=None):
         def bad(reason=None):
             raise ExpressionError((reason or 'invalid arguments to {}').format(name))
         if variadic:
-            def invoke(args):
+            def invoke(*args):
                 if minArgs:
                     if len(args) < minArgs:
                         bad("too few arguments to {}")
@@ -22,7 +22,7 @@ def builtin(name, variadic=None, argument_tests=None, minArgs=None):
                 return fn(*args)
 
         elif argument_tests:
-            def invoke(args):
+            def invoke(*args):
                 if len(args) != len(argument_tests):
                     bad()
                 for t, arg in zip(argument_tests, args):
@@ -31,7 +31,7 @@ def builtin(name, variadic=None, argument_tests=None, minArgs=None):
                 return fn(*args)
 
         else:
-            def invoke(args):
+            def invoke(*args):
                 return fn(*args)
 
         builtins[name] = invoke
