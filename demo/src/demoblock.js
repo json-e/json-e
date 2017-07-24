@@ -16,7 +16,7 @@ window.jsyaml = jsyaml; // Making this available to yaml linter
 const codeMirrorOptions =  {
   mode: 'yaml',
   lint: true,
-  theme: 'ambiance',
+  theme: 'elegant',
   indentWithTabs: false,
   tabSize: 2,
   gutters: [ 'CodeMirror-lint-markers', ],
