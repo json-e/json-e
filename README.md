@@ -37,9 +37,14 @@ from the template:
 ```javascript
 var template = {$eval: "foo(1)"};
 var context = {"foo": function(x) { return x + 2; }};
-console.log(jsone(template, context));
-// -> 3
+console.log(jsone(template, context));  // -> 3
 ```
+
+*NOTE*: Context functions are called synchronously. Any complex asynchronous
+operations should be handled before rendering the template.
+
+*NOTE*: If the template is untrusted, it can pass arbitrary data to functions
+in the context, which must guard against such behavior.
 
 The Python distribution exposes a `render` function:
 
@@ -48,8 +53,7 @@ import jsone
 
 var template = {"a": {"$eval": "foo.bar"}}
 var context = {"foo": {"bar": "zoo"}}
-print(jsone(template, contxt))
-# -> {"a": "zoo"}
+print(jsone(template, contxt))  # -> {"a": "zoo"}
 ```
 
 and also allows custom functions in the context:
@@ -57,8 +61,7 @@ and also allows custom functions in the context:
 ```python
 var template = {"$eval": "foo(1)"}
 var context = {"foo": lambda x: x + 2}
-print(jsone(template, contxt))
-# -> 3
+print(jsone(template, contxt))  # -> 3
 ```
 
 # Language Reference
@@ -77,6 +80,8 @@ context:  {}
 template: {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 result:   {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 ```
+
+## String Interpolation
 
 The simplest form of substitution occurs within strings, using `${..}`:
 
@@ -144,18 +149,6 @@ unusual case to include a JSON string in a larger data structure.
 context:  {a: 1, b: 2}
 template: {$json: [a, b, {$eval: 'a+b'}, 4]}
 result:   '["a", "b", 3, 4]'
-```
-
-### Truthiness
-
-Many values can be evaluated in context where booleans are required,
-not just booleans themselves. JSON-e defines the following values as false.
-Anything else will be true.
-
-```yaml
-context: {a: null, b: [], c: {}, d: "", e: 0, f: false}
-template: {$if: 'a || b || c || d || e || f', then: "uh oh", else: "falsy" }
-result: "falsy"
 ```
 
 ### `$if` - `then` - `else`
@@ -306,9 +299,10 @@ template: {$reverse: [3, 4, 1, 2]}
 result:   [2, 1, 4, 3]
 ```
 
-## Escaping operators
+### Escaping operators
 
-You can use `$$` to escape json-e operators. For example:
+All property names starting with `$` are reserved for JSON-e.
+You can use `$$` to escape such properties:
 
 ```yaml
 context:  {}
@@ -316,41 +310,185 @@ template: {$$reverse: [3, 2, {$$eval: '2 - 1'}, 0]}
 result:   {$reverse: [3, 2, {$eval: '2 - 1'}, 0]}
 ```
 
-## Expressions
+## Truthiness
 
-Expression are given in a simple Python- or JavaScript-like language. It
-supports the following:
+Many values can be evaluated in context where booleans are required,
+not just booleans themselves. JSON-e defines the following values as false.
+Anything else will be true.
 
-* Numeric literals (decimal only)
-* String literals (enclosed in `'` or `"`, with no escaping)
-* Arrays in JSON format (`[.., ..]`)
-* Objects in JS format: `{"foo": 10}` or `{foo: 10}`
-* Parentheses for grouping (`(a + b) * c`)
-* Arithmetic on integers (`+`, `-`, `*`, `/`, `**` for exponentiation), with unary `-` and `+`
-* String concatenation (`+`)
-* Comparison of strings to strings or numbers to numbers (`<`, `<=`, `>`, `>=`)
-* Equality of anything (`==`, `!=`)
-* Boolean operators (`||`, `&&`, `!`)
-* Identifiers referring to variables (matching `/[a-zA-Z_][a-zA-Z_0-9]*/`)
-* Object property access: `obj.prop` or `obj["prop"]`
-  * `obj,prop` is an error if there is no such property; in the same case `obj["prop"]` evaluates to `null`.
-* Array and string indexing and slicing with Python semantics
-  * `array[1]` -- second element of array (zero-indexed)
-  * `array[1:4]` -- second through fourth elements of the array (the slice includes the left index and excludes the right index)
-  * `array[1:]` -- second through last element of the array
-  * `array[:3]` -- first through third element of the array
-  * `array[-2:]` -- the last two elements of the array
-  * `array[:-1]` -- all but the last element of the array
-  * `string[3]` -- fourth character of the string
-  * `string[-4:]` -- all but the last four characters of the string
-* Containment operator:
-  * `"string" in object` -- true if the object has the given property
-  * `"string" in array` -- true if the string is an array element
-  * `number in array` -- true if the number is an array element
-  * `"string" in "another string"` -- true if the first string is a substring of the second
-* Function invocation: `fn(arg1, arg2)`
+```yaml
+context: {a: null, b: [], c: {}, d: "", e: 0, f: false}
+template: {$if: 'a || b || c || d || e || f', then: "uh oh", else: "falsy" }
+result: "falsy"
+```
 
-### Built-In Functions
+## Expression Syntax
+
+Expression are given in a simple Python- or JavaScript-like expression
+language.  Its data types are limited to JSON types plus function objects.
+
+### Literals
+
+Literals are similar to those for JSON.  Numeric literals only accept integer
+and decimal notation. Strings do not support any kind of escaping. The use of
+`\n` and `\t` in the example below depends on the YAML parser to expand the
+escapes.
+
+```yaml
+context: {}
+template:
+  - {$eval: "1.3"}
+  - {$eval: "'abc'"}
+  - {$eval: '"abc"'}
+  - {$eval: "'\n\t'"}
+result:
+  - 1.3
+  - "abc"
+  - "abc"
+  - "\n\t"
+```
+
+Array and object literals also look much like JSON, with bare identifiers
+allowed as keys like in Javascript:
+
+```yaml
+context: {}
+template:
+  - {$eval: '[1, 2, "three"]'}
+  - {$eval: '{foo: 1, "bar": 2}'}
+result:
+  - [1, 2, "three"]
+  - {"foo": 1, "bar": 2}
+```
+
+### Context References
+
+Bare identifiers refer to items from the context or to built-ins (described below).
+
+```yaml
+context: {x: 'quick', z: 'sort'}
+template: {$eval: '[x, z, x+z]'}
+reslut: ['quick', 'sort', 'quicksort']
+```
+
+### Arithmetic Operations
+
+The usual arithmetic operators are all defined, with typical associativity and
+precedence:
+
+```yaml
+context: {x: 10, z: 20, s: "face", t: "plant"}
+template:
+  - {$eval: 'x + z'}
+  - {$eval: 's + t'}
+  - {$eval: 'z - x'}
+  - {$eval: 'x * z'}
+  - {$eval: 'z / x'}
+  - {$eval: 'z ** 2'}
+  - {$eval: '(z / x) ** 2'}
+result:
+  - 30
+  - "faceplant"
+  - 10
+  - 200
+  - 2
+  - 400
+  - 4
+```
+
+Note that strings can be concatenated with `+`, but none of the other operators
+apply.
+
+### Comparison Operations
+
+Comparisons work as expected.  Equality is "deep" in the sense of doing
+comparisons of the contents of data structures.
+
+```yaml
+context: {x: -10, z: 10, deep: [1, [3, {a: 5}]]}
+template:
+  - {$eval: 'x < z'}
+  - {$eval: 'x <= z'}
+  - {$eval: 'x > z'}
+  - {$eval: 'x >= z'}
+  - {$eval: 'deep == [1, [3, {a: 5}]]'}
+  - {$eval: 'deep != [1, [3, {a: 5}]]'}
+result: [true, true, false, false, true, false]
+```
+
+### Boolean Operations
+
+Boolean operations use C- and Javascript-style symbls `||`, `&&`, and `!`:
+
+```yaml
+context: {}
+template: {$eval: '!(false || false) && true'}
+result: true
+```
+
+### Object Property Access
+
+Like Javascript, object properties can be accessed either with array-index
+syntax or with dot syntax. Unlike Javascript, `obj.prop` is an error if `obj`
+does not have `prop`, while `obj['prop']` will evaulate to `null`.
+
+```yaml
+context: {v: {a: 'apple', b: 'bananna', c: 'carrot'}}
+template: {$eval: 'v.a + v["b"]'}
+result: 'applebananna'
+````
+
+### Indexing and Slicing
+
+Strings and arrays can be indexed and sliced using a Python-like indexing
+scheme.  Negative indexes are counted from the end of the value.  Slices are
+treated as "half-open", meaning that the result contains the first index and
+does not contain the second index.  A "backward" slice with the start index
+greater than the end index is treated as empty.
+
+```yaml
+context: {array: ['a', 'b', 'c', 'd', 'e'], string: 'abcde'}
+template:
+  - {$eval: '[array[1], string[1]]'}
+  - {$eval: '[array[1:4], string[1:4]]'}
+  - {$eval: '[array[2:], string[2:]]'}
+  - {$eval: '[array[:2], string[:2]]'}
+  - {$eval: '[array[4:2], string[4:2]]'}
+  - {$eval: '[array[-2], string[-2]]'}
+  - {$eval: '[array[-2:], string[-2:]]'}
+  - {$eval: '[array[:-3], string[:-3]]'}
+result:
+  - ['b', 'b']
+  - [['b', 'c', 'd'], 'bcd']
+  - [['c', 'd', 'e'], 'cde']
+  - [['a', 'b'], 'ab']
+  - [[], '']
+  - ['d', 'd']
+  - [['d', 'e'], 'de']
+  - [['a', 'b'], 'ab']
+```
+
+### Containment Operation
+
+The `in` keyword can be used to check for containment: a property in an object,
+an element in an array, or a substring in a string.
+
+```yaml
+context: {}
+template:
+  - {$eval: '"foo" in {foo: 1, bar: 2}'}
+  - {$eval: '"foo" in ["foo", "bar"]'}
+  - {$eval: '"foo" in "foobar"'}
+result: [true, true, true]
+```
+
+### Function Invocation
+
+Function calls are made with the usual `fn(arg1, arg2)` syntax. Functions are
+not JSON data, so they cannot be created in JSON-e, but they can be provided as
+built-ins or in the context and called from JSON-e.
+
+#### Built-In Functions
 
 The expression language provides a laundry-list of built-in functions. Library
 users can easily add additional functions, or override the built-ins, as part
@@ -363,34 +501,6 @@ of the context.
 * `lowercase(s)`, `uppercase(s)` -- convert string case
 * `str(x)` -- convert string, number, boolean, or array to string
 * `len(x)` -- length of a string or array
-
-### Custom Functions
-
-The context supplied to JSON-e can contain JS function objects. These will be
-available just like the built-in functions are.  For example:
-
-```js
-var context = {
-  imageData: function(img) {
-    return ...;
-  },
-};
-
-var template = {
-  title: "Trip to Hawaii",
-  thumbnail: {$eval: 'imageData("hawaii")'},
-};
-
-return jsone(template, context);
-```
-
-NOTE: Context functions are called synchronously. Any complex asynchronous
-operations should be handled before rendering the template.
-
-NOTE: If the template is untrusted, it can pass arbitrary data to functions
-in the context, which must guard against such behavior. For example, if the
-`imageData` function above reads data from a file, it must sanitize the
-filename before opening it.
 
 # Development and testing
 
@@ -421,9 +531,9 @@ update the demo website bundle.js file.
 npm run-script build-demo
 ```
 
-# Development Notes
+## Development Notes
 
-## Making a Release
+### Making a Release
 
 * Update the version, commit, and tag -- `npm patch` (or minor or major, depending)
 * Push to release the JS version -- `git push && git push --tags`
