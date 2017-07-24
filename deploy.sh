@@ -39,5 +39,5 @@ git reset "upstream/$TARGET_BRANCH"
 touch .
 
 git add -A .
-git commit -m "Rebuilding $TARGET_BRANCH from $SHA"
+git commit --allow-empty -m "Rebuilding $TARGET_BRANCH from $SHA"
 git push -q upstream "HEAD:$TARGET_BRANCH"
