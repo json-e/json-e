@@ -34,12 +34,18 @@ var parseTime = function(str) {
 };
 
 // Render timespan fromNow as JSON timestamp
-module.exports = (timespan = '', reference = new Date()) => {
+module.exports = (timespan = '', reference) => {
   let offset = parseTime(timespan);
 
   // represent months and years as 30 and 365 days, respectively
   offset.days += 30 * offset.months;
   offset.days += 365 * offset.years;
+
+  if (reference) {
+    reference = new Date(reference);
+  } else {
+    reference = new Date();
+  }
 
   var retval = new Date(
     reference.getTime()

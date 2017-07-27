@@ -28,7 +28,7 @@ FROMNOW_RE = re.compile(''.join([
 ]))
 
 
-def fromNow(offset):
+def fromNow(offset, reference):
     # copied from taskcluster-client.py
     # We want to handle past dates as well as future
     future = True
@@ -72,7 +72,11 @@ def fromNow(offset):
         seconds=seconds,
     )
 
-    return stringDate(utcnow() + delta if future else utcnow() - delta)
+    if reference:
+        reference = datetime.datetime.strptime(reference, '%Y-%m-%dT%H:%M:%S.%fZ')
+    else:
+        reference = utcnow()
+    return stringDate(reference + delta if future else reference - delta)
 
 
 datefmt_re = re.compile(r'(\.[0-9]{3})[0-9]*(\+00:00)?')

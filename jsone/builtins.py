@@ -108,7 +108,9 @@ def to_str(v):
         return str(v)
 
 
-builtin('fromNow', argument_tests=[is_string])(fromNow)
+@builtin('fromNow', variadic=is_string, minArgs=1)
+def fromNow_builtin(offset, reference=None):
+    return fromNow(offset, reference)
 
 @builtin('typeof', argument_tests=[anything])
 def typeof(v):

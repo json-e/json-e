@@ -94,9 +94,11 @@ def flattenDeep(template, context):
 @operator('$fromNow')
 def fromNow(template, context):
     offset = renderValue(template['$fromNow'], context)
+    reference = renderValue(template['from'], context) if 'from' in template else None
+
     if not isinstance(offset, string):
         raise JSONTemplateError("$fromnow expects a string")
-    return shared.fromNow(offset)
+    return shared.fromNow(offset, reference)
 
 
 @operator('$if')
