@@ -38,7 +38,8 @@ def interpolate(string, context):
             string = string[mo.end():]
             parsed, offset = evaluator.parseUntilTerminator(string, '}')
             if isinstance(parsed, (list, dict)):
-                raise TemplateError('cannot interpolate array/object: ' + string[:offset])
+                raise TemplateError(
+                    "interpolation of '{}' produced an array or object".format(string[:offset]))
             result.append(builtins.to_str(parsed))
             string = string[offset + 1:]
         else:  # found `$${`

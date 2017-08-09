@@ -83,7 +83,7 @@ result:   {message: 'tricky }}}}'}
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}
-error:    "TemplateError: cannot interpolate array/object: key"
+error:    "TemplateError: interpolation of 'key' produced an array or object"
 ---
 title:    can't interpolate objects
 context:  {key: {}}
