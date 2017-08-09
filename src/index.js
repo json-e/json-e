@@ -25,7 +25,8 @@ let interpolate = (string, context) => {
     if (remaining[offset+1] != '$') {
       let v = interpreter.parseUntilTerminator(remaining.slice(offset), 2, '}', context);
       if (isArray(v.result) || isObject(v.result)) {
-        throw new TemplateError('cannot interpolate array/object: ' + string);
+        throw new TemplateError('cannot interpolate array/object: '
+            + remaining.slice(offset + 2, offset + v.offset));
       }
 
       // toString renders null as an empty string, which is not what we want

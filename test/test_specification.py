@@ -4,6 +4,7 @@ import os
 import unittest
 import yaml
 import jsone.shared
+from nose.tools import eq_
 
 TEST_DATE = dateutil.parser.parse('2017-01-19T16:27:20.974Z')
 
@@ -28,6 +29,10 @@ def test():
                 exc = e
             if 'error' in spec:
                 assert exc, "expected exception"
+                expected = spec['error']
+                if expected is True:  # no specific expectation
+                    return
+                eq_(str(exc), expected)
             else:
                 assert not exc
                 assert res == spec['result'], \

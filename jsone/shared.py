@@ -12,6 +12,11 @@ class DeleteMarker:
 
 
 class JSONTemplateError(Exception):
+    def __str__(self):
+        return "{}: {}".format(self.__class__.__name__, self.args[0])
+
+
+class TemplateError(JSONTemplateError):
     pass
 
 

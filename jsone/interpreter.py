@@ -1,7 +1,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from .prattparser import PrattParser, infix, prefix
-from .shared import JSONTemplateError, string
+from .shared import TemplateError, string
 import operator
 import json
 
@@ -21,7 +21,7 @@ OPERATORS = {
 }
 
 
-class ExpressionError(JSONTemplateError):
+class ExpressionError(TemplateError):
 
     @classmethod
     def expectation(cls, operator, expected):

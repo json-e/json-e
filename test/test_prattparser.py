@@ -101,7 +101,7 @@ def test_parser():
         try:
             parser.parse(input)
         except JSONTemplateError as exc:
-            eq_(str(exc), message)
+            eq_(str(exc), "SyntaxError: " + message)
 
     yield fail, 'x', 'Unexpected input: \'x\''
     yield fail, '11', 'Found number, expected *, +, -'
