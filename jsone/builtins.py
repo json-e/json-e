@@ -1,16 +1,17 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import math
-from .interpreter import ExpressionError
-from .shared import string, fromNow
+from .shared import string, fromNow, JSONTemplateError
 
 builtins = {}
 
+class BuiltinError(JSONTemplateError):
+    pass
 
 def builtin(name, variadic=None, argument_tests=None, minArgs=None):
     def wrap(fn):
         def bad(reason=None):
-            raise ExpressionError((reason or 'invalid arguments to {}').format(name))
+            raise BuiltinError((reason or 'invalid arguments to {}').format(name))
         if variadic:
             def invoke(*args):
                 if minArgs:
