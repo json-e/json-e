@@ -63,7 +63,7 @@ def eval(template, context):
 def flatten(template, context):
     value = renderValue(template['$flatten'], context)
     if not isinstance(value, list):
-        raise TemplateError('$flatten value must evaluate to an array of arrays')
+        raise TemplateError('$flatten value must evaluate to an array')
 
     def gen():
         for e in value:
@@ -79,7 +79,7 @@ def flatten(template, context):
 def flattenDeep(template, context):
     value = renderValue(template['$flattenDeep'], context)
     if not isinstance(value, list):
-        raise TemplateError('$flatten value must evaluate to an array')
+        raise TemplateError('$flattenDeep value must evaluate to an array')
 
     def gen(value):
         if isinstance(value, list):
@@ -98,7 +98,7 @@ def fromNow(template, context):
     reference = renderValue(template['from'], context) if 'from' in template else None
 
     if not isinstance(offset, string):
-        raise TemplateError("$fromnow expects a string")
+        raise TemplateError("$fromNow expects a string")
     return shared.fromNow(offset, reference)
 
 
@@ -174,7 +174,7 @@ def map(template, context):
 def merge(template, context):
     value = renderValue(template['$merge'], context)
     if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
-        raise TemplateError("$reverse value must evaluate to an array of objects")
+        raise TemplateError("$merge value must evaluate to an array of objects")
     v = dict()
     for e in value:
         v.update(e)

@@ -13,8 +13,6 @@ let flattenDeep = (a) => {
   return Array.isArray(a) ? [].concat(...a.map(flattenDeep)) : a;
 };
 
-let jsonTemplateError = (msg, template) => new TemplateError(msg + JSON.stringify(template, null, '\t'));
-
 let interpolate = (string, context) => {
   let result = '';
   let remaining = string;
@@ -60,7 +58,7 @@ operators.$flatten = (template, context) => {
   let value = render(template['$flatten'], context);
 
   if (!isArray(value)) {
-    throw jsonTemplateError('$flatten requires array as value\n', template);
+    throw new TemplateError('$flatten value must evaluate to an array');
   }
 
   return [].concat(...value);
@@ -70,7 +68,7 @@ operators.$flattenDeep = (template, context) => {
   let value = render(template['$flattenDeep'], context);
 
   if (!isArray(value)) {
-    throw jsonTemplateError('$flattenDeep requires array as value\n', template);
+    throw new TemplateError('$flattenDeep value must evaluate to an array');
   }
 
   return flattenDeep(value);
@@ -83,14 +81,14 @@ operators.$fromNow = (template, context) => {
     reference = render(template['from'], context);
   }
   if (!isString(value)) {
-    throw jsonTemplateError('$fromNow can evaluate string expressions only\n', template);
+    throw new TemplateError('$fromNow expects a string');
   }
   return fromNow(value, reference);
 };
 
 operators.$if = (template, context) => {
   if (!isString(template['$if'])) {
-    throw jsonTemplateError('$if can evaluate string expressions only\n', template);
+    throw new TemplateError('$if can evaluate string expressions only');
   }
   if (isTruthy(interpreter.parse(template['$if'], context))) {
     return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
@@ -108,11 +106,11 @@ operators.$let = (template, context) => {
   var context_copy = Object.assign(context, variables);
 
   if (!isObject(variables)) {
-    throw jsonTemplateError('$let operator requires an object as the context\n', template);
+    throw new TemplateError('$let value must evaluate to an object');
   }
 
   if (template.in == undefined) {
-    throw jsonTemplateError('$let operator requires `in` clause\n', template);
+    throw new TemplateError('$let operator requires an `in` clause');
   }
 
   return render(template.in, context_copy);
@@ -121,17 +119,17 @@ operators.$let = (template, context) => {
 operators.$map = (template, context) => {
   let value = render(template['$map'], context);
   if (!isArray(value) && !isObject(value)) {
-    throw jsonTemplateError('$map requires array or object as value\n', template);
+    throw new TemplateError('$map value must evaluate to an array or object');
   }
 
   if (Object.keys(template).length !== 2) {
-    throw jsonTemplateError('$map requires cannot have more than two properties\n', template);
+    throw new TemplateError('$map requires cannot have more than two properties');
   }
 
   let eachKey = Object.keys(template).filter(k => k !== '$map')[0];
   let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(eachKey);
   if (!match) {
-    throw jsonTemplateError('$map requires each(identifier) syntax\n', template);
+    throw new TemplateError('$map requires each(identifier) syntax');
   }
 
   let x = match[1];
@@ -157,7 +155,7 @@ operators.$merge = (template, context) => {
   let value = render(template['$merge'], context);
 
   if (!isArray(value) || value.some(o => !isObject(o))) {
-    throw jsonTemplateError('$merge requires array as value\n', template);
+    throw new TemplateError('$merge value must evaluate to an array of objects');
   }
 
   return Object.assign({}, ...value);
@@ -167,11 +165,11 @@ operators.$reverse = (template, context) => {
   let value = render(template['$reverse'], context);
 
   if (!isArray(value) && !isArray(template['$reverse'])) {
-    throw jsonTemplateError('$reverse value must evaluate to an array\n', template);
+    throw new TemplateError('$reverse value must evaluate to an array of objects');
   }
 
   if (!isArray(value)) {
-    throw jsonTemplateError('$reverse requires array as value\n', template);
+    throw new TemplateError('$reverse requires array as value');
   }
   return value.reverse();
 };
@@ -179,7 +177,7 @@ operators.$reverse = (template, context) => {
 operators.$sort = (template, context) => {
   let value = render(template['$sort'], context);
   if (!isArray(value)) {
-    throw jsonTemplateError('$sort requires array as value\n', template);
+    throw new TemplateError('$sort requires array as value');
   }
 
   let byKey = Object.keys(template).filter(k => k !== '$sort')[0];
@@ -196,7 +194,7 @@ operators.$sort = (template, context) => {
   } else {
     let needBy = value.some(v => isArray(v) || isObject(v));
     if (needBy) {
-      throw jsonTemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays\n', template);
+      throw new TemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays');
     }
     by = value => value;
   }
@@ -209,7 +207,7 @@ operators.$sort = (template, context) => {
     let eltType = typeof tagged[0][0];
     if (eltType !== 'number' && eltType !== 'string' ||
         tagged.some(e => eltType !== typeof e[0])) {
-      throw jsonTemplateError('$sort requires all sorted values have the same type', template);
+      throw new TemplateError('$sort requires all sorted values have the same type');
     }
   }
 
@@ -247,7 +245,7 @@ let render = (template, context) => {
 
   let matches = Object.keys(operators).filter(c => template.hasOwnProperty(c));
   if (matches.length > 1) {
-    throw jsonTemplateError('only one operator allowed\n', template);
+    throw new TemplateError('only one operator allowed');
   }
   if (matches.length === 1) {
     return operators[matches[0]](template, context);
