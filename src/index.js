@@ -281,9 +281,11 @@ let render = (template, context) => {
 };
 
 module.exports = (template, context = {}) => {
-  let test = Object.keys(context).every(v => /^[a-zA-Z_][a-zA-Z0-9_]*$/.exec(v)[0]);
+  let test = Object.keys(context).every(v => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v));
+  if (!test) {
+    throw new TemplateError('top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
+  }
   context = Object.assign({}, builtins, context);
-  assert(test, 'top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   let result = render(template, context);
   if (result === deleteMarker) {
     return null;
