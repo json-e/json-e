@@ -7,7 +7,7 @@ var {
   isTruthy,
 } = require('./type-utils');
 var builtins = require('./builtins');
-var {TemplateError} = require('./error');
+var {JSONTemplateError, TemplateError} = require('./error');
 
 let flattenDeep = (a) => {
   return Array.isArray(a) ? [].concat(...a.map(flattenDeep)) : a;
@@ -53,9 +53,6 @@ let operators = {};
 
 operators.$eval = (template, context) => {
   let value = render(template['$eval'], context);
-  if (!isString(value)) {
-    throw jsonTemplateError('$eval can evaluate string expressions only\n', template);
-  }
   return interpreter.parse(value, context);
 };
 
@@ -236,7 +233,16 @@ let render = (template, context) => {
     return interpolate(template, context);
   }
   if (isArray(template)) {
-    return template.map((v) => render(v, context)).filter((v) => v !== deleteMarker);
+    return template.map((v, i) => {
+      try {
+        return render(v, context);
+      } catch (err) {
+        if (err instanceof JSONTemplateError) {
+          err.add_location(`[${i}]`);
+        }
+        throw err;
+      }
+    }).filter((v) => v !== deleteMarker);
   }
 
   let matches = Object.keys(operators).filter(c => template.hasOwnProperty(c));
@@ -250,7 +256,19 @@ let render = (template, context) => {
   // clone object
   let result = {};
   for (let key of Object.keys(template)) {
-    let value = render(template[key], context);
+    let value;
+    try {
+      value = render(template[key], context);
+    } catch (err) {
+      if (err instanceof JSONTemplateError) {
+        if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(key)) {
+          err.add_location(`.${key}`);
+        } else {
+          err.add_location(`[${JSON.stringify(key)}]`);
+        }
+      }
+      throw err;
+    }
     if (value !== deleteMarker) {
       if (key.startsWith('$$') && operators.hasOwnProperty(key.substr(1))) {
         key = key.substr(1);

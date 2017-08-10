@@ -2,7 +2,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import re
 import json as json
-from .shared import TemplateError, DeleteMarker, string
+from .shared import JSONTemplateError, TemplateError, DeleteMarker, string
 from . import shared
 from . import builtins
 from .interpreter import ExpressionEvaluator
@@ -244,14 +244,29 @@ def renderValue(template, context):
                     k = k[1:]
                 else:
                     k = interpolate(k, context)
-                v = renderValue(v, context)
+                try:
+                    v = renderValue(v, context)
+                except JSONTemplateError as e:
+                    if re.match('^[a-zA-Z][a-zA-Z0-9]*$', k):
+                        e.add_location('.{}'.format(k))
+                    else:
+                        e.add_location('[{}]'.format(json.dumps(k)))
+                    raise
                 if v is not DeleteMarker:
                     yield k, v
         return dict(updated())
 
     elif isinstance(template, list):
-        rendered = (renderValue(e, context) for e in template)
-        return [e for e in rendered if e is not DeleteMarker]
+        def updated():
+            for i, e in enumerate(template):
+                try:
+                    v = renderValue(e, context)
+                    if v is not DeleteMarker:
+                        yield v
+                except JSONTemplateError as e:
+                    e.add_location('[{}]'.format(i))
+                    raise
+        return list(updated())
 
     else:
         return template

@@ -83,12 +83,12 @@ result:   {message: 'tricky }}}}'}
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}
-error:    "TemplateError: interpolation of 'key' produced an array or object"
+error:    "TemplateError at template.message: interpolation of 'key' produced an array or object"
 ---
 title:    can't interpolate objects
 context:  {key: {}}
 template: 'hello ${key}'
-error:    true
+error:    "TemplateError: interpolation of 'key' produced an array or object"
 ---
 title:    booleans interpolate
 context:  {t: true, f: false}
@@ -4690,3 +4690,8 @@ title: 'Infix >= type error'
 context: {}
 template: {$eval: '3 >= "hello"'}
 error: true
+---
+title: 'Nested error has appropriate message'
+context: {}
+template: {foo: [1, {"123": [{$eval: 10}]}]}
+error: 'TemplateError at template.foo[1]["123"][0]: expression to be evaluated must be a string'

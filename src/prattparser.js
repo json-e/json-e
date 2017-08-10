@@ -5,7 +5,8 @@
 
 var Tokenizer = require('./tokenizer');
 var assert = require('assert');
-var {SyntaxError} = require('./error');
+var {isString} = require('./type-utils');
+var {SyntaxError, TemplateError} = require('./error');
 
 let syntaxRuleError = (token, expects) => new SyntaxError(`Found '${token.value}' expected '${expects}'`, token);
 
@@ -41,6 +42,9 @@ class PrattParser {
   }
 
   parse(source, context = {}, offset = 0) {
+    if (!isString(source)) {
+      throw new TemplateError('expression to be evaluated must be a string');
+    }
     let ctx = new Context(this, source, context, offset);
     let result = ctx.parse();
     let next = ctx.attempt();
