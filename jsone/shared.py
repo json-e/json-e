@@ -12,6 +12,22 @@ class DeleteMarker:
 
 
 class JSONTemplateError(Exception):
+    def __init__(self, message):
+        super(JSONTemplateError, self).__init__(message)
+        self.location = []
+
+    def add_location(self, loc):
+        self.location.insert(0, loc)
+
+    def __str__(self):
+        location = ' at template' + ''.join(self.location)
+        return "{}{}: {}".format(
+            self.__class__.__name__,
+            location if self.location else '',
+            self.args[0])
+
+
+class TemplateError(JSONTemplateError):
     pass
 
 

@@ -35,6 +35,11 @@ suite('json-e', () => {
           if (!c.error) {
             throw err;
           }
+          if (c.error === true) {  // no specific expectation
+            return;
+          }
+          err = err.toString();
+          assume(err).eql(c.error);
           return;
         }
         assert(!c.error, 'Expected an error');

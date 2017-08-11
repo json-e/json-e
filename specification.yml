@@ -83,12 +83,12 @@ result:   {message: 'tricky }}}}'}
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}
-error:    true
+error:    "TemplateError at template.message: interpolation of 'key' produced an array or object"
 ---
 title:    can't interpolate objects
 context:  {key: {}}
 template: 'hello ${key}'
-error:    true
+error:    "TemplateError: interpolation of 'key' produced an array or object"
 ---
 title:    booleans interpolate
 context:  {t: true, f: false}
@@ -105,10 +105,10 @@ context:  {nothing: null}
 template: 'big pile of ${nothing}'
 result:   'big pile of null'
 ---
-title: invalid context (2)
+title: invalid context
 context: {'a b c': 1}
 template: {}
-error: true
+error: 'TemplateError: top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/'
 ################################################################################
 ---
 section:  $if operator
@@ -352,12 +352,12 @@ result:   [1, 2, 3]
 title:    flatten null
 context:  {}
 template: {$flatten: null}
-error:    true
+error:    'TemplateError: $flatten value must evaluate to an array'
 ---
 title:    flatten an object
 context:  {}
 template: {$flatten: {a: 1, b: 2}}
-error:    true
+error:    'TemplateError: $flatten value must evaluate to an array'
 ---
 title:    flatten an array of strings
 context:  {}
@@ -405,12 +405,12 @@ result:   []
 title:    flattenDeep null
 context:  {}
 template: {$flattenDeep: null}
-error:    true
+error:    'TemplateError: $flattenDeep value must evaluate to an array'
 ---
 title:    flattenDeep an object
 context:  {}
 template: {$flattenDeep: {a: 1, b: 2}}
-error:    true
+error:    'TemplateError: $flattenDeep value must evaluate to an array'
 ---
 title:    flattenDeep an array of strings
 context:  {}
@@ -533,7 +533,7 @@ result:   '2018-01-19T16:27:20.974Z'
 title:    fromNow of non-string
 context:  {}
 template: {$fromNow: 13}
-error:    true
+error:    'TemplateError: $fromNow expects a string'
 ---
 title:    fromNow with eval
 context:  {ttl: 24}
@@ -612,17 +612,17 @@ result:   43
 title:    let without in
 template: {$let: {x: 1, y: 2}, a: {$eval: "x + y"}}
 context:  {}
-error:    true
+error:    'TemplateError: $let operator requires an `in` clause'
 ---
 title:    let array
 template: {$let: [1, 2], in: {$eval: "1 + 2"}}
 context:  {}
-error:    true
+error:    'TemplateError: $let value must evaluate to an object'
 ---
 title:    let null
 template: {$let: null, in: {$eval: "1 + 2"}}
 context:  {}
-error:    true
+error:    'TemplateError: $let value must evaluate to an object'
 ################################################################################
 ---
 section:  $map
@@ -717,21 +717,21 @@ context:  {}
 template:
   $map: "a, b, c"
   each(y): {$eval: 'y.k'}
-error: true # can't do map on non-arrays
+error: 'TemplateError: $map value must evaluate to an array or object'
 ---
 title:    $map requires an array, not number
 context:  {}
 template:
   $map: 10.1
   each(y): {$eval: 'y.k'}
-error: true # can't do map on non-arrays
+error: 'TemplateError: $map value must evaluate to an array or object'
 ---
 title:    $map requires an array, not null
 context:  {}
 template:
   $map: null
   each(y): {$eval: 'y.k'}
-error: true # can't do map on non-arrays
+error: 'TemplateError: $map value must evaluate to an array or object'
 ################################################################################
 ---
 section:  $merge
@@ -759,12 +759,12 @@ result:   {}
 title:    merge null
 context:  {}
 template: {$merge: null}
-error:    true
+error: 'TemplateError: $merge value must evaluate to an array of objects'
 ---
 title: $merge [null]
 template: {$merge: [null]}
 context: {}
-error: true
+error: 'TemplateError: $merge value must evaluate to an array of objects'
 ################################################################################
 ---
 section:  $sort
@@ -4690,3 +4690,8 @@ title: 'Infix >= type error'
 context: {}
 template: {$eval: '3 >= "hello"'}
 error: true
+---
+title: 'Nested error has appropriate message'
+context: {}
+template: {foo: [1, {"123": [{$eval: 10}]}]}
+error: 'TemplateError at template.foo[1]["123"][0]: expression to be evaluated must be a string'

@@ -1,16 +1,31 @@
-var ExtendableError = require('es6-error');
-
-class SyntaxError extends ExtendableError {
-  constructor(message, {start, end}) {
+class JSONTemplateError extends Error {
+  constructor(message) {
     super(message);
-    this.name = 'SyntaxError';
-    this.message = message;
-    this.start = start;
-    this.end = end;
+    this.location = [];
+  }
+
+  add_location(loc) {
+    this.location.unshift(loc);
+  }
+
+  toString() {
+    if (this.location.length) {
+      return `${this.name} at template${this.location.join('')}: ${this.message}`;
+    } else {
+      return `${this.name}: ${this.message}`;
+    }
   }
 }
 
-class BaseError extends ExtendableError {
+class SyntaxError extends JSONTemplateError {
+  constructor(message) {
+    super(message);
+    this.message = message;
+    this.name = 'SyntaxError';
+  }
+}
+
+class BaseError extends JSONTemplateError {
   constructor(message) {
     super(message);
     this.message = message;
@@ -39,4 +54,4 @@ class BuiltinError extends BaseError {
   }
 }
 
-module.exports = {SyntaxError, InterpreterError, TemplateError, BuiltinError};
+module.exports = {JSONTemplateError, SyntaxError, InterpreterError, TemplateError, BuiltinError};
