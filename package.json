@@ -18,9 +18,7 @@
   },
   "author": "",
   "license": "MPL-2.0",
-  "dependencies": {
-    "es6-error": "^4.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "assume": "^1.4.1",
     "browserify": "^14.4.0",

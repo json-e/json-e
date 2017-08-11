@@ -1,6 +1,4 @@
-var ExtendableError = require('es6-error');
-
-class JSONTemplateError extends ExtendableError {
+class JSONTemplateError extends Error {
   constructor(message) {
     super(message);
     this.location = [];
