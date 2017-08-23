@@ -3,9 +3,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 import re
 import datetime
 
-# this will be overridden in tests
-utcnow = datetime.datetime.utcnow
-
 
 class DeleteMarker:
     pass
@@ -88,10 +85,10 @@ def fromNow(offset, reference):
         seconds=seconds,
     )
 
-    if reference:
+    if isinstance(reference, str):
         reference = datetime.datetime.strptime(reference, '%Y-%m-%dT%H:%M:%S.%fZ')
-    else:
-        reference = utcnow()
+    elif reference is None:
+        reference = datetime.datetime.utcnow()
     return stringDate(reference + delta if future else reference - delta)
 
 

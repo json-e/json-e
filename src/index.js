@@ -6,7 +6,7 @@ var {
   isArray, isObject, isFunction,
   isTruthy,
 } = require('./type-utils');
-var builtins = require('./builtins');
+var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
 
 let flattenDeep = (a) => {
@@ -76,7 +76,7 @@ operators.$flattenDeep = (template, context) => {
 
 operators.$fromNow = (template, context) => {
   let value = render(template['$fromNow'], context);
-  let reference;
+  let reference = context.now;
   if (template['from']) {
     reference = render(template['from'], context);
   }
@@ -283,7 +283,7 @@ module.exports = (template, context = {}) => {
   if (!test) {
     throw new TemplateError('top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   }
-  context = Object.assign({}, builtins, context);
+  context = addBuiltins(Object.assign({}, {now: new Date()}, context));
   let result = render(template, context);
   if (result === deleteMarker) {
     return null;
