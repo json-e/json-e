@@ -31,7 +31,7 @@ def py(when, template, context):
 def js(when, template, context):
     input = json.dumps({'template': template, 'context': context})
     command = ['node', '-e', ' '.join([
-        'var jsone = require("./lib").default, fs = require("fs"), tk = require("timekeeper");',
+        'var jsone = require("./src"), fs = require("fs"), tk = require("timekeeper");',
         'var input = JSON.parse(fs.readFileSync("/dev/stdin").toString());',
         'tk.freeze(new Date(' + str(when) + '000));',
         'var output = JSON.stringify(jsone(input.template, input.context));',
