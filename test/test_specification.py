@@ -1,20 +1,10 @@
-import dateutil.parser
 import jsone
 import os
 import unittest
 import yaml
 import jsone.shared
+from freezegun import freeze_time
 from nose.tools import eq_
-
-TEST_DATE = dateutil.parser.parse('2017-01-19T16:27:20.974Z')
-
-def setup_module():
-    global old_utcnow
-    old_utcnow = jsone.shared.utcnow
-    jsone.shared.utcnow = lambda: TEST_DATE
-
-def teardown_module():
-    jsone.shared.utcnow = old_utcnow
 
 def test():
     def spec_test(name, spec):
@@ -40,11 +30,12 @@ def test():
         return test
 
     with open(os.path.join(os.path.dirname(__file__), '../specification.yml')) as f:
-        for spec in yaml.load_all(f):
-            if 'section' in spec:
-                section = spec['section']
-                continue
+        with freeze_time('2017-01-19T16:27:20.974Z'):
+            for spec in yaml.load_all(f):
+                if 'section' in spec:
+                    section = spec['section']
+                    continue
 
-            name = '{}: {}'.format(section, spec['title'])
-            t = spec_test(name, spec)
-            yield (t, name)
+                name = '{}: {}'.format(section, spec['title'])
+                t = spec_test(name, spec)
+                yield (t, name)

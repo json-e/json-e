@@ -494,19 +494,21 @@ Function calls are made with the usual `fn(arg1, arg2)` syntax. Functions are
 not JSON data, so they cannot be created in JSON-e, but they can be provided as
 built-ins or in the context and called from JSON-e.
 
-#### Built-In Functions
+#### Built-In Functions and Variables
 
-The expression language provides a laundry-list of built-in functions. Library
-users can easily add additional functions, or override the built-ins, as part
+The expression language provides a laundry-list of built-in functions/variables. Library
+users can easily add additional functions/variables, or override the built-ins, as part
 of the context.
 
 * `fromNow(offset)` or `fromNow(offset, reference)` -- JSON datestamp for a time relative to the current time or, if given, the reference time
+* `now` -- the datestamp at the start of evaluation of the template. This is used implicitly as `from` in all fromNow calls. Override to set a different time.
 * `min(a, b, ..)` -- the smallest of the arguments
 * `max(a, b, ..)` -- the largest of the arguments
 * `sqrt(x)`, `ceil(x)`, `floor(x)`, `abs(x)` -- mathematical functions
 * `lowercase(s)`, `uppercase(s)` -- convert string case
 * `str(x)` -- convert string, number, boolean, or array to string
 * `len(x)` -- length of a string or array
+
 
 # Development and testing
 

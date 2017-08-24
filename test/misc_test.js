@@ -7,4 +7,18 @@ suite('misc', function() {
 
     assume(jsone({$eval: 'my_builtin(3, 4)'}, {my_builtin})).eql(5);
   });
+
+  test('time doesn\'t change mid-evaluation (operator)', function() {
+    let template = [...Array(1000).keys()].map(() => ({$fromNow: ''}));
+    let result = new Set(jsone(template, {}));
+
+    assume(result.size).eql(1);
+  });
+
+  test('time doesn\'t change mid-evaluation (builtin)', function() {
+    let template = [...Array(1000).keys()].map(() => ({$eval: 'fromNow("")'}));
+    let result = new Set(jsone(template, {}));
+
+    assume(result.size).eql(1);
+  });
 });

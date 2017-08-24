@@ -3,9 +3,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 import re
 import datetime
 
-# this will be overridden in tests
-utcnow = datetime.datetime.utcnow
-
 
 class DeleteMarker:
     pass
@@ -88,14 +85,25 @@ def fromNow(offset, reference):
         seconds=seconds,
     )
 
-    if reference:
+    if isinstance(reference, str):
         reference = datetime.datetime.strptime(reference, '%Y-%m-%dT%H:%M:%S.%fZ')
-    else:
-        reference = utcnow()
+    elif reference is None:
+        reference = datetime.datetime.utcnow()
     return stringDate(reference + delta if future else reference - delta)
 
 
 datefmt_re = re.compile(r'(\.[0-9]{3})[0-9]*(\+00:00)?')
+
+
+def to_str(v):
+    if isinstance(v, bool):
+        return {True: 'true', False: 'false'}[v]
+    elif isinstance(v, list):
+        return ','.join(to_str(e) for e in v)
+    elif v is None:
+        return 'null'
+    else:
+        return str(v)
 
 
 def stringDate(date):

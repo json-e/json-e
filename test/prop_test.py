@@ -4,28 +4,22 @@ import subprocess
 import string
 import datetime
 
+from freezegun import freeze_time
 from nose.tools import eq_
 from hypothesis import given, settings
 from hypothesis.strategies import *
 
 import jsone
+import jsone.builtins as defined_builtins
 from jsone.render import operators as defined_operators
-from jsone.builtins import builtins as defined_builtins
-
-def setup_module():
-    global old_utcnow
-    old_utcnow = jsone.shared.utcnow
-
-def teardown_module():
-    jsone.shared.utcnow = old_utcnow
 
 def py(when, template, context):
     when = datetime.datetime.utcfromtimestamp(when)
-    jsone.shared.utcnow = lambda: when
-    try:
-        return jsone.render(template, context)
-    except jsone.JSONTemplateError:
-        return Exception
+    with freeze_time(when):
+        try:
+            return jsone.render(template, context)
+        except jsone.JSONTemplateError:
+            return Exception
 
 
 def js(when, template, context):
@@ -54,7 +48,7 @@ def make_strategies():
     prefixed_identifiers = lambda: identifiers().filter(lambda i: '$' + i)
     # exempt $json from operators since it is known to behave differently
     operators = lambda: sampled_from(list(o for o in defined_operators if o != '$json'))
-    builtins = lambda: sampled_from(list(defined_builtins))
+    builtins = lambda: sampled_from(list(defined_builtins.build({})))
 
     def expressions():
         # strategies for individual tokens..

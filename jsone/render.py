@@ -2,9 +2,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import re
 import json as json
-from .shared import JSONTemplateError, TemplateError, DeleteMarker, string
+from .shared import JSONTemplateError, TemplateError, DeleteMarker, string, to_str
 from . import shared
-from . import builtins
 from .interpreter import ExpressionEvaluator
 from .six import viewitems
 
@@ -40,7 +39,7 @@ def interpolate(string, context):
             if isinstance(parsed, (list, dict)):
                 raise TemplateError(
                     "interpolation of '{}' produced an array or object".format(string[:offset]))
-            result.append(builtins.to_str(parsed))
+            result.append(to_str(parsed))
             string = string[offset + 1:]
         else:  # found `$${`
             result.append('${')
@@ -95,7 +94,7 @@ def flattenDeep(template, context):
 @operator('$fromNow')
 def fromNow(template, context):
     offset = renderValue(template['$fromNow'], context)
-    reference = renderValue(template['from'], context) if 'from' in template else None
+    reference = renderValue(template['from'], context) if 'from' in template else context.get('now')
 
     if not isinstance(offset, string):
         raise TemplateError("$fromNow expects a string")
