@@ -95,6 +95,17 @@ def fromNow(offset, reference):
 datefmt_re = re.compile(r'(\.[0-9]{3})[0-9]*(\+00:00)?')
 
 
+def to_str(v):
+    if isinstance(v, bool):
+        return {True: 'true', False: 'false'}[v]
+    elif isinstance(v, list):
+        return ','.join(to_str(e) for e in v)
+    elif v is None:
+        return 'null'
+    else:
+        return str(v)
+
+
 def stringDate(date):
     # Convert to isoFormat
     string = date.isoformat()

@@ -1,7 +1,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import math
-from .shared import string, fromNow, JSONTemplateError
+from .shared import string, to_str, fromNow, JSONTemplateError
 
 
 class BuiltinError(JSONTemplateError):
@@ -86,28 +86,7 @@ def build(context):
 
 
     builtin('len', argument_tests=[is_string_or_array])(len)
-
-
-    @builtin('str', argument_tests=[anything])
-    def to_str(v):
-        if isinstance(v, bool):
-            return {True: 'true', False: 'false'}[v]
-        elif isinstance(v, list):
-            return ','.join(to_str(e) for e in v)
-        else:
-            return str(v)
-
-
-    @builtin('str', argument_tests=[anything])
-    def to_str(v):
-        if isinstance(v, bool):
-            return {True: 'true', False: 'false'}[v]
-        elif isinstance(v, list):
-            return ','.join(to_str(e) for e in v)
-        elif v is None:
-            return 'null'
-        else:
-            return str(v)
+    builtin('str', argument_tests=[anything])(to_str)
 
 
     @builtin('fromNow', variadic=is_string, minArgs=1)
