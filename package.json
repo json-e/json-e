@@ -5,7 +5,6 @@
   "main": "./src/index.js",
   "scripts": {
     "test": "mocha test/*_test.js",
-    "prepublish": "npm test",
     "build-demo": "cd demo && yarn && yarn build",
     "start-demo": "cd demo && yarn && yarn start"
   },
