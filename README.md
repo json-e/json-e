@@ -507,6 +507,7 @@ of the context.
 * `sqrt(x)`, `ceil(x)`, `floor(x)`, `abs(x)` -- mathematical functions
 * `lowercase(s)`, `uppercase(s)` -- convert string case
 * `str(x)` -- convert string, number, boolean, or array to string
+* `lstrip(s)`, `rstrip(s)`, `strip(s)` -- strip whitespace from left, right, or both ends of a string
 * `len(x)` -- length of a string or array
 
 

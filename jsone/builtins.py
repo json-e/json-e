@@ -7,8 +7,10 @@ from .shared import string, to_str, fromNow, JSONTemplateError
 class BuiltinError(JSONTemplateError):
     pass
 
+
 def build(context):
     builtins = {}
+
     def builtin(name, variadic=None, argument_tests=None, minArgs=None):
         def wrap(fn):
             def bad(reason=None):
@@ -40,54 +42,55 @@ def build(context):
             return fn
         return wrap
 
-
     def is_number(v):
         return isinstance(v, (int, float)) and not isinstance(v, bool)
-
 
     def is_string(v):
         return isinstance(v, string)
 
-
     def is_string_or_array(v):
         return isinstance(v, (string, list))
-
 
     def anything(v):
         return isinstance(v, (string, int, float, list, dict)) or v is None or callable(v)
 
     # ---
 
-
     builtin('min', variadic=is_number, minArgs=1)(min)
     builtin('max', variadic=is_number, minArgs=1)(max)
     builtin('sqrt', argument_tests=[is_number])(math.sqrt)
     builtin('abs', argument_tests=[is_number])(abs)
 
-
     @builtin('ceil', argument_tests=[is_number])
     def ceil(v):
         return int(math.ceil(v))
-
 
     @builtin('floor', argument_tests=[is_number])
     def floor(v):
         return int(math.floor(v))
 
-
     @builtin('lowercase', argument_tests=[is_string])
     def lowercase(v):
         return v.lower()
-
 
     @builtin('uppercase', argument_tests=[is_string])
     def lowercase(v):
         return v.upper()
 
-
     builtin('len', argument_tests=[is_string_or_array])(len)
     builtin('str', argument_tests=[anything])(to_str)
 
+    @builtin('strip', argument_tests=[is_string])
+    def strip(s):
+        return s.strip()
+
+    @builtin('rstrip', argument_tests=[is_string])
+    def rstrip(s):
+        return s.rstrip()
+
+    @builtin('lstrip', argument_tests=[is_string])
+    def lstrip(s):
+        return s.lstrip()
 
     @builtin('fromNow', variadic=is_string, minArgs=1)
     def fromNow_builtin(offset, reference=None):

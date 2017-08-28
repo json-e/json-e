@@ -1457,6 +1457,36 @@ context: {}
 template: {$eval: 'str([1, 2, 3])'}
 result: '1,2,3'
 ---
+title: strip space
+context: {}
+template: {$eval: "strip('  abc   ')"}
+result: 'abc'
+---
+title: strip mixed whitspace
+context: {}
+template: {$eval: "strip(' \f\n\r\t\vabc \f\n\r\t\v')"}
+result: 'abc'
+---
+title: rstrip space
+context: {}
+template: {$eval: "rstrip('  abc   ')"}
+result: '  abc'
+---
+title: rstrip mixed whitspace
+context: {}
+template: {$eval: "rstrip(' \f\n\r\t\vabc \f\n\r\t\v')"}
+result: " \f\n\r\t\vabc"
+---
+title: lstrip space
+context: {}
+template: {$eval: "lstrip('  abc   ')"}
+result: 'abc   '
+---
+title: lstrip mixed whitspace
+context: {}
+template: {$eval: "lstrip(' \f\n\r\t\vabc \f\n\r\t\v')"}
+result: "abc \f\n\r\t\v"
+---
 title:    fromNow
 context:  {}
 template: {$eval: fromNow("")}
