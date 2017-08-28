@@ -283,7 +283,7 @@ result:   {a: 1, b: 2, c: 3, d: 4}
 
 ### `$mergeDeep`
 
-The `$mergeDepp` operator is like `$merge`, but it recurses into objects to
+The `$mergeDeep` operator is like `$merge`, but it recurses into objects to
 combine their contents property by property.  Arrays are concatenated.
 
 ```yaml
