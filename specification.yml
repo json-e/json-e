@@ -767,6 +767,69 @@ context: {}
 error: 'TemplateError: $merge value must evaluate to an array of objects'
 ################################################################################
 ---
+section:  $mergeDeep
+---
+title:    simple non-deep mergeDeep matches merge
+context:  {}
+template: {$mergeDeep: [{a: 1, b: 1}, {b: 2, c: 3}, {d: 4}]}
+result:   {a: 1, b: 2, c: 3, d: 4}
+---
+title:    deep merge of lists appends
+context:  {}
+template: {$mergeDeep: [{a: [1, 2]}, {a: [3, 4]}]}
+result:   {a: [1, 2, 3, 4]}
+---
+title:    deep merge of objects merges
+context:  {}
+template: {$mergeDeep: [{a: {x: 1, y: 2}}, {a: {y: 3, z: 4}}]}
+result:   {a: {x: 1, y: 3, z: 4}}
+---
+title:    very deep merge
+context:  {}
+template:
+  $mergeDeep:
+    - task:
+        payload:
+          command: [a, b]
+    - task:
+        extra:
+          foo: bar
+    - task:
+        payload:
+          command: [c]
+result:
+  task:
+    extra:
+      foo: bar
+    payload:
+      command: [a, b, c]
+---
+title:    value is evaluated
+context:  {defaults: {d: 4}}
+template: {$mergeDeep: [{a: 1, b: 1}, {b: 2, c: 3}, {$eval: defaults}]}
+result:   {a: 1, b: 2, c: 3, d: 4}
+---
+title:    mergeDeep empty array
+context:  {}
+template: {$mergeDeep: []}
+result:   {}
+---
+title:    mergeDeep empty array with empty object
+context:  {}
+template: {$mergeDeep: [{}]}
+result:   {}
+---
+title:    mergeDeep null
+context:  {}
+template: {$mergeDeep: null}
+error: 'TemplateError: $mergeDeep value must evaluate to an array of objects'
+---
+title: $mergeDeep [null]
+template: {$mergeDeep: [null]}
+context: {}
+error: 'TemplateError: $mergeDeep value must evaluate to an array of objects'
+################################################################################
+---
 section:  $sort
 ---
 title:    simple sort
