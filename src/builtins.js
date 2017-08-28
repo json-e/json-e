@@ -97,6 +97,21 @@ module.exports = (context) => {
     invoke: obj => obj.length,
   });
 
+  define('strip', builtins, {
+    argumentTests: ['string'],
+    invoke: str => str.trim(),
+  });
+
+  define('rstrip', builtins, {
+    argumentTests: ['string'],
+    invoke: str => str.replace(/\s+$/, ''),
+  });
+
+  define('lstrip', builtins, {
+    argumentTests: ['string'],
+    invoke: str => str.replace(/^\s+/, ''),
+  });
+
   // Miscellaneous
   define('fromNow', builtins, {
     variadic: 'string',
