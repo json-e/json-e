@@ -281,6 +281,32 @@ template: {$merge: [{a: 1, b: 1}, {b: 2, c: 3}, {d: 4}]}
 result:   {a: 1, b: 2, c: 3, d: 4}
 ```
 
+### `$mergeDeep`
+
+The `$mergeDepp` operator is like `$merge`, but it recurses into objects to
+combine their contents property by property.  Arrays are concatenated.
+
+```yaml
+context:  {}
+template:
+  $mergeDeep:
+    - task:
+        payload:
+          command: [a, b]
+    - task:
+        extra:
+          foo: bar
+    - task:
+        payload:
+          command: [c]
+result:
+  task:
+    extra:
+      foo: bar
+    payload:
+      command: [a, b, c]
+```
+
 ### `$sort`
 
 The `$sort` operator sorts the given array. It takes a `by(var)` property which

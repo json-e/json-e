@@ -161,6 +161,44 @@ operators.$merge = (template, context) => {
   return Object.assign({}, ...value);
 };
 
+operators.$mergeDeep = (template, context) => {
+  let value = render(template['$mergeDeep'], context);
+
+  if (!isArray(value) || value.some(o => !isObject(o))) {
+    throw new TemplateError('$mergeDeep value must evaluate to an array of objects');
+  }
+
+  if (value.length === 0) {
+    return {};
+  }
+  // merge two values, preferring the right but concatenating lists and
+  // recursively merging objects
+  let merge = (l, r) => {
+    console.log(`merge(${JSON.stringify(l)}, ${JSON.stringify(r)})`);
+    if (isArray(l) && isArray(r)) {
+      return l.concat(r);
+    }
+    if (isObject(l) && isObject(r)) {
+      let res = Object.assign({}, l);
+      for (let p in r) { // eslint-disable-line taskcluster/no-for-in
+        if (p in l) {
+          res[p] = merge(l[p], r[p]);
+          console.log(`-> ${JSON.stringify(res[p])}`);
+        } else {
+          res[p] = r[p];
+        }
+      }
+      return res;
+    }
+    return r;
+  };
+  console.log(`merging ${JSON.stringify(value)}`);
+  // start with the first element of the list
+  return value.reduce(merge, value.shift());
+
+  return Object.assign({}, ...value);
+};
+
 operators.$reverse = (template, context) => {
   let value = render(template['$reverse'], context);
 

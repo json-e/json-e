@@ -6,6 +6,7 @@ from .shared import JSONTemplateError, TemplateError, DeleteMarker, string, to_s
 from . import shared
 from .interpreter import ExpressionEvaluator
 from .six import viewitems
+import functools
 
 operators = {}
 
@@ -178,6 +179,28 @@ def merge(template, context):
     for e in value:
         v.update(e)
     return v
+
+
+@operator('$mergeDeep')
+def merge(template, context):
+    value = renderValue(template['$mergeDeep'], context)
+    if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
+        raise TemplateError("$mergeDeep value must evaluate to an array of objects")
+    def merge(l, r):
+        if isinstance(l, list) and isinstance(r, list):
+            return l + r
+        if isinstance(l, dict) and isinstance(r, dict):
+            res = l.copy()
+            for k, v in viewitems(r):
+                if k in l:
+                    res[k] = merge(l[k], v)
+                else:
+                    res[k] = v
+            return res
+        return r
+    if len(value) == 0:
+        return {}
+    return functools.reduce(merge, value[1:], value[0])
 
 
 @operator('$reverse')
