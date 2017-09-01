@@ -570,7 +570,7 @@ npm run-script build-demo
 
 ### Making a Release
 
-* Update the version, commit, and tag -- `npm patch` (or minor or major, depending)
+* Update the version, commit, and tag -- `npm version patch` (or minor or major, depending)
 * Push to release the JS version -- `git push && git push --tags`
 * Release to PyPi:
   * `python setup.py sdist`
