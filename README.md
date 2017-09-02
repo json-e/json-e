@@ -51,17 +51,17 @@ The Python distribution exposes a `render` function:
 ```python
 import jsone
 
-var template = {"a": {"$eval": "foo.bar"}}
-var context = {"foo": {"bar": "zoo"}}
-print(jsone(template, contxt))  # -> {"a": "zoo"}
+template = {"a": {"$eval": "foo.bar"}}
+context = {"foo": {"bar": "zoo"}}
+print(jsone.render(template, context))  # -> {"a": "zoo"}
 ```
 
 and also allows custom functions in the context:
 
 ```python
-var template = {"$eval": "foo(1)"}
-var context = {"foo": lambda x: x + 2}
-print(jsone(template, contxt))  # -> 3
+template = {"$eval": "foo(1)"}
+context = {"foo": lambda x: x + 2}
+print(jsone.render(template, context))  # -> 3
 ```
 
 # Language Reference
