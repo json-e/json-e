@@ -249,6 +249,18 @@ def sort(template, context):
     return list(e[1] for e in sorted(to_sort))
 
 
+@operator('$transform')
+def transform(template, context):
+    transform = evaluateExpression(template['$transform'], context)
+    if not callable(transform):
+        raise TemplateError("$transform expects an expression that evaluates to a function")
+    subcontext = context.copy()
+    for k, v in template.iteritems():
+        if k != "$transform":
+            subcontext[k] = v
+    return transform(subcontext)
+
+
 def renderValue(template, context):
     if isinstance(template, string):
         return interpolate(template, context)

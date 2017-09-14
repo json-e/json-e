@@ -261,6 +261,19 @@ operators.$sort = (template, context) => {
     .map(e => e[1]);
 };
 
+operators.$transform = (template, context) => {
+  if (!isString(template['$transform'])) {
+    throw new TemplateError('$transform requires a expression');
+  }
+  let transform = interpreter.parse(template['$transform'], context);
+  if (!isFunction(transform)) {
+    throw new TemplateError('$transform requires an expression that evaluates to a function');
+  }
+  let args = Object.assign({}, template);
+  delete args.$transform;
+  return transform(Object.assign({}, context, args));
+};
+
 let render = (template, context) => {
   if (isNumber(template) || isBool(template) || template === null) {
     return template;
