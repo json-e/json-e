@@ -106,10 +106,13 @@ operators.$let = (template, context) => {
   var context_copy = Object.assign(context, variables);
   
   let eachKey = Object.keys(variables);
-  let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(eachKey);
-
-  console.log(match);
-  
+ 
+  if (eachKey !== null || !isArray(eachKey)) {
+    let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(eachKey);
+    if (!match) {
+      throw new TemplateError('top level keys of $let must follow/[a-zA-Z_][a-zA-Z0-9_]*/');
+    }
+  }  
   if (!isObject(variables)) {
     throw new TemplateError('$let value must evaluate to an object');
   }
