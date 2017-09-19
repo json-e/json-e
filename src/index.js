@@ -104,7 +104,12 @@ operators.$let = (template, context) => {
   let variables = render(template['$let'], context);
 
   var context_copy = Object.assign(context, variables);
+  
+  let eachKey = Object.keys(variables);
+  let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(eachKey);
 
+  console.log(match);
+  
   if (!isObject(variables)) {
     throw new TemplateError('$let value must evaluate to an object');
   }
