@@ -103,7 +103,7 @@ result:   '3, really 3.75'
 title:    nulls interpolate
 context:  {nothing: null}
 template: 'big pile of ${nothing}'
-result:   'big pile of null'
+result:   'big pile of '
 ---
 title: invalid context
 context: {'a b c': 1}

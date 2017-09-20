@@ -92,15 +92,16 @@ result:   {message: 'hello world', 'k=1': true}
 ```
 
 The bit inside the `${..}` is an expression, and must evaluate to something
-that interpolates obviously into a string (so, a string, number, boolean, or
-null). The expression syntax is described in more detail below.
+that interpolates obviously into a string (so, a string, number, boolean,).
+If it is null, then the expression interpolates into an empty string.
+The expression syntax is described in more detail below.
 
 Values interpolate as their JSON literal values:
 
 ```yaml
 context: {num: 3, t: true, f: false, nil: null}
 template: ["number: ${num}", "booleans: ${t} ${f}", "null: ${nil}"]
-result: ["number: 3", "booleans: true false", "null: null"]
+result: ["number: 3", "booleans: true false", "null: "]
 ```
 
 Note that object keys can be interpolated, too:
