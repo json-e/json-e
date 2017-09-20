@@ -4788,3 +4788,11 @@ title: 'Nested error has appropriate message'
 context: {}
 template: {foo: [1, {"123": [{$eval: 10}]}]}
 error: 'TemplateError at template.foo[1]["123"][0]: expression to be evaluated must be a string'
+################################################################################
+---
+section: $transform
+---
+title: '$transform'
+context: {key: 1}
+template: {$transform: 'typeof', key2: 2}
+result: 'object'
