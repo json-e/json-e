@@ -27,9 +27,9 @@ let interpolate = (string, context) => {
         throw new TemplateError(`interpolation of '${input}' produced an array or object`);
       }
 
-      // toString renders null as an empty string, which is not what we want
+      // if it is null, result should just be appended with empty string
       if (v.result === null) {
-        result += 'null';
+        result += '';
       } else {
         result += v.result.toString();
       }

@@ -40,7 +40,10 @@ def interpolate(string, context):
             if isinstance(parsed, (list, dict)):
                 raise TemplateError(
                     "interpolation of '{}' produced an array or object".format(string[:offset]))
-            result.append(to_str(parsed))
+            if to_str(parsed) == "null":
+                result.append("")
+            else:
+                result.append(to_str(parsed))
             string = string[offset + 1:]
         else:  # found `$${`
             result.append('${')
