@@ -108,7 +108,7 @@ operators.$let = (template, context) => {
   if (!isObject(variables)) {
     throw new TemplateError('$let value must evaluate to an object');
   } else {
-    let match = Object.keys(variables).every((variableNames) => /^[a-zA-Z_][a-zA-Z0-9_]*$/.exec(variableNames));
+    let match = Object.keys(variables).every((variableName) => /^[a-zA-Z_][a-zA-Z0-9_]*$/.exec(variableName));
     if (!match) {
       throw new TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
     }
