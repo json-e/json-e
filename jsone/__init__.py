@@ -8,7 +8,6 @@ from . import builtins
 
 _context_re = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*$')
 
-
 def render(template, context):
     if not all(_context_re.match(c) for c in context):
         raise TemplateError('top level keys of context must follow '
