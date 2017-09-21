@@ -179,7 +179,6 @@ operators.$mergeDeep = (template, context) => {
   // merge two values, preferring the right but concatenating lists and
   // recursively merging objects
   let merge = (l, r) => {
-    console.log(`merge(${JSON.stringify(l)}, ${JSON.stringify(r)})`);
     if (isArray(l) && isArray(r)) {
       return l.concat(r);
     }
@@ -188,7 +187,6 @@ operators.$mergeDeep = (template, context) => {
       for (let p in r) { // eslint-disable-line taskcluster/no-for-in
         if (p in l) {
           res[p] = merge(l[p], r[p]);
-          console.log(`-> ${JSON.stringify(res[p])}`);
         } else {
           res[p] = r[p];
         }
@@ -197,7 +195,6 @@ operators.$mergeDeep = (template, context) => {
     }
     return r;
   };
-  console.log(`merging ${JSON.stringify(value)}`);
   // start with the first element of the list
   return value.reduce(merge, value.shift());
 
