@@ -4797,16 +4797,16 @@ title: 'checking name begin with number'
 context: {}
 template: {$let: {ab: 100, bb: 200, 2b: 5},
            in: [{$eval: "ab+bb"}, {$eval: "ab-bb"}, {$eval: "ab*bb"}]}
-error: true
+error: 'TemplateError: top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/'
 ---
 title: 'checking space in variable name'
 context: {}
 template: {$let: {ab: 100, bb: 200, "a b": 10},
            in: [{$eval: "ab+bb"}, {$eval: "ab-bb"}, {$eval: "ab*bb"}]}
-error: true
+error: 'TemplateError: top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/'
 ---
 title: 'checking special character in variable name'
 context: {}
 template: {$let: {ab: 100, bb: 200, "a.b": 10},
            in: [{$eval: "ab+bb"}, {$eval: "ab-bb"}, {$eval: "ab*bb"}]}
-error: true
+error: 'TemplateError: top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/'
