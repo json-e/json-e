@@ -124,14 +124,13 @@ def jsonConstruct(template, context):
 
 @operator('$let')
 def let(template, context):
-    variables = renderValue(template['$let'], context)
-    
-    if type(variables) != list and variables != None:
-        if not all(_let_re.match(key) for key in variables.keys()):
-            raise TemplateError('top level keys of $let must follow/[a-zA-Z_][a-zA-Z0-9_]*/')
+    variables = renderValue(template['$let'], context)    
     
     if not isinstance(variables, dict):
         raise TemplateError("$let value must evaluate to an object")
+    else:
+        if not all(_let_re.match(variableNames) for variableNames in variables.keys()):
+            raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
     subcontext = context.copy()
     subcontext.update(variables)
     try:
