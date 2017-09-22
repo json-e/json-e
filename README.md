@@ -211,9 +211,10 @@ result:   [1, 2, 3]
 ### `$fromNow`
 
 The `$fromNow` operator is a shorthand for the built-in function `fromNow`. It
-creates a JSON (ISO 8601) datestamp for a time relative to the current time or,
-if `from` is given, from that time.  The offset is specified by a sequence of
-number/unit pairs in a string. For example:
+creates a JSON (ISO 8601) datestamp for a time relative to the current time
+(see the `now` builtin, below) or, if `from` is given, relative to that time.
+The offset is specified by a sequence of number/unit pairs in a string. For
+example:
 
 ```yaml
 template: {$fromNow: '2 days 1 hour'}
@@ -525,24 +526,87 @@ result: [true, true, true]
 
 Function calls are made with the usual `fn(arg1, arg2)` syntax. Functions are
 not JSON data, so they cannot be created in JSON-e, but they can be provided as
-built-ins or in the context and called from JSON-e.
+built-ins or supplied in the context and called from JSON-e.
 
-#### Built-In Functions and Variables
+### Built-In Functions and Variables
 
 The expression language provides a laundry-list of built-in functions/variables. Library
 users can easily add additional functions/variables, or override the built-ins, as part
 of the context.
 
-* `fromNow(offset)` or `fromNow(offset, reference)` -- JSON datestamp for a time relative to the current time or, if given, the reference time
-* `now` -- the datestamp at the start of evaluation of the template. This is used implicitly as `from` in all fromNow calls. Override to set a different time.
-* `min(a, b, ..)` -- the smallest of the arguments
-* `max(a, b, ..)` -- the largest of the arguments
-* `sqrt(x)`, `ceil(x)`, `floor(x)`, `abs(x)` -- mathematical functions
-* `lowercase(s)`, `uppercase(s)` -- convert string case
-* `str(x)` -- convert string, number, boolean, or array to string
-* `lstrip(s)`, `rstrip(s)`, `strip(s)` -- strip whitespace from left, right, or both ends of a string
-* `len(x)` -- length of a string or array
+#### Time
 
+The built-in context value `now` is set to the current time at the start of
+evaluation of the template, and used as the default "from" value for `$fromNow`
+and the built-in `fromNow()`.
+
+```yaml
+template:
+  - {$eval: 'now'}
+  - {$eval: 'fromNow("1 minute")'}
+  - {$eval: 'fromNow("1 minute", "2017-01-19T16:27:20.974Z")'}
+context: {}
+result:
+  - '2017-01-19T16:27:20.974Z',
+  - '2017-01-19T16:28:20.974Z',
+  - '2017-01-19T16:28:20.974Z',
+```
+
+#### Math
+
+```yaml
+template:
+  # the smallest of the arguments
+  - {$eval: 'min(1, 3, 5)'}
+  # the largest of the arguments
+  - {$eval: 'max(2, 4, 6)'}
+  # mathematical functions
+  - {$eval: 'sqrt(16)'}
+  - {$eval: 'ceil(0.3)'}
+  - {$eval: 'floor(0.3)'}
+  - {$eval: 'abs(-0.3)'}
+context: {}
+result:
+  - 1
+  - 6
+  - 4
+  - 1
+  - 0
+  - 0.3
+```
+
+#### Strings
+
+```yaml
+template:
+  # convert string case
+  - {$eval: 'lowercase("Fools!")'}
+  - {$eval: 'uppercase("Fools!")'}
+  # convert string, number, boolean, or array to string
+  - {$eval: 'str(130)'}
+  # strip whitespace from left, right, or both ends of a string
+  - {$eval: 'lstrip("  room  ")'}
+  - {$eval: 'rstrip("  room  ")'}
+  - {$eval: 'strip("  room  ")'}
+context: {}
+result:
+  - "fools!"
+  - "FOOLS!"
+  - "130"
+  - "room  "
+  - "  room"
+  - room
+```
+
+#### Length
+
+The `len()` built-in returns the length of a string or array.
+
+```yaml
+template: {$eval: 'len([1, 2, 3])'}
+context: {}
+result: 3
+```
 
 # Development and testing
 
