@@ -82,8 +82,8 @@ All JSON-e directives involve the `$` character, so a template without any direc
 rendered unchanged:
 
 ```yaml
-context:  {}
 template: {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
+context:  {}
 result:   {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 ```
 
@@ -92,8 +92,8 @@ result:   {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 The simplest form of substitution occurs within strings, using `${..}`:
 
 ```yaml
-context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k=${num}': true}
+context:  {key: 'world', num: 1}
 result:   {message: 'hello world', 'k=1': true}
 ```
 
@@ -105,16 +105,16 @@ The expression syntax is described in more detail below.
 Values interpolate as their JSON literal values:
 
 ```yaml
-context: {num: 3, t: true, f: false, nil: null}
 template: ["number: ${num}", "booleans: ${t} ${f}", "null: ${nil}"]
+context: {num: 3, t: true, f: false, nil: null}
 result: ["number: 3", "booleans: true false", "null: "]
 ```
 
 Note that object keys can be interpolated, too:
 
 ```yaml
-context: {name: 'foo', value: 'bar'}
 template: {"tc_${name}": "${value}"}
+context: {name: 'foo', value: 'bar'}
 result: {"tc_foo": "bar"}
 ```
 
@@ -134,13 +134,13 @@ result of that evaluation. Unlike with string interpolation, the result need
 not be a string, but can be an arbitrary data structure.
 
 ```yaml
+template: {config: {$eval: 'settings.staging'}}
 context:
   settings:
     staging:
       transactionBackend: mock
     production:
       transactionBackend: customerdb
-template: {config: {$eval: 'settings.staging'}}
 result:   {config: {transactionBackend: 'mock'}}
 ```
 
@@ -153,8 +153,8 @@ value (use `$eval` for that). While this can be useful in some cases, it is an
 unusual case to include a JSON string in a larger data structure.
 
 ```yaml
-context:  {a: 1, b: 2}
 template: {$json: [a, b, {$eval: 'a+b'}, 4]}
+context:  {a: 1, b: 2}
 result:   '["a", "b", 3, 4]'
 ```
 
@@ -165,26 +165,26 @@ replaces itself with the `then` or `else` properties. If either property is
 omitted, then the expression is omitted from the parent object.
 
 ```yaml
-context:  {cond: true}
 template: {key: {$if: 'cond', then: 1}, k2: 3}
+context:  {cond: true}
 result:   {key: 1, k2: 3}
 ```
 
 ```yaml
-context:  {x: 10}
 template: {$if: 'x > 5', then: 1, else: -1}
+context:  {x: 10}
 result:   1
 ```
 
 ```yaml
-context: {cond: false}
 template: [1, {$if: 'cond', else: 2}, 3]
+context: {cond: false}
 result: [1,2,3]
 ```
 
 ```yaml
-context: {cond: false}
 template: {key: {$if: 'cond', then: 2}, other: 3}
+context: {cond: false}
 result: {other: 3}
 ```
 
@@ -193,8 +193,8 @@ result: {other: 3}
 The `$flatten` operator flattens an array of arrays into one array.
 
 ```yaml
-context:  {}
 template: {$flatten: [[1, 2], [3, 4], [5]]}
+context:  {}
 result:   [1, 2, 3, 4, 5]
 ```
 
@@ -203,8 +203,8 @@ result:   [1, 2, 3, 4, 5]
 The `$flattenDeep` operator deeply flattens an array of arrays into one array.
 
 ```yaml
-context:  {}
 template: {$flattenDeep: [[1, [2, [3]]]]}
+context:  {}
 result:   [1, 2, 3]
 ```
 
@@ -216,14 +216,14 @@ if `from` is given, from that time.  The offset is specified by a sequence of
 number/unit pairs in a string. For example:
 
 ```yaml
-context:  {}
 template: {$fromNow: '2 days 1 hour'}
+context:  {}
 result:   '2017-01-19T16:27:20.974Z'
 ```
 
 ```yaml
-context:  {}
 template: {$fromNow: '1 hour', from: '2017-01-19T16:27:20.974Z'}
+context:  {}
 result:   '2017-01-19T17:27:20.974Z'
 ```
 
@@ -236,9 +236,9 @@ The `$let` operator evaluates an expression using a context amended with the
 given values. It is analogous to the Haskell `where` clause.
 
 ```yaml
-context: {}
 template: {$let: {ts: 100, foo: 200},
            in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
+context: {}
 result: [300, -100, 20000]
 ```
 
@@ -256,18 +256,18 @@ given an object, the value of your `each` should be an object and each will be m
 internally to give the resulting object. If keys intersect, later keys will win.
 
 ```yaml
-context:  {a: 1}
 template:
   $map: [2, 4, 6]
   each(x): {$eval: 'x + a'}
+context:  {a: 1}
 result:   [3, 5, 7]
 ```
 
 ```yaml
-context:  {}
 template:
   $map: {a: 1, b: 2, c: 3}
   each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
+context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 ```
 
@@ -283,8 +283,8 @@ that combines all of the objects in the array, where the right-side objects
 overwrite the values of the left-side ones.
 
 ```yaml
-context:  {}
 template: {$merge: [{a: 1, b: 1}, {b: 2, c: 3}, {d: 4}]}
+context:  {}
 result:   {a: 1, b: 2, c: 3, d: 4}
 ```
 
@@ -294,7 +294,6 @@ The `$mergeDeep` operator is like `$merge`, but it recurses into objects to
 combine their contents property by property.  Arrays are concatenated.
 
 ```yaml
-context:  {}
 template:
   $mergeDeep:
     - task:
@@ -306,6 +305,7 @@ template:
     - task:
         payload:
           command: [c]
+context:  {}
 result:
   task:
     extra:
@@ -321,10 +321,10 @@ should evaluate to a comparable value for each element. The `by(var)` property
 defaults to the identity function.
 
 ```yaml
-context:  {}
 template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
   by(x): 'x.a'
+context:  {}
 result:   [{a: 1, b: []}, {a: 2}, {a: 3}]
 ```
 
@@ -333,8 +333,8 @@ result:   [{a: 1, b: []}, {a: 2}, {a: 3}]
 The `$reverse` operator simply reverses the given array.
 
 ```yaml
-context:  {}
 template: {$reverse: [3, 4, 1, 2]}
+context:  {}
 result:   [2, 1, 4, 3]
 ```
 
@@ -344,8 +344,8 @@ All property names starting with `$` are reserved for JSON-e.
 You can use `$$` to escape such properties:
 
 ```yaml
-context:  {}
 template: {$$reverse: [3, 2, {$$eval: '2 - 1'}, 0]}
+context:  {}
 result:   {$reverse: [3, 2, {$eval: '2 - 1'}, 0]}
 ```
 
@@ -356,8 +356,8 @@ not just booleans themselves. JSON-e defines the following values as false.
 Anything else will be true.
 
 ```yaml
-context: {a: null, b: [], c: {}, d: "", e: 0, f: false}
 template: {$if: 'a || b || c || d || e || f', then: "uh oh", else: "falsy" }
+context: {a: null, b: [], c: {}, d: "", e: 0, f: false}
 result: "falsy"
 ```
 
@@ -374,12 +374,12 @@ and decimal notation. Strings do not support any kind of escaping. The use of
 escapes.
 
 ```yaml
-context: {}
 template:
   - {$eval: "1.3"}
   - {$eval: "'abc'"}
   - {$eval: '"abc"'}
   - {$eval: "'\n\t'"}
+context: {}
 result:
   - 1.3
   - "abc"
@@ -391,10 +391,10 @@ Array and object literals also look much like JSON, with bare identifiers
 allowed as keys like in Javascript:
 
 ```yaml
-context: {}
 template:
   - {$eval: '[1, 2, "three"]'}
   - {$eval: '{foo: 1, "bar": 2}'}
+context: {}
 result:
   - [1, 2, "three"]
   - {"foo": 1, "bar": 2}
@@ -405,8 +405,8 @@ result:
 Bare identifiers refer to items from the context or to built-ins (described below).
 
 ```yaml
-context: {x: 'quick', z: 'sort'}
 template: {$eval: '[x, z, x+z]'}
+context: {x: 'quick', z: 'sort'}
 reslut: ['quick', 'sort', 'quicksort']
 ```
 
@@ -416,7 +416,6 @@ The usual arithmetic operators are all defined, with typical associativity and
 precedence:
 
 ```yaml
-context: {x: 10, z: 20, s: "face", t: "plant"}
 template:
   - {$eval: 'x + z'}
   - {$eval: 's + t'}
@@ -425,6 +424,7 @@ template:
   - {$eval: 'z / x'}
   - {$eval: 'z ** 2'}
   - {$eval: '(z / x) ** 2'}
+context: {x: 10, z: 20, s: "face", t: "plant"}
 result:
   - 30
   - "faceplant"
@@ -444,7 +444,6 @@ Comparisons work as expected.  Equality is "deep" in the sense of doing
 comparisons of the contents of data structures.
 
 ```yaml
-context: {x: -10, z: 10, deep: [1, [3, {a: 5}]]}
 template:
   - {$eval: 'x < z'}
   - {$eval: 'x <= z'}
@@ -452,6 +451,7 @@ template:
   - {$eval: 'x >= z'}
   - {$eval: 'deep == [1, [3, {a: 5}]]'}
   - {$eval: 'deep != [1, [3, {a: 5}]]'}
+context: {x: -10, z: 10, deep: [1, [3, {a: 5}]]}
 result: [true, true, false, false, true, false]
 ```
 
@@ -460,8 +460,8 @@ result: [true, true, false, false, true, false]
 Boolean operations use C- and Javascript-style symbls `||`, `&&`, and `!`:
 
 ```yaml
-context: {}
 template: {$eval: '!(false || false) && true'}
+context: {}
 result: true
 ```
 
@@ -472,8 +472,8 @@ syntax or with dot syntax. Unlike Javascript, `obj.prop` is an error if `obj`
 does not have `prop`, while `obj['prop']` will evaulate to `null`.
 
 ```yaml
-context: {v: {a: 'apple', b: 'bananna', c: 'carrot'}}
 template: {$eval: 'v.a + v["b"]'}
+context: {v: {a: 'apple', b: 'bananna', c: 'carrot'}}
 result: 'applebananna'
 ````
 
@@ -486,7 +486,6 @@ does not contain the second index.  A "backward" slice with the start index
 greater than the end index is treated as empty.
 
 ```yaml
-context: {array: ['a', 'b', 'c', 'd', 'e'], string: 'abcde'}
 template:
   - {$eval: '[array[1], string[1]]'}
   - {$eval: '[array[1:4], string[1:4]]'}
@@ -496,6 +495,7 @@ template:
   - {$eval: '[array[-2], string[-2]]'}
   - {$eval: '[array[-2:], string[-2:]]'}
   - {$eval: '[array[:-3], string[:-3]]'}
+context: {array: ['a', 'b', 'c', 'd', 'e'], string: 'abcde'}
 result:
   - ['b', 'b']
   - [['b', 'c', 'd'], 'bcd']
@@ -513,11 +513,11 @@ The `in` keyword can be used to check for containment: a property in an object,
 an element in an array, or a substring in a string.
 
 ```yaml
-context: {}
 template:
   - {$eval: '"foo" in {foo: 1, bar: 2}'}
   - {$eval: '"foo" in ["foo", "bar"]'}
   - {$eval: '"foo" in "foobar"'}
+context: {}
 result: [true, true, true]
 ```
 

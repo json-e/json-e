@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from 'rebass';
 import dedent from 'dedent-js';
 
-const EXAMPLE_RE = /context:([^]*)\ntemplate:([^]*)\nresult:/m;
+const EXAMPLE_RE = /template:([^]*)\ncontext:([^]*)\nresult:/m;
 
 export default class DemoBlock extends React.Component {
   constructor(props) {
@@ -17,8 +17,8 @@ export default class DemoBlock extends React.Component {
   play() {
     // try to sensibly break up the example block, preserving YAML formatting
     const m = EXAMPLE_RE.exec(this.props.literal);
-    const context = m[1];
-    const template = m[2];
+    const template = m[1];
+    const context = m[2];
     window.location.hash = `#Playground/${encodeURIComponent(dedent(context))}&${encodeURIComponent(dedent(template))}`;
   }
 
