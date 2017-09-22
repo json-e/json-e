@@ -8,11 +8,9 @@ import ReactMarkdown from 'react-markdown';
 import DemoBlock from './demoblock';
 import packageinfo from '../../package.json';
 import readme from 'raw-loader!../../README.md';
+import readmeTree from './readme';
 
 class SidebarLink extends React.Component {
-  constructor(props) {
-    super(props);
-  }
   render() {
     return (
       <li>
@@ -25,21 +23,28 @@ class SidebarLink extends React.Component {
 }
 
 class Section extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
+    const { showDemo, section, key } = this.props;
+    const renderers = showDemo ? { CodeBlock: DemoBlock } : {};
+
+    if (!section) {
+      return <p>No such section</p>;
+    }
+
     return (
-      <div id={this.props.section.anchor} className="demo">
+      <div key={key} id={section.anchor} className="demo">
         <Divider width={50} />
-        <ReactMarkdown source={this.props.section.heading}/>
-        <ReactMarkdown
-          source={this.props.section.body}
-          renderers={{
-            CodeBlock: DemoBlock,
-          }}
-        />
+        {section.heading &&
+          <ReactMarkdown source={section.heading} />
+        }
+        {section.body && (
+          <ReactMarkdown
+            source={section.body}
+            renderers={renderers} />
+        )}
+        {section.children && section.children.map(child => (
+         <Section showDemo={showDemo} section={child} key={child.anchor} />
+        ))}
       </div>
     );
   }
@@ -48,25 +53,12 @@ class Section extends React.Component {
 export default class App extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      readme: readmeTree(readme)
+    };
 
-    const parsed = sections.parse(readme);
-    this.demos = [];
-    this.interfaceExample;
-    let active = false;
-    for (let section of parsed.sections) {
-      section.anchor = section.title;
-      if (active) {
-        if (section.level === 1) {
-          break;
-        }
-        this.demos.push(section);
-      } else if (section.heading === '# Language Reference') {
-        active = true;
-      } else if (section.heading === '# Interface') {
-        this.interfaceExample = section;
-      }
-    }
-
+    /* TODO: fix playground links */
+    /*
     const params = new URLSearchParams(document.location.search.substring(1));
     let tmpl = '{}';
     let ctx = '{}';
@@ -96,9 +88,12 @@ result: {}
 \`\`\`
       `,
     };
+    */
   }
 
   render() {
+    const { readme } = this.state;
+
     return (
       <div className="wrap">
         <div className="main">
@@ -111,13 +106,10 @@ result: {}
             <Text>
               A data-structure parameterization system for embedding context in JSON objects
             </Text>
-            <Divider width={'100%'}/>
+            <Divider width={100}/>
             <ul>
-              <SidebarLink section={this.interfaceExample}/>
-              <SidebarLink section={this.playground}/>
-              {
-                this.demos.map(demo => <SidebarLink key={demo.anchor} section={demo}/>)
-              }
+              .. blah blah blah
+              .. demo links
             </ul>
             <Footer>
               <Text small>
@@ -160,14 +152,12 @@ result: {}
             <p>
               JSON-e is also designed to be safe for use on untrusted data. It never uses <code>eval</code> or any other function that might result in arbitrary code execution. It also disallows unbounded iteration, so any JSON-e rendering operation will finish in finite time.
             </p>
-            <Section section={this.interfaceExample}/>
-            <Section section={this.playground}/>
-            {
-              this.demos.map(demo => <Section key={demo.anchor} section={demo}/>)
-            }
+            <Section section={readme.child('Interface')} />
+            <Section section={readme.child('Language Reference')} showDemo />
           </div>
         </div>
       </div>
     );
   }
 }
+            /*  <Section section={this.playground} showDemo /> */
