@@ -319,7 +319,7 @@ result:   {$sort: [3, 2, 1]}
 title:    reserved $-keywords
 context:  {}
 template: {$nothing: 1}
-error:    true
+error:    'TemplateError: $<identifier> is reserved; ues $$<identifier>'
 ---
 title:    escape non-json-e operator
 context:  {}
@@ -580,6 +580,16 @@ title: string interpolation
 context: {key: {key2: 'world', key3: 1}}
 template: {message: 'hello ${key.key2}', 'k-${key.key3}': true}
 result:   {message: 'hello world', 'k-1': true}
+---
+title: string interpolation, first character
+context: {somevalue: 13}
+template: {message: '${somevalue}'}
+result:   {message: '13'}
+---
+title: no string interpolation with $$
+context: {somevalue: 13}
+template: {message: '$${somevalue}'}
+result:   {message: '${somevalue}'}
 ################################################################################
 ---
 section: $let
