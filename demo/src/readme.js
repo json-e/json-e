@@ -12,7 +12,7 @@ class Section {
   }
 
   get anchor() {
-    return this.title.replace(' ', '-').toLowerCase();
+    return this.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
   }
 };
 
@@ -27,7 +27,9 @@ export default function readmeTree(readme) {
   let last = [new Section()];
 	sections.parse(readme).sections.forEach((section) => {
     section = new Section(section);
-    last[section.level-1].children.push(section);
+    if (section.level > 0) {
+      last[section.level-1].children.push(section);
+    }
     last = last.slice(0, section.level).concat([section]);
   });
 

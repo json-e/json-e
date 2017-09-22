@@ -1,26 +1,15 @@
 import React from 'react';
 import './app.css';
 import jsyaml from 'js-yaml';
-import { Heading, Divider, Badge, Space, Button,
-         Text, Message, Footer } from 'rebass';
+import { find } from 'lodash';
+import { Heading, Divider, Badge, Button, Link,
+         Text, Message, Footer, Tabs, TabItem } from 'rebass';
 import sections from 'sections';
 import ReactMarkdown from 'react-markdown';
 import DemoBlock from './demoblock';
 import packageinfo from '../../package.json';
 import readme from 'raw-loader!../../README.md';
 import readmeTree from './readme';
-
-class SidebarLink extends React.Component {
-  render() {
-    return (
-      <li>
-        <a href={'#' + this.props.section.anchor}>
-          <ReactMarkdown source={this.props.section.title}/>
-        </a>
-      </li>
-    );
-  }
-}
 
 class Section extends React.Component {
   render() {
@@ -33,7 +22,6 @@ class Section extends React.Component {
 
     return (
       <div key={key} id={section.anchor} className="demo">
-        <Divider width={50} />
         {section.heading &&
           <ReactMarkdown source={section.heading} />
         }
@@ -42,7 +30,7 @@ class Section extends React.Component {
             source={section.body}
             renderers={renderers} />
         )}
-        {section.children && section.children.map(child => (
+        {(section.children || []).map(child => (
          <Section showDemo={showDemo} section={child} key={child.anchor} />
         ))}
       </div>
@@ -50,11 +38,27 @@ class Section extends React.Component {
   }
 }
 
+class SidebarMenu extends React.Component {
+  render() {
+    const { section, title, tab } = this.props;
+
+    return <li>
+      <Link href={`#${tab}/${section.anchor}`}>{title || section.title}</Link>
+      {section.children.length > 0 && (
+        <ul>
+          {section.children.map(child => <SidebarMenu tab={tab} key={child.anchor} section={child} />)}
+        </ul>
+      )}
+    </li>;
+  }
+}
+
 export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      readme: readmeTree(readme)
+      readme: readmeTree(readme),
+      activeTab: 'About'
     };
 
     /* TODO: fix playground links */
@@ -91,73 +95,81 @@ result: {}
     */
   }
 
+  componentWillMount() {
+    window.addEventListener("hashchange", () => this.hashChanged());
+    // load the initial hash
+    this.hashChanged();
+  }
+
+  hashChanged() {
+    if (window.location.hash) {
+      const hash = window.location.hash.split('/');
+      this.setState({
+        activeTab: hash[0].slice(1),
+        activeAnchor: hash[1]
+      });
+    }
+  }
+
+  componentDidUpdate() {
+    const { activeAnchor } = this.state;
+    if (activeAnchor) {
+      const elt = document.getElementById(activeAnchor);
+      if (elt) {
+        elt.scrollIntoView();
+      }
+    }
+  }
+
   render() {
-    const { readme } = this.state;
+    const { readme, activeTab, activeAnchor } = this.state;
+
+    const tabs = [
+      { name: 'About', section: readme.child('JSON-e') },
+      { name: 'Interface', section: readme.child('Interface') },
+      { name: 'Language', section: readme.child('Language Reference'), showDemo: true },
+      { name: 'Development', section: readme.child('Development and testing') }
+    ];
+
+    const activeData = find(tabs, { name: activeTab }) || tabs[0];
 
     return (
       <div className="wrap">
         <div className="main">
           <aside className="sidebar">
-            <Heading level={1}>
-              JSON-e
-              <Space x={1} />
-              <Badge rounded pill theme="info">v{packageinfo.version}</Badge>
+            <Heading f={3}>
+              JSON-e v{packageinfo.version}
             </Heading>
             <Text>
               A data-structure parameterization system for embedding context in JSON objects
             </Text>
             <Divider width={100}/>
             <ul>
-              .. blah blah blah
-              .. demo links
+              {tabs.map(({ name, section }) =>
+                <SidebarMenu key={name} tab={name} title={name} section={section} />)}
             </ul>
-            <Footer>
-              <Text small>
+            <Divider width={100}/>
+            <div>
+              <Text f={1}>
               Brought to you by the Mozillians behind <a href={'https://docs.taskcluster.net/'}>Taskcluster</a>.
               </Text>
-              <Space x={1} />
-            </Footer>
-            <div style={{paddingBottom: '25px'}}>
-              <Button rounded href={'https://www.mozilla.org/en-US/MPL/'}>
-               License
-              </Button>
-              <Space x={1} />
-              <Button rounded href={'https://github.com/taskcluster/json-e'}>
-               Github
-              </Button>
             </div>
           </aside>
           <div className="content">
-            <div style={{paddingBottom: '25px'}}>
-              <Button rounded href={'https://www.mozilla.org/en-US/MPL/'}>
-               MPL License
-              </Button>
-              <Space x={1} />
-              <Button rounded href={'https://github.com/taskcluster/json-e'}>
-               Github
-              </Button>
-            </div>
-            <p>
-              JSON-e is a data-structure parameterization system written for embedding context in JSON objects.
-            </p>
-
-            <p>
-              The central idea is to treat a data structure as a "template" and transform it, using another data structure as context, to produce an output data structure.
-            </p>
-
-            <p>
-              There are countless libraries to do this with strings, such as mustache. What makes JSON-e unique is that it operates on data structures, not on their textual representation. This allows input to be written in a number of formats (JSON, YAML, etc.) or even generated dynamically. It also means that the output cannot be "invalid", even when including large chunks of contextual data.
-            </p>
-
-            <p>
-              JSON-e is also designed to be safe for use on untrusted data. It never uses <code>eval</code> or any other function that might result in arbitrary code execution. It also disallows unbounded iteration, so any JSON-e rendering operation will finish in finite time.
-            </p>
-            <Section section={readme.child('Interface')} />
-            <Section section={readme.child('Language Reference')} showDemo />
+            <Tabs>
+              {tabs.map(({ name }) => (
+                <TabItem
+                  key={name} 
+                  onClick={() => { window.location.hash = `#${name}`; }}
+                  active={name === activeTab }>
+                  {name}
+                </TabItem>
+              ))}
+            </Tabs>
+            <Section section={activeData.section} showDemo={activeData.showDemo} />
           </div>
         </div>
       </div>
     );
   }
 }
-            /*  <Section section={this.playground} showDemo /> */

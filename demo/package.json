@@ -21,7 +21,7 @@
     "react-dom": "^15.6.1",
     "react-hot-loader": "next",
     "react-markdown": "^2.5.0",
-    "rebass": "^0.3.4",
+    "rebass": "1.0.4",
     "sections": "^1.0.0"
   },
   "postcss": {

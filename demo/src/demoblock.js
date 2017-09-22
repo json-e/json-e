@@ -2,7 +2,7 @@ import React from 'react';
 import jsyaml from 'js-yaml';
 import jsone from '../../src';
 import defaults from 'lodash/defaults';
-import { Heading, Space, Message } from 'rebass';
+import { Heading, Message } from 'rebass';
 import CodeMirror from '@skidding/react-codemirror';
 import CopyToClipboard from 'react-copy-to-clipboard';
 
@@ -42,7 +42,7 @@ class Jsone extends React.Component {
       );
     } catch (err) {
       return (
-        <Message theme="error">
+        <Message bg="#f0b7bc">
           {err.message}
         </Message>
       );
@@ -118,15 +118,15 @@ ${document.location.origin}${document.location.pathname}?template=${encodeURICom
       <div>
         <div className="codeblocks">
           <div>
-            <Heading level={5}>Template</Heading>
+            <Heading f={2}>Template</Heading>
             <CodeMirror value={this.state.template} onChange={template => this.updateTemplate(template)} options={codeMirrorOptions} />
           </div>
           <div>
-            <Heading level={5}>Context</Heading>
+            <Heading f={2}>Context</Heading>
             <CodeMirror value={this.state.context} onChange={context => this.updateContext(context)} options={codeMirrorOptions} />
           </div>
           <div>
-            <Heading level={5}>Results</Heading>
+            <Heading f={2}>Results</Heading>
             <Jsone context={this.state.context} template={this.state.template} />
           </div>
         </div>
@@ -138,7 +138,6 @@ ${document.location.origin}${document.location.pathname}?template=${encodeURICom
               <span className="clicky">copy link to this example</span>
             </CopyToClipboard>
           }
-          <Space width={1}/>
           { this.state.copied && <span>copied to clipboard!</span> }
         </div>
       </div>

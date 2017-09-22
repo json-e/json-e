@@ -36,24 +36,14 @@ html, body, #root {
   text-decoration: none;
 }
 
-.sidebar ul {
-  padding: 0;
-  margin: 0;
+.sidebar li {
+  list-style: outside;
 }
 
-.sidebar ul li {
-  list-style: none;
-  padding-top: 1em;
-  padding-bottom: 1em;
-  text-align: right;
-}
-
-.sidebar ul li + li {
-  border-top: 1px solid var(--teal2);
-}
-
-.sidebar ul li p {
-  margin: 0;
+.sidebar > ul > li + li {
+  border-top: 1px solid #a1eccc;
+  margin-top: 0.5em;
+  padding-top: 0.5em;
 }
 
 .content {
