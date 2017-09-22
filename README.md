@@ -1,7 +1,9 @@
-# [JSON-e](https://taskcluster.github.io/json-e)
+* [Full documentation](https://taskcluster.github.io/json-e)
 
-JSON-e is a data-structure parameterization system written for embedding
-context in JSON objects.
+# JSON-e
+
+JSON-e is a data-structure parameterization system for embedding context in
+JSON objects.
 
 The central idea is to treat a data structure as a "template" and transform it,
 using another data structure as context, to produce an output data structure.
@@ -19,6 +21,8 @@ also disallows unbounded iteration, so any JSON-e rendering operation will
 finish in finite time.
 
 # Interface
+
+## JavaScript
 
 The JS module exposes following interface:
 
@@ -45,6 +49,8 @@ operations should be handled before rendering the template.
 
 *NOTE*: If the template is untrusted, it can pass arbitrary data to functions
 in the context, which must guard against such behavior.
+
+## Python
 
 The Python distribution exposes a `render` function:
 
@@ -540,36 +546,23 @@ of the context.
 
 # Development and testing
 
+## JSON-e development
+
 You should run `npm install` to install the required packages for json-e's
 execution and development.
 
 You can run `./test.sh` to run json-e's unit tests and the `bundle.js` check.
 This is a breakdown of the commands inside the `test.sh` file.
 
-```bash
-# Run JavaScript unit tests
-npm test
+## Demo development
 
-# Run Python unit tests
-python setup.py test
+The demo website is a [Neutrino](https://neutrino.js.org/) app hosted in
+`demo/`.  Follow the usual Neutrino development process (`yarn install && yarn
+start`) there.
 
-# bundle.js check. This section makes sure that
-# the demo website's bundle.js file is updated.
-mv docs/bundle.js docs/bundle.diff.js
-npm run-script build-demo
-diff docs/bundle.js docs/bundle.diff.js
-```
+The resulting application embeds and enriches this README.
 
-You can also run the following command to
-update the demo website bundle.js file.
-
-```bash
-npm run-script build-demo
-```
-
-## Development Notes
-
-### Making a Release
+## Making a Release
 
 * Update the version, commit, and tag -- `npm version patch` (or minor or major, depending)
 * Push to release the JS version -- `git push && git push --tags`
