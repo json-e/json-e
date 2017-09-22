@@ -88,6 +88,17 @@ pre {
   border-bottom: 1px solid var(--base);
 }
 
+.demo-block {
+  position: relative;
+}
+
+.demo-block button {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  background-color: #0c7;
+}
+
 @media (max-width: 800px) {
   .main {
     flex-direction: column;

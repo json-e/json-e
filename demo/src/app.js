@@ -1,7 +1,8 @@
 import React from 'react';
 import './app.css';
 import jsyaml from 'js-yaml';
-import { find } from 'lodash';
+import jsone from '../../src';
+import { find, defaults } from 'lodash';
 import { Heading, Divider, Badge, Button, Link,
          Text, Message, Footer, Tabs, TabItem } from 'rebass';
 import sections from 'sections';
@@ -10,6 +11,24 @@ import DemoBlock from './demoblock';
 import packageinfo from '../../package.json';
 import readme from 'raw-loader!../../README.md';
 import readmeTree from './readme';
+import CodeMirror from '@skidding/react-codemirror';
+import CopyToClipboard from 'react-copy-to-clipboard';
+
+import 'codemirror/mode/yaml/yaml';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/addon/lint/lint';
+import 'codemirror/addon/lint/yaml-lint';
+
+window.jsyaml = jsyaml; // Making this available to yaml linter
+
+const codeMirrorOptions =  {
+  mode: 'yaml',
+  lint: true,
+  theme: 'elegant',
+  indentWithTabs: false,
+  tabSize: 2,
+  gutters: [ 'CodeMirror-lint-markers', ],
+};
 
 class Section extends React.Component {
   render() {
@@ -53,6 +72,111 @@ class SidebarMenu extends React.Component {
   }
 }
 
+class Jsone extends React.Component {
+  constructor(props) {
+    super(props);
+    this.cmOptions = defaults({
+      readOnly: 'nocursor',
+      gutters: []
+    }, codeMirrorOptions);
+  }
+
+  render() {
+    try {
+      const res = jsone(
+        jsyaml.safeLoad(this.props.template),
+        jsyaml.safeLoad(this.props.context)
+      );
+      return (
+        <CodeMirror value={jsyaml.safeDump(res)} options={this.cmOptions} />
+      );
+    } catch (err) {
+      return (
+        <Message bg="#f0b7bc">
+          {err.message}
+        </Message>
+      );
+    }
+  }
+}
+
+class Playground extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      template: '{}',
+      context: '{}'
+    };
+  }
+
+  componentWillMount() {
+    if (window.location.hash) {
+      const m = /#Playground\/(.*)&(.*)/.exec(window.location.hash);
+      if (m) {
+        this.setState({
+          context: decodeURIComponent(m[1]),
+          template: decodeURIComponent(m[2]),
+        });
+        // zero out the link body
+        history.replaceState({}, 'Playground', '#Playground');
+      }
+    }
+  }
+
+  updateContext(context) {
+    try {
+      // Only update if valid yaml. lint will warn user.
+      jsyaml.safeLoad(context);
+      this.setState({ context });
+    } catch (err) {
+      if (err.name !== 'YAMLException') {
+        throw err;
+      }
+    }
+  }
+
+  updateTemplate(template) {
+    try {
+      // Only update if valid yaml. lint will warn user.
+      jsyaml.safeLoad(template);
+      this.setState({ template });
+    } catch (err) {
+      if (err.name !== 'YAMLException') {
+        throw err;
+      }
+    }
+  }
+
+  render() {
+    const playgroundLink = `${document.location.origin}${document.location.pathname}#Playground/${encodeURIComponent(this.state.context)}&${encodeURIComponent(this.state.template)}`;
+    return (
+      <div>
+        <div className="codeblocks">
+          <div>
+            <Heading f={2}>Template</Heading>
+            <CodeMirror value={this.state.template} onChange={template => this.updateTemplate(template)} options={codeMirrorOptions} />
+          </div>
+          <div>
+            <Heading f={2}>Context</Heading>
+            <CodeMirror value={this.state.context} onChange={context => this.updateContext(context)} options={codeMirrorOptions} />
+          </div>
+          <div>
+            <Heading f={2}>Results</Heading>
+            <Jsone context={this.state.context} template={this.state.template} />
+          </div>
+        </div>
+        <div className='notes'>
+          <CopyToClipboard text={playgroundLink}
+            onCopy={() => this.setState({copied: true})} >
+            <span className="clicky">copy link to this example</span>
+          </CopyToClipboard>
+          { this.state.copied && <span>copied to clipboard!</span> }
+        </div>
+      </div>
+    );
+  }
+}
+
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -60,39 +184,6 @@ export default class App extends React.Component {
       readme: readmeTree(readme),
       activeTab: 'About'
     };
-
-    /* TODO: fix playground links */
-    /*
-    const params = new URLSearchParams(document.location.search.substring(1));
-    let tmpl = '{}';
-    let ctx = '{}';
-    if (params.get('template') && params.get('context')) {
-      try {
-        tmpl = JSON.stringify(jsyaml.safeLoad(params.get('template')));
-        ctx = JSON.stringify(jsyaml.safeLoad(params.get('context')));
-      } catch (err) {
-        if (err.name !== 'YAMLException') {
-          throw err;
-        }
-      }
-    }
-    this.playground = {
-      anchor: 'playground',
-      title: 'Playground',
-      heading: '## Playground',
-      body: `
-You can experiment with it here and view examples of all of the language
-features below!
-\`\`\`yaml
-template:
-  ${tmpl}
-context:
-  ${ctx}
-result: {}
-\`\`\`
-      `,
-    };
-    */
   }
 
   componentWillMount() {
@@ -165,8 +256,15 @@ result: {}
                   {name}
                 </TabItem>
               ))}
+              <TabItem
+                onClick={() => { window.location.hash = '#Playground'; }}
+                active={'Playground' === activeTab }>
+                Playground
+              </TabItem>
             </Tabs>
-            <Section section={activeData.section} showDemo={activeData.showDemo} />
+            {activeTab === 'Playground' ?
+              <Playground /> :
+              <Section section={activeData.section} showDemo={activeData.showDemo} />}
           </div>
         </div>
       </div>
