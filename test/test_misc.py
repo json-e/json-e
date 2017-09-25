@@ -2,6 +2,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import math
 from nose.tools import eq_
+from jsone.shared import string 
 from jsone import render, JSONTemplateError
 
 
@@ -21,4 +22,4 @@ def test_same_time_within_evaluation_builtin():
     eq_(len(set(result)), 1)
 
 def test_now_builtin():
-    eq_(isinstance(render({'$eval': 'now'}, {}), str), True)
+    eq_(isinstance(render({'$eval': 'now'}, {}), string), True)
