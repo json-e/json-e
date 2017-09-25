@@ -85,7 +85,7 @@ def fromNow(offset, reference):
         seconds=seconds,
     )
 
-    if isinstance(reference, str):
+    if isinstance(reference, string):
         reference = datetime.datetime.strptime(reference, '%Y-%m-%dT%H:%M:%S.%fZ')
     elif reference is None:
         reference = datetime.datetime.utcnow()

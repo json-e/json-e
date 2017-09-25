@@ -21,4 +21,8 @@ suite('misc', function() {
 
     assume(result.size).eql(1);
   });
+
+  test('now builtin returns a string', function() {
+    assume(typeof jsone({$eval: 'now'}, {})).eql(typeof 'string');
+  });
 });
