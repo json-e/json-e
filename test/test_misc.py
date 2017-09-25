@@ -19,3 +19,6 @@ def test_same_time_within_evaluation_builtin():
     template = [{'$eval': 'fromNow("")'} for _ in range(1000)]
     result = render(template, {})
     eq_(len(set(result)), 1)
+
+def test_now_builtin():
+    eq_(isinstance(render({'$eval': 'now'}, {}), str), True)
