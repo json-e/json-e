@@ -17,7 +17,7 @@ let types = {
   function: isFunction,
 };
 
-let builtinError = (builtin, expectation) => new BuiltinError(`${builtin} expects ${expectation}`);
+let builtinError = (builtin) => new BuiltinError(`invalid arguments to ${builtin}`);
 
 module.exports = (context) => {
   let builtins = {};
@@ -83,7 +83,7 @@ module.exports = (context) => {
   });
 
   define('str', builtins, {
-    argumentTests: ['string|number|boolean|array|null'],
+    argumentTests: ['string|number|boolean|null'],
     invoke: obj => {
       if (obj === null) {
         return 'null';
