@@ -23,6 +23,6 @@ suite('misc', function() {
   });
 
   test('now builtin returns a string', function() {
-    assume(typeof jsone({$eval: 'now'}, {})).eql(typeof "string");
+    assume(typeof jsone({$eval: 'now'}, {})).eql(typeof 'string');
   });
 });
