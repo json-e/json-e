@@ -323,7 +323,7 @@ module.exports = (template, context = {}) => {
   if (!test) {
     throw new TemplateError('top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   }
-  context = addBuiltins(Object.assign({}, {now: new Date()}, context));
+  context = addBuiltins(Object.assign({}, {now: fromNow('0 seconds')}, context));
   let result = render(template, context);
   if (result === deleteMarker) {
     return null;
