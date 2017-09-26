@@ -308,11 +308,15 @@ let render = (template, context) => {
       throw err;
     }
     if (value !== deleteMarker) {
-      if (key.startsWith('$$') && operators.hasOwnProperty(key.substr(1))) {
+      if (key.startsWith('$$')) {
         key = key.substr(1);
+      } else if (/^\$[a-zA-Z][a-zA-Z0-9]*$/.test(key)) {
+        throw new TemplateError('$<identifier> is reserved; ues $$<identifier>');
+      } else {
+        key = interpolate(key, context);
       }
 
-      result[interpolate(key, context)] = value;
+      result[key] = value;
     }
   }
   return result;
