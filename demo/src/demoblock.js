@@ -19,7 +19,7 @@ export default class DemoBlock extends React.Component {
     const m = EXAMPLE_RE.exec(this.props.literal);
     const template = m[1];
     const context = m[2];
-    window.location.hash = `#Playground/${encodeURIComponent(dedent(context))}&${encodeURIComponent(dedent(template))}`;
+    window.location.hash = `#Playground/${encodeURIComponent(dedent(context).trim())}&${encodeURIComponent(dedent(template).trim())}`;
   }
 
   render() {

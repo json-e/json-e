@@ -3,7 +3,7 @@ import './app.css';
 import jsyaml from 'js-yaml';
 import jsone from '../../src';
 import { find, defaults } from 'lodash';
-import { Heading, Divider, Badge, Button, Link,
+import { Heading, Divider, Button, Link,
          Text, Message, Footer, Tabs, TabItem } from 'rebass';
 import sections from 'sections';
 import ReactMarkdown from 'react-markdown';
@@ -247,7 +247,7 @@ export default class App extends React.Component {
             </div>
           </aside>
           <div className="content">
-            <Tabs>
+            <Tabs className="tabs">
               {tabs.map(({ name }) => (
                 <TabItem
                   key={name} 

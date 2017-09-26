@@ -36,14 +36,23 @@ html, body, #root {
   text-decoration: none;
 }
 
-.sidebar li {
-  list-style: outside;
-}
-
 .sidebar > ul > li + li {
-  border-top: 1px solid #a1eccc;
   margin-top: 0.5em;
   padding-top: 0.5em;
+}
+
+.sidebar ul {
+  list-style: none;
+  font-size: 14px;
+  padding: 0 0 0 20px;
+}
+
+.sidebar ul li {
+  padding: 0 0 1px 0;
+}
+
+.sidebar > ul > li > a {
+  font-weight: bold;
 }
 
 .content {
@@ -97,6 +106,10 @@ pre {
   right: 0px;
   top: 0px;
   background-color: #0c7;
+}
+
+.tabs a {
+  cursor: pointer;
 }
 
 @media (max-width: 800px) {
