@@ -1,7 +1,9 @@
-# [JSON-e](https://taskcluster.github.io/json-e)
+* [Full documentation](https://taskcluster.github.io/json-e)
 
-JSON-e is a data-structure parameterization system written for embedding
-context in JSON objects.
+# JSON-e
+
+JSON-e is a data-structure parameterization system for embedding context in
+JSON objects.
 
 The central idea is to treat a data structure as a "template" and transform it,
 using another data structure as context, to produce an output data structure.
@@ -19,6 +21,8 @@ also disallows unbounded iteration, so any JSON-e rendering operation will
 finish in finite time.
 
 # Interface
+
+## JavaScript
 
 The JS module exposes following interface:
 
@@ -45,6 +49,8 @@ operations should be handled before rendering the template.
 
 *NOTE*: If the template is untrusted, it can pass arbitrary data to functions
 in the context, which must guard against such behavior.
+
+## Python
 
 The Python distribution exposes a `render` function:
 
@@ -76,8 +82,8 @@ All JSON-e directives involve the `$` character, so a template without any direc
 rendered unchanged:
 
 ```yaml
-context:  {}
 template: {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
+context:  {}
 result:   {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 ```
 
@@ -86,28 +92,29 @@ result:   {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 The simplest form of substitution occurs within strings, using `${..}`:
 
 ```yaml
-context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k=${num}': true}
+context:  {key: 'world', num: 1}
 result:   {message: 'hello world', 'k=1': true}
 ```
 
 The bit inside the `${..}` is an expression, and must evaluate to something
-that interpolates obviously into a string (so, a string, number, boolean, or
-null). The expression syntax is described in more detail below.
+that interpolates obviously into a string (so, a string, number, boolean,).
+If it is null, then the expression interpolates into an empty string.
+The expression syntax is described in more detail below.
 
 Values interpolate as their JSON literal values:
 
 ```yaml
-context: {num: 3, t: true, f: false, nil: null}
 template: ["number: ${num}", "booleans: ${t} ${f}", "null: ${nil}"]
-result: ["number: 3", "booleans: true false", "null: null"]
+context: {num: 3, t: true, f: false, nil: null}
+result: ["number: 3", "booleans: true false", "null: "]
 ```
 
 Note that object keys can be interpolated, too:
 
 ```yaml
-context: {name: 'foo', value: 'bar'}
 template: {"tc_${name}": "${value}"}
+context: {name: 'foo', value: 'bar'}
 result: {"tc_foo": "bar"}
 ```
 
@@ -127,13 +134,13 @@ result of that evaluation. Unlike with string interpolation, the result need
 not be a string, but can be an arbitrary data structure.
 
 ```yaml
+template: {config: {$eval: 'settings.staging'}}
 context:
   settings:
     staging:
       transactionBackend: mock
     production:
       transactionBackend: customerdb
-template: {config: {$eval: 'settings.staging'}}
 result:   {config: {transactionBackend: 'mock'}}
 ```
 
@@ -146,8 +153,8 @@ value (use `$eval` for that). While this can be useful in some cases, it is an
 unusual case to include a JSON string in a larger data structure.
 
 ```yaml
-context:  {a: 1, b: 2}
 template: {$json: [a, b, {$eval: 'a+b'}, 4]}
+context:  {a: 1, b: 2}
 result:   '["a", "b", 3, 4]'
 ```
 
@@ -158,26 +165,26 @@ replaces itself with the `then` or `else` properties. If either property is
 omitted, then the expression is omitted from the parent object.
 
 ```yaml
-context:  {cond: true}
 template: {key: {$if: 'cond', then: 1}, k2: 3}
+context:  {cond: true}
 result:   {key: 1, k2: 3}
 ```
 
 ```yaml
-context:  {x: 10}
 template: {$if: 'x > 5', then: 1, else: -1}
+context:  {x: 10}
 result:   1
 ```
 
 ```yaml
-context: {cond: false}
 template: [1, {$if: 'cond', else: 2}, 3]
+context: {cond: false}
 result: [1,2,3]
 ```
 
 ```yaml
-context: {cond: false}
 template: {key: {$if: 'cond', then: 2}, other: 3}
+context: {cond: false}
 result: {other: 3}
 ```
 
@@ -186,8 +193,8 @@ result: {other: 3}
 The `$flatten` operator flattens an array of arrays into one array.
 
 ```yaml
-context:  {}
 template: {$flatten: [[1, 2], [3, 4], [5]]}
+context:  {}
 result:   [1, 2, 3, 4, 5]
 ```
 
@@ -196,27 +203,28 @@ result:   [1, 2, 3, 4, 5]
 The `$flattenDeep` operator deeply flattens an array of arrays into one array.
 
 ```yaml
-context:  {}
 template: {$flattenDeep: [[1, [2, [3]]]]}
+context:  {}
 result:   [1, 2, 3]
 ```
 
 ### `$fromNow`
 
 The `$fromNow` operator is a shorthand for the built-in function `fromNow`. It
-creates a JSON (ISO 8601) datestamp for a time relative to the current time or,
-if `from` is given, from that time.  The offset is specified by a sequence of
-number/unit pairs in a string. For example:
+creates a JSON (ISO 8601) datestamp for a time relative to the current time
+(see the `now` builtin, below) or, if `from` is given, relative to that time.
+The offset is specified by a sequence of number/unit pairs in a string. For
+example:
 
 ```yaml
-context:  {}
 template: {$fromNow: '2 days 1 hour'}
+context:  {}
 result:   '2017-01-19T16:27:20.974Z'
 ```
 
 ```yaml
-context:  {}
 template: {$fromNow: '1 hour', from: '2017-01-19T16:27:20.974Z'}
+context:  {}
 result:   '2017-01-19T17:27:20.974Z'
 ```
 
@@ -229,9 +237,9 @@ The `$let` operator evaluates an expression using a context amended with the
 given values. It is analogous to the Haskell `where` clause.
 
 ```yaml
-context: {}
 template: {$let: {ts: 100, foo: 200},
            in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
+context: {}
 result: [300, -100, 20000]
 ```
 
@@ -249,18 +257,18 @@ given an object, the value of your `each` should be an object and each will be m
 internally to give the resulting object. If keys intersect, later keys will win.
 
 ```yaml
-context:  {a: 1}
 template:
   $map: [2, 4, 6]
   each(x): {$eval: 'x + a'}
+context:  {a: 1}
 result:   [3, 5, 7]
 ```
 
 ```yaml
-context:  {}
 template:
   $map: {a: 1, b: 2, c: 3}
   each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
+context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 ```
 
@@ -276,8 +284,8 @@ that combines all of the objects in the array, where the right-side objects
 overwrite the values of the left-side ones.
 
 ```yaml
-context:  {}
 template: {$merge: [{a: 1, b: 1}, {b: 2, c: 3}, {d: 4}]}
+context:  {}
 result:   {a: 1, b: 2, c: 3, d: 4}
 ```
 
@@ -287,7 +295,6 @@ The `$mergeDeep` operator is like `$merge`, but it recurses into objects to
 combine their contents property by property.  Arrays are concatenated.
 
 ```yaml
-context:  {}
 template:
   $mergeDeep:
     - task:
@@ -299,6 +306,7 @@ template:
     - task:
         payload:
           command: [c]
+context:  {}
 result:
   task:
     extra:
@@ -314,10 +322,10 @@ should evaluate to a comparable value for each element. The `by(var)` property
 defaults to the identity function.
 
 ```yaml
-context:  {}
 template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
   by(x): 'x.a'
+context:  {}
 result:   [{a: 1, b: []}, {a: 2}, {a: 3}]
 ```
 
@@ -326,8 +334,8 @@ result:   [{a: 1, b: []}, {a: 2}, {a: 3}]
 The `$reverse` operator simply reverses the given array.
 
 ```yaml
-context:  {}
 template: {$reverse: [3, 4, 1, 2]}
+context:  {}
 result:   [2, 1, 4, 3]
 ```
 
@@ -337,8 +345,8 @@ All property names starting with `$` are reserved for JSON-e.
 You can use `$$` to escape such properties:
 
 ```yaml
-context:  {}
 template: {$$reverse: [3, 2, {$$eval: '2 - 1'}, 0]}
+context:  {}
 result:   {$reverse: [3, 2, {$eval: '2 - 1'}, 0]}
 ```
 
@@ -349,8 +357,8 @@ not just booleans themselves. JSON-e defines the following values as false.
 Anything else will be true.
 
 ```yaml
-context: {a: null, b: [], c: {}, d: "", e: 0, f: false}
 template: {$if: 'a || b || c || d || e || f', then: "uh oh", else: "falsy" }
+context: {a: null, b: [], c: {}, d: "", e: 0, f: false}
 result: "falsy"
 ```
 
@@ -367,12 +375,12 @@ and decimal notation. Strings do not support any kind of escaping. The use of
 escapes.
 
 ```yaml
-context: {}
 template:
   - {$eval: "1.3"}
   - {$eval: "'abc'"}
   - {$eval: '"abc"'}
   - {$eval: "'\n\t'"}
+context: {}
 result:
   - 1.3
   - "abc"
@@ -384,10 +392,10 @@ Array and object literals also look much like JSON, with bare identifiers
 allowed as keys like in Javascript:
 
 ```yaml
-context: {}
 template:
   - {$eval: '[1, 2, "three"]'}
   - {$eval: '{foo: 1, "bar": 2}'}
+context: {}
 result:
   - [1, 2, "three"]
   - {"foo": 1, "bar": 2}
@@ -398,8 +406,8 @@ result:
 Bare identifiers refer to items from the context or to built-ins (described below).
 
 ```yaml
-context: {x: 'quick', z: 'sort'}
 template: {$eval: '[x, z, x+z]'}
+context: {x: 'quick', z: 'sort'}
 reslut: ['quick', 'sort', 'quicksort']
 ```
 
@@ -409,7 +417,6 @@ The usual arithmetic operators are all defined, with typical associativity and
 precedence:
 
 ```yaml
-context: {x: 10, z: 20, s: "face", t: "plant"}
 template:
   - {$eval: 'x + z'}
   - {$eval: 's + t'}
@@ -418,6 +425,7 @@ template:
   - {$eval: 'z / x'}
   - {$eval: 'z ** 2'}
   - {$eval: '(z / x) ** 2'}
+context: {x: 10, z: 20, s: "face", t: "plant"}
 result:
   - 30
   - "faceplant"
@@ -437,7 +445,6 @@ Comparisons work as expected.  Equality is "deep" in the sense of doing
 comparisons of the contents of data structures.
 
 ```yaml
-context: {x: -10, z: 10, deep: [1, [3, {a: 5}]]}
 template:
   - {$eval: 'x < z'}
   - {$eval: 'x <= z'}
@@ -445,6 +452,7 @@ template:
   - {$eval: 'x >= z'}
   - {$eval: 'deep == [1, [3, {a: 5}]]'}
   - {$eval: 'deep != [1, [3, {a: 5}]]'}
+context: {x: -10, z: 10, deep: [1, [3, {a: 5}]]}
 result: [true, true, false, false, true, false]
 ```
 
@@ -453,8 +461,8 @@ result: [true, true, false, false, true, false]
 Boolean operations use C- and Javascript-style symbls `||`, `&&`, and `!`:
 
 ```yaml
-context: {}
 template: {$eval: '!(false || false) && true'}
+context: {}
 result: true
 ```
 
@@ -465,8 +473,8 @@ syntax or with dot syntax. Unlike Javascript, `obj.prop` is an error if `obj`
 does not have `prop`, while `obj['prop']` will evaulate to `null`.
 
 ```yaml
-context: {v: {a: 'apple', b: 'bananna', c: 'carrot'}}
 template: {$eval: 'v.a + v["b"]'}
+context: {v: {a: 'apple', b: 'bananna', c: 'carrot'}}
 result: 'applebananna'
 ````
 
@@ -479,7 +487,6 @@ does not contain the second index.  A "backward" slice with the start index
 greater than the end index is treated as empty.
 
 ```yaml
-context: {array: ['a', 'b', 'c', 'd', 'e'], string: 'abcde'}
 template:
   - {$eval: '[array[1], string[1]]'}
   - {$eval: '[array[1:4], string[1:4]]'}
@@ -489,6 +496,7 @@ template:
   - {$eval: '[array[-2], string[-2]]'}
   - {$eval: '[array[-2:], string[-2:]]'}
   - {$eval: '[array[:-3], string[:-3]]'}
+context: {array: ['a', 'b', 'c', 'd', 'e'], string: 'abcde'}
 result:
   - ['b', 'b']
   - [['b', 'c', 'd'], 'bcd']
@@ -506,11 +514,11 @@ The `in` keyword can be used to check for containment: a property in an object,
 an element in an array, or a substring in a string.
 
 ```yaml
-context: {}
 template:
   - {$eval: '"foo" in {foo: 1, bar: 2}'}
   - {$eval: '"foo" in ["foo", "bar"]'}
   - {$eval: '"foo" in "foobar"'}
+context: {}
 result: [true, true, true]
 ```
 
@@ -518,26 +526,91 @@ result: [true, true, true]
 
 Function calls are made with the usual `fn(arg1, arg2)` syntax. Functions are
 not JSON data, so they cannot be created in JSON-e, but they can be provided as
-built-ins or in the context and called from JSON-e.
+built-ins or supplied in the context and called from JSON-e.
 
-#### Built-In Functions and Variables
+### Built-In Functions and Variables
 
 The expression language provides a laundry-list of built-in functions/variables. Library
 users can easily add additional functions/variables, or override the built-ins, as part
 of the context.
 
-* `fromNow(offset)` or `fromNow(offset, reference)` -- JSON datestamp for a time relative to the current time or, if given, the reference time
-* `now` -- the datestamp at the start of evaluation of the template. This is used implicitly as `from` in all fromNow calls. Override to set a different time.
-* `min(a, b, ..)` -- the smallest of the arguments
-* `max(a, b, ..)` -- the largest of the arguments
-* `sqrt(x)`, `ceil(x)`, `floor(x)`, `abs(x)` -- mathematical functions
-* `lowercase(s)`, `uppercase(s)` -- convert string case
-* `str(x)` -- convert string, number, boolean, or array to string
-* `lstrip(s)`, `rstrip(s)`, `strip(s)` -- strip whitespace from left, right, or both ends of a string
-* `len(x)` -- length of a string or array
+#### Time
 
+The built-in context value `now` is set to the current time at the start of
+evaluation of the template, and used as the default "from" value for `$fromNow`
+and the built-in `fromNow()`.
+
+```yaml
+template:
+  - {$eval: 'now'}
+  - {$eval: 'fromNow("1 minute")'}
+  - {$eval: 'fromNow("1 minute", "2017-01-19T16:27:20.974Z")'}
+context: {}
+result:
+  - '2017-01-19T16:27:20.974Z',
+  - '2017-01-19T16:28:20.974Z',
+  - '2017-01-19T16:28:20.974Z',
+```
+
+#### Math
+
+```yaml
+template:
+  # the smallest of the arguments
+  - {$eval: 'min(1, 3, 5)'}
+  # the largest of the arguments
+  - {$eval: 'max(2, 4, 6)'}
+  # mathematical functions
+  - {$eval: 'sqrt(16)'}
+  - {$eval: 'ceil(0.3)'}
+  - {$eval: 'floor(0.3)'}
+  - {$eval: 'abs(-0.3)'}
+context: {}
+result:
+  - 1
+  - 6
+  - 4
+  - 1
+  - 0
+  - 0.3
+```
+
+#### Strings
+
+```yaml
+template:
+  # convert string case
+  - {$eval: 'lowercase("Fools!")'}
+  - {$eval: 'uppercase("Fools!")'}
+  # convert string, number, boolean, or array to string
+  - {$eval: 'str(130)'}
+  # strip whitespace from left, right, or both ends of a string
+  - {$eval: 'lstrip("  room  ")'}
+  - {$eval: 'rstrip("  room  ")'}
+  - {$eval: 'strip("  room  ")'}
+context: {}
+result:
+  - "fools!"
+  - "FOOLS!"
+  - "130"
+  - "room  "
+  - "  room"
+  - room
+```
+
+#### Length
+
+The `len()` built-in returns the length of a string or array.
+
+```yaml
+template: {$eval: 'len([1, 2, 3])'}
+context: {}
+result: 3
+```
 
 # Development and testing
+
+## JSON-e development
 
 You should run `npm install` to install the required packages for json-e's
 execution and development.
@@ -545,30 +618,15 @@ execution and development.
 You can run `./test.sh` to run json-e's unit tests and the `bundle.js` check.
 This is a breakdown of the commands inside the `test.sh` file.
 
-```bash
-# Run JavaScript unit tests
-npm test
+## Demo development
 
-# Run Python unit tests
-python setup.py test
+The demo website is a [Neutrino](https://neutrino.js.org/) app hosted in
+`demo/`.  Follow the usual Neutrino development process (`yarn install && yarn
+start`) there.
 
-# bundle.js check. This section makes sure that
-# the demo website's bundle.js file is updated.
-mv docs/bundle.js docs/bundle.diff.js
-npm run-script build-demo
-diff docs/bundle.js docs/bundle.diff.js
-```
+The resulting application embeds and enriches this README.
 
-You can also run the following command to
-update the demo website bundle.js file.
-
-```bash
-npm run-script build-demo
-```
-
-## Development Notes
-
-### Making a Release
+## Making a Release
 
 * Update the version, commit, and tag -- `npm version patch` (or minor or major, depending)
 * Push to release the JS version -- `git push && git push --tags`

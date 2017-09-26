@@ -27,9 +27,9 @@ let interpolate = (string, context) => {
         throw new TemplateError(`interpolation of '${input}' produced an array or object`);
       }
 
-      // toString renders null as an empty string, which is not what we want
+      // if it is null, result should just be appended with empty string
       if (v.result === null) {
-        result += 'null';
+        result += '';
       } else {
         result += v.result.toString();
       }
@@ -179,7 +179,6 @@ operators.$mergeDeep = (template, context) => {
   // merge two values, preferring the right but concatenating lists and
   // recursively merging objects
   let merge = (l, r) => {
-    console.log(`merge(${JSON.stringify(l)}, ${JSON.stringify(r)})`);
     if (isArray(l) && isArray(r)) {
       return l.concat(r);
     }
@@ -188,7 +187,6 @@ operators.$mergeDeep = (template, context) => {
       for (let p in r) { // eslint-disable-line taskcluster/no-for-in
         if (p in l) {
           res[p] = merge(l[p], r[p]);
-          console.log(`-> ${JSON.stringify(res[p])}`);
         } else {
           res[p] = r[p];
         }
@@ -197,11 +195,8 @@ operators.$mergeDeep = (template, context) => {
     }
     return r;
   };
-  console.log(`merging ${JSON.stringify(value)}`);
   // start with the first element of the list
   return value.reduce(merge, value.shift());
-
-  return Object.assign({}, ...value);
 };
 
 operators.$reverse = (template, context) => {
@@ -311,11 +306,15 @@ let render = (template, context) => {
       throw err;
     }
     if (value !== deleteMarker) {
-      if (key.startsWith('$$') && operators.hasOwnProperty(key.substr(1))) {
+      if (key.startsWith('$$')) {
         key = key.substr(1);
+      } else if (/^\$[a-zA-Z][a-zA-Z0-9]*$/.test(key)) {
+        throw new TemplateError('$<identifier> is reserved; ues $$<identifier>');
+      } else {
+        key = interpolate(key, context);
       }
 
-      result[interpolate(key, context)] = value;
+      result[key] = value;
     }
   }
   return result;
@@ -326,7 +325,7 @@ module.exports = (template, context = {}) => {
   if (!test) {
     throw new TemplateError('top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   }
-  context = addBuiltins(Object.assign({}, {now: new Date()}, context));
+  context = addBuiltins(Object.assign({}, {now: fromNow('0 seconds')}, context));
   let result = render(template, context);
   if (result === deleteMarker) {
     return null;

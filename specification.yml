@@ -103,7 +103,7 @@ result:   '3, really 3.75'
 title:    nulls interpolate
 context:  {nothing: null}
 template: 'big pile of ${nothing}'
-result:   'big pile of null'
+result:   'big pile of '
 ---
 title: invalid context
 context: {'a b c': 1}
@@ -316,15 +316,15 @@ context:  {}
 template: {$$sort: [3, 2, 1]}
 result:   {$sort: [3, 2, 1]}
 ---
-title:    interpolate non-json-e operator
+title:    reserved $-keywords
 context:  {}
 template: {$nothing: 1}
-result:   {$nothing: 1}
+error:    'TemplateError: $<identifier> is reserved; ues $$<identifier>'
 ---
 title:    escape non-json-e operator
 context:  {}
 template: {$$nothing: 1}
-result:   {$$nothing: 1}
+result:   {$nothing: 1}
 ################################################################################
 ---
 section:  $flatten
@@ -580,6 +580,16 @@ title: string interpolation
 context: {key: {key2: 'world', key3: 1}}
 template: {message: 'hello ${key.key2}', 'k-${key.key3}': true}
 result:   {message: 'hello world', 'k-1': true}
+---
+title: string interpolation, first character
+context: {somevalue: 13}
+template: {message: '${somevalue}'}
+result:   {message: '13'}
+---
+title: no string interpolation with $$
+context: {somevalue: 13}
+template: {message: '$${somevalue}'}
+result:   {message: '${somevalue}'}
 ################################################################################
 ---
 section: $let
@@ -1495,7 +1505,7 @@ context: {}
 template: {$eval: 'str(true)'}
 result: 'true'
 ---
-title: str (6)
+title: str (key) with null
 context: {x: null}
 template: {$eval: 'str(x)'}
 result: 'null'
@@ -1510,15 +1520,25 @@ context: {}
 template: {$eval: 'str(false)'}
 result: 'false'
 ---
-title: str (9)
-context: {key: [1, 2, 3]}
-template: {$eval: 'str(key)'}
-result: '1,2,3'
+title: str({})
+context: {}
+template: {$eval: 'str({})'}
+error: 'BuiltinError: invalid arguments to builtin: str'
 ---
-title: str (10)
+title: str({a:10})
+context: {}
+template: {$eval: 'str({a:10})'}
+error: 'BuiltinError: invalid arguments to builtin: str'
+---
+title: str([1, 2, 3])
 context: {}
 template: {$eval: 'str([1, 2, 3])'}
-result: '1,2,3'
+error: 'BuiltinError: invalid arguments to builtin: str'
+---
+title: str(key) with array
+context: {key: [1, 2, 3]}
+template: {$eval: 'str(key)'}
+error: 'BuiltinError: invalid arguments to builtin: str'
 ---
 title: strip space
 context: {}
@@ -4816,3 +4836,4 @@ context: {}
 template: {$let: {ts: 100, foo: 200},
            in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
 result: [300, -100, 20000]
+

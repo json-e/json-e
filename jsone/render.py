@@ -9,7 +9,7 @@ from .six import viewitems
 import functools
 
 operators = {}
-_let_re = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*$')
+IDENTIFIER_RE = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*$')
 
 
 def operator(name):
@@ -41,7 +41,10 @@ def interpolate(string, context):
             if isinstance(parsed, (list, dict)):
                 raise TemplateError(
                     "interpolation of '{}' produced an array or object".format(string[:offset]))
-            result.append(to_str(parsed))
+            if to_str(parsed) == "null":
+                result.append("")
+            else:
+                result.append(to_str(parsed))
             string = string[offset + 1:]
         else:  # found `$${`
             result.append('${')
@@ -129,8 +132,9 @@ def let(template, context):
     if not isinstance(variables, dict):
         raise TemplateError("$let value must evaluate to an object")
     else:
-        if not all(_let_re.match(variableName) for variableName in variables.keys()):
-            raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
+        if not all(IDENTIFIER_RE.match(variableNames) for variableNames in variables.keys()):
+          raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
+    
     subcontext = context.copy()
     subcontext.update(variables)
     try:
@@ -267,14 +271,17 @@ def renderValue(template, context):
 
         def updated():
             for k, v in viewitems(template):
-                if k.startswith('$$') and k[1:] in operators:
+                if k.startswith('$$'):
                     k = k[1:]
+                elif k.startswith('$') and IDENTIFIER_RE.match(k[1:]):
+                    raise TemplateError('$<identifier> is reserved; ues $$<identifier>')
                 else:
                     k = interpolate(k, context)
+
                 try:
                     v = renderValue(v, context)
                 except JSONTemplateError as e:
-                    if re.match('^[a-zA-Z][a-zA-Z0-9]*$', k):
+                    if IDENTIFIER_RE.match(k):
                         e.add_location('.{}'.format(k))
                     else:
                         e.add_location('[{}]'.format(json.dumps(k)))
