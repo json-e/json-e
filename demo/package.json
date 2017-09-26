@@ -11,6 +11,7 @@
   "//": "the codemirror fork is due to https://github.com/JedWatson/react-codemirror/issues/106#issuecomment-302674960",
   "dependencies": {
     "@skidding/react-codemirror": "1.0.1",
+    "dedent-js": "^1.0.1",
     "js-yaml": "^3.8.4",
     "lodash": "^4.17.4",
     "neutrino-middleware-postcss": "^2.0.2",
@@ -21,7 +22,7 @@
     "react-dom": "^15.6.1",
     "react-hot-loader": "next",
     "react-markdown": "^2.5.0",
-    "rebass": "^0.3.4",
+    "rebass": "1.0.4",
     "sections": "^1.0.0"
   },
   "postcss": {

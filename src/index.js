@@ -197,8 +197,6 @@ operators.$mergeDeep = (template, context) => {
   };
   // start with the first element of the list
   return value.reduce(merge, value.shift());
-
-  return Object.assign({}, ...value);
 };
 
 operators.$reverse = (template, context) => {
