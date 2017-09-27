@@ -133,7 +133,8 @@ def let(template, context):
         raise TemplateError("$let value must evaluate to an object")
     else:
         if not all(IDENTIFIER_RE.match(variableNames) for variableNames in variables.keys()):
-            raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
+          raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
+    
     subcontext = context.copy()
     subcontext.update(variables)
     try:
