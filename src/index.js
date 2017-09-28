@@ -157,6 +157,10 @@ operators.$map = (template, context) => {
 };
 
 operators.$merge = (template, context) => {
+  let length = Object.keys(template).length;
+  if (length>1) {
+    throw new TemplateError('$merge with undefined properties');
+  }
   let value = render(template['$merge'], context);
 
   if (!isArray(value) || value.some(o => !isObject(o))) {

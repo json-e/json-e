@@ -775,6 +775,11 @@ title: $merge [null]
 template: {$merge: [null]}
 context: {}
 error: 'TemplateError: $merge value must evaluate to an array of objects'
+---
+title: merge with undefined properties
+template: {$merge: [{a: 1}, {b: 2, c: 3}, {d: 4}], foo: "bar"}
+context: {}
+error: 'TemplateError: $merge with undefined properties'
 ################################################################################
 ---
 section:  $mergeDeep

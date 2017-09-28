@@ -181,6 +181,8 @@ def map(template, context):
 
 @operator('$merge')
 def merge(template, context):
+    if(len(template)>1):
+        raise TemplateError("$merge with undefined properties")
     value = renderValue(template['$merge'], context)
     if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
         raise TemplateError("$merge value must evaluate to an array of objects")
