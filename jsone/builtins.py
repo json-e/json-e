@@ -14,7 +14,8 @@ def build(context):
     def builtin(name, variadic=None, argument_tests=None, minArgs=None):
         def wrap(fn):
             def bad(reason=None):
-                raise BuiltinError((reason or 'invalid arguments to builtin: {}').format(name))
+                raise BuiltinError(
+                    (reason or 'invalid arguments to builtin: {}').format(name))
             if variadic:
                 def invoke(*args):
                     if minArgs:

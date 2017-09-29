@@ -613,10 +613,10 @@ result: 3
 ## JSON-e development
 
 You should run `npm install` to install the required packages for json-e's
-execution and development.
+execution and development.  For Python, activate a virtualenv and run `pip
+install -e .`.
 
-You can run `./test.sh` to run json-e's unit tests and the `bundle.js` check.
-This is a breakdown of the commands inside the `test.sh` file.
+You can run `./test.sh` to run json-e's tests and lint checks.
 
 ## Demo development
 
