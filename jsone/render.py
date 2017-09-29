@@ -57,6 +57,14 @@ def interpolate(string, context):
 
     return ''.join(result)
 
+def checkUndefinedProperties(operator, template, allowed):
+    unknownKeys = ""
+    for key in sorted(template):
+        if key not in allowed and key != operator:
+            unknownKeys += " " + key
+    if unknownKeys:
+        raise TemplateError(operator + " has undefined properties:" + unknownKeys)
+
 
 @operator('$eval')
 def eval(template, context):
@@ -181,6 +189,7 @@ def map(template, context):
 
 @operator('$merge')
 def merge(template, context):
+    checkUndefinedProperties('$merge', template, [])
     value = renderValue(template['$merge'], context)
     if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
         raise TemplateError("$merge value must evaluate to an array of objects")

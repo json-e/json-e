@@ -9,6 +9,18 @@ var {
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
 
+function checkUndefinedProperties(operator, template, allowed) {
+  var unknownKeys = '';
+  for (var key of Object.keys(template).sort()) {
+    if (!allowed.includes(key) && key != operator) {
+      unknownKeys += ' ' + key;
+    }
+  }
+  if (unknownKeys) {
+    throw new TemplateError(operator + ' has undefined properties:' + unknownKeys);
+  }
+};
+
 let flattenDeep = (a) => {
   return Array.isArray(a) ? [].concat(...a.map(flattenDeep)) : a;
 };
@@ -157,6 +169,8 @@ operators.$map = (template, context) => {
 };
 
 operators.$merge = (template, context) => {
+  checkUndefinedProperties('$merge', template, []);
+
   let value = render(template['$merge'], context);
 
   if (!isArray(value) || value.some(o => !isObject(o))) {
