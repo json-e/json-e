@@ -262,6 +262,11 @@ title:    $if->then evaluating to nothing at the top level is null
 context:  {cond: false}
 template: {$if: 'cond', then: "t"}
 result:   null
+---
+title:    $if-then-else with undefined properties
+context:  {cond: true}
+template: {$if: 'cond', then: 1, foo: 'bar', else: 2, bing: 'baz'}
+error: 'TemplateError: $if has undefined properties: bing foo'
 ################################################################################
 ---
 section:  escape operators
@@ -378,6 +383,11 @@ title:    flatten mixed levels
 context:  {}
 template: {$flatten: [[1, [2, 3]], [4], 5]}
 result:   [1, [2, 3], 4, 5]
+---
+title:    flatten with undefined properties
+context:  {}
+template: {$flatten: {$eval: '[[1], [2, 3]]'}, foo: 'bar'}
+error: 'TemplateError: $flatten has undefined properties: foo'
 ################################################################################
 ---
 section:  $flattenDeep
@@ -431,6 +441,11 @@ title:    flattenDeep mixed levels
 context:  {}
 template: {$flattenDeep: [[1, [2, 3]], [4], 5]}
 result:   [1, 2, 3, 4, 5]
+---
+title:    flattenDeep with undefined properties
+context:  {}
+template: {$flattenDeep: [[1, [2, 3]], [4], 5], foo: 'bar'}
+error: 'TemplateError: $flattenDeep has undefined properties: foo'
 ################################################################################
 ---
 section:  fromNow
@@ -544,6 +559,11 @@ title:    fromNow with reference
 context:  {now: '2019-01-01T01:00:00.123Z'}
 template: {$fromNow: '3 mo', from: {$eval: now}}
 result:   '2019-04-01T01:00:00.123Z'
+---
+title:    fromNow with undefined properties
+context:  {now: '2019-01-01T01:00:00.123Z'}
+template: {$fromNow: '3 mo', from: {$eval: now}, foo: 'bar'}
+error: 'TemplateError: $fromNow has undefined properties: foo'
 ################################################################################
 ---
 section:  $json
@@ -562,6 +582,11 @@ title:    $eval inside array
 context:  {a: 1, b: 2}
 template: {$json: [2, 5, {$eval: 'a + b + 7'}]}
 result:   '[2,5,10]'
+---
+title:    $json with undefined properties
+context:  {}
+template: {$json: [1,2,true,{},[]], foo: 'bar'}
+error: 'TemplateError: $json has undefined properties: foo'
 ################################################################################
 ---
 section: accessing nested objects => context
@@ -619,10 +644,10 @@ template: {$let: {x: 20, y: 10}, in: {$let: {x: 30}, in: {$eval: "x + y + z"}}}
 context:  {x: 1, y: 2, z: 3}
 result:   43
 ---
-title:    let without in
+title:    let with undefined properties
 template: {$let: {x: 1, y: 2}, a: {$eval: "x + y"}}
 context:  {}
-error:    'TemplateError: $let operator requires an `in` clause'
+error:    'TemplateError: $let has undefined properties: a'
 ---
 title:    let array
 template: {$let: [1, 2], in: {$eval: "1 + 2"}}
@@ -843,6 +868,11 @@ title: $mergeDeep [null]
 template: {$mergeDeep: [null]}
 context: {}
 error: 'TemplateError: $mergeDeep value must evaluate to an array of objects'
+---
+title: mergeDeep with undefined properties
+template: {$mergeDeep: [{a: {x: 1, y: 2}}, {a: {y: 3, z: 4}}], foo: "bar", bing: "baz"}
+context: {}
+error: 'TemplateError: $mergeDeep has undefined properties: bing foo'
 ################################################################################
 ---
 section:  $sort
@@ -1013,6 +1043,11 @@ title:    simple reverse + $sort # with this we can sort in reverse order
 context:  {}
 template: {$reverse: {$sort: [3, 4, 1, 2]}}
 result:   [4, 3, 2, 1]
+---
+title: reverse with undefined properties
+template: {$reverse: [3, 4, 1, 2], foo: "bar", bing: "baz"}
+context: {}
+error: 'TemplateError: $reverse has undefined properties: bing foo'
 ################################################################################
 ---
 section: $eval

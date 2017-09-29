@@ -73,6 +73,7 @@ def eval(template, context):
 
 @operator('$flatten')
 def flatten(template, context):
+    checkUndefinedProperties('$flatten', template, [])
     value = renderValue(template['$flatten'], context)
     if not isinstance(value, list):
         raise TemplateError('$flatten value must evaluate to an array')
@@ -89,6 +90,7 @@ def flatten(template, context):
 
 @operator('$flattenDeep')
 def flattenDeep(template, context):
+    checkUndefinedProperties('$flattenDeep', template, [])
     value = renderValue(template['$flattenDeep'], context)
     if not isinstance(value, list):
         raise TemplateError('$flattenDeep value must evaluate to an array')
@@ -106,6 +108,7 @@ def flattenDeep(template, context):
 
 @operator('$fromNow')
 def fromNow(template, context):
+    checkUndefinedProperties('$fromNow', template, ['from'])
     offset = renderValue(template['$fromNow'], context)
     reference = renderValue(template['from'], context) if 'from' in template else context.get('now')
 
@@ -116,6 +119,7 @@ def fromNow(template, context):
 
 @operator('$if')
 def ifConstruct(template, context):
+    checkUndefinedProperties('$if', template, ['then', 'else'])
     condition = evaluateExpression(template['$if'], context)
     try:
         if condition:
@@ -129,12 +133,14 @@ def ifConstruct(template, context):
 
 @operator('$json')
 def jsonConstruct(template, context):
+    checkUndefinedProperties('$json', template, [])
     value = renderValue(template['$json'], context)
     return json.dumps(value, separators=(',', ':'))
 
 
 @operator('$let')
 def let(template, context):
+    checkUndefinedProperties('$let', template, ['in'])
     variables = renderValue(template['$let'], context)    
     
     if not isinstance(variables, dict):
@@ -201,6 +207,7 @@ def merge(template, context):
 
 @operator('$mergeDeep')
 def merge(template, context):
+    checkUndefinedProperties('$mergeDeep', template, [])
     value = renderValue(template['$mergeDeep'], context)
     if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
         raise TemplateError("$mergeDeep value must evaluate to an array of objects")
@@ -223,6 +230,7 @@ def merge(template, context):
 
 @operator('$reverse')
 def reverse(template, context):
+    checkUndefinedProperties('$reverse', template, [])
     value = renderValue(template['$reverse'], context)
     if not isinstance(value, list):
         raise TemplateError("$reverse value must evaluate to an array")

@@ -67,6 +67,8 @@ operators.$eval = (template, context) => {
 };
 
 operators.$flatten = (template, context) => {
+  checkUndefinedProperties('$flatten', template, []);
+
   let value = render(template['$flatten'], context);
 
   if (!isArray(value)) {
@@ -77,6 +79,8 @@ operators.$flatten = (template, context) => {
 };
 
 operators.$flattenDeep = (template, context) => {
+  checkUndefinedProperties('$flattenDeep', template, []);
+
   let value = render(template['$flattenDeep'], context);
 
   if (!isArray(value)) {
@@ -87,6 +91,8 @@ operators.$flattenDeep = (template, context) => {
 };
 
 operators.$fromNow = (template, context) => {
+  checkUndefinedProperties('$fromNow', template, ['from']);
+
   let value = render(template['$fromNow'], context);
   let reference = context.now;
   if (template['from']) {
@@ -99,6 +105,8 @@ operators.$fromNow = (template, context) => {
 };
 
 operators.$if = (template, context) => {
+  checkUndefinedProperties('$if', template, ['then', 'else']);
+
   if (!isString(template['$if'])) {
     throw new TemplateError('$if can evaluate string expressions only');
   }
@@ -109,10 +117,14 @@ operators.$if = (template, context) => {
 };
 
 operators.$json = (template, context) => {
+  checkUndefinedProperties('$json', template, []);
+
   return JSON.stringify(render(template['$json'], context));
 };
 
 operators.$let = (template, context) => {
+  checkUndefinedProperties('$let', template, ['in']);
+
   let variables = render(template['$let'], context);
 
   var context_copy = Object.assign(context, variables);
@@ -181,6 +193,8 @@ operators.$merge = (template, context) => {
 };
 
 operators.$mergeDeep = (template, context) => {
+  checkUndefinedProperties('$mergeDeep', template, []);
+
   let value = render(template['$mergeDeep'], context);
 
   if (!isArray(value) || value.some(o => !isObject(o))) {
@@ -214,6 +228,8 @@ operators.$mergeDeep = (template, context) => {
 };
 
 operators.$reverse = (template, context) => {
+  checkUndefinedProperties('$reverse', template, []);
+
   let value = render(template['$reverse'], context);
 
   if (!isArray(value) && !isArray(template['$reverse'])) {
