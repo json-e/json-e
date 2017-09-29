@@ -767,6 +767,14 @@ template:
   $map: null
   each(y): {$eval: 'y.k'}
 error: 'TemplateError: $map value must evaluate to an array or object'
+---
+title:    map with undefined properties
+context:  {a: 1}
+template:
+  $map: [2, 4, 6]
+  each(x): {$eval: 'x + a'}
+  foo: 'bar'
+error: 'TemplateError: $map has undefined properties: foo'
 ################################################################################
 ---
 section:  $merge
@@ -995,6 +1003,14 @@ context:  {}
 template:
   $sort:  null
 error: true  # $sort must be given an array
+---
+title:    sort with undefined properties
+context:  {}
+template:
+  $sort: [{s: 'android'}, {s: 'add'}, {s: 'adderall'}]
+  by(x): 'x.s'
+  foo:   'bar'
+error: 'TemplateError: $sort has undefined properties: foo'
 ################################################################################
 ---
 section:  $reverse

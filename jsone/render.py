@@ -58,12 +58,12 @@ def interpolate(string, context):
     return ''.join(result)
 
 def checkUndefinedProperties(operator, template, allowed):
-    unknownKeys = ""
-    for key in sorted(template):
-        if key not in allowed and key != operator:
-            unknownKeys += " " + key
+    unknownKeys = []
+    combined = "|".join(allowed) + "$"
+    unknownKeys = [key for key in sorted(template) 
+                   if key != operator and not re.match(combined, key)]
     if unknownKeys:
-        raise TemplateError(operator + " has undefined properties:" + unknownKeys)
+        raise TemplateError(operator + " has undefined properties: " + " ".join(unknownKeys))
 
 
 @operator('$eval')
@@ -160,6 +160,8 @@ def let(template, context):
 
 @operator('$map')
 def map(template, context):
+    EACH_RE = 'each\([a-zA-Z_][a-zA-Z0-9_]*\)'
+    checkUndefinedProperties('$map', template, [EACH_RE])
     value = renderValue(template['$map'], context)
     if not isinstance(value, list) and not isinstance(value, dict):
         raise TemplateError("$map value must evaluate to an array or object")
@@ -239,6 +241,8 @@ def reverse(template, context):
 
 @operator('$sort')
 def sort(template, context):
+    BY_RE = 'by\([a-zA-Z_][a-zA-Z0-9_]*\)'
+    checkUndefinedProperties('$sort', template, [BY_RE])
     value = renderValue(template['$sort'], context)
     if not isinstance(value, list):
         raise TemplateError("$sort value must evaluate to an array")

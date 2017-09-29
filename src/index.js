@@ -11,8 +11,9 @@ var {JSONTemplateError, TemplateError} = require('./error');
 
 function checkUndefinedProperties(operator, template, allowed) {
   var unknownKeys = '';
+  var combined = new RegExp(allowed.join('|') + '$');
   for (var key of Object.keys(template).sort()) {
-    if (!allowed.includes(key) && key != operator) {
+    if (key != operator && (!combined.test(key) || combined.test('$'))) {
       unknownKeys += ' ' + key;
     }
   }
@@ -146,6 +147,8 @@ operators.$let = (template, context) => {
 };
 
 operators.$map = (template, context) => {
+  EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*)\\)';
+  checkUndefinedProperties('$map', template, [EACH_RE]);
   let value = render(template['$map'], context);
   if (!isArray(value) && !isObject(value)) {
     throw new TemplateError('$map value must evaluate to an array or object');
@@ -243,6 +246,8 @@ operators.$reverse = (template, context) => {
 };
 
 operators.$sort = (template, context) => {
+  BY_RE = 'by\\(([a-zA-Z_][a-zA-Z0-9_]*)\\)';
+  checkUndefinedProperties('$sort', template, [BY_RE]);
   let value = render(template['$sort'], context);
   if (!isArray(value)) {
     throw new TemplateError('$sort requires array as value');
