@@ -86,7 +86,8 @@ def fromNow(offset, reference):
     )
 
     if isinstance(reference, string):
-        reference = datetime.datetime.strptime(reference, '%Y-%m-%dT%H:%M:%S.%fZ')
+        reference = datetime.datetime.strptime(
+            reference, '%Y-%m-%dT%H:%M:%S.%fZ')
     elif reference is None:
         reference = datetime.datetime.utcnow()
     return stringDate(reference + delta if future else reference - delta)
@@ -111,6 +112,7 @@ def stringDate(date):
     string = date.isoformat()
     string = datefmt_re.sub(r'\1Z', string)
     return string
+
 
 # the base class for strings, regardless of python version
 try:

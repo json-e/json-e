@@ -21,5 +21,6 @@ setup(name='json-e',
         "nose",
         "PyYAML",
         "python-dateutil",
+        'pep8',
     ]
 )
