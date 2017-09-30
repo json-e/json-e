@@ -25,6 +25,8 @@ def evaluateExpression(expr, context):
 
 
 _interpolation_start_re = re.compile(r'\$?\${')
+
+
 def interpolate(string, context):
     mo = _interpolation_start_re.search(string)
     if not mo:
@@ -57,10 +59,11 @@ def interpolate(string, context):
 
     return ''.join(result)
 
+
 def checkUndefinedProperties(operator, template, allowed):
     unknownKeys = []
     combined = "|".join(allowed) + "$"
-    unknownKeys = [key for key in sorted(template) 
+    unknownKeys = [key for key in sorted(template)
                    if key != operator and not re.match(combined, key)]
     if unknownKeys:
         raise TemplateError(operator + " has undefined properties: " + " ".join(unknownKeys))
@@ -110,7 +113,8 @@ def flattenDeep(template, context):
 def fromNow(template, context):
     checkUndefinedProperties('$fromNow', template, ['from'])
     offset = renderValue(template['$fromNow'], context)
-    reference = renderValue(template['from'], context) if 'from' in template else context.get('now')
+    reference = renderValue(
+        template['from'], context) if 'from' in template else context.get('now')
 
     if not isinstance(offset, string):
         raise TemplateError("$fromNow expects a string")
@@ -141,14 +145,13 @@ def jsonConstruct(template, context):
 @operator('$let')
 def let(template, context):
     checkUndefinedProperties('$let', template, ['in'])
-    variables = renderValue(template['$let'], context)    
-    
+    variables = renderValue(template['$let'], context)
     if not isinstance(variables, dict):
         raise TemplateError("$let value must evaluate to an object")
     else:
         if not all(IDENTIFIER_RE.match(variableNames) for variableNames in variables.keys()):
-          raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
-    
+            raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
+
     subcontext = context.copy()
     subcontext.update(variables)
     try:
@@ -170,7 +173,8 @@ def map(template, context):
 
     each_keys = [k for k in template if k.startswith('each(')]
     if len(each_keys) != 1:
-        raise TemplateError("$map requires exactly one other property, each(..)")
+        raise TemplateError(
+            "$map requires exactly one other property, each(..)")
     each_key = each_keys[0]
     each_var = each_key[5:-1]
     each_template = template[each_key]
@@ -200,7 +204,8 @@ def merge(template, context):
     checkUndefinedProperties('$merge', template, [])
     value = renderValue(template['$merge'], context)
     if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
-        raise TemplateError("$merge value must evaluate to an array of objects")
+        raise TemplateError(
+            "$merge value must evaluate to an array of objects")
     v = dict()
     for e in value:
         v.update(e)
@@ -212,7 +217,9 @@ def merge(template, context):
     checkUndefinedProperties('$mergeDeep', template, [])
     value = renderValue(template['$mergeDeep'], context)
     if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
-        raise TemplateError("$mergeDeep value must evaluate to an array of objects")
+        raise TemplateError(
+            "$mergeDeep value must evaluate to an array of objects")
+
     def merge(l, r):
         if isinstance(l, list) and isinstance(r, list):
             return l + r
@@ -295,7 +302,8 @@ def renderValue(template, context):
                 if k.startswith('$$'):
                     k = k[1:]
                 elif k.startswith('$') and IDENTIFIER_RE.match(k[1:]):
-                    raise TemplateError('$<identifier> is reserved; ues $$<identifier>')
+                    raise TemplateError(
+                        '$<identifier> is reserved; ues $$<identifier>')
                 else:
                     k = interpolate(k, context)
 
