@@ -9,16 +9,16 @@ var {
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
 
-function checkUndefinedProperties(operator, template, allowed) {
+function checkUndefinedProperties(template, allowed) {
   var unknownKeys = '';
   var combined = new RegExp(allowed.join('|') + '$');
   for (var key of Object.keys(template).sort()) {
-    if (key != operator && (!combined.test(key) || combined.test('$'))) {
+    if (!combined.test(key)) {
       unknownKeys += ' ' + key;
     }
   }
   if (unknownKeys) {
-    throw new TemplateError(operator + ' has undefined properties:' + unknownKeys);
+    throw new TemplateError(allowed[0].replace('\\', '') + ' has undefined properties:' + unknownKeys);
   }
 };
 
@@ -68,7 +68,7 @@ operators.$eval = (template, context) => {
 };
 
 operators.$flatten = (template, context) => {
-  checkUndefinedProperties('$flatten', template, []);
+  checkUndefinedProperties(template, ['\\$flatten']);
 
   let value = render(template['$flatten'], context);
 
@@ -80,7 +80,7 @@ operators.$flatten = (template, context) => {
 };
 
 operators.$flattenDeep = (template, context) => {
-  checkUndefinedProperties('$flattenDeep', template, []);
+  checkUndefinedProperties(template, ['\\$flattenDeep']);
 
   let value = render(template['$flattenDeep'], context);
 
@@ -92,7 +92,7 @@ operators.$flattenDeep = (template, context) => {
 };
 
 operators.$fromNow = (template, context) => {
-  checkUndefinedProperties('$fromNow', template, ['from']);
+  checkUndefinedProperties(template, ['\\$fromNow', 'from']);
 
   let value = render(template['$fromNow'], context);
   let reference = context.now;
@@ -106,7 +106,7 @@ operators.$fromNow = (template, context) => {
 };
 
 operators.$if = (template, context) => {
-  checkUndefinedProperties('$if', template, ['then', 'else']);
+  checkUndefinedProperties(template, ['\\$if', 'then', 'else']);
 
   if (!isString(template['$if'])) {
     throw new TemplateError('$if can evaluate string expressions only');
@@ -118,13 +118,13 @@ operators.$if = (template, context) => {
 };
 
 operators.$json = (template, context) => {
-  checkUndefinedProperties('$json', template, []);
+  checkUndefinedProperties(template, ['\\$json']);
 
   return JSON.stringify(render(template['$json'], context));
 };
 
 operators.$let = (template, context) => {
-  checkUndefinedProperties('$let', template, ['in']);
+  checkUndefinedProperties(template, ['\\$let', 'in']);
 
   let variables = render(template['$let'], context);
 
@@ -148,7 +148,7 @@ operators.$let = (template, context) => {
 
 operators.$map = (template, context) => {
   EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*)\\)';
-  checkUndefinedProperties('$map', template, [EACH_RE]);
+  checkUndefinedProperties(template, ['\\$map', EACH_RE]);
   let value = render(template['$map'], context);
   if (!isArray(value) && !isObject(value)) {
     throw new TemplateError('$map value must evaluate to an array or object');
@@ -184,7 +184,7 @@ operators.$map = (template, context) => {
 };
 
 operators.$merge = (template, context) => {
-  checkUndefinedProperties('$merge', template, []);
+  checkUndefinedProperties(template, ['\\$merge']);
 
   let value = render(template['$merge'], context);
 
@@ -196,7 +196,7 @@ operators.$merge = (template, context) => {
 };
 
 operators.$mergeDeep = (template, context) => {
-  checkUndefinedProperties('$mergeDeep', template, []);
+  checkUndefinedProperties(template, ['\\$mergeDeep']);
 
   let value = render(template['$mergeDeep'], context);
 
@@ -231,7 +231,7 @@ operators.$mergeDeep = (template, context) => {
 };
 
 operators.$reverse = (template, context) => {
-  checkUndefinedProperties('$reverse', template, []);
+  checkUndefinedProperties(template, ['\\$reverse']);
 
   let value = render(template['$reverse'], context);
 
@@ -247,7 +247,7 @@ operators.$reverse = (template, context) => {
 
 operators.$sort = (template, context) => {
   BY_RE = 'by\\(([a-zA-Z_][a-zA-Z0-9_]*)\\)';
-  checkUndefinedProperties('$sort', template, [BY_RE]);
+  checkUndefinedProperties(template, ['\\$sort', BY_RE]);
   let value = render(template['$sort'], context);
   if (!isArray(value)) {
     throw new TemplateError('$sort requires array as value');
