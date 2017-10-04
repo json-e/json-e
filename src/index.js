@@ -195,6 +195,18 @@ operators.$merge = (template, context) => {
   return Object.assign({}, ...value);
 };
 
+operators.$switch = (template, context) => {
+  checkUndefinedProperties(template, ['\\switch']);
+
+  let value = render(template['$switch'], context);
+
+  if (!isString(template['$switch'])) {
+    throw new TemplateError('$switch can evaluate string expressions only');
+  }
+
+  return template.hasOwnProperty(value) ? render(template[value], context) : deleteMarker;
+};
+
 operators.$mergeDeep = (template, context) => {
   checkUndefinedProperties(template, ['\\$mergeDeep']);
 
