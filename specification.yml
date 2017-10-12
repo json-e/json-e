@@ -4892,4 +4892,9 @@ context: {}
 template: {$let: {ts: 100, foo: 200},
            in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
 result: [300, -100, 20000]
-
+---
+title: 'checking $let and $reverse operator integrity'
+context: {}
+template: {$let: {x: [1, 2, 3]},
+           in: [$reverse: {$eval: "x"}]}
+result: [[ 3, 2, 1 ]]
