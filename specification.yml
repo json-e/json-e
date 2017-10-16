@@ -4778,87 +4778,87 @@ error: true
 title: 'Infix + type error'
 context: {}
 template: {$eval: 'true + false'}
-error: true
+error: 'InterpreterError: infix: + expects number/string + number/string'
 ---
 title: 'Infix - type error'
 context: {}
 template: {$eval: '"hello" - 3'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'Infix * type error'
 context: {}
 template: {$eval: '"hello" * 3'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'Infix / type error'
 context: {}
 template: {$eval: '"hello" / 3'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'Infix - type error'
 context: {}
 template: {$eval: '3 - "hello"'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'Infix * type error'
 context: {}
 template: {$eval: '3 * "hello"'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'Infix / type error'
 context: {}
 template: {$eval: '3 / "hello"'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'Infix ** type error'
 context: {}
 template: {$eval: '"hello" ** 3'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'Infix ** type error'
 context: {}
 template: {$eval: '3 ** "hello"'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'Infix < type error'
 context: {}
 template: {$eval: '"hello" < 3'}
-error: true
+error: 'InterpreterError: infix: < expects numbers/strings < numbers/strings'
 ---
 title: 'Infix > type error'
 context: {}
 template: {$eval: '"hello" > 3'}
-error: true
+error: 'InterpreterError: infix: > expects numbers/strings > numbers/strings'
 ---
 title: 'Infix <= type error'
 context: {}
 template: {$eval: '"hello" <= 3'}
-error: true
+error: 'InterpreterError: infix: <= expects numbers/strings <= numbers/strings'
 ---
 title: 'Infix >= type error'
 context: {}
 template: {$eval: '"hello" >= 3'}
-error: true
+error: 'InterpreterError: infix: >= expects numbers/strings >= numbers/strings'
 ---
 title: 'Infix < type error'
 context: {}
 template: {$eval: '3 < "hello"'}
-error: true
+error: 'InterpreterError: infix: < expects numbers/strings < numbers/strings'
 ---
 title: 'Infix > type error'
 context: {}
 template: {$eval: '3 > "hello"'}
-error: true
+error: 'InterpreterError: infix: > expects numbers/strings > numbers/strings'
 ---
 title: 'Infix <= type error'
 context: {}
 template: {$eval: '3 <= "hello"'}
-error: true
+error: 'InterpreterError: infix: <= expects numbers/strings <= numbers/strings'
 ---
 title: 'Infix >= type error'
 context: {}
 template: {$eval: '3 >= "hello"'}
-error: true
+error: 'InterpreterError: infix: >= expects numbers/strings >= numbers/strings'
 ---
 title: 'Nested error has appropriate message'
 context: {}

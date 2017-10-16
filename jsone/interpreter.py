@@ -1,7 +1,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from .prattparser import PrattParser, infix, prefix
-from .shared import TemplateError, string
+from .shared import TemplateError, InterpreterError, string
 import operator
 import json
 
@@ -22,7 +22,8 @@ OPERATORS = {
 
 
 def expectationError(operator, expected):
-    return TemplateError('{} expected {}'.format(operator, expected))
+    return InterpreterError('infix: {} expects {} {} {}'.
+                            format(operator, expected, operator, expected))
 
 
 class ExpressionEvaluator(PrattParser):
@@ -131,13 +132,13 @@ class ExpressionEvaluator(PrattParser):
     @infix("+")
     def plus(self, left, token, pc):
         if not isinstance(left, (string, int, float)) or isinstance(left, bool):
-            raise expectationError('+', 'number or string')
+            raise expectationError('+', 'number/string')
         right = pc.parse(token.kind)
         if not isinstance(right, (string, int, float)) or isinstance(right, bool):
-            raise expectationError('+', 'number or string')
+            raise expectationError('+', 'number/string')
         if type(right) != type(left) and \
                 (isinstance(left, string) or isinstance(right, string)):
-            raise expectationError('+', 'matching types')
+            raise expectationError('+', 'numbers/strings')
         return left + right
 
     @infix('-', '*', '/', '**')
@@ -202,7 +203,7 @@ class ExpressionEvaluator(PrattParser):
         right = pc.parse(op)
         if type(left) != type(right) or \
                 not (isinstance(left, (int, float, string)) and not isinstance(left, bool)):
-            raise expectationError(op, 'matching types')
+            raise expectationError(op, 'numbers/strings')
         return OPERATORS[op](left, right)
 
     @infix("in")

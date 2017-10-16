@@ -7,7 +7,7 @@ var {isString, isNumber, isInteger, isBool,
   isArray, isObject, isFunction, isTruthy} = require('./type-utils');
 var {InterpreterError} = require('./error');
 
-let expectationError = (operator, expectation) => new InterpreterError(`'${operator}' expects '${expectation}'`);
+let expectationError = (operator, expectation) => new InterpreterError(`${operator} expects ${expectation}`);
 
 let isEqual = (a, b) =>  {
   if (isArray(a) && isArray(b) && a.length === b.length) {

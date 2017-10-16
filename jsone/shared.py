@@ -28,6 +28,10 @@ class TemplateError(JSONTemplateError):
     pass
 
 
+class InterpreterError(JSONTemplateError):
+    pass
+
+
 # Regular expression matching: X days Y hours Z minutes
 # todo: support hr, wk, yr
 FROMNOW_RE = re.compile(''.join([
