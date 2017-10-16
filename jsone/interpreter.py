@@ -81,14 +81,14 @@ class ExpressionEvaluator(PrattParser):
     def uminus(self, token, pc):
         v = pc.parse('unary')
         if not isNumber(v):
-            raise expectationError('unary -', 'number')
+            raise InterpreterError('{} expects {}'.format('unary -', 'number'))
         return -v
 
     @prefix("+")
     def uplus(self, token, pc):
         v = pc.parse('unary')
         if not isNumber(v):
-            raise expectationError('unary +', 'number')
+            raise InterpreterError('{} expects {}'.format('unary +', 'number'))
         return v
 
     @prefix("identifier")
@@ -96,8 +96,8 @@ class ExpressionEvaluator(PrattParser):
         try:
             return self.context[token.value]
         except KeyError:
-            raise TemplateError(
-                'no context value named "{}"'.format(token.value))
+            raise InterpreterError(
+                'unknown context value {}'.format(token.value))
 
     @prefix("null")
     def null(self, token, pc):

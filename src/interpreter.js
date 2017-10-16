@@ -175,7 +175,7 @@ prefixRules['-'] = (token, ctx) => {
   let v = ctx.parse('unary');
 
   if (!isNumber(v)) {
-    throw expectationError('unary: -', 'number');
+    throw expectationError('unary -', 'number');
   }
 
   return -v;
@@ -185,7 +185,7 @@ prefixRules['+'] = (token, ctx) => {
   let v = ctx.parse('unary');
 
   if (!isNumber(v)) {
-    throw expectationError('unary: +', 'number');
+    throw expectationError('unary +', 'number');
   }
 
   return +v;

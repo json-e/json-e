@@ -4743,17 +4743,17 @@ section: expression language - errors
 title: 'unary - type error'
 context: {key: 'hello'}
 template: {$eval: '-key'}
-error: true
+error: 'InterpreterError: unary - expects number'
 ---
 title: 'unary + type error'
 context: {key: 'hello'}
 template: {$eval: '+key'}
-error: true
+error: 'InterpreterError: unary + expects number'
 ---
 title: 'undefined variable'
 context: {key: 'hello'}
 template: {$eval: 'key2'}
-error: true
+error: 'InterpreterError: unknown context value key2'
 ---
 title: 'missing closing parenthesis'
 context: {key1: 1, key2: 1}
@@ -4773,7 +4773,7 @@ error: true
 title: 'missing opening "'
 context: {}
 template: {$eval: 'hello"'}
-error: true
+error: 'InterpreterError: unknown context value hello'
 ---
 title: 'Infix + type error'
 context: {}
