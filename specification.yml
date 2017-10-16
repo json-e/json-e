@@ -4624,7 +4624,7 @@ result: [1,2,3]
 title: 'parse list (4)'
 context: {}
 template: {$eval: '[1,2,3,4'}
-error: true
+error: 'SyntaxError: Unexpected end of input'
 ---
 title: 'parse object (1)'
 context: {key: 1}
@@ -4684,7 +4684,7 @@ result: {a: 1, b: 1}
 title: 'parse object (12)'
 context: {key: 1}
 template: {$eval: '{a: key, b: key + 1'}
-error: true
+error: 'SyntaxError: Unexpected end of input'
 ################################################################################
 ---
 section: expression language - errors
