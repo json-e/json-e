@@ -112,7 +112,7 @@ class Context {
   require(...kinds) {
     let token = this.attempt();
     if (!token) {
-      throw new Error('unexpected end of input');
+      throw new SyntaxError('Unexpected end of input');
     }
     if (kinds.length > 0 && kinds.indexOf(token.kind) === -1) {
       throw new Error('Unexpected token error');
