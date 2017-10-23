@@ -1646,7 +1646,7 @@ result:   10.5
 title:    hex literal
 context:  {}
 template: {$eval: '0xff'}
-error: true
+error:    'SyntaxError: Found xff, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
 ---
 title:    string literal with single quote
 context:  {}
@@ -1661,12 +1661,12 @@ result: 'three!'
 title:    string literal escape with backslash (not supported)
 context:  {}
 template: {$eval: '"backslash\\"maybe"'}
-error: true
+error:    'SyntaxError: Found maybe, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
 ---
 title:    string literal escape with doubling (not supported)
 context:  {}
 template: {$eval: '"doubled""maybe"'}
-error: true
+error:    'SyntaxError: Found "maybe", expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
 ---
 title:    boolean literals
 context:  {}
@@ -1701,7 +1701,7 @@ result:   'ab'
 title:    $eval must take string
 context:  {a: 3, b: 2}
 template: {$eval: ['a', 'b']}
-error:    true
+error:    'TemplateError: expression to be evaluated must be a string'
 ---
 title: array access [index]
 context: {a: [1,2,3,4]}
