@@ -292,10 +292,9 @@ infixRules['>='] = infixRules['<'] =  infixRules['>']
 
 infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
   let operator = token.kind;
-  let right = ctx.parse(operator);
   switch (operator) {
-    case '||':  return isTruthy(left) || isTruthy(right);
-    case '&&':  return isTruthy(left) && isTruthy(right);
+    case '||':  return isTruthy(left) || isTruthy(ctx.parse(operator));
+    case '&&':  return isTruthy(left) && isTruthy(ctx.parse(operator));
     default:    throw new Error('no rule for boolean operator: ' + operator);
   }
 };
