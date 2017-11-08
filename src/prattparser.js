@@ -13,15 +13,15 @@ let syntaxRuleError = (token, expects) => new SyntaxError(`Found '${token.value}
 class PrattParser {
   constructor(options = {}) {
     let {ignore, patterns, tokens,
-         precedence, prefixRules, infixRules} = Object.assign({}, {
-           ignore: null,
-           patterns: {},
-           // NOTE: order matters for tokens - first match is used
-           tokens: [],
-           precedence: [],
-           prefixRules: {},
-           infixRules: {},
-         }, options);
+      precedence, prefixRules, infixRules} = Object.assign({}, {
+      ignore: null,
+      patterns: {},
+      // NOTE: order matters for tokens - first match is used
+      tokens: [],
+      precedence: [],
+      prefixRules: {},
+      infixRules: {},
+    }, options);
 
     this._tokenizer = new Tokenizer({ignore, patterns, tokens});
 
@@ -62,7 +62,7 @@ class PrattParser {
       // string ended without the terminator
       let errorLocation = source.length;
       throw new SyntaxError(`Found end of string, expected ${terminator}`,
-                            {start: errorLocation, end: errorLocation});
+        {start: errorLocation, end: errorLocation});
     } else if (next.kind !== terminator) {
       throw syntaxRuleError(next, terminator);
     }
