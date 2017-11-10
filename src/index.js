@@ -174,7 +174,7 @@ operators.$map = (template, context) => {
   }
 
   value = value.map(v => render(each, Object.assign({}, context, {[x]: v})))
-              .filter(v => v !== deleteMarker);
+    .filter(v => v !== deleteMarker);
 
   if (object) {
     return value.reduce((a, o) => Object.assign(a, o), {});
