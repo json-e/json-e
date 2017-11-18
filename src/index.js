@@ -76,7 +76,7 @@ operators.$flatten = (template, context) => {
     throw new TemplateError('$flatten value must evaluate to an array');
   }
 
-  return [].concat(...value);
+  return value.reduce((a, b) => a.concat(b), []);
 };
 
 operators.$flattenDeep = (template, context) => {
