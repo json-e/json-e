@@ -44,9 +44,9 @@ class ExpressionEvaluator(PrattParser):
         'null', 'number', 'identifier', 'string',
     ]
     precedence = [
-        ['in'],
         ['||'],
         ['&&'],
+        ['in'],
         ['==', '!='],
         ['>=', '<=', '<', '>'],
         ['+', '-'],

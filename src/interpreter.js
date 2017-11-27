@@ -339,9 +339,9 @@ module.exports = new PrattParser({
     'identifier', 'string',
   ],
   precedence: [
-    ['in'],
     ['||'],
     ['&&'],
+    ['in'],
     ['==', '!='],
     ['>=', '<=', '<', '>'],
     ['+', '-'],
