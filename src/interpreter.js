@@ -7,7 +7,7 @@ var {isString, isNumber, isInteger, isBool,
   isArray, isObject, isFunction, isTruthy} = require('./type-utils');
 var {InterpreterError} = require('./error');
 
-let expectationError = (operator, expectation) => new InterpreterError(`'${operator}' expects '${expectation}'`);
+let expectationError = (operator, expectation) => new InterpreterError(`${operator} expects ${expectation}`);
 
 let isEqual = (a, b) =>  {
   if (isArray(a) && isArray(b) && a.length === b.length) {
@@ -175,7 +175,7 @@ prefixRules['-'] = (token, ctx) => {
   let v = ctx.parse('unary');
 
   if (!isNumber(v)) {
-    throw expectationError('unary: -', 'number');
+    throw expectationError('unary -', 'number');
   }
 
   return -v;
@@ -185,7 +185,7 @@ prefixRules['+'] = (token, ctx) => {
   let v = ctx.parse('unary');
 
   if (!isNumber(v)) {
-    throw expectationError('unary: +', 'number');
+    throw expectationError('unary +', 'number');
   }
 
   return +v;
