@@ -21,7 +21,7 @@ OPERATORS = {
 }
 
 
-def expectationError(operator, expected):
+def infixExpectationError(operator, expected):
     return InterpreterError('infix: {} expects {} {} {}'.
                             format(operator, expected, operator, expected))
 
@@ -132,23 +132,23 @@ class ExpressionEvaluator(PrattParser):
     @infix("+")
     def plus(self, left, token, pc):
         if not isinstance(left, (string, int, float)) or isinstance(left, bool):
-            raise expectationError('+', 'number/string')
+            raise infixExpectationError('+', 'number/string')
         right = pc.parse(token.kind)
         if not isinstance(right, (string, int, float)) or isinstance(right, bool):
-            raise expectationError('+', 'number/string')
+            raise infixExpectationError('+', 'number/string')
         if type(right) != type(left) and \
                 (isinstance(left, string) or isinstance(right, string)):
-            raise expectationError('+', 'numbers/strings')
+            raise infixExpectationError('+', 'numbers/strings')
         return left + right
 
     @infix('-', '*', '/', '**')
     def arith(self, left, token, pc):
         op = token.kind
         if not isNumber(left):
-            raise expectationError(op, 'number')
+            raise infixExpectationError(op, 'number')
         right = pc.parse({'**': '**-right-associative'}.get(op))
         if not isNumber(right):
-            raise expectationError(op, 'number')
+            raise infixExpectationError(op, 'number')
         return OPERATORS[op](left, right)
 
     @infix("[")
@@ -176,7 +176,7 @@ class ExpressionEvaluator(PrattParser):
     @infix(".")
     def property_dot(self, left, token, pc):
         if not isinstance(left, dict):
-            raise expectationError('.', 'object')
+            raise infixExpectationError('.', 'object')
         k = pc.require('identifier').value
         try:
             return left[k]
@@ -203,7 +203,7 @@ class ExpressionEvaluator(PrattParser):
         right = pc.parse(op)
         if type(left) != type(right) or \
                 not (isinstance(left, (int, float, string)) and not isinstance(left, bool)):
-            raise expectationError(op, 'numbers/strings')
+            raise infixExpectationError(op, 'numbers/strings')
         return OPERATORS[op](left, right)
 
     @infix("in")
@@ -211,17 +211,17 @@ class ExpressionEvaluator(PrattParser):
         right = pc.parse(token.kind)
         if isinstance(right, dict):
             if not isinstance(left, string):
-                raise expectationError('in-object', 'string on left side')
+                raise infixExpectationError('in-object', 'string on left side')
         elif isinstance(right, string):
             if not isinstance(left, string):
-                raise expectationError('in-string', 'string on left side')
+                raise infixExpectationError('in-string', 'string on left side')
         elif not isinstance(right, list):
-            raise expectationError(
+            raise infixExpectationError(
                 'in', 'Array, string, or object on right side')
         try:
             return left in right
         except TypeError:
-            raise expectationError('in', 'scalar value, collection')
+            raise infixExpectationError('in', 'scalar value, collection')
 
 
 def isNumber(v):
@@ -269,19 +269,19 @@ def accessProperty(value, a, b, is_interval):
             try:
                 return value[a:b]
             except TypeError:
-                raise expectationError('[..]', 'integer')
+                raise infixExpectationError('[..]', 'integer')
         else:
             try:
                 return value[a]
             except IndexError:
                 raise TemplateError('index out of bounds')
             except TypeError:
-                raise expectationError('[..]', 'integer')
+                raise infixExpectationError('[..]', 'integer')
 
     if not isinstance(value, dict):
-        raise expectationError('[..]', 'object, array, or string')
+        raise infixExpectationError('[..]', 'object, array, or string')
     if not isinstance(a, string):
-        raise expectationError('[..]', 'string index')
+        raise infixExpectationError('[..]', 'string index')
 
     try:
         return value[a]
