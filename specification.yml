@@ -4044,18 +4044,18 @@ template: {$eval: '[44, 45] in ["string", 46, [44]]'}
 result: false
 ---
 title: 'precedence of in over ||'
-context: {a: 'a' , b: ['a','b']}
+context: {a: 'a', b: 'ab'}
 template: {$eval: "a in b || true"}
 result: true    
 ---
-title: "precedence of in over &&"
-context: {a: 'a' , b: ['b','c']}
+title: 'precedence of in over &&'
+context: {a: 'a', b: 'bc'}
 template: {$eval: "a in b && true"}
 result: false
 ---
 title: 'compare precedence of in and =='
-context = {a: 'a' , b: ['a','b'] , x: 5 , y: 7 }
-template = {$eval: "a in b || x==y"}
+context: {a: 'a', b: 'ab', x: 5, y: 7 }
+template: {$eval: "a in b || x==y"}
 result: true
 ################################################################################
 ---
@@ -4750,7 +4750,7 @@ result: {a: 1, b: 1}
 title: 'parse object (12)'
 context: {key: 1}
 template: {$eval: '{a: key, b: key + 1'}
-error: truez
+error: true
 ################################################################################
 ---
 section: expression language - errors
