@@ -1,8 +1,9 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import math
+import datetime
 from nose.tools import eq_
-from jsone.shared import string 
+from jsone.shared import string, stringDate
 from jsone import render, JSONTemplateError
 
 
@@ -23,3 +24,6 @@ def test_same_time_within_evaluation_builtin():
 
 def test_now_builtin():
     eq_(isinstance(render({'$eval': 'now'}, {}), string), True)
+
+def test_stringDate_microseconds():
+    eq_(stringDate(datetime.datetime(2017, 11, 1, 22, 0, 9, 0)), '2017-11-01T22:00:09.000Z')
