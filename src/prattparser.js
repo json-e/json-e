@@ -8,7 +8,10 @@ var assert = require('assert');
 var {isString} = require('./type-utils');
 var {SyntaxError, TemplateError} = require('./error');
 
-let syntaxRuleError = (token, expects) => new SyntaxError(`Found '${token.value}' expected '${expects}'`, token);
+let syntaxRuleError = (token, expects) => {
+  expects.sort();
+  return new SyntaxError(`Found ${token.value}, expected ${expects.join(', ')}`, token);
+};
 
 class PrattParser {
   constructor(options = {}) {
@@ -49,7 +52,7 @@ class PrattParser {
     let result = ctx.parse();
     let next = ctx.attempt();
     if (next) {
-      throw syntaxRuleError(next, Object.keys(this._infixRules).join(', '));
+      throw syntaxRuleError(next, Object.keys(this._infixRules));
     }
     return result;
   }
@@ -64,7 +67,7 @@ class PrattParser {
       throw new SyntaxError(`Found end of string, expected ${terminator}`,
         {start: errorLocation, end: errorLocation});
     } else if (next.kind !== terminator) {
-      throw syntaxRuleError(next, terminator);
+      throw syntaxRuleError(next, [terminator]);
     }
     return {result, offset: next.start};
   }
