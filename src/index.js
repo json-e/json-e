@@ -246,7 +246,7 @@ operators.$sort = (template, context) => {
   checkUndefinedProperties(template, ['\\$sort', BY_RE]);
   let value = render(template['$sort'], context);
   if (!isArray(value)) {
-    throw new TemplateError('$sort requires array as value');
+    throw new TemplateError('$sorted values to be sorted must have the same type');
   }
 
   let byKey = Object.keys(template).filter(k => k !== '$sort')[0];
@@ -263,7 +263,7 @@ operators.$sort = (template, context) => {
   } else {
     let needBy = value.some(v => isArray(v) || isObject(v));
     if (needBy) {
-      throw new TemplateError('$sort requires by(identifier) for sorting arrays of objects/arrays');
+      throw new TemplateError('$sorted values to be sorted must have the same type');
     }
     by = value => value;
   }
@@ -276,7 +276,7 @@ operators.$sort = (template, context) => {
     let eltType = typeof tagged[0][0];
     if (eltType !== 'number' && eltType !== 'string' ||
         tagged.some(e => eltType !== typeof e[0])) {
-      throw new TemplateError('$sort requires all sorted values have the same type');
+      throw new TemplateError('$sorted values to be sorted must have the same type');
     }
   }
 
