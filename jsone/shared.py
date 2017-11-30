@@ -2,7 +2,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import re
 import datetime
-import six
 
 
 class DeleteMarker:
@@ -114,10 +113,10 @@ def to_str(v):
 
 def stringDate(date):
     # Convert to isoFormat
-    if six.PY3:
+    try:
         string = date.isoformat(timespec='microseconds')
-    # py2.7 does not have timespec
-    elif six.PY2:
+    # py2.7 to py3.5 does not have timespec
+    except TypeError as e:
         string = date.isoformat()
         if string.find('.') == -1:
             string += '.000'
