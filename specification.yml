@@ -928,81 +928,81 @@ title:    cannot sort objects without by
 context:  {}
 template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    by cannot return objects
 context:  {}
 template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
   by(x): x
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    cannot sort arrays without by
 context:  {}
 template:
   $sort: [[1,2,3], [4,5], [], [8,9,10]]
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    by cannot return arrays
 context:  {}
 template:
   $sort: [[1,2,3], [4,5], [], [8,9,10]]
   by(x): x
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    cannot sort nulls
 context:  {}
 template: {$sort: [null, null]}
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    cannot sort nulls, even with by
 context:  {}
 template: {$sort: [null, null], 'by(x)': 'x'}
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    cannot sort booleans
 context:  {}
 template: {$sort: [false, true]}
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    cannot sort booleans, even with by
 context:  {}
 template: {$sort: [false, true], 'by(x)': 'x'}
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    cannot sort numbers and strings together
 context:  {}
 template: {$sort: [1, 'a']}
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    cannot sort numbers and strings together even with by
 context:  {}
 template: {$sort: [1, 'a'], 'by(x)': 'x'}
-error: true
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    sort requires an array (string)
 context:  {}
 template:
   $sort:  "some string"
-error: true  # $sort must be given an array
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    sort requires an array (number)
 context:  {}
 template:
   $sort:  34
-error: true  # $sort must be given an array
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    sort requires an array (object)
 context:  {}
 template:
   $sort:  {k: 1, b: 4, x: 8}
-error: true  # $sort must be given an array
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    sort requires an array (null)
 context:  {}
 template:
   $sort:  null
-error: true  # $sort must be given an array
+error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
 title:    sort with undefined properties
 context:  {}
@@ -1011,6 +1011,7 @@ template:
   by(x): 'x.s'
   foo:   'bar'
 error: 'TemplateError: $sort has undefined properties: foo'
+
 ################################################################################
 ---
 section:  $reverse
@@ -1028,27 +1029,27 @@ result:   [9, 999, 99]
 title:    reverse of an object
 context:  {}
 template: {$reverse: {a: 1}}
-error: true
+error: 'TemplateError: $reverse value must evaluate to an array of objects'
 ---
 title:    reverse of null
 context:  {}
 template: {$reverse: null}
-error: true
+error: 'TemplateError: $reverse value must evaluate to an array of objects'
 ---
 title:    reverse of a string
 context:  {}
 template: {$reverse: 'foo'}
-error: true
+error: 'TemplateError: $reverse value must evaluate to an array of objects'
 ---
 title:    reverse of a number
 context:  {}
 template: {$reverse: 1}
-error: true
+error: 'TemplateError: $reverse value must evaluate to an array of objects'
 ---
 title:    reverse of a boolean
 context:  {}
 template: {$reverse: true}
-error: true
+error: 'TemplateError: $reverse value must evaluate to an array of objects'
 ---
 title:    simple reverse with $eval
 context:  {key: [3, 4, 1, 2]}
@@ -1076,27 +1077,27 @@ result: 13
 title: $eval of an array
 context: {key1: 1, key2: 2}
 template: {$eval: ['key1', 'key2']}
-error: true
+error: 'TemplateError: expression to be evaluated must be a string'
 ---
 title: $eval of an object
 context: {key1: 1, key2: 2}
 template: {$eval: {k: 'key1'}}
-error: true
+error: 'TemplateError: expression to be evaluated must be a string'
 ---
 title: $eval of null
 context: {}
 template: {$eval: null}
-error: true
+error: 'TemplateError: expression to be evaluated must be a string'
 ---
 title: $eval of a number
 context: {}
 template: {$eval: 11}
-error: true
+error: 'TemplateError: expression to be evaluated must be a string'
 ---
 title: $eval of a boolean
 context: {}
 template: {$eval: true}
-error: true
+error: 'TemplateError: expression to be evaluated must be a string'
 ################################################################################
 ---
 section: builtins

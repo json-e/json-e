@@ -243,7 +243,7 @@ def reverse(template, context):
     checkUndefinedProperties(template, ['\$reverse'])
     value = renderValue(template['$reverse'], context)
     if not isinstance(value, list):
-        raise TemplateError("$reverse value must evaluate to an array")
+        raise TemplateError("$reverse value must evaluate to an array of objects")
     return list(reversed(value))
 
 
@@ -253,7 +253,7 @@ def sort(template, context):
     checkUndefinedProperties(template, ['\$sort', BY_RE])
     value = renderValue(template['$sort'], context)
     if not isinstance(value, list):
-        raise TemplateError("$sort value must evaluate to an array")
+        raise TemplateError('$sorted values to be sorted must have the same type')
 
     # handle by(..) if given, applying the schwartzian transform
     by_keys = [k for k in template if k.startswith('by(')]
@@ -279,9 +279,9 @@ def sort(template, context):
     except IndexError:
         return []
     if eltype in (list, dict, bool, type(None)):
-        raise TemplateError('$sort values must be sortable')
+        raise TemplateError('$sorted values to be sorted must have the same type')
     if not all(isinstance(e[0], eltype) for e in to_sort):
-        raise TemplateError('$sorted values must all have the same type')
+        raise TemplateError('$sorted values to be sorted must have the same type')
 
     # unzip the schwartzian transform
     return list(e[1] for e in sorted(to_sort))
