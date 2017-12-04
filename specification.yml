@@ -1,10 +1,12 @@
 ################################################################################
 # ### Specificaiton for json-e
 # This document specifies the json-e template language through a series of
-# test cases on the form: `{title, context, template, result}`
+# test cases on the form: `{title, context, template, result, error, panic}`
 # Where `jsone.render(template, context) = result` and title is short name
-# for the test case. If `error` property is specified as `true`, no result needs
-# to be specified, as the test case must throw an error.
+# for the test case. If the `error` property is specified as `true`, no result
+# needs to be specified, as the test case must throw an error. If the `panic`
+# property is specified as `true`, the test case is expected throw an error
+# about invalid usage, typically invalid context.
 #
 # Comments explaining the test cases is encouraged, additionally entries with
 # {section: '...'} is encouraged to separate sections.
@@ -109,6 +111,7 @@ title: invalid context
 context: {'a b c': 1}
 template: {}
 error: 'TemplateError: top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/'
+panic: true
 ################################################################################
 ---
 section:  $if operator
@@ -636,16 +639,16 @@ result:   35
 ---
 title:    context overriding
 template: {$let: {x: 20}, in: {$eval: "x + y"}}
-context:  {x: 10, y: 1}
+context:  {x: 10, 'y': 1}
 result:   21
 ---
 title:    nested let
-template: {$let: {x: 20, y: 10}, in: {$let: {x: 30}, in: {$eval: "x + y + z"}}}
-context:  {x: 1, y: 2, z: 3}
+template: {$let: {x: 20,'y': 10}, in: {$let: {x: 30}, in: {$eval: "x + y + z"}}}
+context:  {x: 1,'y': 2, z: 3}
 result:   43
 ---
 title:    let with undefined properties
-template: {$let: {x: 1, y: 2}, a: {$eval: "x + y"}}
+template: {$let: {x: 1,'y': 2}, a: {$eval: "x + y"}}
 context:  {}
 error:    'TemplateError: $let has undefined properties: a'
 ---
@@ -829,8 +832,8 @@ result:   {a: [1, 2, 3, 4]}
 ---
 title:    deep merge of objects merges
 context:  {}
-template: {$mergeDeep: [{a: {x: 1, y: 2}}, {a: {y: 3, z: 4}}]}
-result:   {a: {x: 1, y: 3, z: 4}}
+template: {$mergeDeep: [{a: {x: 1,'y': 2}}, {a: {'y': 3, z: 4}}]}
+result:   {a: {x: 1,'y': 3, z: 4}}
 ---
 title:    very deep merge
 context:  {}
@@ -878,7 +881,7 @@ context: {}
 error: 'TemplateError: $mergeDeep value must evaluate to an array of objects'
 ---
 title: mergeDeep with undefined properties
-template: {$mergeDeep: [{a: {x: 1, y: 2}}, {a: {y: 3, z: 4}}], foo: "bar", bing: "baz"}
+template: {$mergeDeep: [{a: {x: 1,'y': 2}}, {a: {'y': 3, z: 4}}], foo: "bar", bing: "baz"}
 context: {}
 error: 'TemplateError: $mergeDeep has undefined properties: bing foo'
 ################################################################################
@@ -1576,6 +1579,11 @@ title: str (8)
 context: {}
 template: {$eval: 'str(false)'}
 result: 'false'
+---
+title: str (9)
+context: {val: 24}
+template: {$eval: 'str(val)'}
+result: '24'
 ---
 title: str({})
 context: {}
@@ -4047,7 +4055,7 @@ result: false
 title: 'precedence of in over ||'
 context: {a: 'a', b: 'ab'}
 template: {$eval: "a in b || true"}
-result: true    
+result: true
 ---
 title: 'precedence of in over &&'
 context: {a: 'a', b: 'bc'}
@@ -4055,7 +4063,7 @@ template: {$eval: "a in b && true"}
 result: false
 ---
 title: 'compare precedence of in and =='
-context: {a: 'a', b: 'ab', x: 5, y: 7 }
+context: {a: 'a', b: 'ab', x: 5,'y': 7 }
 template: {$eval: "a in b || x==y"}
 result: true
 ################################################################################
@@ -4088,42 +4096,42 @@ template: {$eval: 'a == b'}
 result: false
 ---
 title:    object equality, true
-context:  {a: {x: 1, y: 2}, b: {x: 1, y: 2}}
+context:  {a: {x: 1,'y': 2}, b: {x: 1,'y': 2}}
 template: {$eval: 'a == b'}
 result:   true
 ---
 title:    object equality, false
-context:  {a: {x: 1, y: 2}, b: {x: 2, y: 2}}
+context:  {a: {x: 1,'y': 2}, b: {x: 2,'y': 2}}
 template: {$eval: 'a == b'}
 result:   false
 ---
 title:    object in-equality, true
-context:  {a: {x: 1, y: 2}, b: {x: 2, y: 2}}
+context:  {a: {x: 1,'y': 2}, b: {x: 2,'y': 2}}
 template: {$eval: 'a != b'}
 result:   true
 ---
 title:    object in-equality, false
-context:  {a: {x: 1, y: 2}, b: {x: 1, y: 2}}
+context:  {a: {x: 1,'y': 2}, b: {x: 1,'y': 2}}
 template: {$eval: 'a != b'}
 result:   false
 ---
 title:    complex object equality, true
-context:  {a: {x: 1, y: {e: {g: {1}}}}, b: {x: 1, y: {e: {g: {1}}}}}
+context:  {a: {x: 1,'y': {e: {g: {1}}}}, b: {x: 1,'y': {e: {g: {1}}}}}
 template: {$eval: 'a == b'}
 result:   true
 ---
 title:    complex object equality, false
-context:  {a: {x: 1, y: {e: {g: {1}}}}, b: {x: 1, y: {e: {g: {2}}}}}
+context:  {a: {x: 1,'y': {e: {g: {1}}}}, b: {x: 1,'y': {e: {g: {2}}}}}
 template: {$eval: 'a == b'}
 result:   false
 ---
 title:    complex object in-equality, true
-context:  {a: {x: 1, y: {e: {g: {1}}}}, b: {x: 1, y: {e: {g: {2}}}}}
+context:  {a: {x: 1,'y': {e: {g: {1}}}}, b: {x: 1,'y': {e: {g: {2}}}}}
 template: {$eval: 'a != b'}
 result:   true
 ---
 title:    complex object in-equality, false
-context:  {a: {x: 1, y: {e: {g: {1}}}}, b: {x: 1, y: {e: {g: {1}}}}}
+context:  {a: {x: 1,'y': {e: {g: {1}}}}, b: {x: 1,'y': {e: {g: {1}}}}}
 template: {$eval: 'a != b'}
 result:   false
 ---
