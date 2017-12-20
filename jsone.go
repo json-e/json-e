@@ -11,7 +11,6 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/pkg/errors"
 	i "github.com/taskcluster/json-e/interpreter"
 )
 
@@ -19,7 +18,7 @@ import (
 func Render(template interface{}, context map[string]interface{}) (interface{}, error) {
 	// Validate input
 	if err := i.IsValidContext(context); err != nil {
-		panic(errors.Wrap(err, "invalid context"))
+		panic(err)
 	}
 
 	// Inherit functions from builtins
