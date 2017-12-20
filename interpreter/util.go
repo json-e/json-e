@@ -128,7 +128,7 @@ func WrapFunction(f interface{}) interface{} {
 // the interpreter, panics if function is not valid.
 //
 // This requires the function to take map[string]interface{} as first argument,
-// this will be the interpret context.
+// this will be the interpreter context.
 //
 // This is necessary to ensure that function values can be compared.
 func WrapFunctionWithContext(f interface{}) interface{} {
@@ -236,7 +236,7 @@ func (f *function) Invoke(ctx map[string]interface{}, params []interface{}) (int
 	values := reflect.ValueOf(f.Function).Call(parameters)
 
 	// Validate the return value
-	err := IsValidateData(values[0].Interface())
+	err := IsValidData(values[0].Interface())
 	if err != nil {
 		fn := runtime.FuncForPC(reflect.ValueOf(f.Function).Pointer())
 		file, line := fn.FileLine(fn.Entry())
@@ -250,8 +250,8 @@ func (f *function) Invoke(ctx map[string]interface{}, params []interface{}) (int
 	return values[0].Interface(), values[1].Interface().(error)
 }
 
-// IsValidateData returns an error explaining why data isn't valid, or nil
-func IsValidateData(data interface{}) error {
+// IsValidData returns an error explaining why data isn't valid, or nil
+func IsValidData(data interface{}) error {
 	if data == nil {
 		return nil
 	}
@@ -260,14 +260,14 @@ func IsValidateData(data interface{}) error {
 		return nil
 	case []interface{}:
 		for _, value := range val {
-			if err := IsValidateData(value); err != nil {
+			if err := IsValidData(value); err != nil {
 				return err
 			}
 		}
 		return nil
 	case map[string]interface{}:
 		for _, value := range val {
-			if err := IsValidateData(value); err != nil {
+			if err := IsValidData(value); err != nil {
 				return err
 			}
 		}
@@ -289,7 +289,7 @@ func IsValidContext(context map[string]interface{}) error {
 		if !contextVariablePattern.MatchString(k) {
 			return fmt.Errorf("context variable '%s' doesn't match pattern: %s", k, contextVariablePattern.String())
 		}
-		if err := IsValidateData(v); err != nil {
+		if err := IsValidData(v); err != nil {
 			return err
 		}
 	}
