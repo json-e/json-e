@@ -155,7 +155,7 @@ operators.$map = (template, context) => {
   }
 
   if (Object.keys(template).length !== 2) {
-    throw new TemplateError('$map requires cannot have more than two properties');
+    throw new TemplateError('$map must have exactly two properties');
   }
 
   let eachKey = Object.keys(template).filter(k => k !== '$map')[0];
@@ -232,7 +232,7 @@ operators.$mergeDeep = (template, context) => {
 
 operators.$reverse = (template, context) => {
   checkUndefinedProperties(template, ['\\$reverse']);
-  
+
   let value = render(template['$reverse'], context);
 
   if (!isArray(value)) {
