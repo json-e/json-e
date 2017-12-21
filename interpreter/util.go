@@ -22,20 +22,6 @@ func isBool(v interface{}) bool {
 	return ok
 }
 
-func isArray(v interface{}) bool {
-	_, ok := v.([]interface{})
-	return ok
-}
-
-func isObject(v interface{}) bool {
-	_, ok := v.(map[string]interface{})
-	return ok
-}
-
-func isFunction(v interface{}) bool {
-	return reflect.TypeOf(v).Kind() == reflect.Func
-}
-
 // IsJSON returns true, if v is pure JSON
 func IsJSON(v interface{}) bool {
 	if isString(v) || isNumber(v) || isBool(v) || v == nil {

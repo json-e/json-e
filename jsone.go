@@ -607,8 +607,7 @@ var operators = map[string]operator{
 			}
 			return R
 		}
-		var result interface{}
-		result = make(map[string]interface{})
+		result := interface{}(make(map[string]interface{}))
 		for _, entry := range a {
 			obj, ok := entry.(map[string]interface{})
 			if !ok {
@@ -665,9 +664,7 @@ var operators = map[string]operator{
 		byValues := make([]interface{}, len(items))
 		if len(template) == 1 {
 			// If we have no by(...) key, we just take the items themselves
-			for i, item := range items {
-				byValues[i] = item // don't worry, we'll validate later
-			}
+			copy(byValues, items)
 		} else {
 			// Find the by(...) key
 			var byKey string
@@ -829,7 +826,7 @@ func init() {
 	operatorsDefined = operators
 }
 
-var reservedIdentifiers = regexp.MustCompile("^\\$[a-zA-Z][a-zA-Z0-9]*$")
+var reservedIdentifiers = regexp.MustCompile(`^\$[a-zA-Z][a-zA-Z0-9]*$`)
 
 func render(template interface{}, context map[string]interface{}) (interface{}, error) {
 	if template == nil {
