@@ -238,18 +238,14 @@ var operators = map[string]operator{
 		if err := restrictProperties(template, "$eval"); err != nil {
 			return nil, err
 		}
-		value, err := render(template["$eval"], context)
-		if err != nil {
-			return nil, err
-		}
-		s, ok := value.(string)
+		s, ok := template["$eval"].(string)
 		if !ok {
 			return nil, TemplateError{
 				Message:  "$eval expects a string expression",
 				Template: template,
 			}
 		}
-		value, err = i.Execute(s, 0, context)
+		value, err := i.Execute(s, 0, context)
 		if err != nil {
 			return nil, TemplateError{
 				Message:  err.Error(),
