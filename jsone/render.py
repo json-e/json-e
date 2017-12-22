@@ -72,7 +72,10 @@ def checkUndefinedProperties(template, allowed):
 
 @operator('$eval')
 def eval(template, context):
-    return evaluateExpression(renderValue(template['$eval'], context), context)
+    checkUndefinedProperties(template, ['\$eval'])
+    if not isinstance(template['$eval'], string):
+        raise TemplateError("$eval must be given a string expression")
+    return evaluateExpression(template['$eval'], context)
 
 
 @operator('$flatten')
