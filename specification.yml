@@ -635,7 +635,7 @@ result:   35
 title:    let with evaluated context
 template: {$let: {$eval: '{"thirty": 10 + 20}'}, in: {$eval: "thirty+5"}}
 context:  {}
-result:   35
+error:    'TemplateError: top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/'
 ---
 title:    context overriding
 template: {$let: {x: 20}, in: {$eval: "x + y"}}
@@ -655,12 +655,12 @@ error:    'TemplateError: $let has undefined properties: a'
 title:    let array
 template: {$let: [1, 2], in: {$eval: "1 + 2"}}
 context:  {}
-error:    'TemplateError: $let value must evaluate to an object'
+error:    'TemplateError: $let value must be an object'
 ---
 title:    let null
 template: {$let: null, in: {$eval: "1 + 2"}}
 context:  {}
-error:    'TemplateError: $let value must evaluate to an object'
+error:    'TemplateError: $let value must be an object'
 ---
 title:    checking name begin with number
 context:  {}
