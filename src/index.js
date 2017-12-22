@@ -126,24 +126,24 @@ operators.$json = (template, context) => {
 operators.$let = (template, context) => {
   checkUndefinedProperties(template, ['\\$let', 'in']);
 
-  let variables = render(template['$let'], context);
-
-  var context_copy = Object.assign(context, variables);
-
-  if (!isObject(variables)) {
-    throw new TemplateError('$let value must evaluate to an object');
-  } else {
-    let match = Object.keys(variables).every((variableName) => /^[a-zA-Z_][a-zA-Z0-9_]*$/.exec(variableName));
-    if (!match) {
+  if (!isObject(template['$let'])) {
+    throw new TemplateError('$let value must be an object');
+  }
+  let variables = {};
+  Object.keys(template['$let']).forEach(key => {
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) {
       throw new TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
     }
-  }
+    variables[key] = render(template['$let'][key], context);
+  });
+
+  var child_context = Object.assign(context, variables);
 
   if (template.in == undefined) {
     throw new TemplateError('$let operator requires an `in` clause');
   }
 
-  return render(template.in, context_copy);
+  return render(template.in, child_context);
 };
 
 operators.$map = (template, context) => {
