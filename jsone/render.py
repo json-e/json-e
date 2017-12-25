@@ -146,15 +146,15 @@ def jsonConstruct(template, context):
 @operator('$let')
 def let(template, context):
     checkUndefinedProperties(template, ['\$let', 'in'])
-    variables = renderValue(template['$let'], context)
-    if not isinstance(variables, dict):
-        raise TemplateError("$let value must evaluate to an object")
-    else:
-        if not all(IDENTIFIER_RE.match(variableNames) for variableNames in variables.keys()):
-            raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
+    if not isinstance(template['$let'], dict):
+        raise TemplateError("$let value must be an object")
 
     subcontext = context.copy()
-    subcontext.update(variables)
+    for k, v in template['$let'].items():
+        if not IDENTIFIER_RE.match(k):
+            raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
+        subcontext[k] = renderValue(v, context)
+
     try:
         in_expression = template['in']
     except KeyError:

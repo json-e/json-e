@@ -8,3 +8,6 @@ npm test
 
 # Python unit tests
 python setup.py test
+
+# golang unit tests
+go test -v -race ./...
