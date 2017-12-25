@@ -1100,32 +1100,37 @@ section: $eval
 title: $eval of $eval
 context: {}
 template: {$eval: {$eval: '"13"'}}
-result: 13
+error: true
+---
+title: $eval with undefined properties
+context: {}
+template: {$eval: '13', wrong: 'a + b'}
+error: 'TemplateError: $eval has undefined properties: wrong'
 ---
 title: $eval of an array
 context: {key1: 1, key2: 2}
 template: {$eval: ['key1', 'key2']}
-error: 'TemplateError: expression to be evaluated must be a string'
+error: 'TemplateError: $eval must be given a string expression'
 ---
 title: $eval of an object
 context: {key1: 1, key2: 2}
 template: {$eval: {k: 'key1'}}
-error: 'TemplateError: expression to be evaluated must be a string'
+error: 'TemplateError: $eval must be given a string expression'
 ---
 title: $eval of null
 context: {}
 template: {$eval: null}
-error: 'TemplateError: expression to be evaluated must be a string'
+error: 'TemplateError: $eval must be given a string expression'
 ---
 title: $eval of a number
 context: {}
 template: {$eval: 11}
-error: 'TemplateError: expression to be evaluated must be a string'
+error: 'TemplateError: $eval must be given a string expression'
 ---
 title: $eval of a boolean
 context: {}
 template: {$eval: true}
-error: 'TemplateError: expression to be evaluated must be a string'
+error: 'TemplateError: $eval must be given a string expression'
 ################################################################################
 ---
 section: builtins
@@ -1811,7 +1816,7 @@ result:   'ab'
 title:    $eval must take string
 context:  {a: 3, b: 2}
 template: {$eval: ['a', 'b']}
-error:    'TemplateError: expression to be evaluated must be a string'
+error:    'TemplateError: $eval must be given a string expression'
 ---
 title: array access [index]
 context: {a: [1,2,3,4]}
@@ -4912,6 +4917,6 @@ error: 'InterpreterError: infix: >= expects numbers/strings >= numbers/strings'
 title: 'Nested error has appropriate message'
 context: {}
 template: {foo: [1, {"123": [{$eval: 10}]}]}
-error: 'TemplateError at template.foo[1]["123"][0]: expression to be evaluated must be a string'
+error: 'TemplateError at template.foo[1]["123"][0]: $eval must be given a string expression'
 
 ################################################################################

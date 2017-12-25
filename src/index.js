@@ -63,8 +63,13 @@ let deleteMarker = {};
 let operators = {};
 
 operators.$eval = (template, context) => {
-  let value = render(template['$eval'], context);
-  return interpreter.parse(value, context);
+  checkUndefinedProperties(template, ['\\$eval']);
+
+  if (!isString(template['$eval'])) {
+    throw new TemplateError('$eval must be given a string expression');
+  }
+
+  return interpreter.parse(template['$eval'], context);
 };
 
 operators.$flatten = (template, context) => {
