@@ -16,6 +16,7 @@ suite('json-e', () => {
   let rawspec = fs.readFileSync(SPEC_FILE, {encoding: 'utf8'});
   yaml.loadAll(rawspec, c => {
     if (c.section) {
+      assert(!spec[c.section], `section ${c.section} is defined twice`);
       spec[c.section] = section = [];
     } else {
       section.push(c);
@@ -27,7 +28,7 @@ suite('json-e', () => {
 
   _.forEach(spec, (C, s) => suite(s, function() {
     C.forEach(c => {
-      let t = function() {
+      test(c.title, () => {
         let result;
         try {
           result = jsone(c.template, c.context);
@@ -44,8 +45,7 @@ suite('json-e', () => {
         }
         assert(!c.error, 'Expected an error');
         assume(result).eql(c.result);
-      };
-      test(c.title, t);
+      });
     });
   }));
 });
