@@ -177,6 +177,10 @@ result:   {config: {transactionBackend: 'mock'}}
 
 The expression syntax is described in more detail below.
 
+Note that `$eval`'s value must be a string. "Metaprogramming" by providing a
+calculated value to eval is not allowed.  For example, `{$eval: {$eval:
+"${var1} + ${var2}"}}` is not valid JSON-e.
+
 ### `$json`
 
 The `$json` operator formats the given value as JSON. It does not evaluate the
@@ -277,6 +281,10 @@ result: [300, -100, 20000]
 The `$let` operator here added the `ts` and `foo` variables to the scope of
 the context and accordingly evaluated the `in` clause using those variables
 to return the correct result.
+
+The variable names in the `$let` value must be valid context variable names and
+must be written literally. That is, an expression like `{$let: {$eval:
+"extraVariables"}, in : ..}` is not allowed.
 
 ### `$map`
 
