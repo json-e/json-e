@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 
 	i "github.com/taskcluster/json-e/interpreter"
 )
@@ -200,7 +201,7 @@ var builtin = map[string]interface{}{
 	"len": i.WrapFunction(func(v interface{}) (float64, error) {
 		switch val := v.(type) {
 		case string:
-			return float64(len(val)), nil
+			return float64(utf8.RuneCountInString(val)), nil
 		case []interface{}:
 			return float64(len(val)), nil
 		}
