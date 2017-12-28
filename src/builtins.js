@@ -94,7 +94,7 @@ module.exports = (context) => {
 
   define('len', builtins, {
     argumentTests: ['string|array'],
-    invoke: obj => obj.length,
+    invoke: obj => Array.from(obj).length,
   });
 
   define('strip', builtins, {

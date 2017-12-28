@@ -1530,6 +1530,11 @@ context: {key: 'abc'}
 template: {$eval: 'len(key)'}
 result: 3
 ---
+title: len of grinning face unicode character
+context: {key: "\U0001F601"}
+template: {$eval: 'len(key)'}
+result: 1
+---
 title: len (4)
 context: {key: [1,2,3]}
 template: {$eval: 'len("abc")'}
