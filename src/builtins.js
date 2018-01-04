@@ -62,7 +62,7 @@ module.exports = (context) => {
   });
 
   ['sqrt', 'ceil', 'floor', 'abs'].forEach(name => {
-    if (Math[name] == undefined) { //why doing this?
+    if (Math[name] == undefined) { 
       throw new Error(`${name} in Math undefined`);
     }
     define(name, builtins, {
