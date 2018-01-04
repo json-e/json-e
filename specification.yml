@@ -309,6 +309,11 @@ context:  {}
 template: {$$map: [2, 4, 6], each(x): {$$eval: "x + a"}}
 result:   {$map: [2, 4, 6], each(x): {$eval: "x + a"}}
 ---
+title:	  escape $map as object and each(identifier) as array
+context:  {}
+template: {$map: {"hello": 5, "test": 9},"each(x)":['${x.key}',{$eval: 'x.val+1'}]}
+error:   'TemplateError: $map is an object so each(identifier) shall also compute to an object'
+---
 title:    escape $merge
 context:  {}
 template: {$$merge: [{a: 1}, {a: 2}]}

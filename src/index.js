@@ -176,6 +176,10 @@ operators.$map = (template, context) => {
 
   if (object) {
     value = Object.keys(value).map(key => ({key, val: value[key]}));
+    let firstRender= render(each, Object.assign({}, context, {[x]: value[0]}));
+    if  (!isObject(firstRender)) {
+      throw new TemplateError('$map is an object so each(identifier) shall also compute to an object');
+    }
   }
 
   value = value.map(v => render(each, Object.assign({}, context, {[x]: v})))
