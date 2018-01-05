@@ -269,7 +269,7 @@ result:   null
 title:    $if-then-else with undefined properties
 context:  {cond: true}
 template: {$if: 'cond', then: 1, foo: 'bar', else: 2, bing: 'baz'}
-error: 'TemplateError: $if has undefined properties: bing foo'
+error:    'TemplateError: $if has undefined properties: bing foo'
 ################################################################################
 ---
 section:  escape operators
@@ -309,10 +309,10 @@ context:  {}
 template: {$$map: [2, 4, 6], each(x): {$$eval: "x + a"}}
 result:   {$map: [2, 4, 6], each(x): {$eval: "x + a"}}
 ---
-title:	  escape $map as object and each(identifier) as array
+title:    escape $map as object and each(identifier) as array
 context:  {}
 template: {$map: {"hello": 5, "test": 9},"each(x)":['${x.key}',{$eval: 'x.val+1'}]}
-error:   'TemplateError: $map is an object so each(identifier) shall also compute to an object'
+error:   'TemplateError: $map on objects expects each(x) to evaluate to an object'
 ---
 title:    escape $merge
 context:  {}
