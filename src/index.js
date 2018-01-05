@@ -173,15 +173,18 @@ operators.$map = (template, context) => {
   let each = template[eachKey];
 
   let object = isObject(value);
-
+  
   if (object) {
     value = Object.keys(value).map(key => ({key, val: value[key]}));
-    let FirstEachValue = render(each, Object.assign({}, context, {[x]: value[0]}));
-    if  (!isObject(FirstEachValue)) {
-      throw new TemplateError(`$map on objects expects each(${x}) to evaluate to an object`);
-    }
-    value = value.map(v => render(each, Object.assign({}, context, {[x]: v})))
-      .filter(v => v !== deleteMarker);
+    let eachValue;
+    value = value.map(v => {
+      eachValue = render(each, Object.assign({}, context, {[x]: v}));
+      if  (!isObject(eachValue)) {
+        throw new TemplateError(`$map on objects expects each(${x}) to evaluate to an object`);
+      } else {
+        return eachValue;
+      }
+    }).filter(v => v !== deleteMarker);
     return value.reduce((a, o) => Object.assign(a, o), {});
   } else {
     value = value.map(v => render(each, Object.assign({}, context, {[x]: v})))

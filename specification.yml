@@ -309,11 +309,6 @@ context:  {}
 template: {$$map: [2, 4, 6], each(x): {$$eval: "x + a"}}
 result:   {$map: [2, 4, 6], each(x): {$eval: "x + a"}}
 ---
-title:    escape $map as object and each(identifier) as array
-context:  {}
-template: {$map: {"hello": 5, "test": 9},"each(x)":['${x.key}',{$eval: 'x.val+1'}]}
-error:   'TemplateError: $map on objects expects each(x) to evaluate to an object'
----
 title:    escape $merge
 context:  {}
 template: {$$merge: [{a: 1}, {a: 2}]}
@@ -808,8 +803,14 @@ template:
   each(x): {$eval: 'x + a'}
   foo: 'bar'
 error: 'TemplateError: $map has undefined properties: foo'
-################################################################################
 ---
+title:    $map as object and each(identifier) as array
+context:  {}
+template:
+  $map: {"hello": 5, "test": 9}
+  each(x): ['${x.key}', {$eval: 'x.val+1'}]
+error: 'TemplateError: $map on objects expects each(x) to evaluate to an object'
+################################################################################
 section:  $merge
 ---
 title:    simple merge
