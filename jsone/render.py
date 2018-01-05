@@ -183,9 +183,6 @@ def map(template, context):
     each_var = each_key[5:-1]
     each_template = template[each_key]
 
-    if is_obj:
-        value = [{'key': v[0], 'val': v[1]} for v in value.items()]
-
     def gen():
         subcontext = context.copy()
         for elt in value:
@@ -193,11 +190,15 @@ def map(template, context):
             elt = renderValue(each_template, subcontext)
             if elt is not DeleteMarker:
                 yield elt
-
     if is_obj:
+        value = [{'key': v[0], 'val': v[1]} for v in value.items()]
         v = dict()
         for e in gen():
-            v.update(e)
+            if not isinstance(e, dict):
+                raise TemplateError(
+                    "$map on objects expects {0} to evaluate to an object".format(each_key))
+            else:
+                v.update(e)
         return v
     else:
         return list(gen())
