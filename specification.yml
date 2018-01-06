@@ -44,8 +44,8 @@ result:   '[1,2,true,{},[]]'
 ---
 title:    $json alphabetical
 context:  {}
-template: {$json: {'q':1,'a':'Z','r':'f3s'}}
-result:   '{"a":"Z","q":1,"r":"f3s"}'
+template: {$json: {'Z':null,'q':1,'a':{'c':45,'b':['9',8,{}]},'r':true}}
+result:   '{"Z":null,"a":{"b":["9",8,{}],"c":45},"q":1,"r":true}'
 ---
 title:    string interpolation
 context:  {key: 'world', num: 1}
