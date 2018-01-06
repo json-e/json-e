@@ -318,16 +318,6 @@ template:
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 ```
- 
-```yaml
-template: 
-  $map: {"hello": 5, "test": 9}
-  each(x):['${x.key}',{$eval: 'x.val+1'}]
-context: {}
-error:   'TemplateError: $map on objects expects each(x) to evaluate to an object'
-```
-
-
 
 ### `$merge`
 
