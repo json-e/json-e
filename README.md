@@ -183,9 +183,10 @@ calculated value to eval is not allowed.  For example, `{$eval: {$eval:
 
 ### `$json`
 
-The `$json` operator formats the given value as JSON. It does not evaluate the
-value (use `$eval` for that). While this can be useful in some cases, it is an
-unusual case to include a JSON string in a larger data structure.
+The `$json` operator formats the given value as JSON with sorted keys. It does
+not evaluate the value (use `$eval` for that). While this can be useful in some
+cases, it is an unusual case to include a JSON string in a larger data
+structure.
 
 ```yaml
 template: {$json: [a, b, {$eval: 'a+b'}, 4]}
