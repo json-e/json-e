@@ -42,6 +42,11 @@ context:  {}
 template: {$json: [1,2,true,{},[]]}
 result:   '[1,2,true,{},[]]'
 ---
+title:    $json alphabetical
+context:  {}
+template: {$json: {'Z': null, 'q': 1, 'a': {'c': 45, 'b': ['9', 8, {}], 'r': true}}}
+result:   '{"Z": null, "a": {"b": ["9", 8, {}], "c": 45}, "q":1, "r": true}}'
+---
 title:    string interpolation
 context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k-${num}': true}
