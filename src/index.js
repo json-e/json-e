@@ -1,6 +1,7 @@
 var interpreter = require('./interpreter');
 var fromNow = require('./from-now');
 var assert = require('assert');
+var stringify = require('json-stable-stringify');
 var {
   isString, isNumber, isBool,
   isArray, isObject, isFunction,
@@ -125,7 +126,7 @@ operators.$if = (template, context) => {
 operators.$json = (template, context) => {
   checkUndefinedProperties(template, ['\\$json']);
 
-  return JSON.stringify(render(template['$json'], context));
+  return stringify(render(template['$json'], context));
 };
 
 operators.$let = (template, context) => {

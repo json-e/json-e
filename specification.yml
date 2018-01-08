@@ -44,8 +44,13 @@ result:   '[1,2,true,{},[]]'
 ---
 title:    $json alphabetical
 context:  {}
-template: {$json: {'Z': null, 'q': 1, 'a': {'c': 45, 'b': ['9', 8, {}], 'r': true}}}
-result:   '{"Z": null, "a": {"b": ["9", 8, {}], "c": 45}, "q":1, "r": true}}'
+template: {$json: {'Z':null,'q':1,'a':{'c':45,'b':['9',8,{}]},'r':true}}
+result:   '{"Z":null,"a":{"b":["9",8,{}],"c":45},"q":1,"r":true}'
+---
+title:   $json sorting unicode strings
+context:  {}
+template: {$json: {'\u0048\u0050': 56, '\u0042\u0010': 44, '\u0055\u0045': 43}}
+result:   '{"\u0042\u0010": 44, "\u0048\u0050": 56, "\u0055\u0045": 43}'
 ---
 title:    string interpolation
 context:  {key: 'world', num: 1}

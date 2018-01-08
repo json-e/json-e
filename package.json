@@ -18,7 +18,7 @@
   },
   "author": "",
   "license": "MPL-2.0",
-  "dependencies": {},
+  "dependencies": {"json-stable-stringify": "^1.0.1"},
   "devDependencies": {
     "assume": "^1.5.2",
     "browserify": "^14.5.0",
