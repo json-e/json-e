@@ -308,7 +308,7 @@ element. In the case of iterating over an object, `var` will be an object with t
 
 When given an object, map returns an object only when the expression defined by `each(var)` 
 evaluates to an object since results of each 'each(var)' are merged internally to give the 
-resulting object.Otherwise the expression becomes invalid for the $map operator.
+resulting object. Otherwise the expression becomes invalid for the $map operator.
 If keys intersect, later keys will win.
 
 ```yaml
