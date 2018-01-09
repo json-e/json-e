@@ -183,9 +183,9 @@ def map(template, context):
     each_var = each_key[5:-1]
     each_template = template[each_key]
 
-    def gen():
+    def gen(val):
         subcontext = context.copy()
-        for elt in value:
+        for elt in val:
             subcontext[each_var] = elt
             elt = renderValue(each_template, subcontext)
             if elt is not DeleteMarker:
@@ -193,15 +193,14 @@ def map(template, context):
     if is_obj:
         value = [{'key': v[0], 'val': v[1]} for v in value.items()]
         v = dict()
-        for e in gen():
+        for e in gen(value):
             if not isinstance(e, dict):
                 raise TemplateError(
                     "$map on objects expects {0} to evaluate to an object".format(each_key))
-            else:
-                v.update(e)
+            v.update(e)
         return v
     else:
-        return list(gen())
+        return list(gen(value))
 
 
 @operator('$merge')
