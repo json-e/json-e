@@ -292,9 +292,7 @@ must be written literally. That is, an expression like `{$let: {$eval:
 The `$map` operator evaluates an expression for each value of the given array or object,
 constructing the result as an array or object of the evaluated values.
 
-Given an array, map returns an array, and given an object, the result is an object. When
-given an object, the value of your `each` should be an object and each will be merged
-internally to give the resulting object. If keys intersect, later keys will win.
+When given an array, map always returns an array.
 
 ```yaml
 template:
@@ -303,6 +301,15 @@ template:
 context:  {a: 1}
 result:   [3, 5, 7]
 ```
+The array or object is the value of the `$map` property, and the expression to evaluate
+is given by `each(var)` where `var` is the name of the variable containing each
+element. In the case of iterating over an object, `var` will be an object with two keys:
+`key` and `val`. These keys correspond to a key in the object and its corresponding value.
+
+When $map is given an object, the expression defined by `each(var)` must evaluate to an
+object for each key/value pair (`key` and `val`).The objects constructed by each 'each(var)'
+can then be merged internally to give the resulting object with later keys overwriting 
+the previous ones.Otherwise the expression becomes invalid for the $map operator
 
 ```yaml
 template:
@@ -311,11 +318,6 @@ template:
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 ```
-
-The array or object is the value of the `$map` property, and the expression to evaluate
-is given by `each(var)` where `var` is the name of the variable containing each
-element. In the case of iterating over an object, `var` will be an object with two keys:
-`key` and `val`. These keys correspond to a key in the object and its corresponding value.
 
 ### `$merge`
 
