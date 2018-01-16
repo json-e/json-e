@@ -1,6 +1,6 @@
 {
   "name": "json-e",
-  "version": "2.3.5",
+  "version": "2.5.0",
   "description": "json parameterization module inspired from json-parameterization",
   "main": "./src/index.js",
   "scripts": {
@@ -18,7 +18,13 @@
   },
   "author": "",
   "license": "MPL-2.0",
+<<<<<<< HEAD
   "dependencies": {"json-stable-stringify": "^1.0.1"},
+=======
+  "dependencies": {
+    "json-stable-stringify": "^1.0.1"
+  },
+>>>>>>> 492932196c355bd21c995e847582a1c8c955b9dc
   "devDependencies": {
     "assume": "^1.5.2",
     "browserify": "^14.5.0",

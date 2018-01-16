@@ -180,17 +180,16 @@ operators.$map = (template, context) => {
     let eachValue;
     value = value.map(v => {
       eachValue = render(each, Object.assign({}, context, {[x]: v}));
-      if  (!isObject(eachValue)) {
+      if (!isObject(eachValue)) {
         throw new TemplateError(`$map on objects expects each(${x}) to evaluate to an object`);
-      } else {
-        return eachValue;
-      }
+      } 
+      return eachValue;
     }).filter(v => v !== deleteMarker);
-    return value.reduce((a, o) => Object.assign(a, o), {});
+    //return value.reduce((a, o) => Object.assign(a, o), {});
+    return Object.assign({}, ...value);
   } else {
-    value = value.map(v => render(each, Object.assign({}, context, {[x]: v})))
+    return value.map(v => render(each, Object.assign({}, context, {[x]: v})))
       .filter(v => v !== deleteMarker);
-    return value;
   }
 };
 

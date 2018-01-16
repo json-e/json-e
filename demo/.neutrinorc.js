@@ -2,18 +2,17 @@ let output = 'docs';
 
 module.exports = {
   use: [
-    ['neutrino-preset-react', {
+    ['@neutrinojs/react', {
       html: {
         title: 'JSON-e',
       },
     }],
-    'neutrino-middleware-postcss',
   ],
   env: {
     NODE_ENV: {
       production: {
         use: [
-          ['neutrino-middleware-clean', {
+          ['@neutrinojs/clean', {
             paths: [output],
           }],
         ]
@@ -22,6 +21,7 @@ module.exports = {
   },
   options: {
     root: '..',
+    node_modules: 'demo/node_modules',
     output: output,
     source: 'demo/src',
   },

@@ -183,9 +183,10 @@ calculated value to eval is not allowed.  For example, `{$eval: {$eval:
 
 ### `$json`
 
-The `$json` operator formats the given value as JSON. It does not evaluate the
-value (use `$eval` for that). While this can be useful in some cases, it is an
-unusual case to include a JSON string in a larger data structure.
+The `$json` operator formats the given value as JSON with sorted keys. It does
+not evaluate the value (use `$eval` for that). While this can be useful in some
+cases, it is an unusual case to include a JSON string in a larger data
+structure.
 
 ```yaml
 template: {$json: [a, b, {$eval: 'a+b'}, 4]}
@@ -300,16 +301,15 @@ template:
 context:  {a: 1}
 result:   [3, 5, 7]
 ```
-
 The array or object is the value of the `$map` property, and the expression to evaluate
 is given by `each(var)` where `var` is the name of the variable containing each
 element. In the case of iterating over an object, `var` will be an object with two keys:
 `key` and `val`. These keys correspond to a key in the object and its corresponding value.
 
-When given an object, map returns an object only when the expression defined by `each(var)` 
-evaluates to an object since results of each 'each(var)' are merged internally to give the 
-resulting object.Otherwise the expression becomes invalid for the $map operator.
-If keys intersect, later keys will win.
+When $map is given an object, the expression defined by `each(var)` must evaluate to an
+object for each key/value pair (`key` and `val`).The objects constructed by each 'each(var)'
+can then be merged internally to give the resulting object with later keys overwriting 
+the previous ones.Otherwise the expression becomes invalid for the $map operator
 
 ```yaml
 template:
