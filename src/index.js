@@ -373,5 +373,3 @@ module.exports = (template, context = {}) => {
   }
   return result;
 };
-
-//var template = {$json: {'e\uE120\u732b':'hey', '\uE241\u0012\u{107000}':'hi', '\u{24000}\u0022':'hello'}};
