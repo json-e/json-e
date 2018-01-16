@@ -47,31 +47,6 @@ context:  {}
 template: {$json: {'Z':null,'q':1,'a':{'c':45,'b':['9',8,{}]},'r':true}}
 result:   '{"Z":null,"a":{"b":["9",8,{}],"c":45},"q":1,"r":true}'
 ---
-title:   $json sorting unicode strings
-context:  {}
-template: {$json: {"\u3347\u0050": 1, "\uE1FF\u0010": 2, "\u0055\u0045": 3}}
-result:   '{"\u0055\u0045": 3, "\u3347\u0050": 1 , "\uE1FF\u0010": 2}'
----
-title:   $json sorting unicode strings2
-context:  {}
-template: {$json: {"u005A\U00010000\u0050": 1, "\U000E1FFF\u0010": 2, "\u0055a\u0045": 3}}
-result:   '{"\u0055a\u0045": 3, "\u005A\u10000\u0050": 1, "\U000E1FFF\u0010": 2}'
----
-title:   $json sorting unicode strings3
-context:  {}
-template: {$json: {"e\U000E3FFE\u732b":'hey', "\u0041\u0012\u107000":'hi', "A\U00024000":'hello'}}
-result:   '{"\u0041\u0012\u107000":"hi", "A\U00024000":"hello", "e\U000E3FFE\u732b":"hey"}'
----
-title:   $json sorting unicode strings4
-context:  {}
-template: {$json: {"e\U000E3FFE\u732b":'hey', "\u0041\U00024000\u107000":'hi', "A\u4FFF":'hello'}}
-result:   '{"A\u4FFF": "hello", "\u0041\U00024000\u107000": "hi", "e\U000E3FFE\\u732b": "hey" }'
----
-title:   $json sorting unicode string5
-context:  {}
-template: {$json: {"\U00024000\u732b":'hey', "\u007C\U00024000\u107000":'hi', "\u0012\U000FFFF4":'hello'}}
-result:   '{"A\u4FFF": "hello", "\u0041\U00024000\u107000": "hi", "e\U000E3FFE\u732b": "hey" }'
----
 title:    string interpolation
 context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k-${num}': true}
@@ -616,10 +591,25 @@ context:  {a: 1, b: 2}
 template: {$json: [2, 5, {$eval: 'a + b + 7'}]}
 result:   '[2,5,10]'
 ---
+title:    sorting pairs by unicode key strings
+context:  {}
+template: {$json: {"\u3347\u0050": 1, "\uE1FF\u0010": 2, "\u0055\u0045": 3}}
+result:   '{"\u0055\u0045": 3, "\u3347\u0050": 1 , "\uE1FF\u0010": 2}'
+---
+title:    sorting pairs by unicode key strings2
+context:  {}
+template: {$json: {"u005A\U00010000\u0050": 1, "\U000E1FFF\u0010": 2, "\u0055a\u0045": 3}}
+result:   '{"\u0055a\u0045": 3, "\u005A\U00010000\u0050": 1, "\U000E1FFF\u0010": 2}'
+---
+title:    sorting pairs by unicode key strings3
+context:  {}
+template: {$json: {"e\U000E3FFE\u732b":'hey', "\u0041\u0012\u107000":'hi', "A\U00024000":'hello'}}
+result:   '{"\u0041\u0012\u107000":"hi", "A\U00024000":"hello", "e\U000E3FFE\u732b":"hey"}'
+---
 title:    $json with undefined properties
 context:  {}
 template: {$json: [1,2,true,{},[]], foo: 'bar'}
-error: 'TemplateError: $json has undefined properties: foo'
+error:    'TemplateError: $json has undefined properties: foo'
 ################################################################################
 ---
 section: accessing nested objects => context
