@@ -591,20 +591,20 @@ context:  {a: 1, b: 2}
 template: {$json: [2, 5, {$eval: 'a + b + 7'}]}
 result:   '[2,5,10]'
 ---
-title:    sorting pairs by unicode key strings
+title:    representation of various unicode codepoints are consistent
 context:  {}
-template: {$json: {"\u3347\u0050": 1, "\uE1FF\u0010": 2, "\u0055\u0045": 3}}
-result:   '{"\u0055\u0045": 3, "\u3347\u0050": 1 , "\uE1FF\u0010": 2}'
+template: {$json: ["\x10", "Z", "\u0103","\U0001F809"]}
+result:   "[\"\\u0010\",\"Z\",\"\u0103\",\"\U0001F809\"]"
 ---
-title:    sorting pairs by unicode key strings2
+title:    sorting pairs by unicode key strings sorts lexically by codepoint
 context:  {}
-template: {$json: {"u005A\U00010000\u0050": 1, "\U000E1FFF\u0010": 2, "\u0055a\u0045": 3}}
-result:   '{"\u0055a\u0045": 3, "\u005A\U00010000\u0050": 1, "\U000E1FFF\u0010": 2}'
+template: {$json: {"\u3347\u0050": 1, "\uE1FF\u0100": 2, "\u0055\u0045": 3}}
+result:   "{\"\u0055\u0045\":3,\"\u3347\u0050\":1,\"\uE1FF\u0100\":2}"
 ---
-title:    sorting pairs by unicode key strings3
+title:    sorting pairs by unicode key strings sorts lexically by codepoint, even with chars above base plane
 context:  {}
-template: {$json: {"e\U000E3FFE\u732b":'hey', "\u0041\u0012\u107000":'hi', "A\U00024000":'hello'}}
-result:   '{"\u0041\u0012\u107000":"hi", "A\U00024000":"hello", "e\U000E3FFE\u732b":"hey"}'
+template: {$json: {"\U0001F809\u732b":'hey', "Z\U00010000P": 1, "\U000E1FFF\u0103": 2, "UaE": 3}}
+result:   "{\"UaE\":3,\"Z\U00010000P\":1,\"\U0001F809\u732b\":\"hey\",\"\U000E1FFF\u0103\":2}"
 ---
 title:    $json with undefined properties
 context:  {}

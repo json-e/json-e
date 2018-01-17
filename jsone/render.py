@@ -143,7 +143,7 @@ def ifConstruct(template, context):
 def jsonConstruct(template, context):
     checkUndefinedProperties(template, ['\$json'])
     value = renderValue(template['$json'], context)
-    return json.dumps(value, separators=(',', ':'), sort_keys=True)
+    return json.dumps(value, separators=(',', ':'), sort_keys=True, ensure_ascii=False)
 
 
 @operator('$let')
