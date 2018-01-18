@@ -21,7 +21,6 @@ let builtinError = (builtin) => new BuiltinError(`invalid arguments to ${builtin
 
 module.exports = (context) => {
   let builtins = {};
-
   let define = (name, context, {
     argumentTests = [],
     minArgs = false,
