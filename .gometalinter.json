@@ -1,0 +1,23 @@
+{
+  "Enable": [
+    "goconst",
+    "gofmt",
+    "goimports",
+    "golint",
+    "gosimple",
+    "ineffassign",
+    "interfacer",
+    "lll",
+    "misspell",
+    "staticcheck",
+    "unconvert",
+    "vet",
+    "vetshadow"
+  ],
+  "VendoredLinters": true,
+  "Deadline": "30m",
+  "LineLength": 180,
+  "Vendor": true,
+  "Test": true,
+  "Concurrency": 4
+}
