@@ -150,7 +150,25 @@ tasks:
           git config advice.detachedHead false &&
           git checkout {{event.head.sha}} &&
           go get -v -d -t ./... &&
-          go test -v -race ./...
+          go test -v -race ./... &&
+          go get -u github.com/alecthomas/gometalinter &&
+          gometalinter --install &&
+          gometalinter \
+            -j4 --deadline=30m --line-length=180 --vendor --vendored-linters --disable-all \
+            --enable=goconst \
+            --enable=gofmt \
+            --enable=goimports \
+            --enable=golint \
+            --enable=gosimple \
+            --enable=ineffassign \
+            --enable=interfacer \
+            --enable=lll \
+            --enable=misspell \
+            --enable=staticcheck \
+            --enable=unconvert \
+            --enable=vet \
+            --enable=vetshadow \
+            --tests ./...
     metadata:
       name: json-e go test
       description: Run library test suite - golang 1.9
