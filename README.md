@@ -656,30 +656,3 @@ context: {}
 result: 3
 ```
 
-# Development and testing
-
-## JSON-e development
-
-You should run `npm install` to install the required packages for json-e's
-execution and development.  For Python, activate a virtualenv and run `pip
-install -e .`.
-
-You can run `./test.sh` to run json-e's tests and lint checks.
-
-## Demo development
-
-The demo website is a [Neutrino](https://neutrino.js.org/) app hosted in
-`demo/`.  Follow the usual Neutrino development process (`yarn install && yarn
-start`) there.
-
-The resulting application embeds and enriches this README.
-
-## Making a Release
-
-* Run `towncrier --version=$newversion --draft` and check that the output looks OK.  Then run it without `--draft`, deleting the old newsfiles.  Commit.
-* Update the version, commit, and tag -- `npm version patch` (or minor or major, depending)
-* Push to release the JS version -- `git push && git push --tags`
-* Release to PyPi:
-  * `python setup.py sdist`
-  * `twine upload dist/json-e-<version>.tar.gz`
-* Go doesn't believe in versions, so there's notihng to do for a Go release!
