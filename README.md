@@ -20,6 +20,12 @@ JSON-e is also designed to be safe for use on untrusted data. It never uses
 also disallows unbounded iteration, so any JSON-e rendering operation will
 finish in finite time.
 
+## Changes
+
+See
+[CHANGELOG.rst](https://github.com/taskcluster/json-e/blob/master/CHANGELOG.rst)
+for the changes in each version of this library.
+
 # Interface
 
 ## JavaScript
@@ -670,8 +676,10 @@ The resulting application embeds and enriches this README.
 
 ## Making a Release
 
+* Run `towncrier --version=$newversion --draft` and check that the output looks OK.  Then run it without `--draft`, deleting the old newsfiles.  Commit.
 * Update the version, commit, and tag -- `npm version patch` (or minor or major, depending)
 * Push to release the JS version -- `git push && git push --tags`
 * Release to PyPi:
   * `python setup.py sdist`
   * `twine upload dist/json-e-<version>.tar.gz`
+* Go doesn't believe in versions, so there's notihng to do for a Go release!
