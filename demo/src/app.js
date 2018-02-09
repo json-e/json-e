@@ -219,7 +219,6 @@ export default class App extends React.Component {
       { name: 'About', section: readme.child('JSON-e') },
       { name: 'Interface', section: readme.child('Interface') },
       { name: 'Language', section: readme.child('Language Reference'), showDemo: true },
-      { name: 'Development', section: readme.child('Development and testing') }
     ];
 
     const activeData = find(tabs, { name: activeTab }) || tabs[0];
