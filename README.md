@@ -106,6 +106,12 @@ func main() {
 }
 ```
 
+## CLI
+
+You can use the 3rd party package [rjsone](https://wryun.github.io/rjsone/) to template
+JSON-e from the command line, passing templates/contexts as files or arguments and using
+stdout for the result.
+
 
 # Language Reference
 
