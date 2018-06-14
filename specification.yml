@@ -1666,6 +1666,31 @@ context: {key: [1, 2, 3]}
 template: {$eval: 'str(key)'}
 error: 'BuiltinError: invalid arguments to builtin: str'
 ---
+title:    number
+context:  {round: "3"}
+template: {foo: {$eval: number(round)}}
+result:   {foo: 3}
+---
+title:    number (with point)
+context:  {round: "3.5"}
+template: {foo: {$eval: number(round)}}
+result:   {foo: 3.5}
+---
+title:    negative number
+context:  {round: "-14"}
+template: {foo: {$eval: number(round)}}
+result:   {foo: -14}
+---
+title:    negative number (with point)
+context:  {round: "-14.15"}
+template: {foo: {$eval: number(round)}}
+result:   {foo: -14.15}
+---
+title:    number zero
+context:  {round: "0"}
+template: {foo: {$eval: number(round)}}
+result:   {foo: 0}
+---
 title: strip space
 context: {}
 template: {$eval: "strip('  abc   ')"}

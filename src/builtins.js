@@ -91,6 +91,11 @@ module.exports = (context) => {
     },
   });
 
+  define('number', builtins, {
+    argumentTests: ['string'],
+    invoke: Number,
+  });
+
   define('len', builtins, {
     argumentTests: ['string|array'],
     invoke: obj => Array.from(obj).length,
