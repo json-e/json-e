@@ -177,6 +177,9 @@ var builtin = map[string]interface{}{
 			return "", fmt.Errorf("str(value) only works on strings, numbers, booleans and null")
 		}
 	}),
+	"number": i.WrapFunction(func(s string) (float64, error) {
+		return strconv.ParseFloat(s, 64)
+	}),
 	"typeof": i.WrapFunction(func(v interface{}) interface{} {
 		switch v.(type) {
 		case string:
