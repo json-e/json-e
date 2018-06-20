@@ -795,6 +795,48 @@ template:
   each(y): {'${y.key}': {$eval: 'y.val'}, '${y.key}x': {$eval: 'y.val + 1'}}
 result: {a: 1, b: 2, c: 3, ax: 2, bx: 3, cx: 4}
 ---
+title:    $map array index variable
+context: {}
+template:
+  $map: ['a', 'b', 'c']
+  each(y,i): '${y}-${i}'
+result: ['a-0','b-1','c-2']
+---
+title:    $map array implicit index variable
+context: {}
+template:
+  $map: ['a', 'b', 'c']
+  each(y): '${y}-${_index}'
+result: ['a-0','b-1','c-2']
+---
+title:    $map map index variable
+context: {}
+template:
+  $map: {a: 1, b: 2, c: 3}
+  each(y, i): {'${y.key}':{$eval: 'y.val + i'}}
+result: {a: 1, b: 3, c: 5}
+---
+title:    $map map implicit index variable
+context: {}
+template:
+  $map: {a: 1, b: 2, c: 3}
+  each(y): {'${y.key}':{$eval: 'y.val + _index'}}
+result: {a: 1, b: 3, c: 5}
+---
+title:    $map no args
+context:  {}
+template:
+  $map: "a, b, c"
+  each(): {$eval: 'y.k'}
+error: 'TemplateError: $map has undefined properties: each()'
+---
+title:    $map to many args
+context:  {}
+template:
+  $map: "a, b, c"
+  each(k,v,i): {$eval: 'y.k'}
+error: 'TemplateError: $map has undefined properties: each(k,v,i)'
+---
 title:    $map requires an array, not string
 context:  {}
 template:

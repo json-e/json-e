@@ -153,7 +153,7 @@ operators.$let = (template, context) => {
 };
 
 operators.$map = (template, context) => {
-  EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*)\\)';
+  EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*)(,\\s*([a-zA-Z_][a-zA-Z0-9_]*))?\\)';
   checkUndefinedProperties(template, ['\\$map', EACH_RE]);
   let value = render(template['$map'], context);
   if (!isArray(value) && !isObject(value)) {
@@ -165,12 +165,14 @@ operators.$map = (template, context) => {
   }
 
   let eachKey = Object.keys(template).filter(k => k !== '$map')[0];
-  let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(eachKey);
+  let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$/.exec(eachKey);
   if (!match) {
     throw new TemplateError('$map requires each(identifier) syntax');
   }
 
   let x = match[1];
+  let i = match[3] || '_index';
+  console.log(i);
   let each = template[eachKey];
 
   let object = isObject(value);
@@ -178,8 +180,8 @@ operators.$map = (template, context) => {
   if (object) {
     value = Object.keys(value).map(key => ({key, val: value[key]}));
     let eachValue;
-    value = value.map(v => {
-      eachValue = render(each, Object.assign({}, context, {[x]: v}));
+    value = value.map((v, idx) => {
+      eachValue = render(each, Object.assign({}, context, {[x]: v, [i]: idx}));
       if (!isObject(eachValue)) {
         throw new TemplateError(`$map on objects expects each(${x}) to evaluate to an object`);
       } 
@@ -188,7 +190,7 @@ operators.$map = (template, context) => {
     //return value.reduce((a, o) => Object.assign(a, o), {});
     return Object.assign({}, ...value);
   } else {
-    return value.map(v => render(each, Object.assign({}, context, {[x]: v})))
+    return value.map((v, idx) => render(each, Object.assign({}, context, {[x]: v, [i]: idx})))
       .filter(v => v !== deleteMarker);
   }
 };

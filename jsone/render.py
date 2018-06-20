@@ -167,7 +167,7 @@ def let(template, context):
 
 @operator('$map')
 def map(template, context):
-    EACH_RE = 'each\([a-zA-Z_][a-zA-Z0-9_]*\)'
+    EACH_RE = 'each\([a-zA-Z_][a-zA-Z0-9_]*(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)'
     checkUndefinedProperties(template, ['\$map', EACH_RE])
     value = renderValue(template['$map'], context)
     if not isinstance(value, list) and not isinstance(value, dict):
@@ -180,13 +180,17 @@ def map(template, context):
         raise TemplateError(
             "$map requires exactly one other property, each(..)")
     each_key = each_keys[0]
-    each_var = each_key[5:-1]
+    each_args = [x.strip() for x in each_key[5:-1].split(',')]
+    each_var = each_args[0]
+    each_idx, = each_args[1:2] or ['_index']
+
     each_template = template[each_key]
 
     def gen(val):
         subcontext = context.copy()
-        for elt in val:
+        for i, elt in enumerate(val):
             subcontext[each_var] = elt
+            subcontext[each_idx] = i
             elt = renderValue(each_template, subcontext)
             if elt is not DeleteMarker:
                 yield elt
