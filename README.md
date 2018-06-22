@@ -312,14 +312,21 @@ template:
   each(x): {$eval: 'x + a'}
 context:  {a: 1}
 result:   [3, 5, 7]
+---
+template:
+  $map: [2, 4, 6]
+  each(x,i): {$eval: 'x + a + i'}
+context:  {a: 1}
+result:   [3, 6, 9]
 ```
 The array or object is the value of the `$map` property, and the expression to evaluate
-is given by `each(var)` where `var` is the name of the variable containing each
-element. In the case of iterating over an object, `var` will be an object with two keys:
-`key` and `val`. These keys correspond to a key in the object and its corresponding value.
+is given by `each(var[,key|index])` where `var` is the name of the variable containing each
+element and `key|index` is either the object key or array index of the value. In the case of 
+iterating over an object and no `key|index` var name is given, `var` will be an object with 
+two keys: `key` and `val`. These keys correspond to a key in the object and its corresponding value.
 
 When $map is given an object, the expression defined by `each(var)` must evaluate to an
-object for each key/value pair (`key` and `val`).The objects constructed by each 'each(var)'
+object for each key/value pair (`key` and `val`). The objects constructed by each 'each(var)'
 can then be merged internally to give the resulting object with later keys overwriting 
 the previous ones.Otherwise the expression becomes invalid for the $map operator
 
@@ -327,6 +334,12 @@ the previous ones.Otherwise the expression becomes invalid for the $map operator
 template:
   $map: {a: 1, b: 2, c: 3}
   each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
+context:  {}
+result: {ax: 2, bx: 3, cx: 4}
+---
+template:
+  $map: {a: 1, b: 2, c: 3}
+  each(v,k): {'${k}x': {$eval: 'v + 1'}}
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 ```

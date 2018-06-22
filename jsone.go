@@ -231,7 +231,7 @@ var builtin = map[string]interface{}{
 	}),
 }
 
-var eachKeyPattern = regexp.MustCompile(`^each\(([a-zA-Z_][a-zA-Z0-9_]*)\)$`)
+var eachKeyPattern = regexp.MustCompile(`^each\(([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$`)
 var byKeyPattern = regexp.MustCompile(`^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$`)
 
 var operators = map[string]operator{
@@ -476,17 +476,24 @@ var operators = map[string]operator{
 			}
 		}
 		eachIdentifier := m[1]
+		eachIndex := m[3]
+		additionalContextVars := 1
+		if len(eachIndex) > 0 {
+			additionalContextVars = 2
+		}
 		eachTemplate := template[eachKey]
-
 		switch val := value.(type) {
 		case []interface{}:
 			var result []interface{}
-			for _, entry := range val {
-				c := make(map[string]interface{}, len(context)+1)
+			for idx, entry := range val {
+				c := make(map[string]interface{}, len(context)+additionalContextVars)
 				for k, v := range context {
 					c[k] = v
 				}
 				c[eachIdentifier] = entry
+				if len(eachIndex) > 0 {
+					c[eachIndex] = idx
+				}
 				r, err := render(eachTemplate, c)
 				if err != nil {
 					return nil, err
@@ -500,14 +507,20 @@ var operators = map[string]operator{
 		case map[string]interface{}:
 			result := make(map[string]interface{})
 			for K, V := range val {
-				c := make(map[string]interface{}, len(context)+1)
+				c := make(map[string]interface{}, len(context)+additionalContextVars)
 				for k, v := range context {
 					c[k] = v
 				}
-				c[eachIdentifier] = map[string]interface{}{
-					"key": K,
-					"val": V,
+				if len(eachIndex) > 0 {
+					c[eachIdentifier] = V
+					c[eachIndex] = K
+				} else {
+					c[eachIdentifier] = map[string]interface{}{
+						"key": K,
+						"val": V,
+					}
 				}
+
 				r, err := render(eachTemplate, c)
 				if err != nil {
 					return nil, err

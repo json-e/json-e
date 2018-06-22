@@ -44,3 +44,7 @@ docs/*
 build/
 dist/
 .hypothesis/
+
+# Go packages
+src/gopkg.in
+src/github.com

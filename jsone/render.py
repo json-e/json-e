@@ -182,15 +182,18 @@ def map(template, context):
     each_key = each_keys[0]
     each_args = [x.strip() for x in each_key[5:-1].split(',')]
     each_var = each_args[0]
-    each_idx, = each_args[1:2] or ['_index']
+    each_idx = each_args[1] if len(each_args) > 1 else None
 
     each_template = template[each_key]
 
     def gen(val):
         subcontext = context.copy()
         for i, elt in enumerate(val):
-            subcontext[each_var] = elt
-            subcontext[each_idx] = i
+            if each_idx is None:
+                subcontext[each_var] = elt
+            else:
+                subcontext[each_var] = elt['val'] if is_obj else elt
+                subcontext[each_idx] = elt['key'] if is_obj else i
             elt = renderValue(each_template, subcontext)
             if elt is not DeleteMarker:
                 yield elt

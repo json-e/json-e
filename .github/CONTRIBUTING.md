@@ -10,16 +10,31 @@ implementations.
 
 ## JavaScript
 
+The JavaScript implementation is located in `./src`
+
 You should run `npm install` to install the required packages for JSON-e's
 execution and development.
 
+To run the tests use `npm test`
+
 ## Python
+
+The Python implementaion is located in `./jsone`.
 
 For Python, activate a virtualenv and run `pip install -e .`.
 
 To run the Python tests only, use `python setup.py test`.
 
 Note that JSON-e supports both Python 2 and Python 3.
+
+## Go
+
+The Go implementation is located in `./jsone.go` and `./interpreter`.
+
+To run the Go test run
+```
+GOPATH=$(pwd) go test -v -race ./...
+```
 
 # Demo development
 
