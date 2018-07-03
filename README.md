@@ -652,6 +652,35 @@ result:
   - room
 ```
 
+#### Type
+
+The `typeof()` built-in returns the type of an object. Its behavior around
+`null` is reminiscent of JavaScript.
+
+```yaml
+template:
+ - "${typeof('abc')}"
+ - "${typeof(42)}"
+ - "${typeof(42.0)}"
+ - "${typeof(true)}"
+ - "${typeof([])}"
+ - "${typeof({})}"
+ - "${typeof(typeof)}"
+ - {$eval: "typeof(null)"}
+ - "${typeof(null)}"
+context: {}
+result:
+ - string
+ - number
+ - number
+ - boolean
+ - array
+ - object
+ - function
+ - null  # note: the value null, not the string "null"
+ - ''    # .. which interpolates to an empty string
+```
+
 #### Length
 
 The `len()` built-in returns the length of a string or array.

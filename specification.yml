@@ -1782,9 +1782,14 @@ template: {$eval: 'typeof({})'}
 result: object
 ---
 title:    typeof null
-context:  {}
-template: {$eval: 'typeof(null)'}
+context:  {x: null}
+template: {$eval: 'typeof(x)'}
 result: null
+---
+title:    typeof null, interpolated
+context:  {x: null}
+template: "${typeof(x)}"
+result: ''
 ---
 title:    typeof null in if
 context:  {}
