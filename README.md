@@ -30,7 +30,14 @@ for the changes in each version of this library.
 
 ## JavaScript
 
-The JS module exposes following interface:
+The JS module is installed with either of
+
+```shell
+npm install --save json-e
+yarn add json-e
+```
+
+The module exposes following interface:
 
 ```javascript
 import jsone from 'json-e';
@@ -55,6 +62,14 @@ operations should be handled before rendering the template.
 
 *NOTE*: If the template is untrusted, it can pass arbitrary data to functions
 in the context, which must guard against such behavior.
+
+### Browser
+
+JSON-e is distributed as a CommonJS package is not designed to be included
+directly in a browser with `<script>`. Instead, it must be incorproated using a
+tool that understands CommonJS such as Webpack.  See
+[Neutrino](https://neutrino.js.org/) for an easy, configuration-free way to
+build such applications.
 
 ## Python
 
