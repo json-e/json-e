@@ -251,6 +251,26 @@ context: {cond: false}
 result: {other: 3}
 ```
 
+### `$match`
+
+The `$match` operator supports pattern matching.
+
+```yaml
+template: {$match: [{"x == 10": "ten"}, {"x == 20": "twenty"}]
+context: {x: 10}
+result: ["ten"]
+```
+```yaml
+template: {$match: {"x == 10": "ten", "x == 20": "twenty"}
+context: {x: 10}
+result: {"x": "ten"}
+```
+```yaml
+template: {$match: [{"x == 10 || x == 20": "tens"}, {"x == 10": "ten"}]
+context: {x: 10}
+result: ["tens", "ten"]
+```
+
 ### `$flatten`
 
 The `$flatten` operator flattens an array of arrays into one array.
