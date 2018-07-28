@@ -260,11 +260,7 @@ template: {$match: [{"x == 10": "ten"}, {"x == 20": "twenty"}]
 context: {x: 10}
 result: ["ten"]
 ```
-```yaml
-template: {$match: {"x == 10": "ten", "x == 20": "twenty"}
-context: {x: 10}
-result: {"x": "ten"}
-```
+
 ```yaml
 template: {$match: [{"x == 10 || x == 20": "tens"}, {"x == 10": "ten"}]
 context: {x: 10}

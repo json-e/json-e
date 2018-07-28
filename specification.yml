@@ -277,6 +277,29 @@ template: {$if: 'cond', then: 1, foo: 'bar', else: 2, bing: 'baz'}
 error:    'TemplateError: $if has undefined properties: bing foo'
 ################################################################################
 ---
+section: $match operator
+---
+title:    $match, 2 matches
+context:  {cond: 3}
+template: {$match: [{'cond == 3': 2}, {'cond == 5': 3}, {'cond < 5 && cond > 0': 4}]}
+result:   [2, 4]
+---
+title:    $match, no matches
+context:  {cond: 3}
+template: {$match: [{'cond > 5': 2}, {'cond == 5': 3}, {'cond == 4 || cond < 1': 4}]}
+result:   []
+---
+title:    $match, is not an array
+context:  {cond: 3}
+template: {$match: {'cond < 5 && cond > 0': 2}}
+error:    'TemplateError: $match can evaluate arrays only'
+---
+title:    $match, for many true conditions in 1 object order of results is arbitrary. The whole array is flat
+context:  {cond: 3}
+template: {$match: [{'cond == 5': 3, 'cond == 3': 2}, {'cond == 3': 4, 'cond < 5 && cond > 0': 4}]}
+result:   [2,4,4]
+################################################################################
+---
 section:  escape operators
 ---
 title:    escape $eval

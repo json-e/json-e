@@ -537,6 +537,53 @@ var operators = map[string]operator{
 			}
 		}
 	},
+	"$match": func(template, context map[string]interface{}) (interface{}, error) {
+		if err := restrictProperties(template, "$match"); err != nil {
+			return nil, err
+		}
+
+		match, ok := template["$match"].([]interface{})
+		if !ok {
+			return nil, TemplateError{
+				Message:  "$match can evaluate arrays only",
+				Template: template,
+			}
+		}
+
+		result := make([]interface{}, 0, len(match))
+
+		for _, o := range match {
+			omap, ok := o.(map[string]interface{})
+			if !ok {
+				return nil, TemplateError{
+					Message:  "Condition must be a string",
+					Template: template,
+				}
+			}
+
+			for key, value := range omap {
+				check, err := i.Execute(key, 0, context)
+				if err != nil {
+					return nil, TemplateError{
+						Message:  err.Error(),
+						Template: template,
+					}
+				}
+
+				if i.IsTruthy(check) {
+					r, err := render(value, context)
+					if err != nil {
+						return nil, TemplateError{
+							Message:  err.Error(),
+							Template: template,
+						}
+					}
+					result = append(result, r)
+				}
+			}
+		}
+		return result, nil
+	},
 	"$merge": func(template, context map[string]interface{}) (interface{}, error) {
 		if err := restrictProperties(template, "$merge"); err != nil {
 			return nil, err
