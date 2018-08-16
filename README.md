@@ -251,22 +251,6 @@ context: {cond: false}
 result: {other: 3}
 ```
 
-### `$match`
-
-The `$match` operator supports pattern matching.
-
-```yaml
-template: {$match: [{"x == 10": "ten"}, {"x == 20": "twenty"}]
-context: {x: 10}
-result: ["ten"]
-```
-
-```yaml
-template: {$match: [{"x == 10 || x == 20": "tens"}, {"x == 10": "ten"}]
-context: {x: 10}
-result: ["tens", "ten"]
-```
-
 ### `$flatten`
 
 The `$flatten` operator flattens an array of arrays into one array.
@@ -360,6 +344,27 @@ template:
   each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
+```
+
+### `$match`
+
+The `$match` operator is not dissimilar to pattern matching operators. It gets an array of objects. For their key(s), each of those objects must have a string expression(s) to evaluate to `true` or `false` based on context. The result will be an array of things (all types are supported) that were values corresponding to the keys that were evaluated to `true` in the objects (as an illustration, compare the last two examples).
+
+```yaml
+template: {$match: [{"x == 10": "ten"}, {"x == 20": "twenty"}]
+context: {x: 10}
+result: ["ten"]
+```
+
+```yaml
+template: {$match: [{"x == 10 || x == 20": "tens"}, {"x == 10": "ten"}]
+context: {x: 10}
+result: ["tens", "ten"]
+```
+```yaml
+template: {$match: [{"x == 10 || x == 20": "tens", "x == 10": "ten"}]
+context: {x: 10}
+result: ["tens", "ten"]
 ```
 
 ### `$merge`
