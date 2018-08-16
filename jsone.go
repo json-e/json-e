@@ -556,7 +556,7 @@ var operators = map[string]operator{
 			omap, ok := o.(map[string]interface{})
 			if !ok {
 				return nil, TemplateError{
-					Message:  "Condition must be a string",
+					Message:  "Match takes only objects with keys of type string",
 					Template: template,
 				}
 			}
@@ -581,6 +581,9 @@ var operators = map[string]operator{
 					result = append(result, r)
 				}
 			}
+		}
+		if len(result) == 0 {
+			return deleteMarker, nil
 		}
 		return result, nil
 	},

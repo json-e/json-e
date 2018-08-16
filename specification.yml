@@ -302,7 +302,7 @@ result:   [0]
 title:    $match, 1 match with a mixed array (non-object values)
 context:  {cond: 3}
 template: {$match: [{'cond == 3': 2}, 4]}
-result:   [2] # non-object values will be ignored
+error:   'TemplateError: Match takes only objects with keys of type string'
 ---
 title:    $match, 1 match with a mixed array (object values)
 context:  {cond: 3}

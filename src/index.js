@@ -203,6 +203,9 @@ operators.$match = (template, context) => {
   const result = [];
 
   template['$match'].forEach(o => {
+    if (!isObject(o)) {
+      throw new TemplateError('Match takes only objects with keys of type string');
+    }
     for (var condition in o) {
       if ({}.hasOwnProperty.call(o, condition)) {
         isTruthy(interpreter.parse(condition, context)) && result.push(render(o[condition], context));
@@ -210,7 +213,7 @@ operators.$match = (template, context) => {
     }
   });
 
-  return result;
+  return result.length ? result : deleteMarker;
 };
 
 operators.$merge = (template, context) => {

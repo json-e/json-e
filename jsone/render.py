@@ -212,10 +212,12 @@ def matchConstruct(template, context):
 
     result = []
     for o in template['$match']:
+        if not isinstance(o, dict):
+            raise TemplateError("Match takes only objects with keys of type string")
         for condition in o:
             if evaluateExpression(condition, context):
                 result.append(renderValue(o[condition], context))
-    return result
+    return result if len(result) else DeleteMarker
 
 
 @operator('$merge')
