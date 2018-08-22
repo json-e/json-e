@@ -196,24 +196,19 @@ operators.$map = (template, context) => {
 operators.$match = (template, context) => {
   checkUndefinedProperties(template, ['\\$match']);
 
-  if (!isArray(template['$match'])) {
-    throw new TemplateError('$match can evaluate arrays only');
+  if (!isObject(template['$match'])) {
+    throw new TemplateError('$match can evaluate objects only');
   }
 
   const result = [];
 
-  template['$match'].forEach(o => {
-    if (!isObject(o)) {
-      throw new TemplateError('Match takes only objects with keys of type string');
+  for (var condition in template['$match']) {
+    if ({}.hasOwnProperty.call(template['$match'], condition)) {
+      isTruthy(interpreter.parse(condition, context)) && result.push(render(template['$match'][condition], context));
     }
-    for (var condition in o) {
-      if ({}.hasOwnProperty.call(o, condition)) {
-        isTruthy(interpreter.parse(condition, context)) && result.push(render(o[condition], context));
-      }
-    }
-  });
+  }
 
-  return result.length ? result : deleteMarker;
+  return result;
 };
 
 operators.$merge = (template, context) => {

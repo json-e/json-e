@@ -542,49 +542,37 @@ var operators = map[string]operator{
 			return nil, err
 		}
 
-		match, ok := template["$match"].([]interface{})
+		match, ok := template["$match"].(map[string]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$match can evaluate arrays only",
+				Message:  "$match can evaluate objects only",
 				Template: template,
 			}
 		}
 
 		result := make([]interface{}, 0, len(match))
 
-		for _, o := range match {
-			omap, ok := o.(map[string]interface{})
-			if !ok {
+		for key, value := range match {
+			check, err := i.Execute(key, 0, context)
+			if err != nil {
 				return nil, TemplateError{
-					Message:  "Match takes only objects with keys of type string",
+					Message:  err.Error(),
 					Template: template,
 				}
 			}
 
-			for key, value := range omap {
-				check, err := i.Execute(key, 0, context)
+			if i.IsTruthy(check) {
+				r, err := render(value, context)
 				if err != nil {
 					return nil, TemplateError{
 						Message:  err.Error(),
 						Template: template,
 					}
 				}
-
-				if i.IsTruthy(check) {
-					r, err := render(value, context)
-					if err != nil {
-						return nil, TemplateError{
-							Message:  err.Error(),
-							Template: template,
-						}
-					}
-					result = append(result, r)
-				}
+				result = append(result, r)
 			}
 		}
-		if len(result) == 0 {
-			return deleteMarker, nil
-		}
+
 		return result, nil
 	},
 	"$merge": func(template, context map[string]interface{}) (interface{}, error) {

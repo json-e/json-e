@@ -839,65 +839,45 @@ error: 'TemplateError: $map on objects expects each(x) to evaluate to an object'
 ---
 section: $match operator
 ---
-title:    $match, 2 matches
+title:    $match, 2 matches (the order in the array will be arbitrary)
 context:  {cond: 3}
-template: {$match: [{'cond == 3': 2}, {'cond == 5': 3}, {'cond < 5 && cond > 0': 4}]}
-result:   [2, 4]
+template: {$match: {'cond == 3': 4, 'cond == 5': 3, 'cond < 5 && cond > 0': 4}}
+result:   [4, 4]
 ---
 title:    $match, no matches
 context:  {cond: 3}
-template: {$match: [{'cond > 5': 2}, {'cond == 5': 3}, {'cond == 4 || cond < 1': 4}]}
-result:   null
+template: {$match: {'cond > 5': 2, 'cond == 5': 3, 'cond == 4 || cond < 1': 4}}
+result:   []
 ---
 title:    $match, 1 match in array
 context:  {cond: 3}
-template: [0, $match: [{'cond == 3': 2}, {'cond == 5': 3}]]
+template: [0, $match: {'cond == 3': 2, 'cond == 5': 3}]
 result:   [0, [2]]
 ---
 title:    $match, 0 matches in array
 context:  {cond: 3}
-template: [0, $match: [{'cond > 3': 2}, {'cond == 5': 3}]]
-result:   [0]
----
-title:    $match, 1 match with a mixed array (non-object values)
-context:  {cond: 3}
-template: {$match: [{'cond == 3': 2}, 4]}
-error:   'TemplateError: Match takes only objects with keys of type string'
----
-title:    $match, 1 match with a mixed array (object values)
-context:  {cond: 3}
-template: {$match: [{'cond == 3': 2}, {banana: 4}]}
-error:    'InterpreterError: unknown context value banana' # object values must have only conditions as keys
+template: [0, $match: {'cond > 3': 2, 'cond == 5': 3}]
+result:   [0, []]
 ---
 title:    $match, 1 match in object
 context:  {cond: 3}
-template: {key: 0, banana: {$match: [{'cond == 3': 2}, {'cond == 5': 3}]}}
+template: {key: 0, banana: {$match: {'cond == 3': 2, 'cond == 5': 3}}}
 result:   {key: 0, banana: [2]}
 ---
 title:    $match, 0 matches in object
 context:  {cond: 3}
-template: {key: 0, banana: {$match: [{'cond > 3': 2}, {'cond == 5': 3}]}}
-result:   {key: 0}
+template: {key: 0, banana: {$match: {'cond > 3': 2, 'cond == 5': 3}}}
+result:   {key: 0, banana: []}
 ---
-title:    $match, is not an array
+title:    $match, is not an object
 context:  {cond: 3}
-template: {$match: {'cond < 5 && cond > 0': 2}}
-error:    'TemplateError: $match can evaluate arrays only'
----
-title:    $match, for many true conditions in 1 object order of results is arbitrary. The whole array is flat
-context:  {cond: 3}
-template: {$match: [{'cond == 5': 3, 'cond == 3': 2}, {'cond == 3': 4, 'cond < 5 && cond > 0': 4}]}
-result:   [2,4,4]
+template: {$match: [{'cond < 5 && cond > 0': 2}]}
+error:    'TemplateError: $match can evaluate objects only'
 ---
 title:    $match, value that also needs evaluation
 context:  {cond: 3, ifcond: false}
-template: {$match: [{'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}]}
+template: {$match: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
 result:   ["f"]
----
-title:    $match, two nested matches inside a flatten
-context:  {foo: 3, bar: 0}
-template: {$flatten: {$match: [{'foo == 3': {$match: [{'bar < 5': {'banana': 5}}]}}]}}
-result:   [{'banana': 5}]
 ################################################################################
 section:  $merge
 ---

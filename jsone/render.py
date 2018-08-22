@@ -207,17 +207,15 @@ def map(template, context):
 def matchConstruct(template, context):
     checkUndefinedProperties(template, ['\$match'])
 
-    if not isinstance(template['$match'], list):
-        raise TemplateError("$match can evaluate arrays only")
+    if not isinstance(template['$match'], dict):
+        raise TemplateError("$match can evaluate objects only")
 
     result = []
-    for o in template['$match']:
-        if not isinstance(o, dict):
-            raise TemplateError("Match takes only objects with keys of type string")
-        for condition in o:
-            if evaluateExpression(condition, context):
-                result.append(renderValue(o[condition], context))
-    return result if len(result) else DeleteMarker
+    for condition in template['$match']:
+        if evaluateExpression(condition, context):
+            result.append(renderValue(template['$match'][condition], context))
+
+    return result
 
 
 @operator('$merge')
