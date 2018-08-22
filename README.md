@@ -348,23 +348,24 @@ result: {ax: 2, bx: 3, cx: 4}
 
 ### `$match`
 
-The `$match` operator is not dissimilar to pattern matching operators. It gets an array of objects. For their key(s), each of those objects must have a string expression(s) to evaluate to `true` or `false` based on context. The result will be an array of things (all types are supported) that were values corresponding to the keys that were evaluated to `true` in the objects (as an illustration, compare the last two examples).
+The `$match` operator is not dissimilar to pattern matching operators. It gets an object, in which every key is a string expression(s) to evaluate to `true` or `false` based on the context. The result will be an array of things (all types are supported) that were values corresponding to the keys that were evaluated to `true`. The order of the things in the array will be arbitrary. If there are no matches, the result is an empty array.
 
 ```yaml
-template: {$match: [{"x == 10": "ten"}, {"x == 20": "twenty"}]
+template: {$match: {"x == 10": "ten", "x == 20": "twenty"}}
 context: {x: 10}
 result: ["ten"]
 ```
 
 ```yaml
-template: {$match: [{"x == 10 || x == 20": "tens"}, {"x == 10": "ten"}]
+template: {$match: {"x == 10 || x == 20": "tens", "x == 10": "ten"}}
 context: {x: 10}
-result: ["tens", "ten"]
+one possible result: ["tens", "ten"]
+another possible result: ["ten", "tens"]
 ```
 ```yaml
-template: {$match: [{"x == 10 || x == 20": "tens", "x == 10": "ten"}]
+template: {$match: {"x < 10": "tens"}}
 context: {x: 10}
-result: ["tens", "ten"]
+result: []
 ```
 
 ### `$merge`
