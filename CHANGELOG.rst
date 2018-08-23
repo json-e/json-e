@@ -1,3 +1,12 @@
+Jsone 2.7.0 (2018-08-23)
+========================
+
+Features
+--------
+
+- Add new operator `$match` which allows for a new way of flow control by evaluating boolean expressions it is given. (#161)
+
+
 Jsone 2.6.0 (2018-06-20)
 ========================
 
