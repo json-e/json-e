@@ -314,6 +314,11 @@ context:  {}
 template: {$$map: [2, 4, 6], each(x): {$$eval: "x + a"}}
 result:   {$map: [2, 4, 6], each(x): {$eval: "x + a"}}
 ---
+title:    escape $match
+context:  {x: 1}
+template: {$$match: [{'x == 1': 2}]}
+result:   {$match: [{'x == 1': 2}]}
+---
 title:    escape $merge
 context:  {}
 template: {$$merge: [{a: 1}, {a: 2}]}
@@ -830,6 +835,49 @@ template:
   $map: {"hello": 5, "test": 9}
   each(x): ['${x.key}', {$eval: 'x.val+1'}]
 error: 'TemplateError: $map on objects expects each(x) to evaluate to an object'
+################################################################################
+---
+section: $match operator
+---
+title:    $match, 2 matches (the order in the array will be arbitrary)
+context:  {cond: 3}
+template: {$match: {'cond == 3': 4, 'cond == 5': 3, 'cond < 5 && cond > 0': 4}}
+result:   [4, 4]
+---
+title:    $match, no matches
+context:  {cond: 3}
+template: {$match: {'cond > 5': 2, 'cond == 5': 3, 'cond == 4 || cond < 1': 4}}
+result:   []
+---
+title:    $match, 1 match in array
+context:  {cond: 3}
+template: [0, $match: {'cond == 3': 2, 'cond == 5': 3}]
+result:   [0, [2]]
+---
+title:    $match, 0 matches in array
+context:  {cond: 3}
+template: [0, $match: {'cond > 3': 2, 'cond == 5': 3}]
+result:   [0, []]
+---
+title:    $match, 1 match in object
+context:  {cond: 3}
+template: {key: 0, banana: {$match: {'cond == 3': 2, 'cond == 5': 3}}}
+result:   {key: 0, banana: [2]}
+---
+title:    $match, 0 matches in object
+context:  {cond: 3}
+template: {key: 0, banana: {$match: {'cond > 3': 2, 'cond == 5': 3}}}
+result:   {key: 0, banana: []}
+---
+title:    $match, is not an object
+context:  {cond: 3}
+template: {$match: [{'cond < 5 && cond > 0': 2}]}
+error:    'TemplateError: $match can evaluate objects only'
+---
+title:    $match, value that also needs evaluation
+context:  {cond: 3, ifcond: false}
+template: {$match: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
+result:   ["f"]
 ################################################################################
 section:  $merge
 ---

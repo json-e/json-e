@@ -203,6 +203,21 @@ def map(template, context):
         return list(gen(value))
 
 
+@operator('$match')
+def matchConstruct(template, context):
+    checkUndefinedProperties(template, ['\$match'])
+
+    if not isinstance(template['$match'], dict):
+        raise TemplateError("$match can evaluate objects only")
+
+    result = []
+    for condition in template['$match']:
+        if evaluateExpression(condition, context):
+            result.append(renderValue(template['$match'][condition], context))
+
+    return result
+
+
 @operator('$merge')
 def merge(template, context):
     checkUndefinedProperties(template, ['\$merge'])

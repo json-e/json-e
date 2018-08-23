@@ -193,6 +193,24 @@ operators.$map = (template, context) => {
   }
 };
 
+operators.$match = (template, context) => {
+  checkUndefinedProperties(template, ['\\$match']);
+
+  if (!isObject(template['$match'])) {
+    throw new TemplateError('$match can evaluate objects only');
+  }
+
+  const result = [];
+
+  for (var condition in template['$match']) {
+    if ({}.hasOwnProperty.call(template['$match'], condition)) {
+      isTruthy(interpreter.parse(condition, context)) && result.push(render(template['$match'][condition], context));
+    }
+  }
+
+  return result;
+};
+
 operators.$merge = (template, context) => {
   checkUndefinedProperties(template, ['\\$merge']);
 
