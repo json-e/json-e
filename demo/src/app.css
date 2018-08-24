@@ -65,13 +65,7 @@ html, body, #root {
   flex: 1;
 }
 
-.codeblocks {
-  display: flex;
-  flex-direction: row;
-}
-
 .codeblocks > div {
-  flex: 1 1;
   padding: 0.5em;
 }
 
