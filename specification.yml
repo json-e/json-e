@@ -337,7 +337,7 @@ result:   {$sort: [3, 2, 1]}
 title:    reserved $-keywords
 context:  {}
 template: {$nothing: 1}
-error:    'TemplateError: $<identifier> is reserved; ues $$<identifier>'
+error:    'TemplateError: $<identifier> is reserved; use $$<identifier>'
 ---
 title:    escape non-json-e operator
 context:  {}

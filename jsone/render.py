@@ -322,7 +322,7 @@ def renderValue(template, context):
                     k = k[1:]
                 elif k.startswith('$') and IDENTIFIER_RE.match(k[1:]):
                     raise TemplateError(
-                        '$<identifier> is reserved; ues $$<identifier>')
+                        '$<identifier> is reserved; use $$<identifier>')
                 else:
                     k = interpolate(k, context)
 

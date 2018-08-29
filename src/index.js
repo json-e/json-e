@@ -368,7 +368,7 @@ let render = (template, context) => {
       if (key.startsWith('$$')) {
         key = key.substr(1);
       } else if (/^\$[a-zA-Z][a-zA-Z0-9]*$/.test(key)) {
-        throw new TemplateError('$<identifier> is reserved; ues $$<identifier>');
+        throw new TemplateError('$<identifier> is reserved; use $$<identifier>');
       } else {
         key = interpolate(key, context);
       }
