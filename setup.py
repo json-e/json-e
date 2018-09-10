@@ -6,9 +6,18 @@ package_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'package
 with open(package_json) as f:
     version = json.load(f)['version']
 
+description='A data-structure parameterization system written for embedding context in JSON objects',
+
+long_description = '''\
+{description}.
+
+See https://taskcluster.github.io/json-e/ for usage information.
+'''.format(description=description)
+
 setup(name='json-e',
     version=version,
-    description='A data-structure parameterization system written for embedding context in JSON objects',
+    description=description,
+    long_description=long_description,
     author='Dustin J. Mitchell',
     url='https://taskcluster.github.io/json-e/',
     author_email='dustin@mozilla.com',
