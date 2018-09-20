@@ -550,9 +550,16 @@ var operators = map[string]operator{
 			}
 		}
 
+		// get the sorted list of conditions
+		conditions := make([]string, 0, len(match))
+		for condition := range match {
+			conditions = append(conditions, condition)
+		}
+		sort.Strings(conditions)
+
 		result := make([]interface{}, 0, len(match))
 
-		for key, value := range match {
+		for _, key := range conditions {
 			check, err := i.Execute(key, 0, context)
 			if err != nil {
 				return nil, TemplateError{
@@ -562,6 +569,7 @@ var operators = map[string]operator{
 			}
 
 			if i.IsTruthy(check) {
+				value := match[key]
 				r, err := render(value, context)
 				if err != nil {
 					return nil, TemplateError{
