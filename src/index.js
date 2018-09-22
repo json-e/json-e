@@ -201,10 +201,11 @@ operators.$match = (template, context) => {
   }
 
   const result = [];
+  const conditions = template['$match'];
 
-  for (var condition in template['$match']) {
-    if ({}.hasOwnProperty.call(template['$match'], condition)) {
-      isTruthy(interpreter.parse(condition, context)) && result.push(render(template['$match'][condition], context));
+  for (let condition of Object.keys(conditions).sort()) {
+    if (isTruthy(interpreter.parse(condition, context))) {
+      result.push(render(conditions[condition], context));
     }
   }
 

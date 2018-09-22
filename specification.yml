@@ -839,10 +839,10 @@ error: 'TemplateError: $map on objects expects each(x) to evaluate to an object'
 ---
 section: $match operator
 ---
-title:    $match, 2 matches (the order in the array will be arbitrary)
+title:    $match, 2 matches, ordered by lexcial sorting of property names
 context:  {cond: 3}
-template: {$match: {'cond == 3': 4, 'cond == 5': 3, 'cond < 5 && cond > 0': 4}}
-result:   [4, 4]
+template: {$match: {'cond == 3': 2, 'cond == 5': 3, 'cond < 5 && cond > 0': 4, 'true': 17}}
+result:   [4, 2, 17]
 ---
 title:    $match, no matches
 context:  {cond: 3}

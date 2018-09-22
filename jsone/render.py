@@ -211,7 +211,7 @@ def matchConstruct(template, context):
         raise TemplateError("$match can evaluate objects only")
 
     result = []
-    for condition in template['$match']:
+    for condition in sorted(template['$match']):
         if evaluateExpression(condition, context):
             result.append(renderValue(template['$match'][condition], context))
 
