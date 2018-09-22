@@ -1,3 +1,12 @@
+Jsone  (2018-09-22)
+===================
+
+Bugfixes
+--------
+
+- Ensure that `$match` results are deterministic (#258)
+
+
 Jsone 2.7.0 (2018-08-23)
 ========================
 
