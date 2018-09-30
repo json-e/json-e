@@ -492,7 +492,7 @@ var operators = map[string]operator{
 				}
 				c[eachIdentifier] = entry
 				if len(eachIndex) > 0 {
-					c[eachIndex] = idx
+					c[eachIndex] = float64(idx)
 				}
 				r, err := render(eachTemplate, c)
 				if err != nil {

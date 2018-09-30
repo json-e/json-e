@@ -242,7 +242,7 @@ func IsValidData(data interface{}) error {
 		return nil
 	}
 	switch val := data.(type) {
-	case *function, string, int, float64, bool:
+	case *function, string, float64, bool:
 		return nil
 	case []interface{}:
 		for _, value := range val {

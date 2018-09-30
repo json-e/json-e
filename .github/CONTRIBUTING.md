@@ -31,6 +31,11 @@ Note that JSON-e supports both Python 2 and Python 3.
 
 The Go implementation is located in `./jsone.go` and `./interpreter`.
 
+Install dependencies:
+```
+GOPATH=$(pwd) go get -t ./...
+```
+
 To run the Go test run
 ```
 GOPATH=$(pwd) go test -v -race ./...
