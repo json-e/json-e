@@ -31,5 +31,12 @@
   },
   "engines": {
     "node": ">=6.4.0"
+  },
+  "renovate": {
+    "extends": [
+      "config:base",
+      ":preserveSemverRanges",
+      ":rebaseStalePrs"
+    ]
   }
 }
