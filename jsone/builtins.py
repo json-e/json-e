@@ -114,7 +114,7 @@ def build(context):
         elif isinstance(v, dict):
             return 'object'
         elif v is None:
-            return None
+            return 'null'
         elif callable(v):
             return 'function'
 

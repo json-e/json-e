@@ -189,7 +189,7 @@ var builtin = map[string]interface{}{
 		case bool:
 			return "boolean"
 		case nil:
-			return nil
+			return "null"
 		case []interface{}:
 			return "array"
 		case map[string]interface{}:

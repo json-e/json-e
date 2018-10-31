@@ -1860,16 +1860,16 @@ result: object
 title:    typeof null
 context:  {x: null}
 template: {$eval: 'typeof(x)'}
-result: null
+result: 'null'
 ---
 title:    typeof null, interpolated
 context:  {x: null}
 template: "${typeof(x)}"
-result: ''
+result: 'null'
 ---
 title:    typeof null in if
 context:  {}
-template: {$if: 'typeof(null) == null', then: 'foo', else: 'bar'}
+template: {$if: 'typeof(null) == "null"', then: 'foo', else: 'bar'}
 result: foo
 ---
 title:    typeof function
@@ -3726,9 +3726,9 @@ template: {$eval: 'key'}
 result: {a: 1}
 ---
 title: 'property with null value'
-context: {key: null}
+context: {key: 'null'}
 template: {$eval: 'key'}
-result: null
+result: 'null'
 ---
 title: 'missing property'
 context: {key: {a: 1}}
