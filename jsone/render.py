@@ -43,7 +43,7 @@ def interpolate(string, context):
             if isinstance(parsed, (list, dict)):
                 raise TemplateError(
                     "interpolation of '{}' produced an array or object".format(string[:offset]))
-            if to_str(parsed) == "null":
+            if parsed is None:
                 result.append("")
             else:
                 result.append(to_str(parsed))
@@ -56,7 +56,6 @@ def interpolate(string, context):
         if not mo:
             result.append(string)
             break
-
     return ''.join(result)
 
 

@@ -1,0 +1,1 @@
+make typeof(null) be "null", not null

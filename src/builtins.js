@@ -132,7 +132,7 @@ module.exports = (context) => {
         }
       }
       if (types['null'](x)) {
-        return null;
+        return 'null';
       }
       throw builtinError('builtin: typeof', `argument ${x} to be a valid json-e type. found ${typeof arg}`);
     },

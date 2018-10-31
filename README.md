@@ -727,7 +727,7 @@ result:
  - array
  - object
  - function
- - null  # note: the value null, not the string "null"
+ - null 
  - ''    # .. which interpolates to an empty string
 ```
 
