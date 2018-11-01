@@ -1,3 +1,36 @@
+Jsone 3.0.0 (2018-11-01)
+========================
+
+Features
+--------
+
+- Support of `index` or `key` context variable in `$map` operation.
+
+  ```yaml
+  template:
+    $map: [2, 4, 6]
+    each(x,i): {$eval: 'x + a + i'}
+  context:  {a: 1}
+  result:   [3, 6, 9]
+  ---
+  template:
+    $map: {a: 1, b: 2, c: 3}
+    each(v,k): {'${k}x': {$eval: 'v + 1'}}
+  context:  {}
+  result: {ax: 2, bx: 3, cx: 4}
+  ``` (#235)
+- Add support for element indexes in $map (#242)
+
+
+Bugfixes
+--------
+
+- [BREAKING] make typeof(null) be "null", not null
+
+  This is a breaking change, as it changes an existing, documented behavior.
+  However, it is unlikely to affect most uses of JSON-e. (#246)
+
+
 Jsone  (2018-09-22)
 ===================
 
