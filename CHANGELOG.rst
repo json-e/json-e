@@ -31,8 +31,8 @@ Bugfixes
   However, it is unlikely to affect most uses of JSON-e. (#246)
 
 
-Jsone  (2018-09-22)
-===================
+Jsone 2.7.1 (2018-09-22)
+========================
 
 Bugfixes
 --------
