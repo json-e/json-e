@@ -216,6 +216,29 @@ operators.$match = (template, context) => {
   return result;
 };
 
+operators.$switch = (template, context) => {
+  checkUndefinedProperties(template, ['\\$switch', 'default']);
+
+  if (!isArray(template['$switch'])) {
+    throw new TemplateError('$switch can evaluate arrays only');
+  }
+
+  template['$switch'].forEach(c => {
+    checkUndefinedProperties(c, ['case', 'then']);
+    if (c.case == undefined || c.then === undefined) {
+      throw new TemplateError('$switch cases must have both a `case` and a `then` clause');
+    }
+  });
+
+  for (let c of template['$switch']) {
+    if (isTruthy(interpreter.parse(c.case, context))) {
+      return render(c.then, context);
+    }
+  }
+
+  return template.hasOwnProperty('default') ? render(template['default'], context) : deleteMarker;
+};
+
 operators.$merge = (template, context) => {
   checkUndefinedProperties(template, ['\\$merge']);
 

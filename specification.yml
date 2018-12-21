@@ -907,6 +907,60 @@ context:  {cond: 3, ifcond: false}
 template: {$match: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
 result:   ["f"]
 ################################################################################
+---
+section: $switch operator
+---
+title:    $switch, one condition, one match
+context:  {cond: 3}
+template: {$switch: [{case: 'cond == 3', then: 2}], default: 5}
+result:   2
+---
+title:    $switch, two conditions, first match
+context:  {cond: 3}
+template: {$switch: [{case: 'cond == 3', then: 2},{case: 'cond == 4', then: 3}], default: 5}
+result:   2
+---
+title:    $switch, two conditions, second match
+context:  {cond: 4}
+template: {$switch: [{case: 'cond == 3', then: 2},{case: 'cond == 4', then: 3}], default: 5}
+result:   3
+---
+title:    $switch, two conditions, no match
+context:  {cond: 10}
+template: {$switch: [{case: 'cond == 3', then: 2},{case: 'cond == 4', then: 3}], default: 5}
+result:   5
+---
+title:    $switch, two conditions, no match, no default
+context:  {cond: 10}
+template: {$switch: [{case: 'cond == 3', then: 2},{case: 'cond == 4', then: 3}]}
+result:   null
+---
+title:    $switch, no conditions, no default
+context:  {cond: 10}
+template: {$switch: []}
+result:   null
+---
+title:    $switch, no conditions, default
+context:  {cond: 10}
+template: {$switch: [], default: 16}
+result:   16
+---
+title:    $switch with invalid cases
+context:  {}
+template: {$switch: [{case: true, if: true, then: 5}]}
+error: 'TemplateError: case has undefined properties: if'
+---
+title:    $switch with invalid cases (2)
+context:  {}
+template: {$switch: [{case: true}]}
+error: 'TemplateError: $switch cases must have both a `case` and a `then` clause'
+---
+title:    $switch with invalid cases (3)
+context:  {}
+template: {$switch: [{then: 10}]}
+error: 'TemplateError: $switch cases must have both a `case` and a `then` clause'
+################################################################################
+---
 section:  $merge
 ---
 title:    simple merge
