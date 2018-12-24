@@ -121,13 +121,15 @@ func main() {
 }
 ```
 
-## CLI
+## Third-Party Integrations
+
+### rjsone
 
 You can use the 3rd party package [rjsone](https://wryun.github.io/rjsone/) to template
 JSON-e from the command line, passing templates/contexts as files or arguments and using
 stdout for the result.
 
-## Bazel
+### Bazel
 
 You can use 3rd party [Bazel rule](https://github.com/atlassian/bazel-tools/tree/master/rjsone) to invoke
 rjsone (see above) from Bazel build files.
