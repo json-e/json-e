@@ -4,7 +4,6 @@
 */
 
 var Tokenizer = require('./tokenizer');
-var assert = require('assert');
 var {isString} = require('./type-utils');
 var {SyntaxError, TemplateError} = require('./error');
 
@@ -36,7 +35,9 @@ class PrattParser {
     // Ensure we have precedence for all the kinds used in infixRules
     for (let kind of Object.keys(infixRules)) {
       if (infixRules.hasOwnProperty(kind)) {
-        assert(this._precedenceMap[kind], `token '${kind}' must have a precedence`);
+        if (!this._precedenceMap[kind]) {
+          throw new Error(`token '${kind}' must have a precedence`);
+        }
       }
     }
 
