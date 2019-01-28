@@ -1,4 +1,3 @@
-var assert = require('assert');
 var {SyntaxError} = require('./error');
 
 let escapeRegex = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -27,6 +26,16 @@ let indexOfNotUndefined = (a, start = 0) => {
     }
   }
   return -1;
+};
+
+/**
+ * Custom implementation of `assert` to avoid pulling in a
+ * polyfill on browsers
+ */
+const assert = prop => {
+  if (!prop) {
+    throw new Error('Token configuration is invalid');
+  }
 };
 
 class Tokenizer {

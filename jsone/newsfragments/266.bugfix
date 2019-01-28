@@ -1,0 +1,1 @@
+Do not import `assert` in non-test code, so that it can run on browsers
