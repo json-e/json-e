@@ -3,7 +3,7 @@
 * Github: https://github.com/jonasfj
 */
 var PrattParser = require('./prattparser');
-var {isString, isNumber, isInteger, isBool,
+var {isString, isNumber, isInteger,
   isArray, isObject, isFunction, isTruthy} = require('./type-utils');
 var {InterpreterError} = require('./error');
 
@@ -146,12 +146,6 @@ let testMathOperands = (operator, left, right) => {
     throw expectationError(`infix: ${operator}`, `number ${operator} number`);
   }
   return;
-};
-
-let testLogicalOperand = (operator, operand) => {
-  if (!isBool(operand)) {
-    throw expectationError(`infix: ${operator}`, `boolean ${operator} boolean`);
-  }
 };
 
 let prefixRules = {};

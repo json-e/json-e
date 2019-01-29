@@ -1,259 +1,169 @@
-version: 0
-allowPullRequests: public
-metadata:
-  name: json-e
-  description: 'Helpers for testing taskcluster'
-  owner: '{{ event.head.user.email }}'
-  source: '{{ event.head.repo.url }}'
+version: 1
+reporting: checks-v1
+policy:
+  pullRequests: public
 tasks:
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
-          - push
-        branches:
-          - master
-    payload:
-      maxRunTime: 3600
-      image: 'node:6'
-      command:
-        - /bin/bash
-        - '--login'
-        - '-c'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          yarn &&
-          yarn test
-    metadata:
-      name: json-e node 6 test run
-      description: Run library test suite - node 6
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
-          - push
-        branches:
-          - master
-    payload:
-      maxRunTime: 3600
-      image: 'node:8'
-      command:
-        - /bin/bash
-        - '--login'
-        - '-c'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          yarn &&
-          yarn test
-    metadata:
-      name: json-e node 8 test run
-      description: Run library test suite - node 8
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
-          - push
-        branches:
-          - master
-    payload:
-      maxRunTime: 3600
-      image: 'python:2.7'
-      command:
-        - /bin/bash
-        - '--login'
-        - '-c'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          pip install -e . &&
-          python setup.py test
-    metadata:
-      name: json-e py27 test run
-      description: Run library test suite - python 2.7
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
-          - push
-        branches:
-          - master
-    payload:
-      maxRunTime: 3600
-      image: 'python:3.6'
-      command:
-        - /bin/bash
-        - '--login'
-        - '-c'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          pip install -e . &&
-          python setup.py test
-    metadata:
-      name: json-e py36 test run
-      description: Run library test suite - python 3.6
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
-          - push
-        branches:
-          - master
-    payload:
-      maxRunTime: 3600
-      image: 'golang:1.9-stretch'
-      command:
-        - /bin/bash
-        - '-c'
-        - >-
-          mkdir -p /go/src/github.com/taskcluster/json-e &&
-          cd /go/src/github.com/taskcluster/json-e &&
-          git clone {{event.head.repo.url}} . &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          go get -v -d -t ./... &&
-          go test -v -race ./... &&
-          go get -u github.com/alecthomas/gometalinter &&
-          gometalinter --install &&
-          gometalinter
-    metadata:
-      name: json-e go test
-      description: Run library test suite - golang 1.9
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        env: true
-        events:
-          - push
-        branches:
-          - master
-    scopes:
-      - secrets:get:repo:github.com/taskcluster/json-e
-    routes:
-      - notify.email.taskcluster-notifications@mozilla.com.on-failed
-      - notify.email.taskcluster-notifications@mozilla.com.on-exception
-    payload:
-      features:
-        taskclusterProxy: true
-      maxRunTime: 3600
-      image: 'node:8'
-      command:
-        - /bin/bash
-        - '--login'
-        - '-c'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          yarn &&
-          yarn build-demo &&
-          ./deploy.sh
-    metadata:
-      name: demo site build and deploy
-      description: build and publish a new demo site
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - push
-        branches:
-          - master
-    scopes:
-      - auth:aws-s3:read-write:taskcluster-raw-docs/json-e/
-    payload:
-      maxRunTime: 3600
-      image: taskcluster/upload-project-docs:latest
-      features:
-        taskclusterProxy:
-          true
-      command:
-        - /bin/bash
-        - '--login'
-        - '-cx'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          export DEBUG=* DOCS_PROJECT=json-e DOCS_TIER=libraries DOCS_FOLDER=tc-docs DOCS_README=README.md &&
-          upload-project-docs
-    metadata:
-      name: "json-e docs upload"
-      description: "Upload documentation for this project"
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
-          - push
-        branches:
-          - master
-    payload:
-      maxRunTime: 3600
-      image: 'node:6'
-      command:
-        - /bin/bash
-        - '--login'
-        - '-c'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          yarn &&
-          bash package-test.sh
-    metadata:
-      name: json-e node packaging test
-      description: Build a package and try using it as a library
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
+  $let:
+    owner: taskcluster-internal@mozilla.com
+
+    # This only supports pushes and pull requests for now.
+    # If we start responding to another action type, make this
+    # a $match.
+    repo:
+      $if: 'tasks_for == "github-push"'
+      then:
+        git_url: ${event.repository.url}
+        url: ${event.repository.url}
+        ref: ${event.after}
+      else:
+        git_url: ${event.pull_request.head.repo.git_url}
+        url: ${event.pull_request.head.repo.url}
+        ref: ${event.pull_request.head.sha}
+  in:
+    $let:
+      environments:
+        - image: node:6
+          name: node:6 tests
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repo.git_url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              yarn &&
+              yarn test
+        - image: node:10
+          name: node:10 tests
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repo.git_url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              yarn &&
+              yarn test
+        - image: 'node:10'
+          name: node import test
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repo.git_url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              yarn &&
+              bash package-test.sh
+        - image: 'python:2.7'
+          name: python:2.7 tests
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repo.git_url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              pip install -e . &&
+              python setup.py test
+        - image: 'python:3.6'
+          name: python:3.6 tests
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repo.git_url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              pip install -e . &&
+              python setup.py test
+        - image: 'golang:1.9-stretch'
+          name: golang:1.9 tests
+          command:
+            - /bin/bash
+            - '-c'
+            - >-
+              mkdir -p /go/src/github.com/taskcluster/json-e &&
+              cd /go/src/github.com/taskcluster/json-e &&
+              git clone ${repo.git_url} . &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              go get -v -d -t ./... &&
+              go test -v -race ./... &&
+              go get -u github.com/alecthomas/gometalinter &&
+              gometalinter --install &&
+              gometalinter
+    in:
+      $let:
+        tests:
+          $map: {$eval: environments}
+          each(env):
+            taskId: {$eval: as_slugid(env.name)}
+            provisionerId: aws-provisioner-v1
+            workerType: github-worker
+            created: {$fromNow: ''}
+            deadline: {$fromNow: '60 minutes'}
+            payload:
+              maxRunTime: 3600
+              image: ${env.image}
+              command: {$eval: 'env.command'}
+            metadata:
+              name: ${env.name}
+              description: ${env.name}
+              owner: ${owner}
+              source: ${repo.url}
+
+      in:
+        $flattenDeep:
+        - $if: 'tasks_for == "github-push"'
+          then:
+            - {$eval: tests}
+            - $if: 'event["ref"] == "refs/heads/master"'
+              then:
+                taskId: {$eval: as_slugid("demo_build")}
+                provisionerId: aws-provisioner-v1
+                workerType: github-worker
+                created: {$fromNow: ''}
+                deadline: {$fromNow: '60 minutes'}
+                scopes:
+                  - secrets:get:repo:github.com/taskcluster/json-e
+                routes:
+                  - notify.email.taskcluster-notifications@mozilla.com.on-failed
+                  - notify.email.taskcluster-notifications@mozilla.com.on-exception
+                payload:
+                  features:
+                    taskclusterProxy: true
+                  maxRunTime: 3600
+                  image: node:8
+                  command:
+                    - /bin/bash
+                    - '--login'
+                    - '-c'
+                    - >-
+                      git clone ${repo.git_url} repo &&
+                      cd repo &&
+                      git config advice.detachedHead false &&
+                      git checkout ${repo.ref} &&
+                      yarn &&
+                      yarn build-demo &&
+                      ./deploy.sh
+                metadata:
+                  name: demo site build and deploy
+                  description: build and publish a new demo site
+                  owner: ${owner}
+                  source: ${repo.url}
+        - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
+          then:
+            # We can skip this if pushed to our own repo since push event will get it
+            $if: 'event.pull_request.base.repo.id != event.pull_request.head.repo.id'
+            then: {$eval: tests}

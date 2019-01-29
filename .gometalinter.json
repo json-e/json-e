@@ -4,12 +4,10 @@
     "gofmt",
     "goimports",
     "golint",
-    "gosimple",
     "ineffassign",
     "interfacer",
     "lll",
     "misspell",
-    "staticcheck",
     "unconvert",
     "vet",
     "vetshadow"
