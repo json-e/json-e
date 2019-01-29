@@ -2,7 +2,7 @@
 
 set -o errexit -o nounset
 
-SOURCE_BRANCH="master"
+SOURCE_BRANCH="refs/heads/master"
 TARGET_BRANCH="gh-pages"
 BUILD_DIR="docs"
 

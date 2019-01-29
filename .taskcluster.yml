@@ -141,6 +141,9 @@ tasks:
                   - notify.email.taskcluster-notifications@mozilla.com.on-failed
                   - notify.email.taskcluster-notifications@mozilla.com.on-exception
                 payload:
+                  env:
+                    GITHUB_BRANCH: ${event["ref"]}
+                    GITHUB_BASE_REPO_URL: ${rep.ref}
                   features:
                     taskclusterProxy: true
                   maxRunTime: 3600
