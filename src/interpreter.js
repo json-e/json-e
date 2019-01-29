@@ -3,7 +3,7 @@
 * Github: https://github.com/jonasfj
 */
 var PrattParser = require('./prattparser');
-var {isString, isNumber, isInteger, isBool,
+var {isString, isNumber, isInteger,
   isArray, isObject, isFunction, isTruthy} = require('./type-utils');
 var {InterpreterError} = require('./error');
 
@@ -148,17 +148,11 @@ let testMathOperands = (operator, left, right) => {
   return;
 };
 
-let testLogicalOperand = (operator, operand) => {
-  if (!isBool(operand)) {
-    throw expectationError(`infix: ${operator}`, `boolean ${operator} boolean`);
-  }
-};
-
 let prefixRules = {};
 let infixRules = {};
 
 // defining prefix rules
-prefixRules['number'] = (token, ctx) => {
+prefixRules['number'] = (token) => {
   let v = Number(token.value);
   if (isNaN(v)) {
     throw new Error(`${token.value} should be a number`);
@@ -198,7 +192,7 @@ prefixRules['identifier'] = (token, ctx) => {
   throw new InterpreterError(`unknown context value ${token.value}`);
 };
 
-prefixRules['null'] = (token, ctx) => {
+prefixRules['null'] = () => {
   return null;
 };
 
@@ -212,16 +206,16 @@ prefixRules['('] = (token, ctx) => {
 
 prefixRules['{'] = (token, ctx) => parseObject(ctx);
 
-prefixRules['string'] = (token, ctx) => parseString(token.value);
+prefixRules['string'] = (token) => parseString(token.value);
 
-prefixRules['true'] = (token, ctx) => {
+prefixRules['true'] = (token) => {
   if (token.value === 'true') {
     return true;
   }
   throw new Error('Only \'true/false\' is considered as bool');
 };
 
-prefixRules['false'] = (token, ctx) => {
+prefixRules['false'] = (token) => {
   if (token.value === 'false') {
     return false;
   }

@@ -72,7 +72,7 @@ class PrattParser {
     }
     return {result, offset: next.start};
   }
-};
+}
 
 class Context {
   constructor(parser, source, context = {}, offset = 0) {

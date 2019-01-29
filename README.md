@@ -66,7 +66,7 @@ in the context, which must guard against such behavior.
 ### Browser
 
 JSON-e is distributed as a CommonJS package is not designed to be included
-directly in a browser with `<script>`. Instead, it must be incorproated using a
+directly in a browser with `<script>`. Instead, it must be incorporated using a
 tool that understands CommonJS such as Webpack.  See
 [Neutrino](https://neutrino.js.org/) for an easy, configuration-free way to
 build such applications.

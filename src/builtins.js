@@ -126,7 +126,7 @@ module.exports = (context) => {
   define('typeof', builtins, {
     argumentTests: ['string|number|boolean|array|object|null|function'],
     invoke: x => {
-      for (type of ['string', 'number', 'boolean', 'array', 'object', 'function']) {
+      for (let type of ['string', 'number', 'boolean', 'array', 'object', 'function']) {
         if (types[type](x)) {
           return type;
         }

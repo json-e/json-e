@@ -3,7 +3,7 @@ var fromNow = require('./from-now');
 var stringify = require('json-stable-stringify');
 var {
   isString, isNumber, isBool,
-  isArray, isObject, isFunction,
+  isArray, isObject,
   isTruthy,
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
@@ -20,7 +20,7 @@ function checkUndefinedProperties(template, allowed) {
   if (unknownKeys) {
     throw new TemplateError(allowed[0].replace('\\', '') + ' has undefined properties:' + unknownKeys);
   }
-};
+}
 
 let flattenDeep = (a) => {
   return Array.isArray(a) ? [].concat(...a.map(flattenDeep)) : a;
@@ -152,7 +152,7 @@ operators.$let = (template, context) => {
 };
 
 operators.$map = (template, context) => {
-  EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*)(,\\s*([a-zA-Z_][a-zA-Z0-9_]*))?\\)';
+  const EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*)(,\\s*([a-zA-Z_][a-zA-Z0-9_]*))?\\)';
   checkUndefinedProperties(template, ['\\$map', EACH_RE]);
   let value = render(template['$map'], context);
   if (!isArray(value) && !isObject(value)) {
@@ -274,7 +274,7 @@ operators.$reverse = (template, context) => {
 };
 
 operators.$sort = (template, context) => {
-  BY_RE = 'by\\(([a-zA-Z_][a-zA-Z0-9_]*)\\)';
+  const BY_RE = 'by\\(([a-zA-Z_][a-zA-Z0-9_]*)\\)';
   checkUndefinedProperties(template, ['\\$sort', BY_RE]);
   let value = render(template['$sort'], context);
   if (!isArray(value)) {
