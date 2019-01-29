@@ -8,3 +8,6 @@ env:
 rules:
   no-cond-assign: off
   no-useless-escape: off
+  no-unused-vars:
+    - error
+    - args: none

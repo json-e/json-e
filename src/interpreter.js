@@ -152,7 +152,7 @@ let prefixRules = {};
 let infixRules = {};
 
 // defining prefix rules
-prefixRules['number'] = (token) => {
+prefixRules['number'] = (token, ctx) => {
   let v = Number(token.value);
   if (isNaN(v)) {
     throw new Error(`${token.value} should be a number`);
@@ -192,7 +192,7 @@ prefixRules['identifier'] = (token, ctx) => {
   throw new InterpreterError(`unknown context value ${token.value}`);
 };
 
-prefixRules['null'] = () => {
+prefixRules['null'] = (token, ctx) => {
   return null;
 };
 
@@ -206,16 +206,16 @@ prefixRules['('] = (token, ctx) => {
 
 prefixRules['{'] = (token, ctx) => parseObject(ctx);
 
-prefixRules['string'] = (token) => parseString(token.value);
+prefixRules['string'] = (token, ctx) => parseString(token.value);
 
-prefixRules['true'] = (token) => {
+prefixRules['true'] = (token, ctx) => {
   if (token.value === 'true') {
     return true;
   }
   throw new Error('Only \'true/false\' is considered as bool');
 };
 
-prefixRules['false'] = (token) => {
+prefixRules['false'] = (token, ctx) => {
   if (token.value === 'false') {
     return false;
   }
