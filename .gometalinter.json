@@ -4,7 +4,6 @@
     "gofmt",
     "goimports",
     "golint",
-    "gosimple",
     "ineffassign",
     "interfacer",
     "lll",
