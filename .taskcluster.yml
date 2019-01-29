@@ -87,8 +87,8 @@ tasks:
               git checkout ${repo.ref} &&
               pip install -e . &&
               python setup.py test
-        - image: 'golang:1.9-stretch'
-          name: golang:1.9 tests
+        - image: 'golangci/golangci-lint'
+          name: golang lint and tests
           command:
             - /bin/bash
             - '-c'
@@ -100,9 +100,7 @@ tasks:
               git checkout ${repo.ref} &&
               go get -v -d -t ./... &&
               go test -v -race ./... &&
-              go get -u github.com/alecthomas/gometalinter &&
-              gometalinter --install &&
-              gometalinter
+              golangci-lint run
     in:
       $let:
         tests:

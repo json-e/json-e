@@ -282,46 +282,6 @@ func IsValidContext(context map[string]interface{}) error {
 	return nil
 }
 
-// normalizeData will wrap functions and return an error if the data structure
-// contains illegal types.
-func normalizeData(v interface{}) (interface{}, error) {
-	if v == nil {
-		return nil, nil
-	}
-	switch val := v.(type) {
-	case *function, string, float64, bool:
-		return val, nil
-	case []interface{}:
-		result := make([]interface{}, len(val))
-		for i, value := range val {
-			var err error
-			result[i], err = normalizeData(value)
-			if err != nil {
-				return nil, err
-			}
-		}
-		return result, nil
-	case map[string]interface{}:
-		result := make(map[string]interface{}, len(val))
-		for key, value := range val {
-			var err error
-			result[key], err = normalizeData(value)
-			if err != nil {
-				return nil, err
-			}
-		}
-		return result, nil
-	}
-	if reflect.TypeOf(v).Kind() == reflect.Func {
-		val, err := wrapFunction(v, false)
-		if err != nil {
-			return nil, err
-		}
-		return val, nil
-	}
-	return nil, fmt.Errorf("cannot inject type %s", reflect.TypeOf(v).String())
-}
-
 func deepEquals(a, b interface{}) bool {
 	switch A := a.(type) {
 	case *function:
