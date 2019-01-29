@@ -8,7 +8,6 @@
     "interfacer",
     "lll",
     "misspell",
-    "staticcheck",
     "unconvert",
     "vet",
     "vetshadow"
