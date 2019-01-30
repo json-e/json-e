@@ -7,9 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/stretchr/testify/require"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // testCase represents an entry in specification.yml
@@ -28,7 +27,7 @@ func (c *testCase) Test(t *testing.T) {
 
 	if c.Panic != nil {
 		require.Panics(t, func() {
-			Render(c.Template, c.Context)
+			Render(c.Template, c.Context) // nolint:errcheck
 		})
 		return
 	}
