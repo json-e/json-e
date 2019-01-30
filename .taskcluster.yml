@@ -143,7 +143,7 @@ tasks:
                 payload:
                   env:
                     GITHUB_BRANCH: ${event["ref"]}
-                    GITHUB_BASE_REPO_URL: ${rep.ref}
+                    GITHUB_BASE_REPO_URL: ${repo.ref}
                   features:
                     taskclusterProxy: true
                   maxRunTime: 3600
