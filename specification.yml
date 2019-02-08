@@ -77,6 +77,11 @@ context:  {}
 template: {message: 'a literal $${in a string}'}
 result:   {message: 'a literal ${in a string}'}
 ---
+title: string interpolation escapes with more $
+context:  {x: 'a'}
+template: ['${x}', '$${x}', '$$${x}', '$$$${x}', '$$$$${x}']
+result:   ['a', '${x}', '$${x}', '$$${x}', '$$$${x}']
+---
 title: string interpolation of keys
 context: {name: 'foo', value: 'bar'}
 template: {"tc_${name}": "${value}"}
