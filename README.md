@@ -73,7 +73,13 @@ build such applications.
 
 ## Python
 
-The Python distribution exposes a `render` function:
+The Python distribution is installed with
+
+```shell
+pip install json-e
+```
+
+The distribution exposes a `render` function:
 
 ```python
 import jsone
