@@ -36,5 +36,6 @@ setup(name='json-e',
         "PyYAML",
         "python-dateutil",
         'pep8',
-    ]
+    ],
+    python_requires='~=2.7, >=3.6'
 )
