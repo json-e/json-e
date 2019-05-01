@@ -140,6 +140,10 @@ stdout for the result.
 You can use 3rd party [Bazel rule](https://github.com/atlassian/bazel-tools/tree/master/rjsone) to invoke
 rjsone (see above) from Bazel build files.
 
+### Terraform
+
+The [jsone Terraform provider](https://github.com/taskcluster/terraform-provider-jsone) allows use of JSON-e for templating objects within Terraform.
+
 # Language Reference
 
 The examples here are given in YAML for ease of reading.  Of course, the
