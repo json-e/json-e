@@ -72,7 +72,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
-              pip install -e . &&
+              pip install --no-use-pep517 -e . &&
               python setup.py test
         - image: 'python:3.6'
           name: python:3.6 tests
@@ -85,7 +85,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
-              pip install -e . &&
+              pip install --no-use-pep517 -e . &&
               python setup.py test
         - image: 'golangci/golangci-lint'
           name: golang lint and tests
