@@ -1,6 +1,6 @@
 var interpreter = require('./interpreter');
 var fromNow = require('./from-now');
-var stringify = require('json-stable-stringify');
+var stringify = require('json-stable-stringify-without-jsonify');
 var {
   isString, isNumber, isBool,
   isArray, isObject,
