@@ -1,0 +1,8 @@
+[package]
+name = "json-e"
+version = "0.1.0"
+authors = ["owlishDeveloper <bugzeeeeee@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+json = "0.11.13"
