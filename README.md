@@ -307,7 +307,7 @@ context:  {}
 result:   '2017-01-19T17:27:20.974Z'
 ```
 
-The available units are `day`, `hour`, and `minute`, for all of which a plural
+The available units are `day`, `hour`, `minute`, and `second`, for all of which a plural
 is also accepted.
 
 ### `$let`
@@ -359,7 +359,7 @@ two keys: `key` and `val`. These keys correspond to a key in the object and its 
 When $map is given an object, the expression defined by `each(var)` must evaluate to an
 object for each key/value pair (`key` and `val`). The objects constructed by each 'each(var)'
 can then be merged internally to give the resulting object with later keys overwriting 
-the previous ones.Otherwise the expression becomes invalid for the $map operator
+the previous ones. Otherwise the expression becomes invalid for the $map operator.
 
 ```yaml
 template:
@@ -377,7 +377,13 @@ result: {ax: 2, bx: 3, cx: 4}
 
 ### `$match`
 
-The `$match` operator is not dissimilar to pattern matching operators. It gets an object, in which every key is a string expression(s) to evaluate to `true` or `false` based on the context. The result will be an array of things (all types are supported) that were values corresponding to the keys that were evaluated to `true`. The order of the things in the array will be arbitrary. If there are no matches, the result is an empty array.
+The `$match` operator is not dissimilar to pattern matching operators.
+It gets an object, in which every key is a string expression(s) to
+evaluate to `true` or `false` based on the context. The result will
+be an array of things (all types are supported) that were values
+corresponding to the keys that were evaluated to `true`. The order of
+the things in the array will be arbitrary. If there are no matches,
+the result is an empty array.
 
 ```yaml
 template: {$match: {"x == 10": "ten", "x == 20": "twenty"}}
@@ -485,11 +491,11 @@ result: "falsy"
 ## Expression Syntax
 
 Expression are given in a simple Python- or JavaScript-like expression
-language.  Its data types are limited to JSON types plus function objects.
+language. Its data types are limited to JSON types plus function objects.
 
 ### Literals
 
-Literals are similar to those for JSON.  Numeric literals only accept integer
+Literals are similar to those for JSON. Numeric literals only accept integer
 and decimal notation. Strings do not support any kind of escaping. The use of
 `\n` and `\t` in the example below depends on the YAML parser to expand the
 escapes.
@@ -528,7 +534,7 @@ Bare identifiers refer to items from the context or to built-ins (described belo
 ```yaml
 template: {$eval: '[x, z, x+z]'}
 context: {x: 'quick', z: 'sort'}
-reslut: ['quick', 'sort', 'quicksort']
+result: ['quick', 'sort', 'quicksort']
 ```
 
 ### Arithmetic Operations
@@ -578,7 +584,7 @@ result: [true, true, false, false, true, false]
 
 ### Boolean Operations
 
-Boolean operations use C- and Javascript-style symbls `||`, `&&`, and `!`:
+Boolean operations use C- and Javascript-style symbols `||`, `&&`, and `!`:
 
 ```yaml
 template: {$eval: '!(false || false) && true'}
@@ -590,7 +596,7 @@ result: true
 
 Like Javascript, object properties can be accessed either with array-index
 syntax or with dot syntax. Unlike Javascript, `obj.prop` is an error if `obj`
-does not have `prop`, while `obj['prop']` will evaulate to `null`.
+does not have `prop`, while `obj['prop']` will evaluate to `null`.
 
 ```yaml
 template: {$eval: 'v.a + v["b"]'}

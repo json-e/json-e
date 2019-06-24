@@ -2,10 +2,10 @@
 # ### Specificaiton for json-e
 # This document specifies the json-e template language through a series of
 # test cases on the form: `{title, context, template, result, error, panic}`
-# Where `jsone.render(template, context) = result` and title is short name
+# where `jsone.render(template, context) = result` and title is short name
 # for the test case. If the `error` property is specified as `true`, no result
 # needs to be specified, as the test case must throw an error. If the `panic`
-# property is specified as `true`, the test case is expected throw an error
+# property is specified as `true`, the test case is expected to throw an error
 # about invalid usage, typically invalid context.
 #
 # Comments explaining the test cases is encouraged, additionally entries with
