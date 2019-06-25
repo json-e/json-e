@@ -19,7 +19,7 @@
   "author": "",
   "license": "MPL-2.0",
   "dependencies": {
-    "json-stable-stringify": "^1.0.1"
+    "json-stable-stringify-without-jsonify": "^1.0.1"
   },
   "devDependencies": {
     "assume": "^2.0.0",
