@@ -3,6 +3,7 @@
   "version": "3.0.0",
   "description": "json parameterization module inspired from json-parameterization",
   "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "test": "yarn lint && mocha test/*_test.js",
