@@ -80,7 +80,7 @@ npm install --save json-e
 yarn add json-e
 ```
 
-Note: Type definations are included with this package, so there's no need of seperate
+Note: Type definitions are included with this package, so there's no need of seperate
 `@types/..` installation.
 
 As 'json-e' is a CommonJS module, the package must be imported like this [(more..)](https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require) for type definitions to work properly:
