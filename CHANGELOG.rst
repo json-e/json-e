@@ -1,3 +1,11 @@
+Jsone 3.0.1 (2018-07-11)
+========================
+
+Features
+--------
+
+- Introduction of support of TypeScript typings. This version adds type for the jsone function.
+
 Jsone 3.0.0 (2018-11-01)
 ========================
 
