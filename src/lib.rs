@@ -2,13 +2,7 @@ extern crate json;
 
 use json::JsonValue;
 
-#[derive(Debug)]
-pub enum JsonEOutput {
-    Data(JsonValue),
-    DeleteMarker,
-}
-
-fn render(template: &JsonValue, context: &JsonValue) -> JsonEOutput {
+fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
     let m = match template {
         JsonValue::Number(_) | JsonValue::Boolean(_) | JsonValue::Null => template.clone(),
         JsonValue::String(s) => interpolate(s, context),
@@ -18,15 +12,28 @@ fn render(template: &JsonValue, context: &JsonValue) -> JsonEOutput {
                     .into_iter()
                     .map(|e| render(e, context))
                     .filter(|e| match e {
-                        JsonEOutput::Data(jv) => true,
-                        JsonEOutput::DeleteMarker => false,
+                        Some(_) => true,
+                        None => false,
                     })
+                    .map(|e| e.unwrap())
                     .collect::<Vec<JsonValue>>())
         },
+        JsonValue::Object(o) => {
+            JsonValue::Object(
+                o
+                    .iter()
+                    .map(|(k, v)| (k, render(v, context)))
+                    .filter(|(k, ov)| ov.is_some())
+                    .map(|(k, ov)| (k, ov.unwrap()))
+                    .fold(json::object::Object::new(), |mut acc, (k, v)| {
+                        acc.insert(k, v);
+                        acc
+                    }))
+        }
         _ => template.clone(),
     };
 
-
+    Some(m)
 }
 
 fn interpolate(template: &String, _context: &JsonValue) -> JsonValue {
@@ -44,7 +51,7 @@ mod tests {
 
         let context = json::parse("{}").unwrap();
 
-        assert_eq!(template, render(&template, &context))
+        assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
@@ -53,7 +60,7 @@ mod tests {
 
         let context = json::parse("{}").unwrap();
 
-        assert_eq!(template, render(&template, &context))
+        assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
@@ -62,7 +69,7 @@ mod tests {
 
         let context = json::parse("{}").unwrap();
 
-        assert_eq!(template, render(&template, &context))
+        assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
@@ -71,7 +78,34 @@ mod tests {
 
         let context = json::parse("{}").unwrap();
 
-        assert_eq!(template, render(&template, &context))
+        assert_eq!(template, render(&template, &context).unwrap())
+    }
+
+    #[test]
+    fn render_gets_string() {
+        let template = json::parse(r#""this is a string""#).unwrap();
+
+        let context = json::parse("{}").unwrap();
+
+        assert_eq!(template, render(&template, &context).unwrap())
+    }
+
+    #[test]
+    fn render_gets_array() {
+        let template = json::parse(r#"["a", "b", "c"]"#).unwrap();
+
+        let context = json::parse("{}").unwrap();
+
+        assert_eq!(template, render(&template, &context).unwrap())
+    }
+
+    #[test]
+    fn render_gets_object() {
+        let template = json::parse(r#"{"a":1, "b":2}"#).unwrap();
+
+        let context = json::parse("{}").unwrap();
+
+        assert_eq!(template, render(&template, &context).unwrap())
     }
 
 
