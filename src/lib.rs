@@ -10,21 +10,19 @@ fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
             JsonValue::Array(
                 elements
                     .into_iter()
-                    .map(|e| render(e, context))
-                    .filter(|e| match e {
-                        Some(_) => true,
-                        None => false,
-                    })
-                    .map(|e| e.unwrap())
+                    .filter_map(|e| render(e, context))
                     .collect::<Vec<JsonValue>>())
         },
         JsonValue::Object(o) => {
             JsonValue::Object(
                 o
                     .iter()
-                    .map(|(k, v)| (k, render(v, context)))
-                    .filter(|(k, ov)| ov.is_some())
-                    .map(|(k, ov)| (k, ov.unwrap()))
+                    .filter_map(|(k, v)| {
+                        match render(v, context) {
+                            Some(v) => Some((k, v)),
+                            None => None
+                        }
+                    })
                     .fold(json::object::Object::new(), |mut acc, (k, v)| {
                         acc.insert(k, v);
                         acc
