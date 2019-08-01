@@ -5,7 +5,8 @@ use json::JsonValue;
 fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
     let m = match template {
         JsonValue::Number(_) | JsonValue::Boolean(_) | JsonValue::Null => template.clone(),
-        JsonValue::String(s) => interpolate(s, context),
+        JsonValue::String(s) => JsonValue::from(interpolate(s, context)),
+        JsonValue::Short(s) => JsonValue::from(interpolate(s.as_str(), context)),
         JsonValue::Array(elements) => {
             JsonValue::Array(
                 elements
@@ -28,18 +29,18 @@ fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
                         acc
                     }))
         }
-        _ => template.clone(),
     };
 
     Some(m)
 }
 
-fn interpolate(template: &String, _context: &JsonValue) -> JsonValue {
-    json::parse("{}").unwrap()
+fn interpolate(template: &str, _context: &JsonValue) -> String {
+    template.to_string()
 }
 
 mod tests {
     use crate::render;
+    use json::JsonValue;
 
     #[test]
     fn render_returns_correct_template() {
@@ -81,7 +82,27 @@ mod tests {
 
     #[test]
     fn render_gets_string() {
-        let template = json::parse(r#""this is a string""#).unwrap();
+        // longer than json::short::MAX_LEN
+        let template = json::parse(r#""this is a very very very very long string""#).unwrap();
+
+        assert!(match template {
+            JsonValue::String(_) => true,
+            _ => false
+        });
+
+        let context = json::parse("{}").unwrap();
+
+        assert_eq!(template, render(&template, &context).unwrap())
+    }
+
+    #[test]
+    fn render_gets_short() {
+        // shorter than json::short::MAX_LEN
+        let template = "tiny".into();
+        assert!(match template {
+            JsonValue::Short(_) => true,
+            _ => false
+        });
 
         let context = json::parse("{}").unwrap();
 
@@ -90,7 +111,7 @@ mod tests {
 
     #[test]
     fn render_gets_array() {
-        let template = json::parse(r#"["a", "b", "c"]"#).unwrap();
+        let template = json::parse(r#"[1, 2, 3]"#).unwrap();
 
         let context = json::parse("{}").unwrap();
 
@@ -105,6 +126,6 @@ mod tests {
 
         assert_eq!(template, render(&template, &context).unwrap())
     }
-
-
 }
+
+
