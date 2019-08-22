@@ -1,6 +1,8 @@
 extern crate json;
 extern crate regex;
 
+mod tokenizer;
+
 use json::JsonValue;
 
 fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
