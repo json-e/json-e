@@ -1,4 +1,5 @@
 extern crate json;
+extern crate regex;
 
 use json::JsonValue;
 
