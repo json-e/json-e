@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use regex;
 use std::collections::HashMap;
 use std::fmt::Write;
@@ -52,22 +54,37 @@ impl Tokenizer {
         //let tokens = vec![];
     }
 
-//    fn next(self: &mut Self, source: String, offset: usize) {
-//        let mut m: regex::Captures;
-//        let i: usize;
-//
-//        loop {
-//            m = match self.regex.captures(&source[offset..]) {
-//                None => {
-//                    if (&source[offset..] != "") {
-//                        panic!(format!("unexpected EOF for {} at {}", &source, &source[offset..]));
-//                    }
-//                },
-//                Some(ref match) => {
-//                },
-//            }
-//        }
-//    }
+    fn index_of_not_undefined(captures: regex::Captures, index: usize) -> Option<usize> {
+        let mut result: Option<usize> = None;
+        for (i, cap) in captures.iter().enumerate().skip(index) {
+            if cap.is_some() {
+                result = Some(i);
+                return result;
+            }
+        }
+
+        result
+    }
+
+    /*
+    fn next(self: &mut Self, source: String, offset: usize) {
+        let mut m: regex::Captures;
+        let i: usize;
+
+        loop {
+            m = match self.regex.captures(&source[offset..]) {
+                None => {
+                    if (&source[offset..] != "") {
+                        panic!(format!("unexpected EOF for {} at {}", &source, &source[offset..]));
+                    }
+                },
+                Some(ref match) => {
+                    i =
+                },
+            }
+        }
+    }
+    */
 }
 
 mod tests {
@@ -120,4 +137,29 @@ mod tests {
         );
     }
 
+    #[test]
+    fn ionu_nonempty_captures() {
+        let regex = regex::Regex::new("^(?:(ign)|([0-9]+)|([a-z]+))").unwrap();
+        let captures = regex.captures("abckdf").unwrap();
+        // should yield
+        // 0: Some("abckdf") (the whole string matched)
+        // 1: None
+        // 2: None
+        // 3: Some("abckdf")
+        let index = Tokenizer::index_of_not_undefined(captures, 1);
+        assert_eq!(index, Some(3));
+    }
+
+    #[test]
+    fn ionu_middle_matches() {
+        let regex = regex::Regex::new("^(?:(ign)|([0-9]+)|([a-z]+))").unwrap();
+        let captures = regex.captures("1234").unwrap();
+        // should yield
+        // 0: Some("1234") (the whole string matched)
+        // 1: None
+        // 2: Some("1234")
+        // 3: None
+        let index = Tokenizer::index_of_not_undefined(captures, 1);
+        assert_eq!(index, Some(2));
+    }
 }
