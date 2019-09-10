@@ -2,6 +2,7 @@ extern crate json;
 extern crate regex;
 
 mod tokenizer;
+mod errors;
 
 use json::JsonValue;
 
