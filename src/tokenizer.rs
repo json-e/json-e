@@ -46,14 +46,20 @@ impl Tokenizer {
         Ok(re)
     }
 
-    pub fn tokenize(self: &mut Self, source: String, offset: usize) {
-        let token = Token{
-            token_type: "".to_string(),
-            value: "".to_string(),
-            start: 0,
-            end: offset,
-        };
-        //let tokens = vec![];
+    pub fn tokenize(self: &mut Self, source: String, offset: usize) -> Vec<Token> {
+        let mut last_end = offset;
+        let mut tokens = vec![];
+
+        loop {
+            let token = self.next(&source, last_end).unwrap();
+            match token {
+                Some(t) => {
+                    last_end = t.end;
+                    tokens.push(t);
+                },
+                None => return tokens,
+            }
+        }
     }
 
     fn index_of_not_undefined(captures: &regex::Captures, index: usize) -> Option<usize> {
@@ -68,15 +74,21 @@ impl Tokenizer {
         result
     }
 
-    pub fn next(self: &Self, source: String, mut offset: usize) -> Result<Token, Error> {
+    // Return the next token after the given offset, or None if no tokens remain
+    // in the string.
+    pub fn next(self: &Self, source: &str, mut offset: usize) -> Result<Option<Token>, Error> {
         let mut i: usize;
 
         loop {
             match self.regex.captures(&source[offset..]) {
                 None => if (&source[offset..] != "") {
+                    // no match, but there's input left, so we have an error
                     return Err(Error::SyntaxError(
                         format!("unexpected EOF for {} at {}", &source, &source[offset..])
                     ));
+                } else {
+                    // we've parsed the whole string
+                    return Ok(None);
                 },
                 Some(ref m) => {
                     i = Tokenizer::index_of_not_undefined(m, 1).unwrap();
@@ -84,12 +96,12 @@ impl Tokenizer {
 
                     // if it's not an ignored expression, return it
                     if i != 1 {
-                        return Ok(Token{
+                        return Ok(Some(Token{
                             token_type: self.token_types[i - 2].clone(),
                             value: m.get(i).unwrap().as_str().to_string(),
                             start: offset - m.get(0).unwrap().end(),
                             end: offset
-                        });
+                        }));
                     }
                 },
             }
@@ -107,11 +119,17 @@ mod tests {
         let mut hashmap = HashMap::new();
         hashmap.insert("number".to_string(), "[0-9]+".to_string());
         hashmap.insert("identifier".to_string(), "[a-z]+".to_string());
+        hashmap.insert("snowman".to_string(), "☃".to_string());
 
         Tokenizer::new(
             "[ ]+".to_string(),
             hashmap,
-            vec!["number".to_string(), "identifier".to_string(), "+".to_string()]
+            vec![
+                "number".to_string(),
+                "identifier".to_string(),
+                "+".to_string(),
+                "snowman".to_string(),
+            ]
         )
     }
 
@@ -191,48 +209,56 @@ mod tests {
     fn next_positive() {
         let tokenizer = build_tokenizer();
 
-        assert_eq!(tokenizer.next("abc".to_string(), 0), Ok(Token{
-            token_type: "identifier".to_string(),
-            value: "abc".to_string(),
-            start: 0,
-            end: 3
-        }))
+        assert_eq!(
+            tokenizer.next("abc", 0),
+            Ok(Some(Token{
+                token_type: "identifier".to_string(),
+                value: "abc".to_string(),
+                start: 0,
+                end: 3
+            })))
     }
 
     #[test]
     fn next_positive_whitespace() {
         let tokenizer = build_tokenizer();
 
-        assert_eq!(tokenizer.next("  abc ".to_string(), 0), Ok(Token{
-            token_type: "identifier".to_string(),
-            value: "abc".to_string(),
-            start: 2,
-            end: 5
-        }))
+        assert_eq!(
+            tokenizer.next("  abc ", 0),
+            Ok(Some(Token{
+                token_type: "identifier".to_string(),
+                value: "abc".to_string(),
+                start: 2,
+                end: 5
+            })))
     }
 
     #[test]
     fn next_positive_symbol() {
         let tokenizer = build_tokenizer();
 
-        assert_eq!(tokenizer.next("  +abc ".to_string(), 0), Ok(Token{
-            token_type: "+".to_string(),
-            value: "+".to_string(),
-            start: 2,
-            end: 3
-        }))
+        assert_eq!(
+            tokenizer.next("  +abc ", 0),
+            Ok(Some(Token{
+                token_type: "+".to_string(),
+                value: "+".to_string(),
+                start: 2,
+                end: 3
+            })))
     }
 
     #[test]
     fn next_positive_number() {
         let tokenizer = build_tokenizer();
 
-        assert_eq!(tokenizer.next(" 2 +abc ".to_string(), 0), Ok(Token{
+        assert_eq!(
+            tokenizer.next(" 2 +abc ", 0),
+        Ok(Some(Token{
             token_type: "number".to_string(),
             value: "2".to_string(),
             start: 1,
             end: 2
-        }))
+        })))
     }
 
     #[test]
@@ -240,8 +266,33 @@ mod tests {
         let tokenizer = build_tokenizer();
 
         assert_eq!(
-            tokenizer.next(" * +abc ".to_string(), 0),
+            tokenizer.next(" * +abc ", 0),
             Err(Error::SyntaxError("unexpected EOF for  * +abc  at * +abc ".to_string()))
+        )
+    }
+
+    #[test]
+    fn next_negative_empty() {
+        let tokenizer = build_tokenizer();
+
+        assert_eq!(
+            tokenizer.next("", 0),
+            Ok(None)
+        )
+    }
+
+    #[test]
+    fn next_positive_emoji() {
+        let tokenizer = build_tokenizer();
+
+        assert_eq!(
+            tokenizer.next("☃", 0),
+            Ok(Some(Token {
+                token_type: "snowman".to_string(),
+                value: "☃".to_string(),
+                start: 0,
+                end: 3, // snowman is 3 bytes long in utf-8
+            }))
         )
     }
 }
