@@ -5,8 +5,8 @@ use regex;
 use std::collections::HashMap;
 use std::fmt::Write;
 
-struct Tokenizer {
-    token_types: Vec<String>,
+struct Tokenizer<'a> {
+    token_types: Vec<&'a str>,
     regex: regex::Regex,
 }
 
@@ -18,12 +18,12 @@ struct Token {
     end: usize,
 }
 
-impl Tokenizer {
+impl<'a> Tokenizer<'a> {
     pub fn new(
         ignore: &str,
-        patterns: HashMap<String, String>,
-        token_types: Vec<String>,
-    ) -> Tokenizer {
+        patterns: HashMap<&str, &str>,
+        token_types: Vec<&'a str>,
+    ) -> Tokenizer<'a> {
         let re = Tokenizer::build_regex_string(ignore, patterns, &token_types).unwrap();
 
         let regex = regex::Regex::new(&re).unwrap();
@@ -33,8 +33,8 @@ impl Tokenizer {
 
     fn build_regex_string(
         ignore: &str,
-        patterns: HashMap<String, String>,
-        token_types: &[String],
+        patterns: HashMap<&str, &str>,
+        token_types: &[&str],
     ) -> Result<String, std::fmt::Error> {
         let mut re = String::new();
 
@@ -109,7 +109,7 @@ impl Tokenizer {
                     // if it's not an ignored expression, return it
                     if i != 1 {
                         return Ok(Some(Token {
-                            token_type: self.token_types[i - 2].clone(),
+                            token_type: self.token_types[i - 2].to_string(),
                             value: m.get(i).unwrap().as_str().to_string(),
                             start: offset - m.get(0).unwrap().end(),
                             end: offset,
@@ -127,20 +127,20 @@ mod tests {
     use crate::tokenizer::Tokenizer;
     use std::collections::HashMap;
 
-    fn build_tokenizer() -> Tokenizer {
+    fn build_tokenizer() -> Tokenizer<'static> {
         let mut hashmap = HashMap::new();
-        hashmap.insert("number".to_string(), "[0-9]+".to_string());
-        hashmap.insert("identifier".to_string(), "[a-z]+".to_string());
-        hashmap.insert("snowman".to_string(), "☃".to_string());
+        hashmap.insert("number", "[0-9]+");
+        hashmap.insert("identifier", "[a-z]+");
+        hashmap.insert("snowman", "☃");
 
         Tokenizer::new(
             "[ ]+",
             hashmap,
             vec![
-                "number".to_string(),
-                "identifier".to_string(),
-                "+".to_string(),
-                "snowman".to_string(),
+                "number",
+                "identifier",
+                "+",
+                "snowman",
             ],
         )
     }
@@ -150,7 +150,7 @@ mod tests {
         let re = Tokenizer::build_regex_string(
             "ign",
             HashMap::new(),
-            &vec!["abc".to_string(), "def".to_string()],
+            &vec!["abc", "def"],
         )
         .unwrap();
 
@@ -160,13 +160,13 @@ mod tests {
     #[test]
     fn build_regex_positive_hashmap() {
         let mut hashmap = HashMap::new();
-        hashmap.insert("number".to_string(), "[0-9]+".to_string());
-        hashmap.insert("identifier".to_string(), "[a-z]+".to_string());
+        hashmap.insert("number", "[0-9]+");
+        hashmap.insert("identifier", "[a-z]+");
 
         let re = Tokenizer::build_regex_string(
             "ign",
             hashmap,
-            &vec!["number".to_string(), "identifier".to_string()],
+            &vec!["number", "identifier"],
         )
         .unwrap();
 
@@ -178,7 +178,7 @@ mod tests {
         let re = Tokenizer::build_regex_string(
             "ign",
             HashMap::new(),
-            &vec!["*+?".to_string()],
+            &vec!["*+?"],
         )
         .unwrap();
 
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn constructor_positive() {
-        let t = Tokenizer::new("ign", HashMap::new(), vec!["*+?".to_string()]);
+        let t = Tokenizer::new("ign", HashMap::new(), vec!["*+?"]);
     }
 
     #[test]
