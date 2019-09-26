@@ -11,8 +11,8 @@ struct Tokenizer<'a> {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-struct Token {
-    token_type: String,
+struct Token<'a> {
+    token_type: &'a str,
     value: String,
     start: usize,
     end: usize,
@@ -109,7 +109,7 @@ impl<'a> Tokenizer<'a> {
                     // if it's not an ignored expression, return it
                     if i != 1 {
                         return Ok(Some(Token {
-                            token_type: self.token_types[i - 2].to_string(),
+                            token_type: self.token_types[i - 2],
                             value: m.get(i).unwrap().as_str().to_string(),
                             start: offset - m.get(0).unwrap().end(),
                             end: offset,
@@ -223,7 +223,7 @@ mod tests {
         assert_eq!(
             tokenizer.next("abc", 0),
             Ok(Some(Token {
-                token_type: "identifier".to_string(),
+                token_type: "identifier",
                 value: "abc".to_string(),
                 start: 0,
                 end: 3
@@ -238,7 +238,7 @@ mod tests {
         assert_eq!(
             tokenizer.next("  abc ", 0),
             Ok(Some(Token {
-                token_type: "identifier".to_string(),
+                token_type: "identifier",
                 value: "abc".to_string(),
                 start: 2,
                 end: 5
@@ -253,7 +253,7 @@ mod tests {
         assert_eq!(
             tokenizer.next("  +abc ", 0),
             Ok(Some(Token {
-                token_type: "+".to_string(),
+                token_type: "+",
                 value: "+".to_string(),
                 start: 2,
                 end: 3
@@ -268,7 +268,7 @@ mod tests {
         assert_eq!(
             tokenizer.next(" 2 +abc ", 0),
             Ok(Some(Token {
-                token_type: "number".to_string(),
+                token_type: "number",
                 value: "2".to_string(),
                 start: 1,
                 end: 2
@@ -302,7 +302,7 @@ mod tests {
         assert_eq!(
             tokenizer.next("☃", 0),
             Ok(Some(Token {
-                token_type: "snowman".to_string(),
+                token_type: "snowman",
                 value: "☃".to_string(),
                 start: 0,
                 end: 3, // snowman is 3 bytes long in utf-8
@@ -317,31 +317,31 @@ mod tests {
         let result = tokenizer.tokenize("  +☃1234 abdk ☃".to_string(), 0).unwrap();
         let expected: Vec<Token> = vec![
             Token {
-                token_type: "+".to_string(),
+                token_type: "+",
                 value: "+".to_string(),
                 start: 2,
                 end: 3,
             },
             Token {
-                token_type: "snowman".to_string(),
+                token_type: "snowman",
                 value: "☃".to_string(),
                 start: 3,
                 end: 6,
             },
             Token {
-                token_type: "number".to_string(),
+                token_type: "number",
                 value: "1234".to_string(),
                 start: 6,
                 end: 10,
             },
             Token {
-                token_type: "identifier".to_string(),
+                token_type: "identifier",
                 value: "abdk".to_string(),
                 start: 11,
                 end: 15,
             },
             Token {
-                token_type: "snowman".to_string(),
+                token_type: "snowman",
                 value: "☃".to_string(),
                 start: 16,
                 end: 19,
