@@ -11,9 +11,9 @@ struct Tokenizer<'a> {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-struct Token<'a> {
+struct Token<'a, 'v> {
     token_type: &'a str,
-    value: String,
+    value: &'v str,
     start: usize,
     end: usize,
 }
@@ -54,12 +54,12 @@ impl<'a> Tokenizer<'a> {
         Ok(re)
     }
 
-    pub fn tokenize(self: &Self, source: String, offset: usize) -> Result<Vec<Token>, Error> {
+    pub fn tokenize<'v>(self: &'a Self, source: &'v str, offset: usize) -> Result<Vec<Token <'a, 'v>>, Error> {
         let mut last_end = offset;
         let mut tokens = vec![];
 
         loop {
-            let token = self.next(&source, last_end)?;
+            let token = self.next(source, last_end)?;
             match token {
                 Some(t) => {
                     last_end = t.end;
@@ -84,7 +84,7 @@ impl<'a> Tokenizer<'a> {
 
     // Return the next token after the given offset, or None if no tokens remain
     // in the string.
-    pub fn next(self: &Self, source: &str, mut offset: usize) -> Result<Option<Token>, Error> {
+    pub fn next<'v>(self: &'a Self, source: &'v str, mut offset: usize) -> Result<Option<Token <'a, 'v>>, Error> {
         let mut i: usize;
 
         loop {
@@ -110,7 +110,7 @@ impl<'a> Tokenizer<'a> {
                     if i != 1 {
                         return Ok(Some(Token {
                             token_type: self.token_types[i - 2],
-                            value: m.get(i).unwrap().as_str().to_string(),
+                            value: m.get(i).unwrap().as_str(),
                             start: offset - m.get(0).unwrap().end(),
                             end: offset,
                         }));
@@ -224,7 +224,7 @@ mod tests {
             tokenizer.next("abc", 0),
             Ok(Some(Token {
                 token_type: "identifier",
-                value: "abc".to_string(),
+                value: "abc",
                 start: 0,
                 end: 3
             }))
@@ -239,7 +239,7 @@ mod tests {
             tokenizer.next("  abc ", 0),
             Ok(Some(Token {
                 token_type: "identifier",
-                value: "abc".to_string(),
+                value: "abc",
                 start: 2,
                 end: 5
             }))
@@ -254,7 +254,7 @@ mod tests {
             tokenizer.next("  +abc ", 0),
             Ok(Some(Token {
                 token_type: "+",
-                value: "+".to_string(),
+                value: "+",
                 start: 2,
                 end: 3
             }))
@@ -269,7 +269,7 @@ mod tests {
             tokenizer.next(" 2 +abc ", 0),
             Ok(Some(Token {
                 token_type: "number",
-                value: "2".to_string(),
+                value: "2",
                 start: 1,
                 end: 2
             }))
@@ -303,7 +303,7 @@ mod tests {
             tokenizer.next("☃", 0),
             Ok(Some(Token {
                 token_type: "snowman",
-                value: "☃".to_string(),
+                value: "☃",
                 start: 0,
                 end: 3, // snowman is 3 bytes long in utf-8
             }))
@@ -314,35 +314,35 @@ mod tests {
     fn tokenize_positive_string_of_tokens_with_whitespace() {
         let tokenizer = build_tokenizer();
 
-        let result = tokenizer.tokenize("  +☃1234 abdk ☃".to_string(), 0).unwrap();
+        let result = tokenizer.tokenize("  +☃1234 abdk ☃", 0).unwrap();
         let expected: Vec<Token> = vec![
             Token {
                 token_type: "+",
-                value: "+".to_string(),
+                value: "+",
                 start: 2,
                 end: 3,
             },
             Token {
                 token_type: "snowman",
-                value: "☃".to_string(),
+                value: "☃",
                 start: 3,
                 end: 6,
             },
             Token {
                 token_type: "number",
-                value: "1234".to_string(),
+                value: "1234",
                 start: 6,
                 end: 10,
             },
             Token {
                 token_type: "identifier",
-                value: "abdk".to_string(),
+                value: "abdk",
                 start: 11,
                 end: 15,
             },
             Token {
                 token_type: "snowman",
-                value: "☃".to_string(),
+                value: "☃",
                 start: 16,
                 end: 19,
             },
@@ -354,7 +354,7 @@ mod tests {
     fn tokenize_negative_empty_string() {
         let tokenizer = build_tokenizer();
 
-        let result = tokenizer.tokenize("".to_string(), 0).unwrap();
+        let result = tokenizer.tokenize("", 0).unwrap();
         let expected: Vec<Token> = vec![];
         assert_eq!(result, expected);
     }
@@ -363,7 +363,7 @@ mod tests {
     fn tokenize_negative_syntax_error() {
         let tokenizer = build_tokenizer();
 
-        let result = tokenizer.tokenize("abc !!!!".to_string(), 0);
+        let result = tokenizer.tokenize("abc !!!!", 0);
         assert_eq!(
             result,
             Err(Error::SyntaxError(
