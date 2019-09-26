@@ -20,7 +20,7 @@ struct Token {
 
 impl Tokenizer {
     pub fn new(
-        ignore: String,
+        ignore: &str,
         patterns: HashMap<String, String>,
         token_types: Vec<String>,
     ) -> Tokenizer {
@@ -32,7 +32,7 @@ impl Tokenizer {
     }
 
     fn build_regex_string(
-        ignore: String,
+        ignore: &str,
         patterns: HashMap<String, String>,
         token_types: &[String],
     ) -> Result<String, std::fmt::Error> {
@@ -134,7 +134,7 @@ mod tests {
         hashmap.insert("snowman".to_string(), "☃".to_string());
 
         Tokenizer::new(
-            "[ ]+".to_string(),
+            "[ ]+",
             hashmap,
             vec![
                 "number".to_string(),
@@ -148,7 +148,7 @@ mod tests {
     #[test]
     fn build_regex_positive_string() {
         let re = Tokenizer::build_regex_string(
-            "ign".to_string(),
+            "ign",
             HashMap::new(),
             &vec!["abc".to_string(), "def".to_string()],
         )
@@ -164,7 +164,7 @@ mod tests {
         hashmap.insert("identifier".to_string(), "[a-z]+".to_string());
 
         let re = Tokenizer::build_regex_string(
-            "ign".to_string(),
+            "ign",
             hashmap,
             &vec!["number".to_string(), "identifier".to_string()],
         )
@@ -176,7 +176,7 @@ mod tests {
     #[test]
     fn build_regex_positive_escape() {
         let re = Tokenizer::build_regex_string(
-            "ign".to_string(),
+            "ign",
             HashMap::new(),
             &vec!["*+?".to_string()],
         )
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn constructor_positive() {
-        let t = Tokenizer::new("ign".to_string(), HashMap::new(), vec!["*+?".to_string()]);
+        let t = Tokenizer::new("ign", HashMap::new(), vec!["*+?".to_string()]);
     }
 
     #[test]
