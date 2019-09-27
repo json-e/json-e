@@ -1,8 +1,9 @@
 extern crate json;
 extern crate regex;
 
-mod tokenizer;
 mod errors;
+mod prattparser;
+mod tokenizer;
 
 use json::JsonValue;
 
@@ -11,28 +12,23 @@ fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
         JsonValue::Number(_) | JsonValue::Boolean(_) | JsonValue::Null => template.clone(),
         JsonValue::String(s) => JsonValue::from(interpolate(s, context)),
         JsonValue::Short(s) => JsonValue::from(interpolate(s.as_str(), context)),
-        JsonValue::Array(elements) => {
-            JsonValue::Array(
-                elements
-                    .into_iter()
-                    .filter_map(|e| render(e, context))
-                    .collect::<Vec<JsonValue>>())
-        },
-        JsonValue::Object(o) => {
-            JsonValue::Object(
-                o
-                    .iter()
-                    .filter_map(|(k, v)| {
-                        match render(v, context) {
-                            Some(v) => Some((k, v)),
-                            None => None
-                        }
-                    })
-                    .fold(json::object::Object::new(), |mut acc, (k, v)| {
-                        acc.insert(k, v);
-                        acc
-                    }))
-        }
+        JsonValue::Array(elements) => JsonValue::Array(
+            elements
+                .into_iter()
+                .filter_map(|e| render(e, context))
+                .collect::<Vec<JsonValue>>(),
+        ),
+        JsonValue::Object(o) => JsonValue::Object(
+            o.iter()
+                .filter_map(|(k, v)| match render(v, context) {
+                    Some(v) => Some((k, v)),
+                    None => None,
+                })
+                .fold(json::object::Object::new(), |mut acc, (k, v)| {
+                    acc.insert(k, v);
+                    acc
+                }),
+        ),
     };
 
     Some(m)
@@ -48,9 +44,7 @@ mod tests {
 
     #[test]
     fn render_returns_correct_template() {
-        let template = json::parse(
-            r#"{"code": 200}"#
-        ).unwrap();
+        let template = json::parse(r#"{"code": 200}"#).unwrap();
 
         let context = json::parse("{}").unwrap();
 
@@ -91,7 +85,7 @@ mod tests {
 
         assert!(match template {
             JsonValue::String(_) => true,
-            _ => false
+            _ => false,
         });
 
         let context = json::parse("{}").unwrap();
@@ -105,7 +99,7 @@ mod tests {
         let template = "tiny".into();
         assert!(match template {
             JsonValue::Short(_) => true,
-            _ => false
+            _ => false,
         });
 
         let context = json::parse("{}").unwrap();
@@ -131,5 +125,3 @@ mod tests {
         assert_eq!(template, render(&template, &context).unwrap())
     }
 }
-
-

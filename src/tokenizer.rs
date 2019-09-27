@@ -5,7 +5,7 @@ use regex;
 use std::collections::HashMap;
 use std::fmt::Write;
 
-struct Tokenizer<'a> {
+pub struct Tokenizer<'a> {
     token_types: Vec<&'a str>,
     regex: regex::Regex,
 }
@@ -54,7 +54,11 @@ impl<'a> Tokenizer<'a> {
         Ok(re)
     }
 
-    pub fn tokenize<'v>(self: &'a Self, source: &'v str, offset: usize) -> Result<Vec<Token <'a, 'v>>, Error> {
+    pub fn tokenize<'v>(
+        self: &'a Self,
+        source: &'v str,
+        offset: usize,
+    ) -> Result<Vec<Token<'a, 'v>>, Error> {
         let mut last_end = offset;
         let mut tokens = vec![];
 
@@ -84,7 +88,11 @@ impl<'a> Tokenizer<'a> {
 
     // Return the next token after the given offset, or None if no tokens remain
     // in the string.
-    pub fn next<'v>(self: &'a Self, source: &'v str, mut offset: usize) -> Result<Option<Token <'a, 'v>>, Error> {
+    pub fn next<'v>(
+        self: &'a Self,
+        source: &'v str,
+        mut offset: usize,
+    ) -> Result<Option<Token<'a, 'v>>, Error> {
         let mut i: usize;
 
         loop {
@@ -136,23 +144,13 @@ mod tests {
         Tokenizer::new(
             "[ ]+",
             hashmap,
-            vec![
-                "number",
-                "identifier",
-                "+",
-                "snowman",
-            ],
+            vec!["number", "identifier", "+", "snowman"],
         )
     }
 
     #[test]
     fn build_regex_positive_string() {
-        let re = Tokenizer::build_regex_string(
-            "ign",
-            HashMap::new(),
-            &vec!["abc", "def"],
-        )
-        .unwrap();
+        let re = Tokenizer::build_regex_string("ign", HashMap::new(), &vec!["abc", "def"]).unwrap();
 
         assert_eq!(re, "^(?:(ign)|(abc)|(def))")
     }
@@ -163,24 +161,15 @@ mod tests {
         hashmap.insert("number", "[0-9]+");
         hashmap.insert("identifier", "[a-z]+");
 
-        let re = Tokenizer::build_regex_string(
-            "ign",
-            hashmap,
-            &vec!["number", "identifier"],
-        )
-        .unwrap();
+        let re =
+            Tokenizer::build_regex_string("ign", hashmap, &vec!["number", "identifier"]).unwrap();
 
         assert_eq!(re, "^(?:(ign)|([0-9]+)|([a-z]+))")
     }
 
     #[test]
     fn build_regex_positive_escape() {
-        let re = Tokenizer::build_regex_string(
-            "ign",
-            HashMap::new(),
-            &vec!["*+?"],
-        )
-        .unwrap();
+        let re = Tokenizer::build_regex_string("ign", HashMap::new(), &vec!["*+?"]).unwrap();
 
         assert_eq!(re, "^(?:(ign)|(\\*\\+\\?))")
     }
