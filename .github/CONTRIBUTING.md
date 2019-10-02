@@ -19,7 +19,7 @@ To run the tests use `npm test`
 
 ## Python
 
-The Python implementaion is located in `./jsone`.
+The Python implementation is located in `./jsone`.
 
 For Python, activate a virtualenv and run `pip install -e .`.
 
