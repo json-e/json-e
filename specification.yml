@@ -716,6 +716,12 @@ title:    checking $let and $reverse operator integrity
 context:  {}
 template: {$let: {x: [1, 2, 3]}, in: [$reverse: {$eval: "x"}]}
 result:   [[ 3, 2, 1 ]]
+---
+title:    checking $let with $if without else
+context:  {c: 'itm'}
+template: {$let: {a: {$if: 'c == "item"', then: 'value'}}, in: {a: '${a}'}}
+result:   {a: ''}
+
 ################################################################################
 ---
 section:  $map

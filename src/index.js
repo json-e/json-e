@@ -140,6 +140,9 @@ operators.$let = (template, context) => {
       throw new TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
     }
     variables[key] = render(template['$let'][key], context);
+    if (isObject(variables[key])) {
+      variables[key] = '';
+    }
   });
 
   var child_context = Object.assign(context, variables);

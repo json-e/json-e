@@ -435,6 +435,9 @@ var operators = map[string]operator{
 			if err != nil {
 				return nil, err
 			}
+			if c[k] == deleteMarker {
+				c[k] = ""
+			}
 		}
 		in, ok := template["in"]
 		if !ok {
