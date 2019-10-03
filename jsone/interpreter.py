@@ -22,8 +22,11 @@ OPERATORS = {
 
 
 def infixExpectationError(operator, expected):
-    return InterpreterError('infix: {} expects {} {} {}'.
-                            format(operator, expected, operator, expected))
+    if operator == "[..]" and expected == "integer":
+        return InterpreterError('should only use integers to access arrays or strings')
+    else:
+        return InterpreterError('infix: {} expects {} {} {}'.
+                                format(operator, expected, operator, expected))
 
 
 class ExpressionEvaluator(PrattParser):
