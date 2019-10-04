@@ -11,7 +11,7 @@ pub struct Tokenizer<'a> {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-struct Token<'a, 'v> {
+pub struct Token<'a, 'v> {
     token_type: &'a str,
     value: &'v str,
     start: usize,
