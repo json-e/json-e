@@ -156,7 +156,8 @@ def let(template, context):
         if not IDENTIFIER_RE.match(k):
             raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
         subcontext[k] = renderValue(v, context)
-
+        if subcontext[k] == DeleteMarker:
+            subcontext[k] = ''
     try:
         in_expression = template['in']
     except KeyError:
