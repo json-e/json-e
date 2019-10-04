@@ -48,3 +48,6 @@ dist/
 # Go packages
 src/gopkg.in
 src/github.com
+
+#python env file
+env

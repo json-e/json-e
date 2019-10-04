@@ -1,5 +1,5 @@
 *describe your pull request here*
-
+Fixed Throw a useful error for `$then`
 # Checklist
 
 Before submitting a pull request, please check the following:

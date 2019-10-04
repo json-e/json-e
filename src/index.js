@@ -117,7 +117,10 @@ operators.$if = (template, context) => {
     throw new TemplateError('$if can evaluate string expressions only');
   }
   if (isTruthy(interpreter.parse(template['$if'], context))) {
-    return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
+    // return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
+    return template.hasOwnProperty('then') ? 
+      render(template.then, context) : 
+      new TemplateError('$if Syntax error: $then: should be spelled then: (no $).');;
   }
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
 };
