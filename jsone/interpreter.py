@@ -182,7 +182,7 @@ class ExpressionEvaluator(PrattParser):
             return left[k]
         except KeyError:
             raise TemplateError(
-                '{} not found in {}'.format(k, json.dumps(left)))
+                '"{}" not found in {}'.format(k, json.dumps(left)))
 
     @infix("(")
     def function_call(self, left, token, pc):
