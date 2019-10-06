@@ -918,6 +918,49 @@ context:  {cond: 3, ifcond: false}
 template: {$match: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
 result:   ["f"]
 ################################################################################
+---
+section: $matchOne operator
+---
+title:    $matchOne, 1 match
+context:  {cond: 3}
+template: {$matchOne: {'cond == 3': 2, 'cond == 5': 3}}
+result:   2
+---
+title:    $matchOne, match the first occurance 
+context:  {cond: 3}
+template: {$matchOne: {'cond > 1': 2, 'cond == 3': 3, 'cond == 1 || cond < 4': 4}}
+result:   4
+---
+title:    $matchOne, 1 match in array
+context:  {cond: 3}
+template: [0, $matchOne: {'cond == 3': 2, 'cond == 5': 3}]
+result:   [0, 2]
+---
+title:    $matchOne, 0 matches in array
+context:  {cond: 3}
+template: [0, $matchOne: {'cond > 3': 2, 'cond == 5': 3}]
+result:   [0, '']
+---
+title:    $matchOne, 1 match in object
+context:  {cond: 3}
+template: {key: 0, banana: {$matchOne: {'cond == 3': 2, 'cond == 5': 3}}}
+result:   {key: 0, banana: 2}
+---
+title:    $matchOne, 0 matches in object
+context:  {cond: 3}
+template: {key: 0, banana: {$matchOne: {'cond > 3': 2, 'cond == 5': 3}}}
+result:   {key: 0, banana: ''}
+---
+title:    $matchOne, is not an object
+context:  {cond: 3}
+template: {$matchOne: [{'cond < 5 && cond > 0': 2}]}
+error:    'TemplateError: $matchOne can evaluate objects only'
+---
+title:    $matchOne, value that also needs evaluation
+context:  {cond: 3, ifcond: false}
+template: {$matchOne: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
+result:   ["f"]
+################################################################################
 section:  $merge
 ---
 title:    simple merge

@@ -218,6 +218,25 @@ operators.$match = (template, context) => {
   return result;
 };
 
+operators.$matchOne = (template, context) => {
+  checkUndefinedProperties(template, ['\\$matchOne']);
+
+  if (!isObject(template['$matchOne'])) {
+    throw new TemplateError('$matchOne can evaluate objects only');
+  }
+
+  let result;
+  const conditions = template['$matchOne'];
+
+  for (let condition of Object.keys(conditions).sort()) {
+    if (isTruthy(interpreter.parse(condition, context))) {
+      result = render(conditions[condition], context);
+    }
+  }
+
+  return result;
+};
+
 operators.$merge = (template, context) => {
   checkUndefinedProperties(template, ['\\$merge']);
 

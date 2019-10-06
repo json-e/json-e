@@ -225,6 +225,22 @@ def matchConstruct(template, context):
     return result
 
 
+@operator("$matchOne")
+def matchOne(template, context):
+    checkUndefinedProperties(template, ['\$matchOne'])
+
+    if not isinstance(template['$matchOne'], dict):
+        raise TemplateError("$matchOne can evaluate objects only")
+
+    result = ''
+    for condition in sorted(template['$matchOne']):
+        if evaluateExpression(condition, context):
+            result = renderValue(template['$matchOne'][condition], context)
+            break
+
+    return result
+
+
 @operator('$merge')
 def merge(template, context):
     checkUndefinedProperties(template, ['\$merge'])
