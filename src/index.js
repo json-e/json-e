@@ -225,7 +225,7 @@ operators.$matchOne = (template, context) => {
     throw new TemplateError('$matchOne can evaluate objects only');
   }
 
-  let result;
+  let result = '';
   const conditions = template['$matchOne'];
 
   for (let condition of Object.keys(conditions).sort()) {
