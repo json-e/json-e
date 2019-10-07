@@ -125,7 +125,12 @@ operators.$if = (template, context) => {
 operators.$json = (template, context) => {
   checkUndefinedProperties(template, ['\\$json']);
 
-  return stringify(render(template['$json'], context));
+  let result = render(template['$json'], context);
+  if (result.length === 0) {
+    throw new TemplateError(`{$json: {$eval: ${template.$json.$eval}}`);
+  }
+
+  return stringify(result);
 };
 
 operators.$let = (template, context) => {
