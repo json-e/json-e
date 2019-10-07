@@ -156,7 +156,10 @@ def let(template, context):
 
     subcontext = context.copy()
     for k, v in template['$let'].items():
-        if not IDENTIFIER_RE.match(k):
+        if k in operators:
+            operator_values = renderValue(template['$let'], context)
+            subcontext = operator_values.copy()
+        elif not IDENTIFIER_RE.match(k):
             raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
         subcontext[k] = renderValue(v, context)
         if subcontext[k] == DeleteMarker:

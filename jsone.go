@@ -441,11 +441,20 @@ var operators = map[string]operator{
 		for k, v := range context {
 			c[k] = v
 		}
+		var op operator
 		var err error
 		for k, v := range o {
-			c[k], err = render(v, context)
-			if err != nil {
-				return nil, err
+			if opf, ok := operatorsDefined[k]; ok {
+				op = opf
+				opv, _ := op(template["$let"].(map[string]interface{}), context)
+				for k, v := range opv.(map[string]interface{}) {
+					c[k] = v
+				}
+			} else {
+				c[k], err = render(v, context)
+				if err != nil {
+					return nil, err
+				}
 			}
 			if c[k] == deleteMarker {
 				c[k] = ""
