@@ -232,6 +232,10 @@ var builtin = map[string]interface{}{
 		}
 		return fromNow(offset, ref)
 	}),
+	"defined": i.WrapFunctionWithContext(func(context map[string]interface{}, str string) bool {
+		_, ok := context[str]
+		return ok
+	}),
 }
 
 var eachKeyPattern = regexp.MustCompile(`^each\(([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$`)
