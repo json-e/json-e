@@ -1903,7 +1903,7 @@ context: {}
 template: {$if: "defined('var')", then: 't', else: 'f'}
 result: f
 ---
-title: 'defined with context variable'
+title: 'defined with empty string as context variable'
 context: {var: ""}
 template: {$if: "defined('var')", then: 't', else: 'f'}
 result: t
