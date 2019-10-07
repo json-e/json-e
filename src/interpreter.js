@@ -255,7 +255,7 @@ infixRules['.'] = (left, token, ctx) => {
     if (left.hasOwnProperty(key)) {
       return left[key];
     }
-    throw new InterpreterError('object has no property ' + key);
+    throw new InterpreterError(`object has no property "${key}"`);
   }
   throw expectationError('infix: .', 'objects');
 };
