@@ -5062,6 +5062,11 @@ context: {}
 template: {$eval: '3 >= "hello"'}
 error: 'InterpreterError: infix: >= expects numbers/strings >= numbers/strings'
 ---
+title: 'Infix access array or string with non-integer type error'
+context: {extra: {attributes: 'a string!'}}
+template: {$if: "extra.attributes['someattr'] == 'x'", then: true}
+error: 'InterpreterError: should only use integers to access arrays or strings'
+---
 title: 'Nested error has appropriate message'
 context: {}
 template: {foo: [1, {"123": [{$eval: 10}]}]}

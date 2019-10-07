@@ -92,7 +92,7 @@ let accessProperty = (left, a, b, isInterval) => {
       return left.slice(a, b);
     }
     if (!isInteger(a)) {
-      throw new InterpreterError('should access arrays using integers only');
+      throw new InterpreterError('should only use integers to access arrays or strings');
     }
 
     // for -ve index access
