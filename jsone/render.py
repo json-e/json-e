@@ -142,6 +142,8 @@ def ifConstruct(template, context):
 def jsonConstruct(template, context):
     checkUndefinedProperties(template, ['\$json'])
     value = renderValue(template['$json'], context)
+    if callable(value):
+        raise TemplateError('$json: $eval ' + template['$json']['$eval'] + ' must have arguments')
     return json.dumps(value, separators=(',', ':'), sort_keys=True, ensure_ascii=False)
 
 

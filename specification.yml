@@ -620,6 +620,11 @@ title:    $json with undefined properties
 context:  {}
 template: {$json: [1,2,true,{},[]], foo: 'bar'}
 error:    'TemplateError: $json has undefined properties: foo'
+---
+title: $json $eval whith buildin function min without arguments
+context: {}
+template: {$json: {$eval: 'min'}}
+error:  'TemplateError: $json: $eval min must have arguments'
 ################################################################################
 ---
 section: accessing nested objects => context
@@ -5060,32 +5065,4 @@ title: 'Nested error has appropriate message'
 context: {}
 template: {foo: [1, {"123": [{$eval: 10}]}]}
 error: 'TemplateError at template.foo[1]["123"][0]: $eval must be given a string expression'
----
-title: sdafsf
-context: {}
-template: {$json: {$eval: 'min'}}
-error:  "TemplateError: {$json:{$eval: min}"
----
-title: myerror
-context: {}
-template: {
-  $let: {x: {$eval: 'min'}},
-    in:
-      {test: {$eval: 'x(1,4)'}}
-}
-result: {test: 1}
----
-title: sdafsf
-context: {}
-template: {$json: {$eval: 'min'}}
-error:  "TemplateError: {$json:{$eval: min}"
----
-title: myerror
-context: {}
-template: {
-    $let: {x: {$eval: 'min'}},
-      in:
-        {test: {$eval: 'x(1,4)'}}
-}
-result: {test: 1}
 ################################################################################

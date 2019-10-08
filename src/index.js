@@ -127,7 +127,7 @@ operators.$json = (template, context) => {
 
   let result = render(template['$json'], context);
   if (result.length === 0) {
-    throw new TemplateError(`{$json: {$eval: ${template.$json.$eval}}`);
+    throw new TemplateError(`$json: $eval ${template.$json.$eval} must have arguments`);
   }
 
   return stringify(result);
