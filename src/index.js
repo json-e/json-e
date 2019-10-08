@@ -226,15 +226,29 @@ operators.$matchOne = (template, context) => {
   }
 
   let result = '';
+  let rresult = '';
+  let results = [];
+  let counts = {};
   const conditions = template['$matchOne'];
-
+  
   for (let condition of Object.keys(conditions).sort()) {
     if (isTruthy(interpreter.parse(condition, context))) {
+      results.push(render(conditions[condition], context));
       result = render(conditions[condition], context);
     }
   }
 
-  return result;
+  results.forEach(function(x) { counts[x] = (counts[x] || 0)+1; });
+
+  for (let condition of Object.keys(counts)) {
+    if (counts[condition] == 1) {
+      rresult = result;
+    } else {
+      throw new TemplateError('$matchOne can match only one value');
+    }
+  }
+
+  return rresult;
 };
 
 operators.$merge = (template, context) => {

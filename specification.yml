@@ -926,11 +926,6 @@ context:  {cond: 3}
 template: {$matchOne: {'cond == 3': 2, 'cond == 5': 3}}
 result:   2
 ---
-title:    $matchOne, match the first occurance 
-context:  {cond: 3}
-template: {$matchOne: {'cond > 1': 2, 'cond == 3': 3, 'cond == 1 || cond < 4': 4}}
-result:   2
----
 title:    $matchOne, 1 match in array
 context:  {cond: 3}
 template: [0, $matchOne: {'cond == 3': 2, 'cond == 5': 3}]

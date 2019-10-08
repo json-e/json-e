@@ -599,6 +599,53 @@ var operators = map[string]operator{
 
 		return result, nil
 	},
+	"$matchOne": func(template, context map[string]interface{}) (interface{}, error) {
+		if err := restrictProperties(template, "$matchOne"); err != nil {
+			return nil, err
+		}
+
+		match, ok := template["$matchOne"].(map[string]interface{})
+		if !ok {
+			return nil, TemplateError{
+				Message:  "$matchOne can evaluate objects only",
+				Template: template,
+			}
+		}
+
+		// get the sorted list of conditions
+		conditions := make([]string, 0, len(match))
+		for condition := range match {
+			conditions = append(conditions, condition)
+		}
+		sort.Strings(conditions)
+
+		result := ""
+
+		for _, key := range conditions {
+			check, err := i.Execute(key, 0, context)
+			if err != nil {
+				return nil, TemplateError{
+					Message:  err.Error(),
+					Template: template,
+				}
+			}
+
+			if i.IsTruthy(check) {
+				value := match[key]
+				r, err := render(value, context)
+				if err != nil {
+					return nil, TemplateError{
+						Message:  err.Error(),
+						Template: template,
+					}
+				}
+				result = fmt.Sprintf("%v", r)
+				break
+			}
+		}
+
+		return result, nil
+	},
 	"$merge": func(template, context map[string]interface{}) (interface{}, error) {
 		if err := restrictProperties(template, "$merge"); err != nil {
 			return nil, err
