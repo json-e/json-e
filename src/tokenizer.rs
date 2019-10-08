@@ -10,12 +10,12 @@ pub struct Tokenizer<'a> {
     regex: regex::Regex,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Token<'a, 'v> {
-    token_type: &'a str,
-    value: &'v str,
-    start: usize,
-    end: usize,
+    pub token_type: &'a str,
+    pub value: &'v str,
+    pub start: usize,
+    pub end: usize,
 }
 
 impl<'a> Tokenizer<'a> {

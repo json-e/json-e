@@ -66,6 +66,28 @@ impl<'a, 'v> Context<'a, 'v> {
             context,
         }
     }
+
+    pub fn attempt(
+        self: &mut Self,
+        is_type_allowed: fn(&'a str) -> bool,
+    ) -> Result<Option<Token<'a, 'v>>, Error> {
+        match self.next {
+            Ok(ref t) => match t {
+                Some(token) => {
+                    if !is_type_allowed(token.token_type) {
+                        return Ok(None);
+                    }
+                    let new_token = (*token).clone();
+                    self.next = self.parser.tokenizer.next(self.source, token.end);
+                    return Ok(Some(new_token));
+                }
+                None => return Ok(None),
+            },
+            // if a tokenizer error occurrs, all calls to attempt() after that will return the
+            // error, so we must copy it.
+            Err(ref err) => return Err((*err).clone()),
+        }
+    }
 }
 
 mod tests {
