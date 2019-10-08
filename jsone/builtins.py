@@ -20,7 +20,7 @@ def build(context):
                 def invoke(*args):
                     if minArgs:
                         if len(args) < minArgs:
-                            bad("too few arguments to {}")
+                            bad("invalid arguments to builtin: {}: expected at least 1 arguments")
                     for arg in args:
                         if not variadic(arg):
                             bad()
@@ -32,7 +32,7 @@ def build(context):
                         bad()
                     for t, arg in zip(argument_tests, args):
                         if not t(arg):
-                            bad()
+                            bad("invalid arguments to builtin: {}")
                     return fn(*args)
 
             else:
