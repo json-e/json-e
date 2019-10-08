@@ -1897,6 +1897,16 @@ title: override builtin (2), min
 context: {min: 'hello world!'}
 template: {$eval: 'min'}
 result: 'hello world!'
+---
+title: 'defined without context variable'
+context: {}
+template: {$if: "defined('var')", then: 't', else: 'f'}
+result: f
+---
+title: 'defined with empty string as context variable'
+context: {var: ""}
+template: {$if: "defined('var')", then: 't', else: 'f'}
+result: t
 ################################################################################
 ---
 section:  expression language - basics
@@ -5061,6 +5071,11 @@ title: 'Infix >= type error'
 context: {}
 template: {$eval: '3 >= "hello"'}
 error: 'InterpreterError: infix: >= expects numbers/strings >= numbers/strings'
+---
+title: 'Infix access array or string with non-integer type error'
+context: {extra: {attributes: 'a string!'}}
+template: {$if: "extra.attributes['someattr'] == 'x'", then: true}
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'Nested error has appropriate message'
 context: {}

@@ -182,7 +182,7 @@ class ExpressionEvaluator(PrattParser):
             return left[k]
         except KeyError:
             raise TemplateError(
-                '{} not found in {}'.format(k, json.dumps(left)))
+                '"{}" not found in {}'.format(k, json.dumps(left)))
 
     @infix("(")
     def function_call(self, left, token, pc):
@@ -269,14 +269,14 @@ def accessProperty(value, a, b, is_interval):
             try:
                 return value[a:b]
             except TypeError:
-                raise infixExpectationError('[..]', 'integer')
+                raise InterpreterError('should only use integers to access arrays or strings')
         else:
             try:
                 return value[a]
             except IndexError:
                 raise TemplateError('index out of bounds')
             except TypeError:
-                raise infixExpectationError('[..]', 'integer')
+                raise InterpreterError('should only use integers to access arrays or strings')
 
     if not isinstance(value, dict):
         raise infixExpectationError('[..]', 'object, array, or string')
