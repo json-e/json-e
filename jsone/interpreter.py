@@ -132,10 +132,10 @@ class ExpressionEvaluator(PrattParser):
     @infix("+")
     def plus(self, left, token, pc):
         if not isinstance(left, (string, int, float)) or isinstance(left, bool):
-            raise infixExpectationError('+', 'number/string')
+            raise infixExpectationError('+', 'numbers/strings')
         right = pc.parse(token.kind)
         if not isinstance(right, (string, int, float)) or isinstance(right, bool):
-            raise infixExpectationError('+', 'number/string')
+            raise infixExpectationError('+', 'numbers/strings')
         if type(right) != type(left) and \
                 (isinstance(left, string) or isinstance(right, string)):
             raise infixExpectationError('+', 'numbers/strings')
