@@ -2235,12 +2235,12 @@ error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 title: 'addition of strings to null'
 context: {a: 'a', b: null}
 template: {$eval: 'a + b'}
-error: true
+error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 ---
 title: 'addition of strings to booleans'
 context: {a: 'a', b: true}
 template: {$eval: 'a + b'}
-error: true
+error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 ---
 title: 'addition of strings to objects'
 context: {a: 'a', b: {x: 1}}
@@ -2250,37 +2250,37 @@ error: true
 title: 'addition of strings to arrays'
 context: {a: 'a', b: [1, 2]}
 template: {$eval: 'a + b'}
-error: true
+error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 ---
 title: 'subtraction of strings from strings'
 context: {a: 'a', b: 'b'}
 template: {$eval: 'a-b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of strings from numbers'
 context: {a: 'a', b: 1}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of strings from null'
 context: {a: 'a', b: null}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of strings from booleans'
 context: {a: 'a', b: true}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of strings from objects'
 context: {a: 'a', b: {x: 1}}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of strings from arrays'
 context: {a: 'a', b: [1, 2]}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'multiplication of strings to strings'
 context: {a: 'a', b: 'b'}
