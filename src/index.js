@@ -123,11 +123,6 @@ operators.$if = (template, context) => {
     
    return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
   }
-  checkUndefinedProperties(template, ['\\$if', 'then', 'else']);
-
-  checkUndefinedProperties(template, ['\\$if', 'then', 'else']);
-
-  checkUndefinedProperties(template, ['\\$if', 'then', 'else']);
 
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
 };
