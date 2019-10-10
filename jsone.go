@@ -50,6 +50,7 @@ func Render(template interface{}, context map[string]interface{}) (interface{}, 
 		}
 	}
 
+	// return result
 	return result, nil
 }
 
@@ -414,7 +415,7 @@ var operators = map[string]operator{
 		}
 		if !i.IsJSON(val) {
 			return nil, TemplateError{
-				Message:  "$json: can only stringify JSON types",
+				Message:  "$json can only stringify JSON types",
 				Template: template,
 			}
 		}
