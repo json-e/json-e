@@ -414,7 +414,7 @@ var operators = map[string]operator{
 		}
 		if !i.IsJSON(val) {
 			return nil, TemplateError{
-				Message:  "$json: function in template must have arguments",
+				Message:  "$json: can only stringify JSON types",
 				Template: template,
 			}
 		}
