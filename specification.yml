@@ -2890,292 +2890,292 @@ error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 title: 'subtraction of object from strings'
 context: {a: {x: 10}, b: 'b'}
 template: {$eval: 'a-b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of object from numbers'
 context: {a: {x: 10}, b: 1}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of object from null'
 context: {a: {x: 10}, b: null}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of object from booleans'
 context: {a: {x: 10}, b: true}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of object from objects'
 context: {a: {x: 10}, b: {x: 1}}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of object from arrays'
 context: {a: {x: 10}, b: [1, 2]}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'multiplication of object to strings'
 context: {a: {x: 10}, b: 'b'}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of object to numbers'
 context: {a: {x: 10}, b: 1}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of object to null'
 context: {a: {x: 10}, b: null}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of object to booleans'
 context: {a: {x: 10}, b: true}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of object to objects'
 context: {a: {x: 10}, b: {x: 1}}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of object to arrays'
 context: {a: {x: 10}, b: [1, 2]}
-template: {$eval: 'a / b'}
-error: true
+template: {$eval: 'a * b'}
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'division of object by strings'
 context: {a: {x: 10}, b: 'b'}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of object by numbers'
 context: {a: {x: 10}, b: 1}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of object by null'
 context: {a: {x: 10}, b: null}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of object by booleans'
 context: {a: {x: 10}, b: true}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of object by objects'
 context: {a: {x: 10}, b: {x: 1}}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of object by arrays'
 context: {a: {x: 10}, b: [1, 2]}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'exponentiation of object by strings'
 context: {a: {x: 10}, b: 'b'}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of object by numbers'
 context: {a: {x: 10}, b: 1}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of object by null'
 context: {a: {x: 10}, b: null}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of object by booleans'
 context: {a: {x: 10}, b: true}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of object by objects'
 context: {a: {x: 10}, b: {x: 1}}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of object by arrays'
 context: {a: {x: 10}, b: [1, 2]}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'unary negation of object'
 context: {a: {x: 10}}
 template: {$eval: '-a'}
-error: true
+error: 'InterpreterError: unary - expects number'
 ---
 title: 'unary plus of object'
 context: {a: {x: 10}}
 template: {$eval: '+a'}
-error: true
+error: 'InterpreterError: unary + expects number'
 ---
 title: 'addition of array to strings'
 context: {a: [1, 2], b: 'a'}
 template: {$eval: 'a + b'}
-error: true
+error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 ---
 title: 'addition of array to numbers'
 context: {a: [1, 2], b: 1}
 template: {$eval: 'a + b'}
-error: true
+error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 ---
 title: 'addition of array to null'
 context: {a: [1, 2], b: null}
 template: {$eval: 'a + b'}
-error: true
+error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 ---
 title: 'addition of array to booleans'
 context: {a: [1, 2], b: true}
 template: {$eval: 'a + b'}
-error: true
+error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 ---
 title: 'addition of array to objects'
 context: {a: [1, 2], b: {x: 1}}
 template: {$eval: 'a + b'}
-error: true
+error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 ---
 title: 'addition of array to arrays'
 context: {a: [1, 2], b: [1, 2]}
 template: {$eval: 'a + b'}
-error: true
+error: 'InterpreterError: infix: + expects numbers/strings + numbers/strings'
 ---
 title: 'subtraction of array from strings'
 context: {a: [1, 2], b: 'b'}
 template: {$eval: 'a-b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of array from numbers'
 context: {a: [1, 2], b: 1}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of array from null'
 context: {a: [1, 2], b: null}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of array from booleans'
 context: {a: [1, 2], b: true}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of array from objects'
 context: {a: [1, 2], b: {x: 1}}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'subtraction of array from arrays'
 context: {a: [1, 2], b: [1, 2]}
 template: {$eval: 'a - b'}
-error: true
+error: 'InterpreterError: infix: - expects number - number'
 ---
 title: 'multiplication of array to strings'
 context: {a: [1, 2], b: 'b'}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of array to numbers'
 context: {a: [1, 2], b: 1}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of array to null'
 context: {a: [1, 2], b: null}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of array to booleans'
 context: {a: [1, 2], b: true}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of array to objects'
 context: {a: [1, 2], b: {x: 1}}
 template: {$eval: 'a * b'}
-error: true
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'multiplication of array to arrays'
 context: {a: [1, 2], b: [1, 2]}
-template: {$eval: 'a / b'}
-error: true
+template: {$eval: 'a * b'}
+error: 'InterpreterError: infix: * expects number * number'
 ---
 title: 'division of array by strings'
 context: {a: [1, 2], b: 'b'}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of array by numbers'
 context: {a: [1, 2], b: 1}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of array by null'
 context: {a: [1, 2], b: null}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of array by booleans'
 context: {a: [1, 2], b: true}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of array by objects'
 context: {a: [1, 2], b: {x: 1}}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'division of array by arrays'
 context: {a: [1, 2], b: [1, 2]}
 template: {$eval: 'a / b'}
-error: true
+error: 'InterpreterError: infix: / expects number / number'
 ---
 title: 'exponentiation of array by strings'
 context: {a: [1, 2], b: 'b'}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of array by numbers'
 context: {a: [1, 2], b: 1}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of array by null'
 context: {a: [1, 2], b: null}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of array by booleans'
 context: {a: [1, 2], b: true}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of array by objects'
 context: {a: [1, 2], b: {x: 1}}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'exponentiation of array by arrays'
 context: {a: [1, 2], b: [1, 2]}
 template: {$eval: 'a ** b'}
-error: true
+error: 'InterpreterError: infix: ** expects number ** number'
 ---
 title: 'unary negation of array'
 context: {a: [1, 2]}
 template: {$eval: '-a'}
-error: true
+error: 'InterpreterError: unary - expects number'
 ---
 title: 'unary plus of array'
 context: {a: [1, 2]}
 template: {$eval: '+a'}
-error: true
+error: 'InterpreterError: unary + expects number'
 ################################################################################
 ---
 section: expression language - logic
