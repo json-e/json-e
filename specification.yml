@@ -1282,6 +1282,11 @@ context: {}
 template: {$eval: 'min("11")'}
 error: true
 ---
+title: min - no arguments in template
+context: {}
+template: {$eval: 'min'}
+error: 'TemplateError: $eval min dont get any arguments in template'
+---
 title: min (7)
 context: {}
 template: {$eval: 'min()'}

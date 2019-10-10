@@ -18,4 +18,7 @@ def render(template, context):
     rv = renderValue(template, full_context)
     if rv is DeleteMarker:
         return None
+    if callable(rv):
+        raise TemplateError(('$eval {} dont get any arguments '
+                             'in template').format(template['$eval']))
     return rv

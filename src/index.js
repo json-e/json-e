@@ -4,7 +4,7 @@ var stringify = require('json-stable-stringify-without-jsonify');
 var {
   isString, isNumber, isBool,
   isArray, isObject,
-  isTruthy,
+   isTruthy, isFunction
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
@@ -395,6 +395,9 @@ module.exports = (template, context = {}) => {
   let result = render(template, context);
   if (result === deleteMarker) {
     return null;
+  }
+  if (isFunction(result)) {
+    throw new TemplateError('$eval ' + template.$eval + ' dont get any arguments in template')
   }
   return result;
 };
