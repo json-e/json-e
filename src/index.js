@@ -124,12 +124,10 @@ operators.$if = (template, context) => {
 
 operators.$json = (template, context) => {
   checkUndefinedProperties(template, ['\\$json']);
-
   let result = render(template['$json'], context);
   if (result.length === 0) {
-    throw new TemplateError(`$json: $eval ${template.$json.$eval} must have arguments`);
+    throw new TemplateError(`$json returns undefined property`);
   }
-
   return stringify(result);
 };
 

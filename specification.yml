@@ -621,10 +621,10 @@ context:  {}
 template: {$json: [1,2,true,{},[]], foo: 'bar'}
 error:    'TemplateError: $json has undefined properties: foo'
 ---
-title: $json $eval whith buildin function min without arguments
+title: json returns undefined property
 context: {}
 template: {$json: {$eval: 'min'}}
-error:  'TemplateError: $json: $eval min must have arguments'
+error: "TemplateError: $json returns undefined property"
 ################################################################################
 ---
 section: accessing nested objects => context
