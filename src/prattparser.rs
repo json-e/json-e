@@ -88,15 +88,35 @@ impl<'a, 'v> Context<'a, 'v> {
             Err(ref err) => return Err((*err).clone()),
         }
     }
+
+    pub fn require(
+        self: &mut Self,
+        is_type_allowed: fn(&'a str) -> bool,
+    ) -> Result<Token<'a, 'v>, Error> {
+        match self.attempt(|_| true) {
+            Ok(ot) =>
+                match ot {
+                    Some(t) => {
+                        if is_type_allowed(t.token_type) {
+                            Ok(t)
+                        } else {
+                            Err(Error::SyntaxError("Unexpected token error".to_string()))
+                        }
+                    },
+                    None => Err(Error::SyntaxError("unexpected end of input".to_string()))
+                },
+            Err(e) => Err(e)
+        }
+    }
 }
 
 mod tests {
     use crate::prattparser::{Context, PrattParser};
     use crate::tokenizer::Token;
     use std::collections::HashMap;
+    use crate::errors::Error;
 
-    #[test]
-    fn positive_constructor() {
+    fn build_parser() -> PrattParser<'static> {
         let mut patterns = HashMap::new();
         patterns.insert("number", "[0-9]+");
         patterns.insert("identifier", "[a-z]+");
@@ -117,5 +137,104 @@ mod tests {
             prefix,
             infix,
         );
+
+        pp
     }
+
+    #[test]
+    fn positive_attempt() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "123", HashMap::new(), 0);
+
+        assert_eq!(context.attempt(|_| true).unwrap().unwrap(), Token{
+            token_type: "number",
+            value: "123",
+            start: 0,
+            end: 3
+        });
+    }
+
+    #[test]
+    fn attempt_not_allowed_type() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "123", HashMap::new(), 0);
+
+        assert_eq!(context.attempt(|ty| ty == "identifier").unwrap(), None);
+
+    }
+
+    #[test]
+    fn attempt_end_of_string() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "   ", HashMap::new(), 0);
+
+        assert_eq!(context.attempt(|_| true).unwrap(), None);
+
+    }
+
+    #[test]
+    fn attempt_invalid_syntax() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "🍎 ", HashMap::new(), 0);
+
+        assert_eq!(context.attempt(|_| true), Err(Error::SyntaxError(
+                "unexpected EOF for 🍎  at 🍎 ".to_string()
+            )));
+
+    }
+
+    #[test]
+    fn require_positive() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "abc", HashMap::new(), 0);
+
+        assert_eq!(context.require(|_| true).unwrap(), Token {
+            token_type: "identifier",
+            value: "abc",
+            start: 0,
+            end: 3
+        })
+    }
+
+    #[test]
+    fn require_end_of_string() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "   ", HashMap::new(), 0);
+
+        assert_eq!(context.require(|_| true), Err(Error::SyntaxError(
+                "unexpected end of input".to_string()
+            )));
+
+    }
+
+    #[test]
+    fn require_invalid_syntax() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "🍎 ", HashMap::new(), 0);
+
+        assert_eq!(context.require(|_| true), Err(Error::SyntaxError(
+                "unexpected EOF for 🍎  at 🍎 ".to_string()
+            )));
+
+    }
+
+    #[test]
+    fn require_unexpected_token() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "☃️", HashMap::new(), 0);
+
+        assert_eq!(context.require(|ty| ty == "identifier"), Err(Error::SyntaxError(
+                "Unexpected token error".to_string()
+            )));
+
+    }
+
 }
