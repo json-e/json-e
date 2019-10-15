@@ -1,9 +1,9 @@
 extern crate json;
 extern crate regex;
 
-mod errors;
-mod prattparser;
-mod tokenizer;
+pub mod errors;
+pub mod prattparser;
+pub mod tokenizer;
 
 use json::JsonValue;
 
