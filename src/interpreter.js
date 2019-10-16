@@ -257,7 +257,7 @@ infixRules['.'] = (left, token, ctx) => {
     }
     throw new InterpreterError(`object has no property "${key}"`);
   }
-  throw expectationError('infix: .', 'objects');
+  throw expectationError('infix: .', 'object . object');
 };
 
 infixRules['('] =  (left, token, ctx) => {

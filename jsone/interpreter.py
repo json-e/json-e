@@ -181,8 +181,8 @@ class ExpressionEvaluator(PrattParser):
         try:
             return left[k]
         except KeyError:
-            raise TemplateError(
-                '"{}" not found in {}'.format(k, json.dumps(left)))
+            raise InterpreterError(
+                'object has no property {}'.format(k))
 
     @infix("(")
     def function_call(self, left, token, pc):
@@ -281,7 +281,8 @@ def accessProperty(value, a, b, is_interval):
     if not isinstance(value, dict):
         raise infixExpectationError('[..]', 'object, array, or string')
     if not isinstance(a, string):
-        raise infixExpectationError('[..]', 'string index')
+        # raise infixExpectationError('[..]', 'string index')
+        raise InterpreterError('object keys must be strings')
 
     try:
         return value[a]

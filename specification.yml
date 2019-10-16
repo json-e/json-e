@@ -3761,17 +3761,17 @@ error: 'InterpreterError: infix: [..] expects integer [..] integer'
 title: 'string length attribute is an error'
 context: {key: '12345'}
 template: {$eval: 'key.length'}
-error: true
+error: 'InterpreterError: infix: . expects object . object'
 ---
 title: 'string length attribute is an error even by index'
 context: {key: '12345'}
 template: {$eval: 'key["length"]'}
-error: true
+error: 'InterpreterError: infix: [..] expects integer [..] integer'
 ---
 title: 'other string attributes are not set'
 context: {key: 'abc'}
 template: {$eval: 'key.toUpperCase()'}
-error: true
+error: 'InterpreterError: infix: . expects object . object'
 ################################################################################
 ---
 section: expression language - property access
@@ -3804,7 +3804,7 @@ result: 'null'
 title: 'missing property'
 context: {key: {a: 1}}
 template: {$eval: 'key.b'}
-error: true
+error: 'InterpreterError: object has no property b'
 ---
 title: 'missing property by name'
 context: {key: {a: 1}}
@@ -3831,27 +3831,27 @@ context:
   obj: {'13': 15}
   key: 13 # note that this is the number 13, yet the object key is a string as required by JSON
 template: {$eval: 'obj[key]'}
-error: true
+error: 'InterpreterError: object keys must be strings'
 ---
 title: 'property of number'
 context: {key: 123}
 template: {$eval: 'key.valueOf'}
-error: true
+error: 'InterpreterError: infix: . expects object . object'
 ---
 title: 'property of null'
 context: {key: null}
 template: {$eval: 'key.foo'}
-error: true
+error: 'InterpreterError: infix: . expects object . object'
 ---
 title: 'property of boolean'
 context: {key: null}
 template: {$eval: 'key.valueOf'}
-error: true
+error: 'InterpreterError: infix: . expects object . object'
 ---
 title: 'property of array'
 context: {key: []}
 template: {$eval: 'key.valueOf'}
-error: true
+error: 'InterpreterError: infix: . expects object . object'
 ################################################################################
 ---
 section: expression language - array access
