@@ -45,7 +45,7 @@ func Render(template interface{}, context map[string]interface{}) (interface{}, 
 
 	if result != nil && reflect.TypeOf(result).Kind() == reflect.Ptr {
 		return nil, TemplateError{
-			Message:  "$eval: function dont get any arguments in template",
+			Message:  "$eval: function doesn't get any arguments in template",
 			Template: template,
 		}
 	}

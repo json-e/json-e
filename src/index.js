@@ -127,7 +127,7 @@ operators.$json = (template, context) => {
 
   let result = render(template['$json'], context);
   if (result.length === 0) {
-    throw new TemplateError(`$json returns undefined property`);
+    throw new TemplateError(`$json returns undefined property because functions are not allowed in JSON`);
   }
   return stringify(result);
 };
@@ -398,7 +398,7 @@ module.exports = (template, context = {}) => {
     return null;
   }
   if (isFunction(result)) {
-    throw new TemplateError('$eval ' + template.$eval + ' dont get any arguments in template')
+    throw new TemplateError('$eval ' + template.$eval + ' doesn\'t get any arguments in template')
   }
   return result;
 };

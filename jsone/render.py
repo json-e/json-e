@@ -143,7 +143,8 @@ def jsonConstruct(template, context):
     checkUndefinedProperties(template, ['\$json'])
     value = renderValue(template['$json'], context)
     if callable(value):
-        raise TemplateError('$json returns undefined property')
+        raise TemplateError('$json returns undefined property because functions'
+                            ' are not allowed in JSON')
     return json.dumps(value, separators=(',', ':'), sort_keys=True, ensure_ascii=False)
 
 
