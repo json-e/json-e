@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::errors::Error;
 use regex;
 use std::collections::HashMap;
@@ -98,7 +96,7 @@ impl<'a> Tokenizer<'a> {
         loop {
             match self.regex.captures(&source[offset..]) {
                 None => {
-                    if (&source[offset..] != "") {
+                    if &source[offset..] != "" {
                         // no match, but there's input left, so we have an error
                         return Err(Error::SyntaxError(format!(
                             "unexpected EOF for {} at {}",
@@ -129,6 +127,7 @@ impl<'a> Tokenizer<'a> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use crate::errors::Error;
     use crate::tokenizer::Token;
@@ -176,7 +175,7 @@ mod tests {
 
     #[test]
     fn constructor_positive() {
-        let t = Tokenizer::new("ign", HashMap::new(), vec!["*+?"]);
+        Tokenizer::new("ign", HashMap::new(), vec!["*+?"]);
     }
 
     #[test]

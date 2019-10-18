@@ -94,27 +94,27 @@ impl<'a, 'v> Context<'a, 'v> {
         is_type_allowed: fn(&'a str) -> bool,
     ) -> Result<Token<'a, 'v>, Error> {
         match self.attempt(|_| true) {
-            Ok(ot) =>
-                match ot {
-                    Some(t) => {
-                        if is_type_allowed(t.token_type) {
-                            Ok(t)
-                        } else {
-                            Err(Error::SyntaxError("Unexpected token error".to_string()))
-                        }
-                    },
-                    None => Err(Error::SyntaxError("unexpected end of input".to_string()))
-                },
-            Err(e) => Err(e)
+            Ok(ot) => match ot {
+                Some(t) => {
+                    if is_type_allowed(t.token_type) {
+                        Ok(t)
+                    } else {
+                        Err(Error::SyntaxError("Unexpected token error".to_string()))
+                    }
+                }
+                None => Err(Error::SyntaxError("unexpected end of input".to_string())),
+            },
+            Err(e) => Err(e),
         }
     }
 }
 
+#[cfg(test)]
 mod tests {
+    use crate::errors::Error;
     use crate::prattparser::{Context, PrattParser};
     use crate::tokenizer::Token;
     use std::collections::HashMap;
-    use crate::errors::Error;
 
     fn build_parser() -> PrattParser<'static> {
         let mut patterns = HashMap::new();
@@ -123,11 +123,11 @@ mod tests {
         patterns.insert("snowman", "☃");
 
         let mut prefix: HashMap<&str, fn(&Token, &Context) -> usize> = HashMap::new();
-        prefix.insert("snowman", |token, context| 10);
+        prefix.insert("snowman", |_token, _context| 10);
 
         let mut infix: HashMap<&str, fn(&Token, &Context) -> usize> = HashMap::new();
-        infix.insert("snowman", |token, context| 10);
-        infix.insert("+", |token, context| 10);
+        infix.insert("snowman", |_token, _context| 10);
+        infix.insert("+", |_token, _context| 10);
 
         let pp = PrattParser::new(
             "[ ]+",
@@ -147,12 +147,15 @@ mod tests {
 
         let mut context = Context::new(&pp, "123", HashMap::new(), 0);
 
-        assert_eq!(context.attempt(|_| true).unwrap().unwrap(), Token{
-            token_type: "number",
-            value: "123",
-            start: 0,
-            end: 3
-        });
+        assert_eq!(
+            context.attempt(|_| true).unwrap().unwrap(),
+            Token {
+                token_type: "number",
+                value: "123",
+                start: 0,
+                end: 3
+            }
+        );
     }
 
     #[test]
@@ -162,7 +165,6 @@ mod tests {
         let mut context = Context::new(&pp, "123", HashMap::new(), 0);
 
         assert_eq!(context.attempt(|ty| ty == "identifier").unwrap(), None);
-
     }
 
     #[test]
@@ -172,7 +174,6 @@ mod tests {
         let mut context = Context::new(&pp, "   ", HashMap::new(), 0);
 
         assert_eq!(context.attempt(|_| true).unwrap(), None);
-
     }
 
     #[test]
@@ -181,10 +182,12 @@ mod tests {
 
         let mut context = Context::new(&pp, "🍎 ", HashMap::new(), 0);
 
-        assert_eq!(context.attempt(|_| true), Err(Error::SyntaxError(
+        assert_eq!(
+            context.attempt(|_| true),
+            Err(Error::SyntaxError(
                 "unexpected EOF for 🍎  at 🍎 ".to_string()
-            )));
-
+            ))
+        );
     }
 
     #[test]
@@ -193,12 +196,15 @@ mod tests {
 
         let mut context = Context::new(&pp, "abc", HashMap::new(), 0);
 
-        assert_eq!(context.require(|_| true).unwrap(), Token {
-            token_type: "identifier",
-            value: "abc",
-            start: 0,
-            end: 3
-        })
+        assert_eq!(
+            context.require(|_| true).unwrap(),
+            Token {
+                token_type: "identifier",
+                value: "abc",
+                start: 0,
+                end: 3
+            }
+        )
     }
 
     #[test]
@@ -207,10 +213,10 @@ mod tests {
 
         let mut context = Context::new(&pp, "   ", HashMap::new(), 0);
 
-        assert_eq!(context.require(|_| true), Err(Error::SyntaxError(
-                "unexpected end of input".to_string()
-            )));
-
+        assert_eq!(
+            context.require(|_| true),
+            Err(Error::SyntaxError("unexpected end of input".to_string()))
+        );
     }
 
     #[test]
@@ -219,10 +225,12 @@ mod tests {
 
         let mut context = Context::new(&pp, "🍎 ", HashMap::new(), 0);
 
-        assert_eq!(context.require(|_| true), Err(Error::SyntaxError(
+        assert_eq!(
+            context.require(|_| true),
+            Err(Error::SyntaxError(
                 "unexpected EOF for 🍎  at 🍎 ".to_string()
-            )));
-
+            ))
+        );
     }
 
     #[test]
@@ -231,10 +239,9 @@ mod tests {
 
         let mut context = Context::new(&pp, "☃️", HashMap::new(), 0);
 
-        assert_eq!(context.require(|ty| ty == "identifier"), Err(Error::SyntaxError(
-                "Unexpected token error".to_string()
-            )));
-
+        assert_eq!(
+            context.require(|ty| ty == "identifier"),
+            Err(Error::SyntaxError("Unexpected token error".to_string()))
+        );
     }
-
 }

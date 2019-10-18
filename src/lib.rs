@@ -7,7 +7,7 @@ pub mod tokenizer;
 
 use json::JsonValue;
 
-fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
+pub fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
     let m = match template {
         JsonValue::Number(_) | JsonValue::Boolean(_) | JsonValue::Null => template.clone(),
         JsonValue::String(s) => JsonValue::from(interpolate(s, context)),
@@ -38,6 +38,7 @@ fn interpolate(template: &str, _context: &JsonValue) -> String {
     template.to_string()
 }
 
+#[cfg(test)]
 mod tests {
     use crate::render;
     use json::JsonValue;
