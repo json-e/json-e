@@ -72,17 +72,21 @@ impl<'a, 'v> Context<'a, 'v> {
         is_type_allowed: fn(&'a str) -> bool,
     ) -> Result<Option<Token<'a, 'v>>, Error> {
         match self.next {
-            Ok(ref t) => match t {
-                Some(token) => {
+            Ok(ref mut t) => {
+                if let Some(ref token) = t {
+                    // no match, so leave the next token in place
                     if !is_type_allowed(token.token_type) {
                         return Ok(None);
                     }
-                    let new_token = (*token).clone();
-                    self.next = self.parser.tokenizer.next(self.source, token.end);
-                    return Ok(Some(new_token));
                 }
-                None => return Ok(None),
-            },
+                match t.take() {
+                    Some(token) => {
+                        self.next = self.parser.tokenizer.next(self.source, token.end);
+                        return Ok(Some(token));
+                    }
+                    None => return Ok(None),
+                }
+            }
             // if a tokenizer error occurrs, all calls to attempt() after that will return the
             // error, so we must copy it.
             Err(ref err) => return Err((*err).clone()),
@@ -165,6 +169,24 @@ mod tests {
         let mut context = Context::new(&pp, "123", HashMap::new(), 0);
 
         assert_eq!(context.attempt(|ty| ty == "identifier").unwrap(), None);
+    }
+
+    #[test]
+    fn attempt_allowed_after_not_allowed_type() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "123", HashMap::new(), 0);
+
+        assert_eq!(context.attempt(|ty| ty == "identifier").unwrap(), None);
+        assert_eq!(
+            context.attempt(|ty| ty == "number").unwrap(),
+            Some(Token {
+                token_type: "number",
+                value: "123",
+                start: 0,
+                end: 3
+            })
+        );
     }
 
     #[test]
