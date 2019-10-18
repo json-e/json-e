@@ -7,7 +7,7 @@ pub struct PrattParser<'a> {
     tokenizer: Tokenizer<'a>,
     precedence_map: HashMap<&'a str, usize>,
     prefix_rules: HashMap<&'a str, fn(&Token, &Context) -> usize>,
-    infix_rules: HashMap<&'a str, fn(&Token, &Context) -> usize>,
+    infix_rules: HashMap<&'a str, fn(&usize, &Token, &Context) -> usize>,
 }
 
 impl<'a> PrattParser<'a> {
@@ -17,7 +17,7 @@ impl<'a> PrattParser<'a> {
         token_types: Vec<&'a str>,
         precedence: Vec<Vec<&'a str>>,
         prefix_rules: HashMap<&'a str, fn(&Token, &Context) -> usize>,
-        infix_rules: HashMap<&'a str, fn(&Token, &Context) -> usize>,
+        infix_rules: HashMap<&'a str, fn(&usize, &Token, &Context) -> usize>,
     ) -> PrattParser<'a> {
         let tokenizer = Tokenizer::new(ignore, patterns, token_types);
         let mut precedence_map: HashMap<&'a str, usize> = HashMap::new();
@@ -111,6 +111,42 @@ impl<'a, 'v> Context<'a, 'v> {
             Err(e) => Err(e),
         }
     }
+
+    pub fn parse(self: &mut Self, precedence_type: Option<&str>) -> Result<usize, Error> {
+        let precedence = match precedence_type {
+            Some(p) => *self.parser.precedence_map.get(p).unwrap(),
+            //.expect("precedence_type has no precedence"),
+            None => 0,
+        };
+        let token = self.require(|ty| true)?;
+        let prefix_rule = self.parser.prefix_rules.get(token.token_type);
+        match prefix_rule {
+            Some(rule) => {
+                let mut left = rule(&token, self);
+                loop {
+                    if let Ok(Some(ref next)) = self.next {
+                        if let Some(infix_rule) = self.parser.infix_rules.get(next.token_type) {
+                            if let Some(precedence) =
+                                self.parser.precedence_map.get(next.token_type)
+                            {
+                                let token = self.require(|ty| true)?;
+                                left = infix_rule(&left, &token, self);
+                                continue;
+                            }
+                        }
+                    }
+                    break;
+                }
+
+                Ok(left)
+            }
+            None => Err(Error::SyntaxError(format!(
+                "Found {} expected {}",
+                token.value,
+                "something else" // TODO
+            ))),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -129,9 +165,9 @@ mod tests {
         let mut prefix: HashMap<&str, fn(&Token, &Context) -> usize> = HashMap::new();
         prefix.insert("snowman", |_token, _context| 10);
 
-        let mut infix: HashMap<&str, fn(&Token, &Context) -> usize> = HashMap::new();
-        infix.insert("snowman", |_token, _context| 10);
-        infix.insert("+", |_token, _context| 10);
+        let mut infix: HashMap<&str, fn(&usize, &Token, &Context) -> usize> = HashMap::new();
+        infix.insert("snowman", |_left, _token, _context| 10);
+        infix.insert("+", |_left, _token, _context| 10);
 
         let pp = PrattParser::new(
             "[ ]+",
