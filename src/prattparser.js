@@ -129,7 +129,7 @@ class Context {
     let token = this.require();
     let prefixRule = this._prefixRules[token.kind];
     if (!prefixRule) {
-      throw syntaxRuleError(token, Object.keys(this._prefixRules).join(', '));
+      throw syntaxRuleError(token, Object.keys(this._prefixRules));
     }
     let left = prefixRule(token, this);
     while (this._next && this._infixRules[this._next.kind] && precedence < this._precedenceMap[this._next.kind]) {
