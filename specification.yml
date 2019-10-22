@@ -3721,7 +3721,7 @@ result: '4'
 title: 'string indexing (noninteger)'
 context: {}
 template: {$eval: '"12345"[2.5]'}
-error: 'InterpreterError: infix: [..] expects integer [..] integer'
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'string slicing (1)'
 context: {key: '12345'}
@@ -3736,27 +3736,27 @@ result: '45'
 title: 'string slicing (noninteger first index)'
 context: {key: '12345'}
 template: {$eval: 'key[1.5:3]'}
-error: 'InterpreterError: infix: [..] expects integer [..] integer'
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'string slicing (noninteger second index)'
 context: {key: '12345'}
 template: {$eval: 'key[1:3.5]'}
-error: 'InterpreterError: infix: [..] expects integer [..] integer'
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'string slicing (noninteger indexes)'
 context: {key: '12345'}
 template: {$eval: 'key[1.5:3.5]'}
-error: 'InterpreterError: infix: [..] expects integer [..] integer'
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'string slicing type error (1)'
 context: {key: '12345'}
 template: {$eval: 'key["a":]'}
-error: 'InterpreterError: infix: [..] expects integer [..] integer'
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'string slicing type error (2)'
 context: {key: '12345'}
 template: {$eval: 'key[:"a"]'}
-error: 'InterpreterError: infix: [..] expects integer [..] integer'
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'string length attribute is an error'
 context: {key: '12345'}
@@ -3766,7 +3766,7 @@ error: 'InterpreterError: infix: . expects object . object'
 title: 'string length attribute is an error even by index'
 context: {key: '12345'}
 template: {$eval: 'key["length"]'}
-error: 'InterpreterError: infix: [..] expects integer [..] integer'
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'other string attributes are not set'
 context: {key: 'abc'}

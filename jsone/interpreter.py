@@ -281,7 +281,6 @@ def accessProperty(value, a, b, is_interval):
     if not isinstance(value, dict):
         raise infixExpectationError('[..]', 'object, array, or string')
     if not isinstance(a, string):
-        # raise infixExpectationError('[..]', 'string index')
         raise InterpreterError('object keys must be strings')
 
     try:
