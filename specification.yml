@@ -1921,6 +1921,11 @@ result: t
 ---
 section:  expression language - basics
 ---
+title:    missing right square bracket
+context:  {bar: "mystring"}
+template: {foo: '${bar[2:}'}
+error:   "SyntaxError at template.foo: Found }, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+---
 title:    decimal literal
 context:  {}
 template: {$eval: '10.5'}
