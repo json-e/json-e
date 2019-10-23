@@ -3869,7 +3869,7 @@ result: 3
 title: 'numeric, noninteger index'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[2.5]'}
-error: true
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'arithemtic with results'
 context: {key: [1,2,3,4,5]}
@@ -3879,12 +3879,12 @@ result: 15
 title: 'string index'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key["a"]'}
-error: true
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'too-large index'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[999]'}
-error: true
+error: 'InterpreterError: index out of bounds'
 ---
 title: 'negative index'
 context: {key: [1,2,3,4,5]}
@@ -3924,37 +3924,37 @@ result: 15
 title: 'indexing number'
 context: {key: 123}
 template: {$eval: 'key[2]'}
-error: true
+error: 'InterpreterError: cannot access properties from non-objects'
 ---
 title: 'indexing null'
 context: {key: null}
 template: {$eval: 'key[2]'}
-error: true
+error: 'InterpreterError: cannot access properties from non-objects'
 ---
 title: 'indexing boolean'
 context: {key: true}
 template: {$eval: 'key[2]'}
-error: true
+error: 'InterpreterError: cannot access properties from non-objects'
 ---
 title: 'indexing object'
 context: {key: {x: 10}}
 template: {$eval: 'key[2]'}
-error: true
+error: 'InterpreterError: object keys must be strings'
 ---
 title: 'array length property is an error'
 context: {key: [1, 3, 5]}
 template: {$eval: 'key.length'}
-error: true
+error: 'InterpreterError: infix: . expects object . object'
 ---
 title: 'array length property is an error even by index'
 context: {key: [1, 3, 5]}
 template: {$eval: 'key["length"]'}
-error: true
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'other array attributes are not available'
 context: {key: [5, 3, 1]}
 template: {$eval: 'key.sort'}
-error: true
+error: 'InterpreterError: infix: . expects object . object'
 ################################################################################
 ---
 section: expression language - array slicing
