@@ -620,6 +620,11 @@ title:    $json with undefined properties
 context:  {}
 template: {$json: [1,2,true,{},[]], foo: 'bar'}
 error:    'TemplateError: $json has undefined properties: foo'
+---
+title: json returns undefined property
+context: {}
+template: {$json: {$eval: 'min'}}
+error: "TemplateError: $json returns undefined property because functions are not allowed in JSON"
 ################################################################################
 ---
 section: accessing nested objects => context
@@ -1321,6 +1326,11 @@ context: {}
 template: {$eval: 'min("11")'}
 error: true
 ---
+title: min - no arguments in template
+context: {}
+template: {$eval: 'min'}
+error: "TemplateError: $eval min doesn't get any arguments in template"
+---
 title: min (7)
 context: {}
 template: {$eval: 'min()'}
@@ -1935,9 +1945,24 @@ title: override builtin (2), min
 context: {min: 'hello world!'}
 template: {$eval: 'min'}
 result: 'hello world!'
+---
+title: 'defined without context variable'
+context: {}
+template: {$if: "defined('var')", then: 't', else: 'f'}
+result: f
+---
+title: 'defined with empty string as context variable'
+context: {var: ""}
+template: {$if: "defined('var')", then: 't', else: 'f'}
+result: t
 ################################################################################
 ---
 section:  expression language - basics
+---
+title:    missing right square bracket
+context:  {bar: "mystring"}
+template: {foo: '${bar[2:}'}
+error:   "SyntaxError at template.foo: Found }, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
 ---
 title:    decimal literal
 context:  {}
@@ -5099,6 +5124,11 @@ title: 'Infix >= type error'
 context: {}
 template: {$eval: '3 >= "hello"'}
 error: 'InterpreterError: infix: >= expects numbers/strings >= numbers/strings'
+---
+title: 'Infix access array or string with non-integer type error'
+context: {extra: {attributes: 'a string!'}}
+template: {$if: "extra.attributes['someattr'] == 'x'", then: true}
+error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
 title: 'Nested error has appropriate message'
 context: {}

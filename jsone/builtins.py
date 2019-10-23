@@ -118,4 +118,11 @@ def build(context):
         elif callable(v):
             return 'function'
 
+    @builtin('defined', argument_tests=[is_string])
+    def defined(s):
+        if s not in context:
+            return False
+        else:
+            return True
+
     return builtins
