@@ -107,8 +107,8 @@ tasks:
           $map: {$eval: environments}
           each(env):
             taskId: {$eval: as_slugid(env.name)}
-            provisionerId: aws-provisioner-v1
-            workerType: github-worker
+            provisionerId: proj-taskcluster
+            workerType: ci
             created: {$fromNow: ''}
             deadline: {$fromNow: '60 minutes'}
             payload:
@@ -129,12 +129,12 @@ tasks:
             - $if: 'event["ref"] == "refs/heads/master"'
               then:
                 taskId: {$eval: as_slugid("demo_build")}
-                provisionerId: aws-provisioner-v1
-                workerType: github-worker
+                provisionerId: proj-taskcluster
+                workerType: ci
                 created: {$fromNow: ''}
                 deadline: {$fromNow: '60 minutes'}
                 scopes:
-                  - secrets:get:repo:github.com/taskcluster/json-e
+                  - secrets:get:project/taskcluster/json-e-deploy
                 routes:
                   - notify.email.taskcluster-notifications@mozilla.com.on-failed
                   - notify.email.taskcluster-notifications@mozilla.com.on-exception
