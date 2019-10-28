@@ -21,12 +21,17 @@ let builtinError = (builtin) => new BuiltinError(`invalid arguments to ${builtin
 
 module.exports = (context) => {
   let builtins = {};
+  let currentContext = {}
+
   let define = (name, context, {
     argumentTests = [],
     minArgs = false,
     variadic = null,
     invoke,
-  }) => context[name] = (...args) => {
+  }) => context[name] = (context, args) => {
+
+    currentContext = context
+
     if (!variadic && args.length < argumentTests.length) {
       throw builtinError(`builtin: ${name}`, `${args.toString()}, too few arguments`);
     }
@@ -120,7 +125,9 @@ module.exports = (context) => {
   define('fromNow', builtins, {
     variadic: 'string',
     minArgs: 1,
-    invoke: (str, reference) => fromNow(str, reference || context.now),
+    invoke: (str, reference) => {
+    return  fromNow(str, reference || currentContext.now || context.now)
+    },
   });
 
   define('typeof', builtins, {

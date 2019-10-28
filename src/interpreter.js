@@ -261,8 +261,9 @@ infixRules['.'] = (left, token, ctx) => {
 };
 
 infixRules['('] =  (left, token, ctx) => {
+
   if (isFunction(left)) {
-    return left.apply(null, parseList(ctx, ',', ')'));
+    return left.apply(null , [ctx.context, parseList(ctx, ',', ')')]);
   }
   throw expectationError('infix: f(args)', 'f to be function');
 };
