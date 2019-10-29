@@ -6,8 +6,8 @@ use std::collections::HashMap;
 pub struct PrattParser<'a> {
     tokenizer: Tokenizer<'a>,
     precedence_map: HashMap<&'a str, usize>,
-    prefix_rules: HashMap<&'a str, fn(&Token, &Context) -> usize>,
-    infix_rules: HashMap<&'a str, fn(&usize, &Token, &Context) -> usize>,
+    prefix_rules: HashMap<&'a str, fn(&Token, &mut Context) -> usize>,
+    infix_rules: HashMap<&'a str, fn(&usize, &Token, &mut Context) -> usize>,
 }
 
 impl<'a> PrattParser<'a> {
@@ -16,8 +16,8 @@ impl<'a> PrattParser<'a> {
         patterns: HashMap<&str, &str>,
         token_types: Vec<&'a str>,
         precedence: Vec<Vec<&'a str>>,
-        prefix_rules: HashMap<&'a str, fn(&Token, &Context) -> usize>,
-        infix_rules: HashMap<&'a str, fn(&usize, &Token, &Context) -> usize>,
+        prefix_rules: HashMap<&'a str, fn(&Token, &mut Context) -> usize>,
+        infix_rules: HashMap<&'a str, fn(&usize, &Token, &mut Context) -> usize>,
     ) -> PrattParser<'a> {
         let tokenizer = Tokenizer::new(ignore, patterns, token_types);
         let mut precedence_map: HashMap<&'a str, usize> = HashMap::new();
@@ -126,9 +126,9 @@ impl<'a, 'v> Context<'a, 'v> {
                 loop {
                     if let Ok(Some(ref next)) = self.next {
                         if let Some(infix_rule) = self.parser.infix_rules.get(next.token_type) {
-                            if let Some(precedence) =
-                                self.parser.precedence_map.get(next.token_type)
-                            {
+                            if let Some(next_precedence) = self.parser.precedence_map.get(next.token_type) {
+                                if &precedence >= next_precedence { break; }
+
                                 let token = self.require(|ty| true)?;
                                 left = infix_rule(&left, &token, self);
                                 continue;
@@ -162,18 +162,25 @@ mod tests {
         patterns.insert("identifier", "[a-z]+");
         patterns.insert("snowman", "☃");
 
-        let mut prefix: HashMap<&str, fn(&Token, &Context) -> usize> = HashMap::new();
-        prefix.insert("snowman", |_token, _context| 10);
+        let mut prefix: HashMap<&str, fn(&Token, &mut Context) -> usize> = HashMap::new();
+        prefix.insert("identifier", |_token, _context| 10);
+        prefix.insert("number", |token, _context| token.value.parse::<usize>().unwrap());
 
-        let mut infix: HashMap<&str, fn(&usize, &Token, &Context) -> usize> = HashMap::new();
-        infix.insert("snowman", |_left, _token, _context| 10);
-        infix.insert("+", |_left, _token, _context| 10);
+        let mut infix: HashMap<&str, fn(&usize, &Token, &mut Context) -> usize> = HashMap::new();
+        infix.insert("snowman", |left, _token, context| {
+            let right = context.parse(Some("snowman")).unwrap();
+            left * right
+        });
+        infix.insert("+", |left, _token, context| {
+            let right = context.parse(Some("+")).unwrap();
+            left + right
+        });
 
         let pp = PrattParser::new(
             "[ ]+",
             patterns,
             vec!["number", "identifier", "+", "snowman"],
-            vec![vec!["snowman"], vec!["+"]],
+            vec![vec!["+"], vec!["snowman"]],
             prefix,
             infix,
         );
@@ -302,4 +309,50 @@ mod tests {
             Err(Error::SyntaxError("Unexpected token error".to_string()))
         );
     }
+
+    #[test]
+    fn parse_number() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "2", HashMap::new(), 0);
+
+        assert_eq!(context.parse(None).unwrap(), 2);
+    }
+
+    #[test]
+    fn parse_addition() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "2 + 3", HashMap::new(), 0);
+
+        assert_eq!(context.parse(None).unwrap(), 5);
+    }
+
+    #[test]
+    fn parse_snowmaning() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "2 ☃ 3", HashMap::new(), 0);
+
+        assert_eq!(context.parse(None).unwrap(), 6);
+    }
+
+    #[test]
+    fn parse_check_precedence() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "1 + 2 ☃ 3", HashMap::new(), 0);
+
+        assert_eq!(context.parse(None).unwrap(), 7);
+    }
+
+    #[test]
+    fn parse_check_reverse_precedence() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "2 ☃ 3 + 4", HashMap::new(), 0);
+
+        assert_eq!(context.parse(None).unwrap(), 10);
+    }
+
 }
