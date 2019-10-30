@@ -349,9 +349,30 @@ The `$let` operator here added the `ts` and `foo` variables to the scope of
 the context and accordingly evaluated the `in` clause using those variables
 to return the correct result.
 
-The variable names in the `$let` value must be valid context variable names and
-must be written literally. That is, an expression like `{$let: {$eval:
-"extraVariables"}, in : ..}` is not allowed.
+An expression like `{$let: {$eval: "extraVariables"}, in : ..}` is supported. As long as
+the value of `$let` evaluates to an object with valid key(s), the *values* of which are
+evaluated.
+
+```yaml
+template: {$let: {$if: something == 3, then: {a: 10, b: 10}, else: {a: 20, b: 10}},
+          in: {$eval: 'a + b'}}
+context:  {'something': 3}
+result:   20
+```
+
+```yaml
+template: {$let: {"b": {$eval: "a + 10"}},
+          in: {$eval: "a + b"}}
+context:  {a: 5}
+result:   20
+```
+
+```yaml
+template: {$let: {"first_${name}": 1, "second_${name}": 2},
+          in: {$eval: "first_prize + second_prize"}}
+context:  {name: "prize"}
+result:   3
+```
 
 ### `$map`
 

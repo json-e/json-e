@@ -155,12 +155,6 @@ def let(template, context):
         raise TemplateError("$let value must be an object")
 
     subcontext = context.copy()
-    for k, v in template['$let'].items():
-        if IDENTIFIER_RE.match(k):
-            subcontext[k] = renderValue(v, context)
-            if subcontext[k] == DeleteMarker:
-                subcontext[k] = ''
-
     initial_result = renderValue(template['$let'], context)
     if not isinstance(initial_result, dict):
         raise TemplateError("$let value must be an object")

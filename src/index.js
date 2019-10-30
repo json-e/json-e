@@ -144,14 +144,6 @@ operators.$let = (template, context) => {
     throw new TemplateError('$let value must be an object');
   }
   let variables = {};
-  Object.keys(template['$let']).forEach(key => {
-    if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) {
-      variables[key] = render(template['$let'][key], context);
-    }  
-    if (isObject(variables[key])) {
-      variables[key] = '';
-    }
-  });
 
   let initialResult = render(template['$let'], context);
   if (!isObject(initialResult)) {

@@ -725,9 +725,9 @@ result:   [[ 3, 2, 1 ]]
 title:    checking $let with $if without else
 context:  {c: 'itm'}
 template: {$let: {a: {$if: 'c == "item"', then: 'value'}}, in: {a: '${a}'}}
-result:   {a: ''}
+error:    'InterpreterError at template.a: unknown context value a'
 ---
-title:    let with a keyless nested operator
+title:    let with a value of $if-then-else
 template: {$let: {$if: something == 3, then: {a: 10, b: 20}, else: {a: 20, b: 10}}, in: {$eval: 'a + b'}}
 context:  {'something': 3}
 result:   30
@@ -737,7 +737,7 @@ template: {$let: {"first_${name}": 1, "second_${name}": 2}, in: {$eval: "first_p
 context:  {name: "prize"}
 result:   3
 ---
-title:    let using values from the parent context, too
+title:    let using values from the parent context
 template: {$let: {"b": {$eval: "a + 10"}}, in: {$eval: "a + b"}}
 context:  {a: 5}
 result:   20
