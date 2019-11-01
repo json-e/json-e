@@ -1,0 +1,39 @@
+Fixed the issue of speacial values in '$let' not evaluating.
+
+Values like 'if-then-else' statements, '$eval', and rendered keys.
+The values evaluate to an object, the values of which are evaluated.
+For example, the operations below no longer return an error:
+
+title: let with a value of $if-then-else
+$let:
+  $if: something == 3
+  then: {a: 10, b: 10}
+  else: {a: 20, b: 10}
+in:
+  $eval: 'a + b'
+
+context: {'something': 3}
+result:  20
+
+-----
+
+title: let using values from the parent context
+$let:
+  "b": {$eval: "a + 10"}
+in:
+  $eval: 'a + b'
+
+context: {'a':5}
+result:  20
+
+-----
+
+title: let with a rendered key
+$let:
+  "first_${name}": 1
+  "second_${name}": 2
+in:
+  {$eval: "first_prize + second_prize"}
+
+context: {'name': "prize"}
+result:  3

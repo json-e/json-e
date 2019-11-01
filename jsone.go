@@ -430,7 +430,7 @@ var operators = map[string]operator{
 		if err := restrictProperties(template, "$let", "in"); err != nil {
 			return nil, err
 		}
-		o, ok := template["$let"].(map[string]interface{})
+		_, ok := template["$let"].(map[string]interface{})
 		if !ok {
 			return nil, TemplateError{
 				Message:  "$let expects an object",
@@ -442,15 +442,23 @@ var operators = map[string]operator{
 			c[k] = v
 		}
 		var err error
-		for k, v := range o {
-			c[k], err = render(v, context)
-			if err != nil {
-				return nil, err
+
+		r, err := render(template["$let"], context)
+		if err != nil {
+			return nil, err
+		}
+		rv, ok := r.(map[string]interface{})
+		if ok {
+			for k, v := range rv {
+				c[k] = v
 			}
-			if c[k] == deleteMarker {
-				c[k] = ""
+		} else {
+			return nil, TemplateError{
+				Message:  "$let expects an object",
+				Template: template,
 			}
 		}
+
 		in, ok := template["in"]
 		if !ok {
 			return nil, TemplateError{

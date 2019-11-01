@@ -144,13 +144,16 @@ operators.$let = (template, context) => {
     throw new TemplateError('$let value must be an object');
   }
   let variables = {};
-  Object.keys(template['$let']).forEach(key => {
+
+  let initialResult = render(template['$let'], context);
+  if (!isObject(initialResult)) {
+    throw new TemplateError('$let value must be an object');
+  }
+  Object.keys(initialResult).forEach(key => {
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) {
       throw new TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
-    }
-    variables[key] = render(template['$let'][key], context);
-    if (isObject(variables[key])) {
-      variables[key] = '';
+    }else{
+      variables[key] = initialResult[key];
     }
   });
 
