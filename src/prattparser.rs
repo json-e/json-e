@@ -147,9 +147,14 @@ impl<'a, 'v> Context<'a, 'v> {
                 Ok(left)
             }
             None => Err(Error::SyntaxError(format!(
-                "Found {} expected {}",
+                "Found: {} token, expected one of: {}",
                 token.value,
-                "something else" // TODO
+                self.parser
+                    .prefix_rules
+                    .keys()
+                    .cloned()
+                    .collect::<Vec<&str>>()
+                    .join(", ")
             ))),
         }
     }
@@ -355,6 +360,19 @@ mod tests {
         assert_eq!(
             context.require(|ty| ty == "identifier"),
             Err(Error::SyntaxError("Unexpected token error".to_string()))
+        );
+    }
+
+    #[test]
+    fn parse_negative_no_prefix_rules() {
+        let pp = build_parser();
+
+        let mut context = Context::new(&pp, "+ 10", HashMap::new(), 0);
+        assert_eq!(
+            context.parse(None).err(),
+            Some(Error::SyntaxError(
+                "Found: + token, expected one of: number, identifier".to_string()
+            ))
         );
     }
 
