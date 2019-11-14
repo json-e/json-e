@@ -3,6 +3,8 @@ use crate::tokenizer::Token;
 use crate::tokenizer::Tokenizer;
 use std::collections::HashMap;
 
+// TODO: prefix_rules and infix_rules functions have to return Result<T, Error>
+
 pub struct PrattParser<'a, T> {
     tokenizer: Tokenizer<'a>,
     precedence_map: HashMap<&'a str, usize>,

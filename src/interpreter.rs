@@ -1,9 +1,11 @@
 use crate::errors::Error;
 use crate::prattparser::{Context, PrattParser};
 use crate::tokenizer::Token;
+use json::number::Number;
+use json::JsonValue;
 use std::collections::HashMap;
 
-pub fn create_interpreter<T>() -> Result<PrattParser<'static, T>, Error> {
+pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue>, Error> {
     let mut patterns = HashMap::new();
     patterns.insert("number", "[0-9]+(?:\\.[0-9]+)?");
     patterns.insert("identifier", "[a-zA-Z_][a-zA-Z_0-9]*");
@@ -62,9 +64,17 @@ pub fn create_interpreter<T>() -> Result<PrattParser<'static, T>, Error> {
         vec!["unary"],
     ];
 
-    let mut prefix_rules: HashMap<&str, fn(&Token, &mut Context<T>) -> T> = HashMap::new();
+    let mut prefix_rules: HashMap<&str, fn(&Token, &mut Context<JsonValue>) -> JsonValue> =
+        HashMap::new();
+    prefix_rules.insert("number", |token, _context| {
+        let n: Number = token.value.parse::<f64>().unwrap().into();
+        JsonValue::Number(n)
+    });
 
-    let mut infix_rules: HashMap<&str, fn(&T, &Token, &mut Context<T>) -> T> = HashMap::new();
+    let mut infix_rules: HashMap<
+        &str,
+        fn(&JsonValue, &Token, &mut Context<JsonValue>) -> JsonValue,
+    > = HashMap::new();
 
     PrattParser::new(
         "\\s+",
@@ -75,3 +85,5 @@ pub fn create_interpreter<T>() -> Result<PrattParser<'static, T>, Error> {
         infix_rules,
     )
 }
+
+// TODO: test for a number expression
