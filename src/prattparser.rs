@@ -146,16 +146,20 @@ impl<'a, 'v, T> Context<'a, 'v, T> {
 
                 Ok(left)
             }
-            None => Err(Error::SyntaxError(format!(
-                "Found: {} token, expected one of: {}",
-                token.value,
-                self.parser
+            None => {
+                let mut prefix_rules = self
+                    .parser
                     .prefix_rules
                     .keys()
                     .cloned()
-                    .collect::<Vec<&str>>()
-                    .join(", ")
-            ))),
+                    .collect::<Vec<&str>>();
+                prefix_rules.sort();
+                Err(Error::SyntaxError(format!(
+                    "Found: {} token, expected one of: {}",
+                    token.value,
+                    prefix_rules.join(", ")
+                )))
+            }
         }
     }
 }
@@ -373,7 +377,7 @@ mod tests {
         assert_eq!(
             context.parse(None).err(),
             Some(Error::SyntaxError(
-                "Found: + token, expected one of: number, identifier".to_string()
+                "Found: + token, expected one of: identifier, number".to_string()
             ))
         );
     }
