@@ -3,22 +3,22 @@ use crate::tokenizer::Token;
 use crate::tokenizer::Tokenizer;
 use std::collections::HashMap;
 
-pub struct PrattParser<'a> {
+pub struct PrattParser<'a, T> {
     tokenizer: Tokenizer<'a>,
     precedence_map: HashMap<&'a str, usize>,
-    prefix_rules: HashMap<&'a str, fn(&Token, &mut Context) -> usize>,
-    infix_rules: HashMap<&'a str, fn(&usize, &Token, &mut Context) -> usize>,
+    prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T>) -> T>,
+    infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T>) -> T>,
 }
 
-impl<'a> PrattParser<'a> {
+impl<'a, T> PrattParser<'a, T> {
     pub fn new(
         ignore: &str,
         patterns: HashMap<&str, &str>,
         token_types: Vec<&'a str>,
         precedence: Vec<Vec<&'a str>>,
-        prefix_rules: HashMap<&'a str, fn(&Token, &mut Context) -> usize>,
-        infix_rules: HashMap<&'a str, fn(&usize, &Token, &mut Context) -> usize>,
-    ) -> Result<PrattParser<'a>, Error> {
+        prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T>) -> T>,
+        infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T>) -> T>,
+    ) -> Result<PrattParser<'a, T>, Error> {
         let tokenizer = Tokenizer::new(ignore, patterns, token_types);
         let mut precedence_map: HashMap<&'a str, usize> = HashMap::new();
 
@@ -46,20 +46,20 @@ impl<'a> PrattParser<'a> {
     }
 }
 
-pub struct Context<'a, 'v> {
-    parser: &'a PrattParser<'a>,
+pub struct Context<'a, 'v, T> {
+    parser: &'a PrattParser<'a, T>,
     source: &'v str,
     context: HashMap<&'a str, &'a str>,
     next: Result<Option<Token<'a, 'v>>, Error>,
 }
 
-impl<'a, 'v> Context<'a, 'v> {
+impl<'a, 'v, T> Context<'a, 'v, T> {
     pub fn new(
-        parser: &'a PrattParser,
+        parser: &'a PrattParser<'a, T>,
         source: &'v str,
         context: HashMap<&'a str, &'a str>,
         offset: usize,
-    ) -> Context<'a, 'v> {
+    ) -> Context<'a, 'v, T> {
         let next = parser.tokenizer.next(source, offset);
         Context {
             source,
@@ -114,7 +114,7 @@ impl<'a, 'v> Context<'a, 'v> {
         }
     }
 
-    pub fn parse(self: &mut Self, precedence_type: Option<&str>) -> Result<usize, Error> {
+    pub fn parse(self: &mut Self, precedence_type: Option<&str>) -> Result<T, Error> {
         let precedence = match precedence_type {
             Some(p) => *self.parser.precedence_map.get(p).unwrap(),
             //.expect("precedence_type has no precedence"),
@@ -167,19 +167,20 @@ mod tests {
     use crate::tokenizer::Token;
     use std::collections::HashMap;
 
-    fn build_parser() -> PrattParser<'static> {
+    fn build_parser() -> PrattParser<'static, usize> {
         let mut patterns = HashMap::new();
         patterns.insert("number", "[0-9]+");
         patterns.insert("identifier", "[a-z]+");
         patterns.insert("snowman", "☃");
 
-        let mut prefix: HashMap<&str, fn(&Token, &mut Context) -> usize> = HashMap::new();
+        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize>) -> usize> = HashMap::new();
         prefix.insert("identifier", |_token, _context| 10);
         prefix.insert("number", |token, _context| {
             token.value.parse::<usize>().unwrap()
         });
 
-        let mut infix: HashMap<&str, fn(&usize, &Token, &mut Context) -> usize> = HashMap::new();
+        let mut infix: HashMap<&str, fn(&usize, &Token, &mut Context<usize>) -> usize> =
+            HashMap::new();
         infix.insert("snowman", |left, _token, context| {
             let right = context.parse(Some("snowman")).unwrap();
             left * right
@@ -209,13 +210,14 @@ mod tests {
         patterns.insert("identifier", "[a-z]+");
         patterns.insert("snowman", "☃");
 
-        let mut prefix: HashMap<&str, fn(&Token, &mut Context) -> usize> = HashMap::new();
+        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize>) -> usize> = HashMap::new();
         prefix.insert("identifier", |_token, _context| 10);
         prefix.insert("number", |token, _context| {
             token.value.parse::<usize>().unwrap()
         });
 
-        let mut infix: HashMap<&str, fn(&usize, &Token, &mut Context) -> usize> = HashMap::new();
+        let mut infix: HashMap<&str, fn(&usize, &Token, &mut Context<usize>) -> usize> =
+            HashMap::new();
         infix.insert("snowman", |left, _token, context| {
             let right = context.parse(Some("snowman")).unwrap();
             left * right
