@@ -2,6 +2,7 @@ extern crate json;
 extern crate regex;
 
 pub mod errors;
+pub mod interpreter;
 pub mod prattparser;
 pub mod tokenizer;
 
