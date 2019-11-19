@@ -1,8 +1,8 @@
 use crate::errors::Error;
 use crate::tokenizer::Token;
 use crate::tokenizer::Tokenizer;
-use std::collections::HashMap;
 use json::JsonValue;
+use std::collections::HashMap;
 
 pub struct PrattParser<'a, T> {
     tokenizer: Tokenizer<'a>,
@@ -46,13 +46,13 @@ impl<'a, T> PrattParser<'a, T> {
         })
     }
 
-    pub fn parse(self: &Self, source: &str, context: HashMap<&'a str, &'a str>, offset: usize) -> Result<T, Error> {
-        let mut ctx = Context::new(
-            self,
-            source,
-            context,
-            offset
-        );
+    pub fn parse(
+        self: &Self,
+        source: &str,
+        context: HashMap<&'a str, &'a str>,
+        offset: usize,
+    ) -> Result<T, Error> {
+        let mut ctx = Context::new(self, source, context, offset);
 
         ctx.parse(None) // todo javascript calls attempt
     }
@@ -179,10 +179,10 @@ impl<'a, 'v, T> Context<'a, 'v, T> {
 #[cfg(test)]
 mod tests {
     use crate::errors::Error;
+    use crate::errors::Error::SyntaxError;
     use crate::prattparser::{Context, PrattParser};
     use crate::tokenizer::Token;
     use std::collections::HashMap;
-    use crate::errors::Error::SyntaxError;
 
     fn build_parser() -> PrattParser<'static, usize> {
         let mut patterns = HashMap::new();
@@ -190,14 +190,17 @@ mod tests {
         patterns.insert("identifier", "[a-z]+");
         patterns.insert("snowman", "☃");
 
-        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize>) -> Result<usize, Error>> = HashMap::new();
+        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize>) -> Result<usize, Error>> =
+            HashMap::new();
         prefix.insert("identifier", |_token, _context| Ok(10));
         prefix.insert("number", |token, _context| {
             Ok(token.value.parse::<usize>()?)
         });
 
-        let mut infix: HashMap<&str, fn(&usize, &Token, &mut Context<usize>) -> Result<usize, Error>> =
-            HashMap::new();
+        let mut infix: HashMap<
+            &str,
+            fn(&usize, &Token, &mut Context<usize>) -> Result<usize, Error>,
+        > = HashMap::new();
         infix.insert("snowman", |left, _token, context| {
             let right = context.parse(Some("snowman")).unwrap();
             Ok(left * right)
@@ -227,14 +230,17 @@ mod tests {
         patterns.insert("identifier", "[a-z]+");
         patterns.insert("snowman", "☃");
 
-        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize>) -> Result<usize, Error>> = HashMap::new();
+        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize>) -> Result<usize, Error>> =
+            HashMap::new();
         prefix.insert("identifier", |_token, _context| Ok(10));
         prefix.insert("number", |token, _context| {
             Ok(token.value.parse::<usize>().unwrap())
         });
 
-        let mut infix: HashMap<&str, fn(&usize, &Token, &mut Context<usize>) -> Result<usize, Error>> =
-            HashMap::new();
+        let mut infix: HashMap<
+            &str,
+            fn(&usize, &Token, &mut Context<usize>) -> Result<usize, Error>,
+        > = HashMap::new();
         infix.insert("snowman", |left, _token, context| {
             let right = context.parse(Some("snowman")).unwrap();
             Ok(left * right)
@@ -410,7 +416,10 @@ mod tests {
 
         let mut context = Context::new(&pp, "2.7", HashMap::new(), 0);
 
-        assert_eq!(context.parse(None).err(), Some(SyntaxError("Invalid integer".to_string())));
+        assert_eq!(
+            context.parse(None).err(),
+            Some(SyntaxError("Invalid integer".to_string()))
+        );
     }
 
     #[test]
