@@ -68,10 +68,40 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue>, Error> {
         &str,
         fn(&Token, &mut Context<JsonValue>) -> Result<JsonValue, Error>,
     > = HashMap::new();
+
     prefix_rules.insert("number", |token, _context| {
         let n: Number = token.value.parse::<f64>()?.into();
         Ok(JsonValue::Number(n))
     });
+
+    prefix_rules.insert("!", |_token, context| {
+        // TODO: write test
+        return context.parse(Some("unary"));
+    });
+
+    prefix_rules.insert("-", |_token, context| {
+        let v = context.parse(Some("unary"))?;
+        if let Some(n) = v.as_number() {
+            return Ok(JsonValue::Number(-n));
+        } else {
+            return Err(Error::InterpreterError(
+                "This operator expects a number".to_string(),
+            ));
+        }
+    });
+
+    prefix_rules.insert("+", |_token, context| {
+        let v = context.parse(Some("unary"))?;
+        if let Some(n) = v.as_number() {
+            return Ok(JsonValue::Number(n));
+        } else {
+            return Err(Error::InterpreterError(
+                "This operator expects a number".to_string(),
+            ));
+        }
+    });
+
+    // TODO: identifier
 
     let mut infix_rules: HashMap<
         &str,
@@ -101,5 +131,54 @@ mod tests {
             interpreter.parse("23.67", HashMap::new(), 0).unwrap(),
             23.67
         );
+    }
+
+    #[test]
+    fn parse_minus_expression_negative_number() {
+        let interpreter = create_interpreter().unwrap();
+
+        assert_eq!(interpreter.parse("-7", HashMap::new(), 0).unwrap(), -7);
+    }
+
+    #[test]
+    fn parse_minus_expression_double_negative() {
+        let interpreter = create_interpreter().unwrap();
+
+        assert_eq!(interpreter.parse("--7", HashMap::new(), 0).unwrap(), 7);
+    }
+
+    #[test]
+    fn parse_minus_expression_plus() {
+        let interpreter = create_interpreter().unwrap();
+
+        assert_eq!(interpreter.parse("-+10", HashMap::new(), 0).unwrap(), -10);
+    }
+
+    #[test]
+    fn parse_minus_expression_zero() {
+        let interpreter = create_interpreter().unwrap();
+
+        assert_eq!(interpreter.parse("-0", HashMap::new(), 0).unwrap(), 0);
+    }
+
+    #[test]
+    fn parse_plus_expression_positive_number() {
+        let interpreter = create_interpreter().unwrap();
+
+        assert_eq!(interpreter.parse("+5", HashMap::new(), 0).unwrap(), 5);
+    }
+
+    #[test]
+    fn parse_plus_expression_zero() {
+        let interpreter = create_interpreter().unwrap();
+
+        assert_eq!(interpreter.parse("+0", HashMap::new(), 0).unwrap(), 0);
+    }
+
+    #[test]
+    fn parse_plus_expression_minus() {
+        let interpreter = create_interpreter().unwrap();
+
+        assert_eq!(interpreter.parse("+-10", HashMap::new(), 0).unwrap(), -10);
     }
 }

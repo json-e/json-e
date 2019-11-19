@@ -7,6 +7,9 @@ pub enum Error {
 
     #[fail(display = "Syntax Error: {}", _0)]
     SyntaxError(String),
+
+    #[fail(display = "Interpreter Error: {}", _0)]
+    InterpreterError(String),
 }
 
 impl From<std::num::ParseIntError> for Error {
