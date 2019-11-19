@@ -11,10 +11,10 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue>, Error> {
     patterns.insert("identifier", "[a-zA-Z_][a-zA-Z_0-9]*");
     patterns.insert("string", "\'[^\']*\'|\"[^\"]*\"");
     // avoid matching these as prefixes of identifiers e.g., `insinutations`
-    //    patterns.insert("true", "true(?![a-zA-Z_0-9])"); // todo use fancy regex?? also: https://stackoverflow.com/questions/37973332/whats-the-most-sensible-way-to-emulate-lookbehind-behavior-in-rust-regex
-    //    patterns.insert("false", "false(?![a-zA-Z_0-9])");
-    //    patterns.insert("in", "in(?![a-zA-Z_0-9])");
-    //    patterns.insert("null", "null(?![a-zA-Z_0-9])");
+    patterns.insert("true", "true(?![a-zA-Z_0-9])");
+    patterns.insert("false", "false(?![a-zA-Z_0-9])");
+    patterns.insert("in", "in(?![a-zA-Z_0-9])");
+    patterns.insert("null", "null(?![a-zA-Z_0-9])");
 
     let token_types = vec![
         "**",

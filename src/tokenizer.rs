@@ -1,11 +1,12 @@
 use crate::errors::Error;
+use fancy_regex;
 use regex;
 use std::collections::HashMap;
 use std::fmt::Write;
 
 pub struct Tokenizer<'a> {
     token_types: Vec<&'a str>,
-    regex: regex::Regex,
+    regex: fancy_regex::Regex,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -24,7 +25,7 @@ impl<'a> Tokenizer<'a> {
     ) -> Tokenizer<'a> {
         let re = Tokenizer::build_regex_string(ignore, patterns, &token_types).unwrap();
 
-        let regex = regex::Regex::new(&re).unwrap();
+        let regex = fancy_regex::Regex::new(&re).unwrap();
 
         Tokenizer { token_types, regex }
     }
@@ -72,7 +73,7 @@ impl<'a> Tokenizer<'a> {
         }
     }
 
-    fn index_of_not_undefined(captures: &regex::Captures, index: usize) -> Option<usize> {
+    fn index_of_not_undefined(captures: &fancy_regex::Captures, index: usize) -> Option<usize> {
         let mut result: Option<usize> = None;
         for (i, cap) in captures.iter().enumerate().skip(index) {
             if cap.is_some() {
@@ -94,7 +95,7 @@ impl<'a> Tokenizer<'a> {
         let mut i: usize;
 
         loop {
-            match self.regex.captures(&source[offset..]) {
+            match self.regex.captures(&source[offset..])? {
                 None => {
                     if &source[offset..] != "" {
                         // no match, but there's input left, so we have an error
@@ -180,8 +181,8 @@ mod tests {
 
     #[test]
     fn index_of_not_undefined_nonempty_captures() {
-        let regex = regex::Regex::new("^(?:(ign)|([0-9]+)|([a-z]+))").unwrap();
-        let captures = regex.captures("abckdf").unwrap();
+        let regex = fancy_regex::Regex::new("^(?:(ign)|([0-9]+)|([a-z]+))").unwrap();
+        let captures = regex.captures("abckdf").unwrap().unwrap();
         // should yield
         // 0: Some("abckdf") (the whole string matched)
         // 1: None
@@ -193,8 +194,8 @@ mod tests {
 
     #[test]
     fn index_of_not_undefined_middle_matches() {
-        let regex = regex::Regex::new("^(?:(ign)|([0-9]+)|([a-z]+))").unwrap();
-        let captures = regex.captures("1234").unwrap();
+        let regex = fancy_regex::Regex::new("^(?:(ign)|([0-9]+)|([a-z]+))").unwrap();
+        let captures = regex.captures("1234").unwrap().unwrap();
         // should yield
         // 0: Some("1234") (the whole string matched)
         // 1: None

@@ -1,5 +1,5 @@
+extern crate fancy_regex;
 extern crate json;
-extern crate regex;
 
 pub mod errors;
 pub mod interpreter;
