@@ -109,7 +109,12 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<St
         }
     });
 
-    // TODO: prefix identifier
+    prefix_rules.insert("identifier", |token, context| {
+        if let Some(v) = context.context.get(token.value) {
+            return Ok(v.clone());
+        }
+        return Err(Error::InterpreterError(format!("unknown context value {}", token.value)))
+    });
 
     // todo: prefix null
     // todo prefix [
@@ -144,6 +149,8 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<St
 mod tests {
     use crate::interpreter::create_interpreter;
     use std::collections::HashMap;
+    use json::JsonValue;
+    use crate::errors::Error;
 
     #[test]
     fn parse_number_expression() {
@@ -224,4 +231,24 @@ mod tests {
 
         assert_eq!(interpreter.parse("false", HashMap::new(), 0).unwrap(), false);
     }
+
+    #[test]
+    fn parse_identifier_positive() {
+        let interpreter = create_interpreter().unwrap();
+        let mut context = HashMap::new();
+        context.insert("x".to_string(), JsonValue::Number(10.into()));
+
+        assert_eq!(interpreter.parse("x", context, 0).unwrap(), 10);
+    }
+
+    #[test]
+    fn parse_identifier_negative_non_existing_variable() {
+        let interpreter = create_interpreter().unwrap();
+        let mut context = HashMap::new();
+        context.insert("x".to_string(), JsonValue::Number(10.into()));
+
+        assert_eq!(interpreter.parse("y", context, 0).err(), Some(Error::InterpreterError("unknown context value y".to_string())));
+    }
+
+
 }

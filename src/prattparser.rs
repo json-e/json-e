@@ -61,7 +61,7 @@ impl<'a, T, C> PrattParser<'a, T, C> {
 pub struct Context<'a, 'v, T, C> {
     parser: &'a PrattParser<'a, T, C>,
     source: &'v str,
-    context: C, // todo find a better name
+    pub context: C, // todo find a better name
     next: Result<Option<Token<'a, 'v>>, Error>,
 }
 
