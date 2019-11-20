@@ -36,6 +36,7 @@ git remote add upstream "git@github.com:$GITHUB_PROJECT.git"
 git fetch upstream
 git reset "upstream/$TARGET_BRANCH"
 
+echo 'json-e.js.org' > CNAME
 touch .
 
 git add -A .
