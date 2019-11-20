@@ -4,22 +4,22 @@ use crate::tokenizer::Tokenizer;
 use json::JsonValue;
 use std::collections::HashMap;
 
-pub struct PrattParser<'a, T> {
+pub struct PrattParser<'a, T, C> {
     tokenizer: Tokenizer<'a>,
     precedence_map: HashMap<&'a str, usize>,
-    prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T>) -> Result<T, Error>>,
-    infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T>) -> Result<T, Error>>,
+    prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T, C>) -> Result<T, Error>>,
+    infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T, C>) -> Result<T, Error>>,
 }
 
-impl<'a, T> PrattParser<'a, T> {
+impl<'a, T, C> PrattParser<'a, T, C> {
     pub fn new(
         ignore: &str,
         patterns: HashMap<&str, &str>,
         token_types: Vec<&'a str>,
         precedence: Vec<Vec<&'a str>>,
-        prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T>) -> Result<T, Error>>,
-        infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T>) -> Result<T, Error>>,
-    ) -> Result<PrattParser<'a, T>, Error> {
+        prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T, C>) -> Result<T, Error>>,
+        infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T, C>) -> Result<T, Error>>,
+    ) -> Result<PrattParser<'a, T, C>, Error> {
         let tokenizer = Tokenizer::new(ignore, patterns, token_types);
         let mut precedence_map: HashMap<&'a str, usize> = HashMap::new();
 
@@ -49,7 +49,7 @@ impl<'a, T> PrattParser<'a, T> {
     pub fn parse(
         self: &Self,
         source: &str,
-        context: HashMap<&'a str, &'a str>,
+        context: C,
         offset: usize,
     ) -> Result<T, Error> {
         let mut ctx = Context::new(self, source, context, offset);
@@ -58,20 +58,20 @@ impl<'a, T> PrattParser<'a, T> {
     }
 }
 
-pub struct Context<'a, 'v, T> {
-    parser: &'a PrattParser<'a, T>,
+pub struct Context<'a, 'v, T, C> {
+    parser: &'a PrattParser<'a, T, C>,
     source: &'v str,
-    context: HashMap<&'a str, &'a str>, // todo find a better name
+    context: C, // todo find a better name
     next: Result<Option<Token<'a, 'v>>, Error>,
 }
 
-impl<'a, 'v, T> Context<'a, 'v, T> {
+impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
     pub fn new(
-        parser: &'a PrattParser<'a, T>,
+        parser: &'a PrattParser<'a, T, C>,
         source: &'v str,
-        context: HashMap<&'a str, &'a str>,
+        context: C,
         offset: usize,
-    ) -> Context<'a, 'v, T> {
+    ) -> Context<'a, 'v, T, C> {
         let next = parser.tokenizer.next(source, offset);
         Context {
             source,
@@ -184,13 +184,13 @@ mod tests {
     use crate::tokenizer::Token;
     use std::collections::HashMap;
 
-    fn build_parser() -> PrattParser<'static, usize> {
+    fn build_parser() -> PrattParser<'static, usize, ()> {
         let mut patterns = HashMap::new();
         patterns.insert("number", "[.0-9]+");
         patterns.insert("identifier", "[a-z]+");
         patterns.insert("snowman", "☃");
 
-        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize>) -> Result<usize, Error>> =
+        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize, ()>) -> Result<usize, Error>> =
             HashMap::new();
         prefix.insert("identifier", |_token, _context| Ok(10));
         prefix.insert("number", |token, _context| {
@@ -199,7 +199,7 @@ mod tests {
 
         let mut infix: HashMap<
             &str,
-            fn(&usize, &Token, &mut Context<usize>) -> Result<usize, Error>,
+            fn(&usize, &Token, &mut Context<usize, ()>) -> Result<usize, Error>,
         > = HashMap::new();
         infix.insert("snowman", |left, _token, context| {
             let right = context.parse(Some("snowman")).unwrap();
@@ -230,7 +230,7 @@ mod tests {
         patterns.insert("identifier", "[a-z]+");
         patterns.insert("snowman", "☃");
 
-        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize>) -> Result<usize, Error>> =
+        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize, ()>) -> Result<usize, Error>> =
             HashMap::new();
         prefix.insert("identifier", |_token, _context| Ok(10));
         prefix.insert("number", |token, _context| {
@@ -239,7 +239,7 @@ mod tests {
 
         let mut infix: HashMap<
             &str,
-            fn(&usize, &Token, &mut Context<usize>) -> Result<usize, Error>,
+            fn(&usize, &Token, &mut Context<usize, ()>) -> Result<usize, Error>,
         > = HashMap::new();
         infix.insert("snowman", |left, _token, context| {
             let right = context.parse(Some("snowman")).unwrap();
@@ -270,7 +270,7 @@ mod tests {
     fn positive_attempt() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "123", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "123", (), 0);
 
         assert_eq!(
             context.attempt(|_| true).unwrap().unwrap(),
@@ -287,7 +287,7 @@ mod tests {
     fn attempt_not_allowed_type() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "123", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "123", (), 0);
 
         assert_eq!(context.attempt(|ty| ty == "identifier").unwrap(), None);
     }
@@ -296,7 +296,7 @@ mod tests {
     fn attempt_allowed_after_not_allowed_type() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "123", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "123", (), 0);
 
         assert_eq!(context.attempt(|ty| ty == "identifier").unwrap(), None);
         assert_eq!(
@@ -314,7 +314,7 @@ mod tests {
     fn attempt_end_of_string() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "   ", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "   ", (), 0);
 
         assert_eq!(context.attempt(|_| true).unwrap(), None);
     }
@@ -323,7 +323,7 @@ mod tests {
     fn attempt_invalid_syntax() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "🍎 ", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "🍎 ", (), 0);
 
         assert_eq!(
             context.attempt(|_| true),
@@ -337,7 +337,7 @@ mod tests {
     fn require_positive() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "abc", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "abc", (), 0);
 
         assert_eq!(
             context.require(|_| true).unwrap(),
@@ -354,7 +354,7 @@ mod tests {
     fn require_end_of_string() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "   ", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "   ", (), 0);
 
         assert_eq!(
             context.require(|_| true),
@@ -366,7 +366,7 @@ mod tests {
     fn require_invalid_syntax() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "🍎 ", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "🍎 ", (), 0);
 
         assert_eq!(
             context.require(|_| true),
@@ -380,7 +380,7 @@ mod tests {
     fn require_unexpected_token() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "☃️", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "☃️", (), 0);
 
         assert_eq!(
             context.require(|ty| ty == "identifier"),
@@ -392,7 +392,7 @@ mod tests {
     fn parse_negative_no_prefix_rules() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "+ 10", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "+ 10", (), 0);
         assert_eq!(
             context.parse(None).err(),
             Some(Error::SyntaxError(
@@ -405,7 +405,7 @@ mod tests {
     fn parse_number() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "2", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "2", (), 0);
 
         assert_eq!(context.parse(None).unwrap(), 2);
     }
@@ -414,7 +414,7 @@ mod tests {
     fn parse_number_should_error() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "2.7", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "2.7", (), 0);
 
         assert_eq!(
             context.parse(None).err(),
@@ -426,7 +426,7 @@ mod tests {
     fn parse_addition() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "2 + 3", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "2 + 3", (), 0);
 
         assert_eq!(context.parse(None).unwrap(), 5);
     }
@@ -435,7 +435,7 @@ mod tests {
     fn parse_snowmaning() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "2 ☃ 3", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "2 ☃ 3", (), 0);
 
         assert_eq!(context.parse(None).unwrap(), 6);
     }
@@ -444,7 +444,7 @@ mod tests {
     fn parse_check_precedence() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "1 + 2 ☃ 3", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "1 + 2 ☃ 3", (), 0);
 
         assert_eq!(context.parse(None).unwrap(), 7);
     }
@@ -453,7 +453,7 @@ mod tests {
     fn parse_check_reverse_precedence() {
         let pp = build_parser();
 
-        let mut context = Context::new(&pp, "2 ☃ 3 + 4", HashMap::new(), 0);
+        let mut context = Context::new(&pp, "2 ☃ 3 + 4", (), 0);
 
         assert_eq!(context.parse(None).unwrap(), 10);
     }

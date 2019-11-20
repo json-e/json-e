@@ -5,7 +5,7 @@ use json::number::Number;
 use json::JsonValue;
 use std::collections::HashMap;
 
-pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue>, Error> {
+pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error> {
     let mut patterns = HashMap::new();
     patterns.insert("number", "[0-9]+(?:\\.[0-9]+)?");
     patterns.insert("identifier", "[a-zA-Z_][a-zA-Z_0-9]*");
@@ -66,7 +66,7 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue>, Error> {
 
     let mut prefix_rules: HashMap<
         &str,
-        fn(&Token, &mut Context<JsonValue>) -> Result<JsonValue, Error>,
+        fn(&Token, &mut Context<JsonValue, HashMap<String, JsonValue>>) -> Result<JsonValue, Error>,
     > = HashMap::new();
 
     prefix_rules.insert("number", |token, _context| {
@@ -75,8 +75,16 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue>, Error> {
     });
 
     prefix_rules.insert("!", |_token, context| {
-        // TODO: write test
-        return context.parse(Some("unary"));
+        let operand = context.parse(Some("unary"))?;
+        match operand {
+            JsonValue::Null => Ok(JsonValue::Boolean(true)),
+            JsonValue::Short(o) => Ok(JsonValue::Boolean(o.len() == 0)),
+            JsonValue::String(o) => Ok(JsonValue::Boolean(o.len() == 0)),
+            JsonValue::Number(o) => Ok(JsonValue::Boolean(o == 0)),
+            JsonValue::Array(o) => Ok(JsonValue::Boolean(o.len() == 0)),
+            JsonValue::Object(o) => Ok(JsonValue::Boolean(o.is_empty())),
+            JsonValue::Boolean(o) => Ok(JsonValue::Boolean(!o))
+        }
     });
 
     prefix_rules.insert("-", |_token, context| {
@@ -101,11 +109,25 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue>, Error> {
         }
     });
 
-    // TODO: identifier
+    // TODO: prefix identifier
+
+    // todo: prefix null
+    // todo prefix [
+    // todo prefix (
+    // todo prefix {
+    // todo prefix string
+
+    prefix_rules.insert("true", |_token, _context| {
+        Ok(JsonValue::Boolean(true))
+    });
+
+    prefix_rules.insert("false", |_token, _context| {
+        Ok(JsonValue::Boolean(false))
+    });
 
     let mut infix_rules: HashMap<
         &str,
-        fn(&JsonValue, &Token, &mut Context<JsonValue>) -> Result<JsonValue, Error>,
+        fn(&JsonValue, &Token, &mut Context<JsonValue, HashMap<String, JsonValue>>) -> Result<JsonValue, Error>,
     > = HashMap::new();
 
     PrattParser::new(
@@ -132,6 +154,13 @@ mod tests {
             23.67
         );
     }
+
+    #[test]
+    fn parse_boolean_negation() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(interpreter.parse("!true", HashMap::new(), 0).unwrap(), false);
+    }
+
 
     #[test]
     fn parse_minus_expression_negative_number() {
@@ -180,5 +209,19 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
 
         assert_eq!(interpreter.parse("+-10", HashMap::new(), 0).unwrap(), -10);
+    }
+
+    #[test]
+    fn parse_boolean_true() {
+        let interpreter = create_interpreter().unwrap();
+
+        assert_eq!(interpreter.parse("true", HashMap::new(), 0).unwrap(), true);
+    }
+
+    #[test]
+    fn parse_boolean_false() {
+        let interpreter = create_interpreter().unwrap();
+
+        assert_eq!(interpreter.parse("false", HashMap::new(), 0).unwrap(), false);
     }
 }
