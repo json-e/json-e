@@ -46,12 +46,7 @@ impl<'a, T, C> PrattParser<'a, T, C> {
         })
     }
 
-    pub fn parse(
-        self: &Self,
-        source: &str,
-        context: C,
-        offset: usize,
-    ) -> Result<T, Error> {
+    pub fn parse(self: &Self, source: &str, context: C, offset: usize) -> Result<T, Error> {
         let mut ctx = Context::new(self, source, context, offset);
 
         ctx.parse(None) // todo javascript calls attempt
@@ -83,7 +78,8 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
 
     pub fn attempt(
         self: &mut Self,
-        is_type_allowed: fn(&'a str) -> bool,
+        // TODO: come up with better name (checks whether token is of interest)
+        is_type_allowed: impl Fn(&'a str) -> bool,
     ) -> Result<Option<Token<'a, 'v>>, Error> {
         match self.next {
             Ok(ref mut t) => {
@@ -109,7 +105,7 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
 
     pub fn require(
         self: &mut Self,
-        is_type_allowed: fn(&'a str) -> bool,
+        is_type_allowed: impl Fn(&'a str) -> bool,
     ) -> Result<Token<'a, 'v>, Error> {
         match self.attempt(|_| true) {
             Ok(ot) => match ot {
