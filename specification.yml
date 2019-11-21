@@ -1773,6 +1773,11 @@ context: {val: 24}
 template: {$eval: 'str(val)'}
 result: '24'
 ---
+title: str (unicode)
+context: {val: "let's make a ☃"}
+template: {$eval: 'str(val)'}
+result: "let's make a ☃"
+---
 title: str({})
 context: {}
 template: {$eval: 'str({})'}

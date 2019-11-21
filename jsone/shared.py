@@ -107,6 +107,8 @@ def to_str(v):
         return ','.join(to_str(e) for e in v)
     elif v is None:
         return 'null'
+    elif isinstance(v, string):
+        return v
     else:
         return str(v)
 
