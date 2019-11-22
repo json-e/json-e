@@ -1,4 +1,4 @@
-* [Full documentation](https://taskcluster.github.io/json-e)
+* [Full documentation](https://json-e.js.org)
 
 # JSON-e
 
