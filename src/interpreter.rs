@@ -144,7 +144,14 @@ pub fn create_interpreter(
 
     prefix_rules.insert("[", |_token, context| parse_list(context, ",", "]"));
 
-    // todo prefix (
+    prefix_rules.insert("(", |token, context| {
+        let expression = context.parse(None)?;
+
+        context.require(|t| t == ")")?;
+
+        Ok(expression)
+    });
+
     // todo prefix {
     // todo prefix string
 
@@ -160,6 +167,20 @@ pub fn create_interpreter(
             &mut Context<JsonValue, HashMap<String, JsonValue>>,
         ) -> Result<JsonValue, Error>,
     > = HashMap::new();
+
+    infix_rules.insert("+", |left, token, context| {
+        let right = context.parse(Some("+"))?;
+
+        match (&left, &right) {
+            (&JsonValue::Number(_), &JsonValue::Number(_)) => {
+                let sum = left.as_f64().unwrap() + right.as_f64().unwrap();
+                Ok(JsonValue::Number(sum.into()))
+            },
+            (_, _) => Err(Error::InterpreterError(
+                "infix: +', 'number/string + number/string".to_string(),
+            ))
+        }
+    });
 
     PrattParser::new(
         "\\s+",
@@ -302,5 +323,27 @@ mod tests {
             interpreter.parse("[]", HashMap::new(), 0).unwrap(),
             JsonValue::Array(vec![]),
         );
+    }
+
+    #[test]
+    fn parse_parens_negative() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("(true]", HashMap::new(), 0).err(),
+            Some(Error::SyntaxError(
+                "Unexpected token error".to_string()
+            )),
+        );
+
+    }
+
+    #[test]
+    fn parse_parens() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("2+(3+4)", HashMap::new(), 0).unwrap(), // todo have multiplication there
+            JsonValue::Number(7.into()),
+        );
+
     }
 }
