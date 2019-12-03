@@ -25,6 +25,36 @@ fn parse_list(
     Ok(JsonValue::Array(list))
 }
 
+fn parse_object(
+    context: &mut Context<JsonValue, HashMap<String, JsonValue>>,
+) -> Result<JsonValue, Error> {
+    let mut obj = HashMap::new();
+
+    if context.attempt(|t| t == "}")? == None {
+        loop {
+            let mut k = context.require(|t| t == "identifier" || t == "string")?;
+
+            if k.token_type == "string" {
+                k.value = parse_string(k.value); // todo implement
+            }
+            context.require(|t| t == ":")?;
+            let v = context.parse(None)?;
+            obj.insert(k.value.to_string(), v);
+
+            if context.attempt(|t| t == ",")? == None {
+                break;
+            }
+        }
+        context.require(|t| t == "}")?;
+    }
+
+    Ok(JsonValue::from(obj))
+}
+
+fn parse_string(string: &str) -> &str {
+    &string[1..string.len() - 1]
+}
+
 pub fn create_interpreter(
 ) -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error> {
     let mut patterns = HashMap::new();
@@ -144,7 +174,7 @@ pub fn create_interpreter(
 
     prefix_rules.insert("[", |_token, context| parse_list(context, ",", "]"));
 
-    prefix_rules.insert("(", |token, context| {
+    prefix_rules.insert("(", |_token, context| {
         let expression = context.parse(None)?;
 
         context.require(|t| t == ")")?;
@@ -152,7 +182,8 @@ pub fn create_interpreter(
         Ok(expression)
     });
 
-    // todo prefix {
+    prefix_rules.insert("{", |_token, context| parse_object(context));
+
     // todo prefix string
 
     prefix_rules.insert("true", |_token, _context| Ok(JsonValue::Boolean(true)));
@@ -175,10 +206,24 @@ pub fn create_interpreter(
             (&JsonValue::Number(_), &JsonValue::Number(_)) => {
                 let sum = left.as_f64().unwrap() + right.as_f64().unwrap();
                 Ok(JsonValue::Number(sum.into()))
-            },
+            }
             (_, _) => Err(Error::InterpreterError(
                 "infix: +', 'number/string + number/string".to_string(),
-            ))
+            )),
+        }
+    });
+
+    infix_rules.insert("*", |left, token, context| {
+        let right = context.parse(Some("*"))?;
+
+        match (&left, &right) {
+            (&JsonValue::Number(_), &JsonValue::Number(_)) => {
+                let product = left.as_f64().unwrap() * right.as_f64().unwrap();
+                Ok(JsonValue::Number(product.into()))
+            }
+            (_, _) => Err(Error::InterpreterError(
+                "infix: *', 'number + number".to_string(),
+            )),
         }
     });
 
@@ -330,20 +375,74 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("(true]", HashMap::new(), 0).err(),
-            Some(Error::SyntaxError(
-                "Unexpected token error".to_string()
-            )),
+            Some(Error::SyntaxError("Unexpected token error".to_string())),
         );
-
     }
 
     #[test]
     fn parse_parens() {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
-            interpreter.parse("2+(3+4)", HashMap::new(), 0).unwrap(), // todo have multiplication there
-            JsonValue::Number(7.into()),
+            interpreter.parse("2*(3+4)", HashMap::new(), 0).unwrap(),
+            JsonValue::Number(14.into()),
         );
+    }
 
+    #[test]
+    fn parse_curly_braces() {
+        let interpreter = create_interpreter().unwrap();
+        let mut obj = HashMap::new();
+        obj.insert("a".to_string(), JsonValue::Number(10.into()));
+        assert_eq!(
+            interpreter.parse("{a: 10}", HashMap::new(), 0).unwrap(),
+            JsonValue::from(obj),
+        );
+    }
+
+    #[test]
+    fn parse_curly_braces_negative_semicolon() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("{b: 20; a: 10}", HashMap::new(), 0).err(),
+            Some(Error::SyntaxError(
+                "unexpected EOF for {b: 20; a: 10} at ; a: 10}".to_string()
+            )),
+        );
+    }
+
+    #[test]
+    fn parse_curly_braces_two_keys() {
+        let interpreter = create_interpreter().unwrap();
+        let mut obj = HashMap::new();
+        obj.insert("a".to_string(), JsonValue::Number(10.into()));
+        obj.insert("b".to_string(), JsonValue::Number(20.into()));
+        assert_eq!(
+            interpreter
+                .parse("{b: 20, a: 10}", HashMap::new(), 0)
+                .unwrap(),
+            JsonValue::from(obj),
+        );
+    }
+
+    #[test]
+    fn parse_curly_braces_empty() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("{}", HashMap::new(), 0).unwrap(),
+            JsonValue::from(HashMap::new()),
+        );
+    }
+
+    #[test]
+    fn parse_curly_braces_string() {
+        let interpreter = create_interpreter().unwrap();
+        let mut obj = HashMap::new();
+        obj.insert("abc def".to_string(), JsonValue::Number(10.into()));
+        assert_eq!(
+            interpreter
+                .parse("{\"abc def\": 10}", HashMap::new(), 0)
+                .unwrap(),
+            JsonValue::from(obj),
+        );
     }
 }
