@@ -233,8 +233,75 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<St
         }
     });
 
-    // todo infix **
+    infix_rules.insert("**", |left, token, context| {
+        let right = context.parse(Some("**-right-associative"))?;
+
+        match (&left, &right) {
+            (&JsonValue::Number(_), &JsonValue::Number(_)) => {
+                let result = left.as_f64().unwrap().powf(right.as_f64().unwrap());
+                Ok(JsonValue::Number(result.into()))
+            }
+            (_, _) => Err(Error::InterpreterError(
+                "infix: **', 'number + number".to_string(),
+            )),
+        }
+
+    });
+
     // todo infix [
+    infix_rules.insert("[", |left, token, context| {
+        let mut a: i64;
+        let mut b: i64;
+        let mut isInterval = false;
+
+        if context.attempt(|t| t == ":")?.is_some() {
+            a = 0;
+            isInterval = true;
+        } else {
+            let parsed = context.parse(None)?;
+            if let JsonValue::Number(n) = parsed {
+                a = n.into();
+                if context.attempt(|t| t == ":")?.is_some() {
+                    isInterval = true;
+                }
+            } else {
+                return Err(Error::InterpreterError("left part of slice operator is not a number".to_string()));
+            }
+        }
+
+        if isInterval && !context.attempt(|t| t == "]")?.is_some() {
+            let parsed = context.parse(None)?;
+            if let JsonValue::Number(n) = parsed {
+                b = n.into();
+            } else {
+                return Err(Error::InterpreterError("right part of slice operator is not a number".to_string()));
+            }
+
+            context.require(|t| t == "]")?;
+        }
+
+        if isInterval {
+            unreachable!()
+        } else {
+            match left {
+                JsonValue::Array(ref arr) => {
+                    if a < 0 {
+                        a = a + (arr.len() as i64);
+                    }
+
+                    if a >= (arr.len() as i64) || a < 0 {
+                        return Err(Error::InterpreterError("index out of bounds".to_string()));
+                    }
+
+
+                    return Ok(arr[a as usize].clone());
+                }
+
+                _ => unreachable!()
+            }
+        }
+    });
+
     // todo infix .
     // todo infix (
     // todo infix ==
@@ -486,6 +553,64 @@ mod tests {
         assert_eq!(
             interpreter.parse("\"banana\" + \"chocolate\"", HashMap::new(), 0).unwrap(),
             JsonValue::String("bananachocolate".to_string()),
+        );
+    }
+
+    #[test]
+    fn parse_exponentiation() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("2**3", HashMap::new(), 0).unwrap(),
+            JsonValue::Number(8.into()),
+        );
+    }
+
+    #[test]
+    fn parse_exponentiation_zero_base() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("2**0", HashMap::new(), 0).unwrap(),
+            JsonValue::Number(1.into()),
+        );
+    }
+
+    #[test]
+    fn parse_array_of_integers() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("[1,2][1]", HashMap::new(), 0).unwrap(),
+            JsonValue::Number(2.into()),
+        );
+    }
+
+    #[test]
+    fn parse_array_negative_index() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("[1,2][-1]", HashMap::new(), 0).unwrap(),
+            JsonValue::Number(2.into()),
+        );
+    }
+
+    #[test]
+    fn parse_array_positive_index_overflow() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("[1,2][9]", HashMap::new(), 0).err(),
+            Some(Error::InterpreterError(
+                "index out of bounds".to_string()
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_array_negative_index_overflow() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("[1,2][-9]", HashMap::new(), 0).err(),
+            Some(Error::InterpreterError(
+                "index out of bounds".to_string()
+            ))
         );
     }
 
