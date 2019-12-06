@@ -35,7 +35,7 @@ fn parse_object(
             let mut k = context.require(|t| t == "identifier" || t == "string")?;
 
             if k.token_type == "string" {
-                k.value = parse_string(k.value); // todo implement
+                k.value = &k.value[1..k.value.len() - 1];
             }
             context.require(|t| t == ":")?;
             let v = context.parse(None)?;
@@ -51,12 +51,11 @@ fn parse_object(
     Ok(JsonValue::from(obj))
 }
 
-fn parse_string(string: &str) -> &str {
-    &string[1..string.len() - 1]
+fn parse_string(string: &str) -> Result<JsonValue, Error> {
+    Ok(JsonValue::String(string[1..string.len() - 1].into()))
 }
 
-pub fn create_interpreter(
-) -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error> {
+pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error> {
     let mut patterns = HashMap::new();
     patterns.insert("number", "[0-9]+(?:\\.[0-9]+)?");
     patterns.insert("identifier", "[a-zA-Z_][a-zA-Z_0-9]*");
@@ -184,7 +183,10 @@ pub fn create_interpreter(
 
     prefix_rules.insert("{", |_token, context| parse_object(context));
 
-    // todo prefix string
+    prefix_rules.insert("string", |token, _context| Ok(
+        JsonValue::String(
+            token.value[1..token.value.len() - 1].into())
+    ));
 
     prefix_rules.insert("true", |_token, _context| Ok(JsonValue::Boolean(true)));
 
@@ -443,6 +445,24 @@ mod tests {
                 .parse("{\"abc def\": 10}", HashMap::new(), 0)
                 .unwrap(),
             JsonValue::from(obj),
+        );
+    }
+
+    #[test]
+    fn parse_string() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("\"banana\"", HashMap::new(), 0).unwrap(),
+            JsonValue::String("banana".to_string()),
+        );
+    }
+
+    #[test]
+    fn parse_string_empty() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("\"\"", HashMap::new(), 0).unwrap(),
+            JsonValue::String("".to_string()),
         );
     }
 }
