@@ -209,6 +209,10 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<St
                 let sum = left.as_f64().unwrap() + right.as_f64().unwrap();
                 Ok(JsonValue::Number(sum.into()))
             }
+            (&JsonValue::String(_), &JsonValue::String(_)) => {
+                let sum = [left.as_str().unwrap(), right.as_str().unwrap()].concat();
+                Ok(JsonValue::String(sum))
+            }
             (_, _) => Err(Error::InterpreterError(
                 "infix: +', 'number/string + number/string".to_string(),
             )),
@@ -228,6 +232,16 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<St
             )),
         }
     });
+
+    // todo infix **
+    // todo infix [
+    // todo infix .
+    // todo infix (
+    // todo infix ==
+    // todo infix >= <= > < == !=
+    // todo infix ||
+    // todo infix &&
+    // todo infix in
 
     PrattParser::new(
         "\\s+",
@@ -465,4 +479,14 @@ mod tests {
             JsonValue::String("".to_string()),
         );
     }
+
+    #[test]
+    fn parse_string_addition() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("\"banana\" + \"chocolate\"", HashMap::new(), 0).unwrap(),
+            JsonValue::String("bananachocolate".to_string()),
+        );
+    }
+
 }
