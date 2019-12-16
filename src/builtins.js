@@ -138,5 +138,10 @@ module.exports = (context) => {
     },
   });
 
+  define('defined', builtins, {
+    argumentTests: ['string'],
+    invoke: str => context.hasOwnProperty(str)
+  });
+
   return Object.assign({}, builtins, context);
 };

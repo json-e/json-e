@@ -4,7 +4,7 @@ var stringify = require('json-stable-stringify-without-jsonify');
 var {
   isString, isNumber, isBool,
   isArray, isObject,
-  isTruthy,
+   isTruthy, isFunction
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
@@ -117,15 +117,24 @@ operators.$if = (template, context) => {
     throw new TemplateError('$if can evaluate string expressions only');
   }
   if (isTruthy(interpreter.parse(template['$if'], context))) {
-    return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
+    if(template.hasOwnProperty('$then')){
+      throw new TemplateError('$if Syntax error: $then: should be spelled then: (no $)')
+    }
+    
+   return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
   }
+
   return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
 };
 
 operators.$json = (template, context) => {
   checkUndefinedProperties(template, ['\\$json']);
 
-  return stringify(render(template['$json'], context));
+  let result = render(template['$json'], context);
+  if (result.length === 0) {
+    throw new TemplateError(`$json returns undefined property because functions are not allowed in JSON`);
+  }
+  return stringify(result);
 };
 
 operators.$let = (template, context) => {
@@ -135,11 +144,17 @@ operators.$let = (template, context) => {
     throw new TemplateError('$let value must be an object');
   }
   let variables = {};
-  Object.keys(template['$let']).forEach(key => {
+
+  let initialResult = render(template['$let'], context);
+  if (!isObject(initialResult)) {
+    throw new TemplateError('$let value must be an object');
+  }
+  Object.keys(initialResult).forEach(key => {
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) {
       throw new TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
+    }else{
+      variables[key] = initialResult[key];
     }
-    variables[key] = render(template['$let'][key], context);
   });
 
   var child_context = Object.assign(context, variables);
@@ -392,6 +407,9 @@ module.exports = (template, context = {}) => {
   let result = render(template, context);
   if (result === deleteMarker) {
     return null;
+  }
+  if (isFunction(result)) {
+    throw new TemplateError('$eval ' + template.$eval + ' doesn\'t get any arguments in template')
   }
   return result;
 };

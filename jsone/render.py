@@ -142,6 +142,9 @@ def ifConstruct(template, context):
 def jsonConstruct(template, context):
     checkUndefinedProperties(template, ['\$json'])
     value = renderValue(template['$json'], context)
+    if callable(value):
+        raise TemplateError('$json returns undefined property because functions'
+                            ' are not allowed in JSON')
     return json.dumps(value, separators=(',', ':'), sort_keys=True, ensure_ascii=False)
 
 
@@ -152,11 +155,14 @@ def let(template, context):
         raise TemplateError("$let value must be an object")
 
     subcontext = context.copy()
-    for k, v in template['$let'].items():
+    initial_result = renderValue(template['$let'], context)
+    if not isinstance(initial_result, dict):
+        raise TemplateError("$let value must be an object")
+    for k, v in initial_result.items():
         if not IDENTIFIER_RE.match(k):
-            raise TemplateError('top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/')
-        subcontext[k] = renderValue(v, context)
-
+            raise TemplateError("top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/")
+        else:
+            subcontext[k] = v
     try:
         in_expression = template['in']
     except KeyError:

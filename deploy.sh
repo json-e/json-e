@@ -13,7 +13,7 @@ fi
 
 SHA=`git rev-parse --short HEAD`
 GITHUB_PROJECT=$(echo $GITHUB_BASE_REPO_URL | sed 's/^https:\/\/github.com\///' | sed 's/.git$//')
-SECRETS_URL="taskcluster/secrets/v1/secret/repo:github.com/$GITHUB_PROJECT"
+SECRETS_URL="$TASKCLUSTER_PROXY_URL/api/secrets/v1/secret/project/taskcluster/json-e-deploy"
 
 echo "Using project: $GITHUB_PROJECT"
 echo "Using secrets: $SECRETS_URL"
@@ -36,6 +36,7 @@ git remote add upstream "git@github.com:$GITHUB_PROJECT.git"
 git fetch upstream
 git reset "upstream/$TARGET_BRANCH"
 
+echo 'json-e.js.org' > CNAME
 touch .
 
 git add -A .

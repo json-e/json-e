@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -37,9 +38,16 @@ func Render(template interface{}, context map[string]interface{}) (interface{}, 
 		return nil, err
 	}
 
-	// Handle deleteMarker
+	//Handle deleteMarker
 	if result == deleteMarker {
 		result = nil
+	}
+
+	if result != nil && reflect.TypeOf(result).Kind() == reflect.Ptr {
+		return nil, TemplateError{
+			Message:  "$eval: function doesn't get any arguments in template",
+			Template: template,
+		}
 	}
 
 	// return result
@@ -232,6 +240,10 @@ var builtin = map[string]interface{}{
 		}
 		return fromNow(offset, ref)
 	}),
+	"defined": i.WrapFunctionWithContext(func(context map[string]interface{}, str string) bool {
+		_, ok := context[str]
+		return ok
+	}),
 }
 
 var eachKeyPattern = regexp.MustCompile(`^each\(([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$`)
@@ -418,7 +430,7 @@ var operators = map[string]operator{
 		if err := restrictProperties(template, "$let", "in"); err != nil {
 			return nil, err
 		}
-		o, ok := template["$let"].(map[string]interface{})
+		_, ok := template["$let"].(map[string]interface{})
 		if !ok {
 			return nil, TemplateError{
 				Message:  "$let expects an object",
@@ -430,12 +442,23 @@ var operators = map[string]operator{
 			c[k] = v
 		}
 		var err error
-		for k, v := range o {
-			c[k], err = render(v, context)
-			if err != nil {
-				return nil, err
+
+		r, err := render(template["$let"], context)
+		if err != nil {
+			return nil, err
+		}
+		rv, ok := r.(map[string]interface{})
+		if ok {
+			for k, v := range rv {
+				c[k] = v
+			}
+		} else {
+			return nil, TemplateError{
+				Message:  "$let expects an object",
+				Template: template,
 			}
 		}
+
 		in, ok := template["in"]
 		if !ok {
 			return nil, TemplateError{
