@@ -1,7 +1,7 @@
 const assert = require('assert');
 const {BinOp, ASTnode, Term, UnaryOp, Builtins} = require("../src/AST");
 const PrattParser = require('../src/interpreter');
-const {NewParser} = require('./../src/NewParser');
+const {NewParser} = require('./../src/newparser');
 
 describe(
     'Check AST Constructors',
@@ -37,7 +37,7 @@ describe(
         let oldParser = PrattParser;
 
         it('should create AST for expression "2"', function () {
-            let parser = new NewParser(oldParser, "2");
+            let parser = new NewParser(oldParser._tokenizer, "2");
             let node = parser.parse();
 
             assert(node.token.kind == "number" && node.token.value == "2");
@@ -51,7 +51,7 @@ describe(
         let oldParser = PrattParser;
 
         it('should create AST for expression "-2"', function () {
-            let parser = new NewParser(oldParser, "-2");
+            let parser = new NewParser(oldParser._tokenizer, "-2");
             let node = parser.parse();
 
             let isUnaryNodeCorrect = node.token.value == "-" && node.token.kind == "-"
@@ -60,7 +60,7 @@ describe(
         });
 
         it('should create AST for expression "+-2"', function () {
-            let parser = new NewParser(oldParser, "+-2");
+            let parser = new NewParser(oldParser._tokenizer, "+-2");
             let node = parser.parse();
 
             let isUnaryNodesCorrect = node.token.value == "+" && node.expr.token.value == "-";

@@ -1,9 +1,9 @@
 const {Term, UnaryOp} = require("../src/AST");
 
 class Parser {
-    constructor(parser, source, offset = 0) {
+    constructor(tokenizer, source, offset = 0) {
         this._source = source;
-        this._tokenizer = parser._tokenizer;
+        this._tokenizer = tokenizer;
         this.current_token = this._tokenizer.next(this._source, offset);
     }
 
