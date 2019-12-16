@@ -2,8 +2,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import re
 from collections import namedtuple
-from .shared import TemplateError
-from .six import with_metaclass, viewitems
+from shared import TemplateError
+from six import with_metaclass, viewitems
 
 
 class SyntaxError(TemplateError):

@@ -1,5 +1,8 @@
 import unittest
+
 from AST import *
+from prattparser import PrattParser
+from newparser import Parser
 
 
 class TestConstructors(unittest.TestCase):
@@ -28,3 +31,10 @@ class TestConstructors(unittest.TestCase):
         token = tkn("MINUS", "-")
         node = Builtins(builtin, args, token)
         self.assertEqual(isinstance(node, Builtins), True)
+
+    def test_unaryOp(self):
+        tokens = PrattParser._generate_tokens("-2")
+        parser = Parser(tokens, "-2")
+
+
+
