@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {BinOp, ASTnode, Term, UnaryOp, Builtins} = require("../src/AST");
+const {BinOp, ASTnode, UnaryOp, Builtins} = require("../src/AST");
 const PrattParser = require('../src/interpreter');
 const {NewParser} = require('./../src/newparser');
 
@@ -8,11 +8,6 @@ describe(
     () => {
         let op = {value: "-", kind: "-"}, builtin = "max", args = new Array();
         let left = new BinOp(op), right = new UnaryOp(op), expr = new ASTnode(op);
-
-        it('should create node for term ', function () {
-            let newNode = new Term(op);
-            assert(newNode instanceof Term);
-        });
 
         it('should create node for binary operation ', function () {
             let newNode = new BinOp(left, right, op);

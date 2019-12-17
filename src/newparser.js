@@ -1,4 +1,4 @@
-const {Term, UnaryOp} = require("../src/AST");
+const {ASTnode, UnaryOp} = require("../src/AST");
 
 class Parser {
     constructor(tokenizer, source, offset = 0) {
@@ -13,31 +13,25 @@ class Parser {
         }
     }
 
-    factor() {
+    parse() {
         //    factor : (PLUS | MINUS) factor | Primitives
         let token = this.current_token;
         let node;
 
         if (token.kind == "+") {
             this.eat("+");
-            node = new UnaryOp(token, this.factor());
+            node = new UnaryOp(token, this.parse());
         } else if (token.kind == "-") {
             this.eat("-");
-            node = new UnaryOp(token, this.factor());
+            node = new UnaryOp(token, this.parse());
         } else if (token.kind == "!") {
             this.eat("!");
-            node = new UnaryOp(token, this.factor());
+            node = new UnaryOp(token, this.parse());
         } else if (token.kind == "number") {
             this.eat("number");
-            node = new Term(token);
+            node = new ASTnode(token);
         }
 
-        return node;
-
-    }
-
-    parse() {
-        let node = this.factor();
         return node;
     }
 }

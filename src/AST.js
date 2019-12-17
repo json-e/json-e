@@ -4,13 +4,6 @@ class ASTnode {
     }
 }
 
-class Term extends ASTnode {
-    constructor(token) {
-        super(token);
-        this.value = token.value;
-    }
-}
-
 class BinOp extends ASTnode {
     constructor(left, right, op) { 
         super(op);
@@ -39,5 +32,4 @@ class Builtins extends ASTnode {
 exports.ASTnode = ASTnode;
 exports.BinOp = BinOp;
 exports.UnaryOp = UnaryOp;
-exports.Term = Term;
 exports.Builtins = Builtins;
