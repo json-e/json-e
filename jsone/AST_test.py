@@ -1,40 +1,40 @@
 import unittest
 
-from AST import *
-from prattparser import PrattParser
-from newparser import Parser
+from .AST import *
+from .newparser import Parser, generate_tokens, Token
 
 
 class TestConstructors(unittest.TestCase):
 
-    def test_term(self):
-        token = tkn("MINUS", "-")
-        node = Term(token)
-        self.assertEqual(isinstance(node, Term), True)
-
-    def test_binOp(self):
-        op = tkn("MINUS", "-")
-        left = AST(op)
-        right = AST(op)
+    def test_binOp_constructor(self):
+        op = Token("MINUS", "-", 0, 1)
+        left = ASTnode(op)
+        right = ASTnode(op)
         node = BinOp(left, right, op)
         self.assertEqual(isinstance(node, BinOp), True)
 
-    def test_unaryOp(self):
-        token = tkn("MINUS", "-")
-        expr = AST(token)
+    def test_unaryOp_constructor(self):
+        token = Token("MINUS", "-", 0, 1)
+        expr = ASTnode(token)
         node = UnaryOp(token, expr)
         self.assertEqual(isinstance(node, UnaryOp), True)
 
-    def test_builtin(self):
+    def test_builtin_constructor(self):
         builtin = "max"
         args = []
-        token = tkn("MINUS", "-")
+        token = Token("MINUS", "-", 0, 1)
         node = Builtins(builtin, args, token)
         self.assertEqual(isinstance(node, Builtins), True)
 
+    def test_term(self):
+        tokens = generate_tokens("2")
+        parser = Parser(tokens, "2")
+        node = parser.parse()
+        self.assertEqual(node.token.kind == "number" and node.token.value == '2', True)
+
     def test_unaryOp(self):
-        tokens = PrattParser._generate_tokens("-2")
+        tokens = generate_tokens("-2")
         parser = Parser(tokens, "-2")
-
-
-
+        node = parser.parse()
+        isUnaryNodeCorrect = node.token.value == "-" and node.token.kind == "-"
+        self.assertEqual(isUnaryNodeCorrect and node.expr.token.value == '2', True)

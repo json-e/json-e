@@ -2,8 +2,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import re
 from collections import namedtuple
-from shared import TemplateError
-from six import with_metaclass, viewitems
+from .shared import TemplateError
+from .six import with_metaclass, viewitems
 
 
 class SyntaxError(TemplateError):
@@ -19,23 +19,27 @@ Token = namedtuple('Token', ['kind', 'value', 'start', 'end'])
 
 def prefix(*kinds):
     """Decorate a method as handling prefix tokens of the given kinds"""
+
     def wrap(fn):
         try:
             fn.prefix_kinds.extend(kinds)
         except AttributeError:
             fn.prefix_kinds = list(kinds)
         return fn
+
     return wrap
 
 
 def infix(*kinds):
     """Decorate a method as handling infix tokens of the given kinds"""
+
     def wrap(fn):
         try:
             fn.infix_kinds.extend(kinds)
         except AttributeError:
             fn.infix_kinds = list(kinds)
         return fn
+
     return wrap
 
 
@@ -72,7 +76,6 @@ class PrattParserMeta(type):
 
 
 class PrattParser(with_metaclass(PrattParserMeta, object)):
-
     # regular expression for ignored input (e.g., whitespace)
     ignore = None
 
