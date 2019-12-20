@@ -23,11 +23,7 @@ class Parser {
         let node = this.term();
         let token = this.current_token;
 
-        if (token == null) {
-            return node
-        }
-
-        while (this.unaryOpTokens.indexOf(token.kind) !== -1) {
+        for (; token != null && this.binOpTokens.indexOf(token.kind) !== -1; token = this.current_token) {
             this.eat(token.kind);
             node = new UnaryOp(token, this.term());
         }
@@ -40,11 +36,7 @@ class Parser {
         let node = this.factor();
         let token = this.current_token;
 
-        if (token == null) {
-            return node
-        }
-
-        while (this.binOpTokens.indexOf(token.kind) !== -1) {
+        for (; token != null && this.binOpTokens.indexOf(token.kind) !== -1; token = this.current_token) {
             this.eat(token.kind);
             node = new BinOp(token, node, this.factor());
         }

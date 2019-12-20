@@ -65,5 +65,33 @@ describe(
     }
 );
 
+describe(
+    'Check parser for binary operations',
+    () => {
+        let tokenizer = createTokenizer();
+
+        it('should create AST for expression "5-2"', function () {
+            let parser = new NewParser(tokenizer, "5-2");
+            let node = parser.parse();
+
+            let isBinaryNodeCorrect = node.token.value == "-" && node.token.kind == "-"
+            let isPrimitivesNodesCorrect = node.left.token.value == "5" && node.right.token.value == "2"
+
+            assert(isBinaryNodeCorrect && isPrimitivesNodesCorrect );
+        });
+
+        it('should create AST for expression "2+3-8"', function () {
+            let parser = new NewParser(tokenizer, "1+3*8");
+            let node = parser.parse();
+            // let toke
+
+            let isBinaryNodesCorrect = node.token.value == "*" && node.left.token.value == "+";
+            let isPrimitivesNodesCorrect =node.right.token.value == "8" && node.left.left.token.value == "1";
+            isPrimitivesNodesCorrect = isPrimitivesNodesCorrect && node.left.right.token.value == "3"
+
+            assert(isBinaryNodesCorrect && isPrimitivesNodesCorrect);
+        });
+    }
+);
 
 
