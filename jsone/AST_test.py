@@ -8,14 +8,14 @@ class TestConstructors(unittest.TestCase):
 
     def test_binOp_constructor(self):
         op = Token("MINUS", "-", 0, 1)
-        left = ASTnode(op)
-        right = ASTnode(op)
-        node = BinOp(left, right, op)
+        left = ASTNode(op)
+        right = ASTNode(op)
+        node = BinOp(op, left, right)
         self.assertEqual(isinstance(node, BinOp), True)
 
     def test_unaryOp_constructor(self):
         token = Token("MINUS", "-", 0, 1)
-        expr = ASTnode(token)
+        expr = ASTNode(token)
         node = UnaryOp(token, expr)
         self.assertEqual(isinstance(node, UnaryOp), True)
 
@@ -23,7 +23,7 @@ class TestConstructors(unittest.TestCase):
         builtin = "max"
         args = []
         token = Token("MINUS", "-", 0, 1)
-        node = Builtins(builtin, args, token)
+        node = Builtins(token, builtin, args)
         self.assertEqual(isinstance(node, Builtins), True)
 
     def test_term(self):

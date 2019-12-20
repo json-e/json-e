@@ -1,4 +1,4 @@
-from .AST import ASTnode, UnaryOp
+from .AST import ASTNode, UnaryOp, BinOp
 from collections import namedtuple
 import re
 
@@ -10,6 +10,10 @@ class Parser(object):
         self.tokens = tokens
         self.source = source
         self.current_token = next(self.tokens)
+        self.unaryOpTokens = ["-", "+", "!"]
+        self.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
+                            "!=", "==", "&&", "||", "in"]
+        self.primitivesTokens = ["number", "null", "str", "true", "false"]
 
     def eat(self, token_type):
         if self.current_token.kind == token_type:
@@ -19,20 +23,49 @@ class Parser(object):
                 self.current_token = None
 
     def parse(self):
-        """ factor: (PLUS | MINUS) factor | Primitives """
+        """  expr : term (unaryOp term)* """
+        node = self.term()
         token = self.current_token
-        if token.kind == "+":
-            self.eat("+")
-            node = UnaryOp(token, self.parse())
-        elif token.kind == "-":
-            self.eat("-")
-            node = UnaryOp(token, self.parse())
-        elif token.kind == "!":
-            self.eat("!")
-            node = UnaryOp(token, self.parse())
-        elif token.kind == "number":
-            self.eat("number")
-            node = ASTnode(token)
+
+        if self.current_token is None:
+            return node
+
+        while self.current_token.kind in self.unaryOpTokens:
+            self.eat(token.kind)
+            node = UnaryOp(token, self.term())
+
+        return node
+
+    def term(self):
+        """ term : factor (binaryOp factor)* """
+        node = self.factor()
+        token = self.current_token
+
+        if self.current_token is None:
+            return node
+
+        while self.current_token.kind in self.binOpTokens:
+            self.eat(token.kind)
+            node = BinOp(token, node, self.factor())
+
+        return node
+
+    def factor(self):
+        """ factor : unaryOp factor | Primitives | LPAREN expr RPAREN"""
+        token = self.current_token
+        node = None
+
+        if token.kind in self.unaryOpTokens:
+            self.eat(token.kind)
+            node = UnaryOp(token, self.factor())
+        elif token.kind in self.primitivesTokens:
+            self.eat(token.kind)
+            node = ASTNode(token)
+        elif token.kind == "(":
+            self.eat(token.kind)
+            node = self.parse()
+            self.eat(token.kind)
+
         return node
 
 

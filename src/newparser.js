@@ -9,7 +9,7 @@ class Parser {
         this.unaryOpTokens = ["-", "+", "!"];
         this.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
         "!=", "==", "&&", "||", "in"];
-        this.primitivesTokens = ["number", "null", "str", "true", "false"]
+        this.primitivesTokens = ["number", "null", "str", "true", "false"];
     }
 
     eat(token_type) {
