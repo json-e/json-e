@@ -6,10 +6,10 @@ class Parser {
         this._source = source;
         this._tokenizer = tokenizer;
         this.current_token = this._tokenizer.next(this._source, offset);
-        this.tokensForUnaryOp = ["-", "+", "!"];
-        this.tokensForBinOp = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
+        this.unaryOpTokens = ["-", "+", "!"];
+        this.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
         "!=", "==", "&&", "||", "in"];
-        this.tokensForPrimitives = ["number", "null", "str", "true", "false"]
+        this.primitivesTokens = ["number", "null", "str", "true", "false"]
     }
 
     eat(token_type) {
@@ -20,15 +20,16 @@ class Parser {
 
     parse() {
         //    expr : term (unaryOp term)*
-        let token;
         let node = this.term();
+        let token = this.current_token;
 
-        if (this.current_token !== null) {
-            while (this.tokensForUnaryOp.indexOf(this.current_token.kind) != "-1") {
-                token = this.current_token;
-                this.eat(token.kind);
-                node = new BinOp(token, this.term());
-            }
+        if (token == null) {
+            return node
+        }
+
+        while (this.unaryOpTokens.indexOf(token.kind) !== -1) {
+            this.eat(token.kind);
+            node = new UnaryOp(token, this.term());
         }
 
         return node;
@@ -36,15 +37,16 @@ class Parser {
 
     term() {
         //    term : factor (binaryOp factor)*
-        let token;
         let node = this.factor();
+        let token = this.current_token;
 
-        if (this.current_token !== null) {
-            while (this.tokensForBinOp.indexOf(this.current_token.kind) != "-1") {
-                token = this.current_token;
-                this.eat(token.kind);
-                node = new BinOp(token, this.factor());
-            }
+        if (token == null) {
+            return node
+        }
+
+        while (this.binOpTokens.indexOf(token.kind) !== -1) {
+            this.eat(token.kind);
+            node = new BinOp(token, this.factor());
         }
 
         return node
@@ -54,11 +56,13 @@ class Parser {
         //    factor : unaryOp factor | Primitives | LPAREN expr RPAREN
         let token = this.current_token;
         let node;
+        let isUnaryOpToken = this.unaryOpTokens.indexOf(token.kind) !== -1;
+        let isPrimitivesToken = this.primitivesTokens.indexOf(token.kind) !== -1;
 
-        if (this.tokensForUnaryOp.indexOf(token.kind) != "-1") {
+        if (isUnaryOpToken) {
             this.eat(token.kind);
             node = new UnaryOp(token, this.factor());
-        } else if (this.tokensForPrimitives.indexOf(token.kind) != "-1") {
+        } else if (isPrimitivesToken) {
             this.eat(token.kind);
             node = new ASTNode(token);
         } else if (token.kind == "(") {
