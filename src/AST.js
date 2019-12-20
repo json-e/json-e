@@ -1,10 +1,10 @@
-class ASTnode {
+class ASTNode {
     constructor(token) {
         this.token = token;
     }
 }
 
-class BinOp extends ASTnode {
+class BinOp extends ASTNode {
     constructor(left, right, op) { 
         super(op);
         this.left = left;
@@ -13,7 +13,7 @@ class BinOp extends ASTnode {
     }
 }
 
-class UnaryOp extends ASTnode { 
+class UnaryOp extends ASTNode {
     constructor(op, expr) {
         super(op);
         this.op = op;
@@ -21,7 +21,7 @@ class UnaryOp extends ASTnode {
     }
 }
 
-class Builtins extends ASTnode {
+class Builtins extends ASTNode {
     constructor(builtin, args, token) { 
         super(token);
         this.builtin = builtin;
@@ -29,7 +29,7 @@ class Builtins extends ASTnode {
     }
 }
 
-exports.ASTnode = ASTnode;
+exports.ASTNode = ASTNode;
 exports.BinOp = BinOp;
 exports.UnaryOp = UnaryOp;
 exports.Builtins = Builtins;

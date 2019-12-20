@@ -1,4 +1,4 @@
-const {ASTnode, UnaryOp} = require("../src/AST");
+const {ASTNode, UnaryOp, BinOp} = require("../src/AST");
 const Tokenizer = require("../src/tokenizer");
 
 class Parser {
@@ -6,6 +6,10 @@ class Parser {
         this._source = source;
         this._tokenizer = tokenizer;
         this.current_token = this._tokenizer.next(this._source, offset);
+        this.tokensForUnaryOp = ["-", "+", "!"];
+        this.tokensForBinOp = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
+        "!=", "==", "&&", "||", "in"];
+        this.tokensForPrimitives = ["number", "null", "str", "true", "false"]
     }
 
     eat(token_type) {
@@ -15,25 +19,55 @@ class Parser {
     }
 
     parse() {
-        //    factor : (PLUS | MINUS) factor | Primitives
-        let token = this.current_token;
-        let node;
+        //    expr : term (unaryOp term)*
+        let token;
+        let node = this.term();
 
-        if (token.kind == "+") {
-            this.eat("+");
-            node = new UnaryOp(token, this.parse());
-        } else if (token.kind == "-") {
-            this.eat("-");
-            node = new UnaryOp(token, this.parse());
-        } else if (token.kind == "!") {
-            this.eat("!");
-            node = new UnaryOp(token, this.parse());
-        } else if (token.kind == "number") {
-            this.eat("number");
-            node = new ASTnode(token);
+        if (this.current_token !== null) {
+            while (this.tokensForUnaryOp.indexOf(this.current_token.kind) != "-1") {
+                token = this.current_token;
+                this.eat(token.kind);
+                node = new BinOp(token, this.term());
+            }
         }
 
         return node;
+    }
+
+    term() {
+        //    term : factor (binaryOp factor)*
+        let token;
+        let node = this.factor();
+
+        if (this.current_token !== null) {
+            while (this.tokensForBinOp.indexOf(this.current_token.kind) != "-1") {
+                token = this.current_token;
+                this.eat(token.kind);
+                node = new BinOp(token, this.factor());
+            }
+        }
+
+        return node
+    }
+
+    factor() {
+        //    factor : unaryOp factor | Primitives | LPAREN expr RPAREN
+        let token = this.current_token;
+        let node;
+
+        if (this.tokensForUnaryOp.indexOf(token.kind) != "-1") {
+            this.eat(token.kind);
+            node = new UnaryOp(token, this.factor());
+        } else if (this.tokensForPrimitives.indexOf(token.kind) != "-1") {
+            this.eat(token.kind);
+            node = new ASTNode(token);
+        } else if (token.kind == "(") {
+            this.eat("(");
+            node = this.parse();
+            this.eat(")");
+        }
+
+        return node
     }
 }
 
@@ -59,7 +93,7 @@ let createTokenizer = function () {
         }
     );
     return tokenizer
-}
+};
 
 
 exports.NewParser = Parser;

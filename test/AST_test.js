@@ -1,12 +1,12 @@
 const assert = require('assert');
-const {BinOp, ASTnode, UnaryOp, Builtins} = require("../src/AST");
+const {BinOp, ASTNode, UnaryOp, Builtins} = require("../src/AST");
 const {NewParser, createTokenizer} = require('./../src/newparser');
 
 describe(
     'Check AST Constructors',
     () => {
         let op = {value: "-", kind: "-"}, builtin = "max", args = new Array();
-        let left = new BinOp(op), right = new UnaryOp(op), expr = new ASTnode(op);
+        let left = new BinOp(op), right = new UnaryOp(op), expr = new ASTNode(op);
 
         it('should create node for binary operation ', function () {
             let newNode = new BinOp(left, right, op);
