@@ -46,7 +46,7 @@ class Parser {
 
         while (this.binOpTokens.indexOf(token.kind) !== -1) {
             this.eat(token.kind);
-            node = new BinOp(token, this.factor());
+            node = new BinOp(node, this.factor(), token);
         }
 
         return node
