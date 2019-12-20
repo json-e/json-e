@@ -55,7 +55,8 @@ fn parse_string(string: &str) -> Result<JsonValue, Error> {
     Ok(JsonValue::String(string[1..string.len() - 1].into()))
 }
 
-pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error> {
+pub fn create_interpreter(
+) -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error> {
     let mut patterns = HashMap::new();
     patterns.insert("number", "[0-9]+(?:\\.[0-9]+)?");
     patterns.insert("identifier", "[a-zA-Z_][a-zA-Z_0-9]*");
@@ -183,10 +184,11 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<St
 
     prefix_rules.insert("{", |_token, context| parse_object(context));
 
-    prefix_rules.insert("string", |token, _context| Ok(
-        JsonValue::String(
-            token.value[1..token.value.len() - 1].into())
-    ));
+    prefix_rules.insert("string", |token, _context| {
+        Ok(JsonValue::String(
+            token.value[1..token.value.len() - 1].into(),
+        ))
+    });
 
     prefix_rules.insert("true", |_token, _context| Ok(JsonValue::Boolean(true)));
 
@@ -245,7 +247,6 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<St
                 "infix: **', 'number + number".to_string(),
             )),
         }
-
     });
 
     // todo infix [
@@ -254,27 +255,51 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<St
         let mut b: i64;
         let mut isInterval = false;
 
+        // Successful cases this function handles:
+        //  [1,2][1] - integer index of array [DONE]
+        //  [1,2][1:2] - interval of array
+        //  "abc"[1] - integer index of string
+        //  "abc"[1:2] - interval of string
+        //  {bar: 10}['bar'] - object property access
+
         if context.attempt(|t| t == ":")?.is_some() {
             a = 0;
             isInterval = true;
         } else {
             let parsed = context.parse(None)?;
+            print!("parsed is {}\n", parsed);
             if let JsonValue::Number(n) = parsed {
+                let (_, _, exponent) = n.as_parts();
+                if exponent < 0 {
+                    return Err(Error::InterpreterError(
+                        "should only use integers to access arrays or strings".to_string(),
+                    ));
+                }
                 a = n.into();
                 if context.attempt(|t| t == ":")?.is_some() {
                     isInterval = true;
                 }
             } else {
-                return Err(Error::InterpreterError("left part of slice operator is not a number".to_string()));
+                return Err(Error::InterpreterError(
+                    "left part of slice operator is not a number".to_string(),
+                ));
             }
         }
 
         if isInterval && !context.attempt(|t| t == "]")?.is_some() {
             let parsed = context.parse(None)?;
             if let JsonValue::Number(n) = parsed {
+                let (_, _, exponent) = n.as_parts();
+                if exponent < 0 {
+                    return Err(Error::InterpreterError(
+                        "cannot perform interval access with non-integers".to_string(),
+                    ));
+                }
                 b = n.into();
             } else {
-                return Err(Error::InterpreterError("right part of slice operator is not a number".to_string()));
+                return Err(Error::InterpreterError(
+                    "right part of slice operator is not a number".to_string(),
+                ));
             }
 
             context.require(|t| t == "]")?;
@@ -290,14 +315,14 @@ pub fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<St
                     }
 
                     if a >= (arr.len() as i64) || a < 0 {
+                        print!("index is {}\n", a);
                         return Err(Error::InterpreterError("index out of bounds".to_string()));
                     }
-
 
                     return Ok(arr[a as usize].clone());
                 }
 
-                _ => unreachable!()
+                _ => unreachable!(),
             }
         }
     });
@@ -551,7 +576,9 @@ mod tests {
     fn parse_string_addition() {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
-            interpreter.parse("\"banana\" + \"chocolate\"", HashMap::new(), 0).unwrap(),
+            interpreter
+                .parse("\"banana\" + \"chocolate\"", HashMap::new(), 0)
+                .unwrap(),
             JsonValue::String("bananachocolate".to_string()),
         );
     }
@@ -593,13 +620,34 @@ mod tests {
     }
 
     #[test]
+    fn parse_array_noninteger_index() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("[1,2][0.7]", HashMap::new(), 0).err(),
+            Some(Error::InterpreterError(
+                "should only use integers to access arrays or strings".to_string()
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_array_string_index() {
+        let interpreter = create_interpreter().unwrap();
+        assert_eq!(
+            interpreter.parse("[1,2]['foo']", HashMap::new(), 0).err(),
+            Some(Error::InterpreterError(
+                // TODO: this is not the same message as JS
+                "left part of slice operator is not a number".to_string()
+            ))
+        );
+    }
+
+    #[test]
     fn parse_array_positive_index_overflow() {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("[1,2][9]", HashMap::new(), 0).err(),
-            Some(Error::InterpreterError(
-                "index out of bounds".to_string()
-            ))
+            Some(Error::InterpreterError("index out of bounds".to_string()))
         );
     }
 
@@ -608,10 +656,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("[1,2][-9]", HashMap::new(), 0).err(),
-            Some(Error::InterpreterError(
-                "index out of bounds".to_string()
-            ))
+            Some(Error::InterpreterError("index out of bounds".to_string()))
         );
     }
-
 }
