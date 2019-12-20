@@ -24,7 +24,7 @@ func TestBinOpConstructor(t *testing.T) {
 	var left, right newparser.UnaryOp
 	var op prattparser.Token
 
-	node.NewNode(left, right, op)
+	node.NewNode(op, left, right)
 
 	if reflect.TypeOf(node).Name() != "BinOp" {
 		t.Error("Constructor for binary operations failed")
@@ -51,7 +51,7 @@ func TestBuiltinConstructor(t *testing.T) {
 	var args []newparser.ASTnodeIntr
 	var builtin string
 
-	node.NewNode(builtin, args, token)
+	node.NewNode(token, builtin, args)
 
 	if reflect.TypeOf(node).Name() != "Builtin" {
 		t.Error("Constructor for builtins failed")

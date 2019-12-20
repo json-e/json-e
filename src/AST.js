@@ -5,7 +5,7 @@ class ASTNode {
 }
 
 class BinOp extends ASTNode {
-    constructor(left, right, op) { 
+    constructor(op, left, right) {
         super(op);
         this.left = left;
         this.op = op;
@@ -22,7 +22,7 @@ class UnaryOp extends ASTNode {
 }
 
 class Builtins extends ASTNode {
-    constructor(builtin, args, token) { 
+    constructor(token, builtin, args) {
         super(token);
         this.builtin = builtin;
         this.args = args;

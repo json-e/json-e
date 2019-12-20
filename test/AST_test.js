@@ -9,7 +9,7 @@ describe(
         let left = new BinOp(op), right = new UnaryOp(op), expr = new ASTNode(op);
 
         it('should create node for binary operation ', function () {
-            let newNode = new BinOp(left, right, op);
+            let newNode = new BinOp(op, left, right);
             assert(newNode instanceof BinOp);
         });
 
@@ -19,7 +19,7 @@ describe(
         });
 
         it('should create node for builtins', function () {
-            let newNode = new Builtins(builtin, args, op);
+            let newNode = new Builtins(op, builtin, args);
             assert(newNode instanceof Builtins);
         });
     }

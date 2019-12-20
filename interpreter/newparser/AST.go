@@ -34,7 +34,7 @@ type BinOp struct {
 	op          prattparser.Token
 }
 
-func (b *BinOp) NewNode(left, right ASTnodeIntr, op prattparser.Token) {
+func (b *BinOp) NewNode(op prattparser.Token, left, right ASTnodeIntr) {
 	b.Left = left
 	b.node.Token = op
 	b.op = op
@@ -83,7 +83,7 @@ type Builtin struct {
 	Args    []ASTnodeIntr
 }
 
-func (b *Builtin) NewNode(builtin string, args []ASTnodeIntr, token prattparser.Token) {
+func (b *Builtin) NewNode(token prattparser.Token, builtin string, args []ASTnodeIntr) {
 	b.Builtin = builtin
 	b.node.Token = token
 	b.Args = args
