@@ -38,3 +38,11 @@ class TestConstructors(unittest.TestCase):
         node = parser.parse()
         isUnaryNodeCorrect = node.token.value == "-" and node.token.kind == "-"
         self.assertEqual(isUnaryNodeCorrect and node.expr.token.value == '2', True)
+
+    def test_binaryOp(self):
+        tokens = generate_tokens("5-2")
+        parser = Parser(tokens, "5-2")
+        node = parser.parse()
+        isUnaryNodeCorrect = node.token.value == "-" and node.token.kind == "-"
+        isPrimitivesNodesCorrect = node.left.token.value == '5' and node.right.token.value == '2'
+        self.assertEqual(isUnaryNodeCorrect and isPrimitivesNodesCorrect, True)

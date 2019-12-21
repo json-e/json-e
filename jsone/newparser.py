@@ -47,6 +47,8 @@ class Parser(object):
         while self.current_token.kind in self.binOpTokens:
             self.eat(token.kind)
             node = BinOp(token, node, self.factor())
+            if self.current_token is None:
+                return node
 
         return node
 
