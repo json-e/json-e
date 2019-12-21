@@ -37,7 +37,7 @@ func (p *Parser) Parse() (node ASTnodeIntr) {
 	node = p.term()
 	token := p.currentToken
 
-	for contains(p.unaryOpTokens, token.Kind) {
+	for ; contains(p.binOpTokens, token.Kind); token = p.currentToken {
 		p.eat(token.Kind)
 		unaryNode.NewNode(token, p.factor())
 		node = unaryNode
@@ -53,7 +53,7 @@ func (p *Parser) term() (node ASTnodeIntr) {
 	node = p.Parse()
 	token := p.currentToken
 
-	for contains(p.binOpTokens, token.Kind) {
+	for ; contains(p.binOpTokens, token.Kind); token = p.currentToken {
 		p.eat(token.Kind)
 		binaryNode.NewNode(token, node, p.factor())
 		node = binaryNode

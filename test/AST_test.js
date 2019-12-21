@@ -80,7 +80,7 @@ describe(
             assert(isBinaryNodeCorrect && isPrimitivesNodesCorrect );
         });
 
-        it('should create AST for expression "2+3-8"', function () {
+        it('should create AST for expression "1+3*8"', function () {
             let parser = new NewParser(tokenizer, "1+3*8");
             let node = parser.parse();
             // let toke

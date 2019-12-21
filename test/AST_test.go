@@ -91,3 +91,27 @@ func TestParserForUnaryOp(t *testing.T) {
 		t.Error("Expression '-2' failed")
 	}
 }
+
+func TestParserForBinaryOp(t *testing.T) {
+	var parser newparser.Parser
+
+	tokenizer := newparser.CreateTokenizer()
+	parser.NewParser("5-2", tokenizer)
+	node := parser.Parse()
+	token := node.GetToken()
+
+	if token.Kind == "-" && token.Value == "-" {
+		leftChild := node.GetLeftChild()
+		leftChildToken := (*leftChild).GetToken()
+		rightChild := node.GetRightChild()
+		rightChildToken := (*rightChild).GetToken()
+		if leftChildToken.Kind != "number" || leftChildToken.Value != "5" {
+			t.Error("Expression '5-2' failed")
+		}
+		if rightChildToken.Kind != "number" || rightChildToken.Value != "2" {
+			t.Error("Expression '5-2' failed")
+		}
+	} else {
+		t.Error("Expression '5-2' failed")
+	}
+}
