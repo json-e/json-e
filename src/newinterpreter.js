@@ -52,7 +52,7 @@ class Interpreter {
                 return this.visit(node.left) != this.visit(node.right);
             case ("=="):
                 return this.visit(node.left) == this.visit(node.right);
-            case ("||"):
+            case ():
                 return this.visit(node.left) || this.visit(node.right);
             case ("&&"):
                 return this.visit(node.left) && this.visit(node.right);

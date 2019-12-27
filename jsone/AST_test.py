@@ -2,6 +2,8 @@ import unittest
 
 from .AST import *
 from .newparser import Parser, generate_tokens, Token
+from .newinterpreter import Interpreter
+from .interpreter import ExpressionEvaluator
 
 
 class TestConstructors(unittest.TestCase):
@@ -39,10 +41,155 @@ class TestConstructors(unittest.TestCase):
         isUnaryNodeCorrect = node.token.value == "-" and node.token.kind == "-"
         self.assertEqual(isUnaryNodeCorrect and node.expr.token.value == '2', True)
 
-    def test_binaryOp(self):
-        tokens = generate_tokens("5-2")
-        parser = Parser(tokens, "5-2")
-        node = parser.parse()
-        isUnaryNodeCorrect = node.token.value == "-" and node.token.kind == "-"
-        isPrimitivesNodesCorrect = node.left.token.value == '5' and node.right.token.value == '2'
-        self.assertEqual(isUnaryNodeCorrect and isPrimitivesNodesCorrect, True)
+    def test_interpreterForUnaryMinus(self):
+        expr = "-2"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForUnaryPlus(self):
+        expr = "+7"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForNot(self):
+        expr = "!5"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForBinaryPlus(self):
+        expr = "2+3"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForBinaryMinus(self):
+        expr = "2-3"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForDiv(self):
+        expr = "6/2"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForMul(self):
+        expr = "2*3"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForGreater(self):
+        expr = "5>2"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForLess(self):
+        expr = "4<7"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForMoreOrEqual(self):
+        expr = "3>=3"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForLessOrEqual(self):
+        expr = "6<=2"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForLessOrEqual(self):
+        expr = "6<=2"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForNotEqual(self):
+        expr = "2!=3"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForEqual(self):
+        expr = "5==2"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForOr(self):
+        expr = "false||false"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForAND(self):
+        expr = "true&&false"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForSquaring(self):
+        expr = "2**3"
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter()
+        oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))

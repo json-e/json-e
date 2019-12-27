@@ -199,7 +199,7 @@ describe(
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
 
-        it('should interpret AST for expression "6<=2"', function () {
+        it('should interpret AST for expression "26<=2"', function () {
             let expr = "6<=2";
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr);
