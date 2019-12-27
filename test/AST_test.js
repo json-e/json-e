@@ -1,6 +1,8 @@
 const assert = require('assert');
 const {BinOp, ASTNode, UnaryOp, Builtins} = require("../src/AST");
 const {NewParser, createTokenizer} = require('./../src/newparser');
+const {NewInterpreter} = require('./../src/newinterpreter');
+const oldIterpreter = require("../src/interpreter");
 
 describe(
     'Check AST Constructors',
@@ -93,5 +95,40 @@ describe(
         });
     }
 );
+
+describe(
+    'Check interpreter',
+    () => {
+        it('should interpret AST for expression "-2"', function () {
+            let expr = "-2";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+        it('should interpret AST for expression "+7"', function () {
+            let expr = "+7";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree =parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "!5"', function () {
+            let expr = "!5";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+    }
+);
+
 
 
