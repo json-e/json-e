@@ -79,7 +79,7 @@ describe(
             let isBinaryNodeCorrect = node.token.value == "-" && node.token.kind == "-"
             let isPrimitivesNodesCorrect = node.left.token.value == "5" && node.right.token.value == "2"
 
-            assert(isBinaryNodeCorrect && isPrimitivesNodesCorrect );
+            assert(isBinaryNodeCorrect && isPrimitivesNodesCorrect);
         });
 
         it('should create AST for expression "1+3*8"', function () {
@@ -88,7 +88,7 @@ describe(
             // let toke
 
             let isBinaryNodesCorrect = node.token.value == "*" && node.left.token.value == "+";
-            let isPrimitivesNodesCorrect =node.right.token.value == "8" && node.left.left.token.value == "1";
+            let isPrimitivesNodesCorrect = node.right.token.value == "8" && node.left.left.token.value == "1";
             isPrimitivesNodesCorrect = isPrimitivesNodesCorrect && node.left.right.token.value == "3"
 
             assert(isBinaryNodesCorrect && isPrimitivesNodesCorrect);
@@ -108,11 +108,12 @@ describe(
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
+
         it('should interpret AST for expression "+7"', function () {
             let expr = "+7";
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr);
-            let tree =parser.parse();
+            let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
@@ -127,6 +128,136 @@ describe(
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
+
+        it('should interpret AST for expression "2+3"', function () {
+            let expr = "2+3";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "2-3"', function () {
+            let expr = "2-3";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "6/2"', function () {
+            let expr = "6/2";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "2*3"', function () {
+            let expr = "2*3";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "5>2"', function () {
+            let expr = "5>2";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "4<7"', function () {
+            let expr = "4<7";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "3>=3"', function () {
+            let expr = "3>=3";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "6<=2"', function () {
+            let expr = "6<=2";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "2!=3"', function () {
+            let expr = "2!=3";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "5==2"', function () {
+            let expr = "5==2";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "false||false"', function () {
+            let expr = "false||false";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+        it('should interpret AST for expression "true&&false"', function () {
+            let expr = "true&&false";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "2**3"', function () {
+            let expr = "2**3";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter();
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
     }
 );
 
