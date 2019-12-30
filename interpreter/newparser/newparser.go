@@ -30,8 +30,8 @@ func (p *Parser) eat(tokeType string) {
 	}
 }
 
-func (p *Parser) Parse() (node ASTnodeIntr) {
-	//    factor : (PLUS | MINUS) factor | Primitives
+func (p *Parser) Parse() (node IASTNode) {
+	//    expr : term (unaryOp term)*
 	var unaryNode UnaryOp
 
 	node = p.term()
@@ -39,18 +39,18 @@ func (p *Parser) Parse() (node ASTnodeIntr) {
 
 	for ; contains(p.binOpTokens, token.Kind); token = p.currentToken {
 		p.eat(token.Kind)
-		unaryNode.NewNode(token, p.factor())
+		unaryNode.NewNode(token, p.term())
 		node = unaryNode
 	}
 
 	return
 }
 
-func (p *Parser) term() (node ASTnodeIntr) {
+func (p *Parser) term() (node IASTNode) {
 	//    term : factor (binaryOp factor)*
 	var binaryNode BinOp
 
-	node = p.Parse()
+	node = p.factor()
 	token := p.currentToken
 
 	for ; contains(p.binOpTokens, token.Kind); token = p.currentToken {
@@ -62,7 +62,7 @@ func (p *Parser) term() (node ASTnodeIntr) {
 	return
 }
 
-func (p *Parser) factor() (node ASTnodeIntr) {
+func (p *Parser) factor() (node IASTNode) {
 	//    factor : unaryOp factor | Primitives | LPAREN expr RPAREN
 
 	var unaryNode UnaryOp
@@ -70,13 +70,14 @@ func (p *Parser) factor() (node ASTnodeIntr) {
 
 	token := p.currentToken
 	isUnaryOpToken := contains(p.unaryOpTokens, token.Kind)
-	isPrimitivesToken := contains(p.binOpTokens, token.Kind)
+	isPrimitivesToken := contains(p.primitivesTokens, token.Kind)
 
 	if isUnaryOpToken {
 		p.eat(token.Kind)
 		unaryNode.NewNode(token, p.factor())
 		node = unaryNode
 	} else if isPrimitivesToken {
+		p.eat(token.Kind)
 		primitiveNode.NewNode(token)
 		node = primitiveNode
 	} else if token.Kind == "(" {

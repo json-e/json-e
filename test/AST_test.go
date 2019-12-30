@@ -48,7 +48,7 @@ func TestUnaryOpConstructor(t *testing.T) {
 func TestBuiltinConstructor(t *testing.T) {
 	var node newparser.Builtin
 	var token prattparser.Token
-	var args []newparser.ASTnodeIntr
+	var args []newparser.IASTNode
 	var builtin string
 
 	node.NewNode(token, builtin, args)
