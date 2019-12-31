@@ -7,7 +7,7 @@ func Execute(expression string, offset int, context map[string]interface{}) (int
 	if err := IsValidContext(context); err != nil {
 		panic(err)
 	}
-	return interpreter.Parse(expression, offset, context)
+	return Interpreter.Parse(expression, offset, context)
 }
 
 // ExecuteUntil will execute expression from offset with given context, expecting
@@ -18,5 +18,5 @@ func ExecuteUntil(expression string, offset int, terminator string, context map[
 	if err := IsValidContext(context); err != nil {
 		panic(err)
 	}
-	return interpreter.ParseUntil(expression, offset, terminator, context)
+	return Interpreter.ParseUntil(expression, offset, terminator, context)
 }

@@ -99,7 +99,7 @@ func IsWrappedFunction(value interface{}) bool {
 }
 
 // WrapFunction wraps a function for usage in context passed to
-// the interpreter, panics if function is not valid.
+// the Interpreter, panics if function is not valid.
 //
 // This is necessary to ensure that function values can be compared.
 func WrapFunction(f interface{}) interface{} {
@@ -111,10 +111,10 @@ func WrapFunction(f interface{}) interface{} {
 }
 
 // WrapFunctionWithContext wraps a function for usage in context passed to
-// the interpreter, panics if function is not valid.
+// the Interpreter, panics if function is not valid.
 //
 // This requires the function to take map[string]interface{} as first argument,
-// this will be the interpreter context.
+// this will be the Interpreter context.
 //
 // This is necessary to ensure that function values can be compared.
 func WrapFunctionWithContext(f interface{}) interface{} {

@@ -9,7 +9,7 @@ import (
 	pp "github.com/taskcluster/json-e/interpreter/prattparser"
 )
 
-var interpreter = pp.New(`\s+`, strings.Split(
+var Interpreter = pp.New(`\s+`, strings.Split(
 	`** + - * / [ ] . ( ) { } : , >= <= < > == != ! && || true false in null number identifier string`, " ",
 ), map[string]string{
 	"number":     `[0-9]+(?:\.[0-9]+)?`,

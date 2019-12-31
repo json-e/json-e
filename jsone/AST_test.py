@@ -140,15 +140,6 @@ class TestConstructors(unittest.TestCase):
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
-    def test_interpreterForLessOrEqual(self):
-        expr = "6<=2"
-        tokens = generate_tokens(expr)
-        parser = Parser(tokens, expr)
-        tree = parser.parse()
-        newInterpreter = Interpreter()
-        oldInterpreter = ExpressionEvaluator({})
-        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
-
     def test_interpreterForNotEqual(self):
         expr = "2!=3"
         tokens = generate_tokens(expr)

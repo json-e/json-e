@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"json-e/interpreter"
 	"json-e/interpreter/newparser"
 	"json-e/interpreter/prattparser"
 	"reflect"
@@ -8,12 +9,12 @@ import (
 )
 
 func TestTermConstructor(t *testing.T) {
-	var node newparser.ASTnode
+	var node newparser.ASTNode
 	var token prattparser.Token
 
 	node.NewNode(token)
 
-	if reflect.TypeOf(node).Name() != "ASTnode" {
+	if reflect.TypeOf(node).Name() != "ASTNode" {
 		t.Error("Constructor for binary operations failed")
 	}
 
@@ -34,7 +35,7 @@ func TestBinOpConstructor(t *testing.T) {
 
 func TestUnaryOpConstructor(t *testing.T) {
 	var node newparser.UnaryOp
-	var expr newparser.ASTnode
+	var expr newparser.ASTNode
 	var op prattparser.Token
 
 	node.NewNode(op, expr)
@@ -113,5 +114,261 @@ func TestParserForBinaryOp(t *testing.T) {
 		}
 	} else {
 		t.Error("Expression '5-2' failed")
+	}
+}
+
+func TestInterpreterForUnaryMinus(t *testing.T) {
+	expr := "5"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '5' failed")
+	}
+}
+
+func TestInterpreterForUnaryPlus(t *testing.T) {
+	expr := "+7"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '+7' failed")
+	}
+}
+
+func TestInterpreterForNot(t *testing.T) {
+	expr := "!5"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '!5' failed")
+	}
+}
+
+func TestInterpreterForBinaryPlus(t *testing.T) {
+	expr := "2+3"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '2+3' failed")
+	}
+}
+
+func TestInterpreterForBinaryMinus(t *testing.T) {
+	expr := "2-3"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '2-3' failed")
+	}
+}
+
+func TestInterpreterForDiv(t *testing.T) {
+	expr := "6/2"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '6/2' failed")
+	}
+}
+
+func TestInterpreterForMul(t *testing.T) {
+	expr := "2*3"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '2*3' failed")
+	}
+}
+
+func TestInterpreterForGreater(t *testing.T) {
+	expr := "5>2"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '5>2' failed")
+	}
+}
+
+func TestInterpreterForLess(t *testing.T) {
+	expr := "4<7"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '4<7' failed")
+	}
+}
+
+func TestInterpreterForMoreOrEqual(t *testing.T) {
+	expr := "3>=3"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '3>=3' failed")
+	}
+}
+
+func TestInterpreterForLessOrEqual(t *testing.T) {
+	expr := "6<=2"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '6<=2' failed")
+	}
+}
+
+func TestInterpreterForNotEqual(t *testing.T) {
+	expr := "2!=3"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '2!=3' failed")
+	}
+}
+
+func TestInterpreterForEqual(t *testing.T) {
+	expr := "5==2"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '5==2' failed")
+	}
+}
+
+func TestInterpreterForOr(t *testing.T) {
+	expr := "false||false"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression 'false||false' failed")
+	}
+}
+
+func TestInterpreterForAND(t *testing.T) {
+	expr := "true&&false"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression 'true&&false' failed")
+	}
+}
+
+func TestInterpreterForSquaring(t *testing.T) {
+	expr := "2**3"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+
+	if newInterpreter.Interpret(tree) != oldresult {
+		t.Error("Expression '2**3' failed")
 	}
 }

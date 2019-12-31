@@ -8,29 +8,29 @@ type IASTNode interface {
 	GetRightChild() *IASTNode
 }
 
-type ASTnode struct {
+type ASTNode struct {
 	Token prattparser.Token
 }
 
-func (a *ASTnode) NewNode(token prattparser.Token) {
+func (a *ASTNode) NewNode(token prattparser.Token) {
 	a.Token = token
 }
 
-func (a ASTnode) GetToken() prattparser.Token {
+func (a ASTNode) GetToken() prattparser.Token {
 	return a.Token
 }
 
-func (a ASTnode) GetLeftChild() *IASTNode {
+func (a ASTNode) GetLeftChild() *IASTNode {
 	return nil
 }
 
-func (a ASTnode) GetRightChild() *IASTNode {
+func (a ASTNode) GetRightChild() *IASTNode {
 	return nil
 }
 
 type BinOp struct {
 	Left, Right IASTNode
-	node        ASTnode
+	node        ASTNode
 	op          prattparser.Token
 }
 
@@ -54,7 +54,7 @@ func (b BinOp) GetRightChild() *IASTNode {
 }
 
 type UnaryOp struct {
-	node ASTnode
+	node ASTNode
 	Op   prattparser.Token
 	Expr IASTNode
 }
@@ -79,7 +79,7 @@ func (u UnaryOp) GetRightChild() *IASTNode {
 
 type Builtin struct {
 	Builtin string
-	node    ASTnode
+	node    ASTNode
 	Args    []IASTNode
 }
 

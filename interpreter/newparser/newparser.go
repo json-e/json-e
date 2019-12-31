@@ -66,7 +66,7 @@ func (p *Parser) factor() (node IASTNode) {
 	//    factor : unaryOp factor | Primitives | LPAREN expr RPAREN
 
 	var unaryNode UnaryOp
-	var primitiveNode ASTnode
+	var primitiveNode ASTNode
 
 	token := p.currentToken
 	isUnaryOpToken := contains(p.unaryOpTokens, token.Kind)
