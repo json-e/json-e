@@ -1,3 +1,4 @@
+# pylint: max-line-length=240
 from __future__ import absolute_import, print_function, unicode_literals
 
 import math
@@ -13,26 +14,25 @@ def build(context):
 
     def builtin(name, variadic=None, argument_tests=None, minArgs=None):
         def wrap(fn):
-            def bad(reason=None):
-                raise BuiltinError(
-                    (reason or 'invalid arguments to builtin: {}').format(name))
             if variadic:
                 def invoke(*args):
                     if minArgs:
                         if len(args) < minArgs:
-                            bad("invalid arguments to builtin: {}: expected at least 1 arguments")
+                            raise BuiltinError(
+                                'invalid arguments to builtin: {}: expected at least {} arguments'.format(name, minArgs)
+                            )
                     for arg in args:
                         if not variadic(arg):
-                            bad()
+                            raise BuiltinError('invalid arguments to builtin: {}'.format(name))
                     return fn(*args)
 
             elif argument_tests:
                 def invoke(*args):
                     if len(args) != len(argument_tests):
-                        bad()
+                        raise BuiltinError('invalid arguments to builtin: {}'.format(name))
                     for t, arg in zip(argument_tests, args):
                         if not t(arg):
-                            bad("invalid arguments to builtin: {}")
+                            raise BuiltinError('invalid arguments to builtin: {}'.format(name))
                     return fn(*args)
 
             else:
