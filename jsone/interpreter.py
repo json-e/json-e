@@ -279,7 +279,7 @@ def accessProperty(value, a, b, is_interval):
                 raise InterpreterError('should only use integers to access arrays or strings')
 
     if not isinstance(value, dict):
-        raise InterpreterError('cannot access properties from non-objects')
+        raise infixExpectationError('[..]', 'object, array, or string')
     if not isinstance(a, string):
         raise InterpreterError('object keys must be strings')
 
