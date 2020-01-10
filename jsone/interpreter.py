@@ -176,13 +176,13 @@ class ExpressionEvaluator(PrattParser):
     @infix(".")
     def property_dot(self, left, token, pc):
         if not isinstance(left, dict):
-            raise infixExpectationError('.', 'object')
+            raise InterpreterError('infix: . expects objects')
         k = pc.require('identifier').value
         try:
             return left[k]
         except KeyError:
             raise InterpreterError(
-                'object has no property {}'.format(k))
+                'object has no property "{}"'.format(k))
 
     @infix("(")
     def function_call(self, left, token, pc):
@@ -269,7 +269,7 @@ def accessProperty(value, a, b, is_interval):
             try:
                 return value[a:b]
             except TypeError:
-                raise InterpreterError('should only use integers to access arrays or strings')
+                raise InterpreterError('cannot perform interval access with non-integers')
         else:
             try:
                 return value[a]
