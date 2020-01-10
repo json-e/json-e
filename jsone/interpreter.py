@@ -274,12 +274,12 @@ def accessProperty(value, a, b, is_interval):
             try:
                 return value[a]
             except IndexError:
-                raise TemplateError('index out of bounds')
+                raise InterpreterError('index out of bounds')
             except TypeError:
                 raise InterpreterError('should only use integers to access arrays or strings')
 
     if not isinstance(value, dict):
-        raise infixExpectationError('[..]', 'object, array, or string')
+        raise InterpreterError('infix: "[..]" expects object, array, or string')
     if not isinstance(a, string):
         raise InterpreterError('object keys must be strings')
 

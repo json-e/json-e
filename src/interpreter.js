@@ -105,7 +105,7 @@ let accessProperty = (left, a, b, isInterval) => {
 
   // if we reach here it means we are accessing property value from object
   if (!isObject(left)) {
-    throw new InterpreterError('cannot access properties from non-objects');
+    throw new InterpreterError('infix: "[..]" expects object, array, or string');
   }
 
   if (!isString(a)) {
