@@ -140,7 +140,7 @@ let testComparisonOperands = (operator, left, right) => {
 
 let testMathOperands = (operator, left, right) => {
   if (operator === '+' && !(isNumber(left) && isNumber(right) || isString(left) && isString(right))) {
-    throw expectationError('infix: +', 'number/string + number/string');
+    throw expectationError('infix: +', 'numbers/strings + numbers/strings');
   }
   if (['-', '*', '/', '**'].some(v => v === operator) && !(isNumber(left) && isNumber(right))) {
     throw expectationError(`infix: ${operator}`, `number ${operator} number`);

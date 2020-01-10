@@ -132,10 +132,10 @@ class ExpressionEvaluator(PrattParser):
     @infix("+")
     def plus(self, left, token, pc):
         if not isinstance(left, (string, int, float)) or isinstance(left, bool):
-            raise infixExpectationError('+', 'number/string')
+            raise infixExpectationError('+', 'numbers/strings')
         right = pc.parse(token.kind)
         if not isinstance(right, (string, int, float)) or isinstance(right, bool):
-            raise infixExpectationError('+', 'number/string')
+            raise infixExpectationError('+', 'numbers/strings')
         if type(right) != type(left) and \
                 (isinstance(left, string) or isinstance(right, string)):
             raise infixExpectationError('+', 'numbers/strings')
@@ -176,13 +176,13 @@ class ExpressionEvaluator(PrattParser):
     @infix(".")
     def property_dot(self, left, token, pc):
         if not isinstance(left, dict):
-            raise infixExpectationError('.', 'object')
+            raise InterpreterError('infix: . expects objects')
         k = pc.require('identifier').value
         try:
             return left[k]
         except KeyError:
-            raise TemplateError(
-                '"{}" not found in {}'.format(k, json.dumps(left)))
+            raise InterpreterError(
+                'object has no property "{}"'.format(k))
 
     @infix("(")
     def function_call(self, left, token, pc):
@@ -269,7 +269,7 @@ def accessProperty(value, a, b, is_interval):
             try:
                 return value[a:b]
             except TypeError:
-                raise InterpreterError('should only use integers to access arrays or strings')
+                raise InterpreterError('cannot perform interval access with non-integers')
         else:
             try:
                 return value[a]
@@ -281,7 +281,7 @@ def accessProperty(value, a, b, is_interval):
     if not isinstance(value, dict):
         raise infixExpectationError('[..]', 'object, array, or string')
     if not isinstance(a, string):
-        raise infixExpectationError('[..]', 'string index')
+        raise InterpreterError('object keys must be strings')
 
     try:
         return value[a]
