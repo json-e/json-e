@@ -21,10 +21,9 @@ class UnaryOp extends ASTNode {
     }
 }
 
-class Builtins extends ASTNode {
-    constructor(token, builtin, args) {
+class Builtin extends ASTNode {
+    constructor(token, args) {
         super(token);
-        this.builtin = builtin;
         this.args = args;
     }
 }
@@ -32,4 +31,4 @@ class Builtins extends ASTNode {
 exports.ASTNode = ASTNode;
 exports.BinOp = BinOp;
 exports.UnaryOp = UnaryOp;
-exports.Builtins = Builtins;
+exports.Builtin = Builtin;

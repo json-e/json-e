@@ -1,11 +1,12 @@
-const {ASTNode, UnaryOp, BinOp} = require("../src/AST");
+const {ASTNode, UnaryOp, BinOp, Builtin} = require("../src/AST");
 const Tokenizer = require("../src/tokenizer");
 
 class Parser {
-    constructor(tokenizer, source, offset = 0) {
+    constructor(tokenizer, source, context, offset = 0) {
         this._source = source;
         this._tokenizer = tokenizer;
         this.current_token = this._tokenizer.next(this._source, offset);
+        this.context = context;
         this.unaryOpTokens = ["-", "+", "!"];
         this.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
         "!=", "==", "&&", "||", "in"];
@@ -45,11 +46,12 @@ class Parser {
     }
 
     factor() {
-        //    factor : unaryOp factor | Primitives | LPAREN expr RPAREN
+        //    factor : unaryOp factor | primitives | LPAREN expr RPAREN | builtins
         let token = this.current_token;
         let node;
         let isUnaryOpToken = this.unaryOpTokens.indexOf(token.kind) !== -1;
         let isPrimitivesToken = this.primitivesTokens.indexOf(token.kind) !== -1;
+        let isIdentifierToken = this.context.hasOwnProperty(token.value);
 
         if (isUnaryOpToken) {
             this.eat(token.kind);
@@ -61,7 +63,36 @@ class Parser {
             this.eat("(");
             node = this.parse();
             this.eat(")");
+        } else if (isIdentifierToken) {
+
+            node = this.builtins()
         }
+
+        return node
+    }
+
+    builtins() {
+        //    builtins : ID (LPAREN (expr ( COMMA expr)*)? RPAREN)?
+        let args = [];
+        let token = this.current_token;
+        let node;
+
+        this.eat("identifier");
+
+        if (this.current_token != null && this.current_token.kind == "(") {
+            this.eat("(");
+            node = this.parse();
+            args.push(node);
+
+            while (this.current_token.kind == ",") {
+                this.eat(",");
+                node = this.parse();
+                args.push(node)
+            }
+
+            this.eat(")")
+        }
+        node = new Builtin(token, args);
 
         return node
     }
