@@ -1,8 +1,9 @@
 const assert = require('assert');
-const {BinOp, ASTNode, UnaryOp, Builtins} = require("../src/AST");
+const {BinOp, ASTNode, UnaryOp, Builtin} = require("../src/AST");
 const {NewParser, createTokenizer} = require('./../src/newparser');
 const {NewInterpreter} = require('./../src/newinterpreter');
 const oldIterpreter = require("../src/interpreter");
+const addBuiltins = require("../src/builtins");
 
 describe(
     'Check AST Constructors',
@@ -21,8 +22,8 @@ describe(
         });
 
         it('should create node for builtins', function () {
-            let newNode = new Builtins(op, builtin, args);
-            assert(newNode instanceof Builtins);
+            let newNode = new Builtin(op, builtin, args);
+            assert(newNode instanceof Builtin);
         });
     }
 );
@@ -33,7 +34,7 @@ describe(
         let tokenizer = createTokenizer();
 
         it('should create AST for expression "2"', function () {
-            let parser = new NewParser(tokenizer, "2");
+            let parser = new NewParser(tokenizer, "2", {});
             let node = parser.parse();
 
             assert(node.token.kind == "number" && node.token.value == "2");
@@ -47,7 +48,7 @@ describe(
         let tokenizer = createTokenizer();
 
         it('should create AST for expression "-2"', function () {
-            let parser = new NewParser(tokenizer, "-2");
+            let parser = new NewParser(tokenizer, "-2", {});
             let node = parser.parse();
 
             let isUnaryNodeCorrect = node.token.value == "-" && node.token.kind == "-"
@@ -56,7 +57,7 @@ describe(
         });
 
         it('should create AST for expression "+-2"', function () {
-            let parser = new NewParser(tokenizer, "+-2");
+            let parser = new NewParser(tokenizer, "+-2", {});
             let node = parser.parse();
 
             let isUnaryNodesCorrect = node.token.value == "+" && node.expr.token.value == "-";
@@ -73,7 +74,7 @@ describe(
         let tokenizer = createTokenizer();
 
         it('should create AST for expression "5-2"', function () {
-            let parser = new NewParser(tokenizer, "5-2");
+            let parser = new NewParser(tokenizer, "5-2", {});
             let node = parser.parse();
 
             let isBinaryNodeCorrect = node.token.value == "-" && node.token.kind == "-"
@@ -83,7 +84,7 @@ describe(
         });
 
         it('should create AST for expression "1+3*8"', function () {
-            let parser = new NewParser(tokenizer, "1+3*8");
+            let parser = new NewParser(tokenizer, "1+3*8", {});
             let node = parser.parse();
             // let toke
 
@@ -97,12 +98,41 @@ describe(
 );
 
 describe(
+    'Check parser for builtins',
+    () => {
+        let tokenizer = createTokenizer();
+        let context = addBuiltins({a:2});
+
+        it('should create AST for expression "min(5,2)"', function () {
+            let parser = new NewParser(tokenizer, "min(5,2)", context);
+            let node = parser.parse();
+
+            let isBuiltinNodeCorrect = node.token.value == "min" && node.token.kind == "identifier";
+            let isPrimitivesNodesCorrect = node.args[0].token.value == "5" && node.args[1].token.value == "2";
+
+            assert(isBuiltinNodeCorrect && isPrimitivesNodesCorrect);
+        });
+
+        it('should create AST for expression "a"', function () {
+            let parser = new NewParser(tokenizer, "a", context);
+            let node = parser.parse();
+            // let toke
+
+            let isBuiltinNodeCorrect = node.token.value == "a" && node.token.kind == "identifier";
+            let isPrimitivesNodesCorrect = node.args[0] === undefined;
+
+            assert(isBuiltinNodeCorrect && isPrimitivesNodesCorrect);
+        });
+    }
+);
+
+describe(
     'Check interpreter',
     () => {
         it('should interpret AST for expression "-2"', function () {
             let expr = "-2";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -112,7 +142,7 @@ describe(
         it('should interpret AST for expression "+7"', function () {
             let expr = "+7";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -122,7 +152,7 @@ describe(
         it('should interpret AST for expression "!5"', function () {
             let expr = "!5";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -132,7 +162,7 @@ describe(
         it('should interpret AST for expression "2+3"', function () {
             let expr = "2+3";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -142,7 +172,7 @@ describe(
         it('should interpret AST for expression "2-3"', function () {
             let expr = "2-3";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -152,7 +182,7 @@ describe(
         it('should interpret AST for expression "6/2"', function () {
             let expr = "6/2";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -162,7 +192,7 @@ describe(
         it('should interpret AST for expression "2*3"', function () {
             let expr = "2*3";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -172,7 +202,7 @@ describe(
         it('should interpret AST for expression "5>2"', function () {
             let expr = "5>2";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -182,7 +212,7 @@ describe(
         it('should interpret AST for expression "4<7"', function () {
             let expr = "4<7";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -192,7 +222,7 @@ describe(
         it('should interpret AST for expression "3>=3"', function () {
             let expr = "3>=3";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -202,7 +232,7 @@ describe(
         it('should interpret AST for expression "6<=2"', function () {
             let expr = "6<=2";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -212,7 +242,7 @@ describe(
         it('should interpret AST for expression "2!=3"', function () {
             let expr = "2!=3";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -222,7 +252,7 @@ describe(
         it('should interpret AST for expression "5==2"', function () {
             let expr = "5==2";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -232,7 +262,7 @@ describe(
         it('should interpret AST for expression "false||false"', function () {
             let expr = "false||false";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -241,7 +271,7 @@ describe(
         it('should interpret AST for expression "true&&false"', function () {
             let expr = "true&&false";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
@@ -251,7 +281,7 @@ describe(
         it('should interpret AST for expression "2**3"', function () {
             let expr = "2**3";
             let tokenizer = createTokenizer();
-            let parser = new NewParser(tokenizer, expr);
+            let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter();
 
