@@ -101,7 +101,7 @@ describe(
     'Check parser for builtins',
     () => {
         let tokenizer = createTokenizer();
-        let context = addBuiltins({a:2});
+        let context = addBuiltins({a: 2});
 
         it('should create AST for expression "min(5,2)"', function () {
             let parser = new NewParser(tokenizer, "min(5,2)", context);
@@ -134,7 +134,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -144,7 +144,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -154,7 +154,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -164,7 +164,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -174,7 +174,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -184,7 +184,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -194,7 +194,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -204,7 +204,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -214,7 +214,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -224,7 +224,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -234,7 +234,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -244,7 +244,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -254,7 +254,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -264,7 +264,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -273,7 +273,7 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
         });
@@ -283,9 +283,30 @@ describe(
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();
-            let newInterpreter = new NewInterpreter();
+            let newInterpreter = new NewInterpreter({});
 
             assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "max(5,2,9)"', function () {
+            let context = addBuiltins();
+            let expr = "max(5,2,9)";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr, context);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter(context);
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr, context));
+        });
+        it('should interpret AST for expression "a" with context {a :3}', function () {
+            let context = {a: 3};
+            let expr = "a";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr, context);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter(context);
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr, context));
         });
 
     }

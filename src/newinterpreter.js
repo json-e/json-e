@@ -1,4 +1,10 @@
+const {isFunction} = require("../src/type-utils")
+
 class Interpreter {
+    constructor(context) {
+        this.context = context;
+    }
+
     visit(node) {
         let funcName = "visit_" + node.constructor.name;
         return this[funcName](node);
@@ -59,6 +65,20 @@ class Interpreter {
             case ("**"):
                 return Math.pow(this.visit(node.left), this.visit(node.right));
         }
+
+    }
+
+    visit_Builtin(node) {
+        let args = [];
+        let builtin = this.context[node.token.value];
+        if (isFunction(builtin)) {
+            node.args.forEach(function (item) {
+                // this.visit(item)
+                args.push(this.visit(item))
+            }, this);
+            return builtin.apply(null, args);
+        }
+        return builtin
     }
 
     interpret(tree) {
