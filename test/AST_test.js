@@ -88,9 +88,9 @@ describe(
             let node = parser.parse();
             // let toke
 
-            let isBinaryNodesCorrect = node.token.value == "*" && node.left.token.value == "+";
-            let isPrimitivesNodesCorrect = node.right.token.value == "8" && node.left.left.token.value == "1";
-            isPrimitivesNodesCorrect = isPrimitivesNodesCorrect && node.left.right.token.value == "3"
+            let isBinaryNodesCorrect = node.token.value == "+" && node.left.token.value == "1";
+            let isPrimitivesNodesCorrect = node.right.token.value == "*" && node.right.left.token.value == "3";
+            isPrimitivesNodesCorrect = isPrimitivesNodesCorrect && node.right.right.token.value == "8"
 
             assert(isBinaryNodesCorrect && isPrimitivesNodesCorrect);
         });
@@ -191,6 +191,16 @@ describe(
 
         it('should interpret AST for expression "2*3"', function () {
             let expr = "2*3";
+            let tokenizer = createTokenizer();
+            let parser = new NewParser(tokenizer, expr, {});
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter({});
+
+            assert.equal(newInterpreter.interpret(tree), oldIterpreter.parse(expr));
+        });
+
+        it('should interpret AST for expression "2+3*5"', function () {
+            let expr = "2+3*5";
             let tokenizer = createTokenizer();
             let parser = new NewParser(tokenizer, expr, {});
             let tree = parser.parse();

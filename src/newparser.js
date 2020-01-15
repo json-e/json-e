@@ -20,24 +20,90 @@ class Parser {
     }
 
     parse() {
-        //    expr : term (unaryOp term)*
-        let node = this.term();
+        //    expr : logicalAnd (OR logicalAnd)*
+        let node = this.logicalAnd();
         let token = this.current_token;
 
-        for (; token != null && this.binOpTokens.indexOf(token.kind) !== -1; token = this.current_token) {
+        for (; token != null && token.kind == "||"; token = this.current_token) {
             this.eat(token.kind);
-            node = new UnaryOp(token, this.term());
+            node = new BinOp(token, node, this.logicalAnd());
         }
 
-        return node;
+        return node
     }
 
-    term() {
-        //    term : factor (binaryOp factor)*
+    logicalAnd() {
+        //    logicalAnd : equality (AND equality)*
+        let node = this.equality();
+        let token = this.current_token;
+
+        for (; token != null && token.kind == "&&"; token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.equality());
+        }
+
+        return node
+    }
+
+    equality() {
+        //    logicalAnd : comparison (EQUALITY | INEQUALITY  comparison)*
+        let node = this.comparison();
+        let token = this.current_token;
+
+        for (; token != null && (token.kind == "==" || token.kind == "!="); token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.comparison());
+        }
+
+        return node
+    }
+
+    comparison() {
+        //    comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)*
+        let node = this.addition();
+        let token = this.current_token;
+
+        while (token != null && (token.kind == "<" || token.kind == ">" || token.kind == ">=" || token.kind == "<=")) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.addition());
+            token = this.current_token;
+        }
+
+        return node
+    }
+
+    addition() {
+        //    addition : multiplication (PLUS | MINUS multiplication)*
+        let node = this.multiplication();
+        let token = this.current_token;
+
+        for (; token != null && (token.kind == "+" || token.kind == "-"); token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.multiplication());
+        }
+
+        return node
+    }
+
+    multiplication() {
+        //    multiplication : exponentiation (MUL | DIV exponentiation)*
+        let node = this.exponentiation();
+        let token = this.current_token;
+
+        for (; token != null && (token.kind == "*" || token.kind == "/"); token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.exponentiation());
+        }
+
+        return node
+    }
+
+    exponentiation() {
+        //    exponentiation : factor (EXP factor)*
         let node = this.factor();
         let token = this.current_token;
 
-        for (; token != null && this.binOpTokens.indexOf(token.kind) !== -1; token = this.current_token) {
+        for (; token != null && token.kind == "**"; token = this.current_token) {
             this.eat(token.kind);
             node = new BinOp(token, node, this.factor());
         }
