@@ -143,7 +143,6 @@ describe(
         it('should create AST for expression [2, 5]', function () {
             let parser = new NewParser(tokenizer, "[2, 5]", {});
             let node = parser.parse();
-            // let toke
 
             let isListTokenCorrect = node.token.value == "[" && node.token.kind == "["
             let isListCorrect = node.list[0].token.value == 2 && node.list[1].token.value == 5;
@@ -157,25 +156,34 @@ describe(
     'Check parser for array access',
     () => {
         let tokenizer = createTokenizer();
-        let context = addBuiltins({a: 2});
+        let context = addBuiltins({a: [1,2,3,4]});
 
-        it('should create AST for expression "min(5,2)"', function () {
-            let parser = new NewParser(tokenizer, "min(5,2)", context);
+        it('should create AST for expression "a[2]"', function () {
+            let parser = new NewParser(tokenizer, "a[2]", context);
             let node = parser.parse();
 
-            let isBuiltinNodeCorrect = node.token.value == "min" && node.token.kind == "identifier";
-            let isPrimitivesNodesCorrect = node.args[0].token.value == "5" && node.args[1].token.value == "2";
+            let isIDCorrect = node.token.value == "a" && node.token.kind == "identifier";
+            let isIndexCorrect = node.left.token.value == 2;
 
-            assert(isBuiltinNodeCorrect && isPrimitivesNodesCorrect);
+            assert(isIDCorrect && isIndexCorrect);
         });
 
-        it('should create AST for expression "a"', function () {
-            let parser = new NewParser(tokenizer, "a", context);
+        it('should create AST for expression "a[:2]"', function () {
+            let parser = new NewParser(tokenizer, "a[:2]", context);
             let node = parser.parse();
-            // let toke
+
+            let isIDCorrect = node.token.value == "a" && node.token.kind == "identifier";
+            let isIndexCorrect = node.left == null && node.right.token.value == 2;
+
+            assert(isIDCorrect && isIndexCorrect);
+        });
+
+        it('should create AST for expression "a[2:3]"', function () {
+            let parser = new NewParser(tokenizer, "a[2:3]", context);
+            let node = parser.parse();
 
             let isBuiltinNodeCorrect = node.token.value == "a" && node.token.kind == "identifier";
-            let isPrimitivesNodesCorrect = node.args[0] === undefined;
+            let isPrimitivesNodesCorrect =  node.left.token.value == 2 && node.right.token.value == 3;
 
             assert(isBuiltinNodeCorrect && isPrimitivesNodesCorrect);
         });
