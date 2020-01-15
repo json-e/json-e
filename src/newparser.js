@@ -1,4 +1,4 @@
-const {ASTNode, UnaryOp, BinOp, Builtin} = require("../src/AST");
+const {ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, List} = require("../src/AST");
 const Tokenizer = require("../src/tokenizer");
 
 class Parser {
@@ -112,7 +112,7 @@ class Parser {
     }
 
     factor() {
-        //    factor : unaryOp factor | primitives | LPAREN expr RPAREN | builtins
+        //    factor : unaryOp factor | primitives | LPAREN expr RPAREN | builtins | list | arrayAccess
         let token = this.current_token;
         let node;
         let isUnaryOpToken = this.unaryOpTokens.indexOf(token.kind) !== -1;
@@ -130,8 +130,14 @@ class Parser {
             node = this.parse();
             this.eat(")");
         } else if (isIdentifierToken) {
-
-            node = this.builtins()
+            let nextToken = this._tokenizer.next(this._source, this.current_token.end);
+            if (nextToken != null && nextToken.kind == "[") {
+                node = this.arrayAccess();
+            } else {
+                node = this.builtins()
+            }
+        } else if (token.kind == "[") {
+            node = this.list();
         }
 
         return node
@@ -161,6 +167,63 @@ class Parser {
         node = new Builtin(token, args);
 
         return node
+    }
+
+    list() {
+        //    list : LSQAREBRAKET (expr ( COMMA expr)*)? RSQAREBRAKET)
+        let node;
+        let list = [];
+        let token = this.current_token;
+
+        this.eat("[");
+
+        if (this.current_token != "]") {
+            node = this.parse();
+            list.push(node);
+
+            while (this.current_token.kind == ",") {
+                this.eat(",");
+                node = this.parse();
+                list.push(node)
+            }
+
+        }
+
+        this.eat("]");
+
+        node = new List(token, list);
+
+        return node
+    }
+
+    arrayAccess() {
+        //    arrayAccess : ID LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)
+        let node, left = null, right = null;
+        let token = this.current_token;
+        let isInterval = false;
+
+        this.eat("identifier");
+        this.eat("[");
+
+        if (this.current_token.kind != ":") {
+            left = this.parse();
+        }
+
+        if (this.current_token.kind == ":") {
+            isInterval = true;
+            this.eat(":");
+
+            if (this.current_token.kind != "]") {
+                right = this.parse();
+            }
+
+        }
+
+        this.eat("]");
+
+        node = new ArrayAccess(token, isInterval, left, right);
+
+        return node;
     }
 }
 

@@ -28,7 +28,26 @@ class Builtin extends ASTNode {
     }
 }
 
+class List extends ASTNode {
+    constructor(token, list) {
+        super(token);
+        this.list = list;
+    }
+}
+
+class ArrayAccess extends ASTNode {
+    constructor(token,isInterval, left, right) {
+        super(token);
+        this.isInterval = isInterval;
+        this.left = left;
+        this.right = right;
+
+    }
+}
+
 exports.ASTNode = ASTNode;
 exports.BinOp = BinOp;
 exports.UnaryOp = UnaryOp;
 exports.Builtin = Builtin;
+exports.ArrayAccess = ArrayAccess;
+exports.List = List;

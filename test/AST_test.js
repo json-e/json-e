@@ -127,6 +127,62 @@ describe(
 );
 
 describe(
+    'Check parser for lists',
+    () => {
+        let tokenizer = createTokenizer();
+
+        it('should create AST for expression "[]"', function () {
+            let parser = new NewParser(tokenizer, "[]", {});
+            let node = parser.parse();
+
+            let isListNodeCorrect = node.token.value == "[" && node.token.kind == "[" && node.list[0] == undefined;
+
+            assert(isListNodeCorrect);
+        });
+
+        it('should create AST for expression [2, 5]', function () {
+            let parser = new NewParser(tokenizer, "[2, 5]", {});
+            let node = parser.parse();
+            // let toke
+
+            let isListTokenCorrect = node.token.value == "[" && node.token.kind == "["
+            let isListCorrect = node.list[0].token.value == 2 && node.list[1].token.value == 5;
+
+            assert(isListTokenCorrect && isListCorrect);
+        });
+    }
+);
+
+describe(
+    'Check parser for array access',
+    () => {
+        let tokenizer = createTokenizer();
+        let context = addBuiltins({a: 2});
+
+        it('should create AST for expression "min(5,2)"', function () {
+            let parser = new NewParser(tokenizer, "min(5,2)", context);
+            let node = parser.parse();
+
+            let isBuiltinNodeCorrect = node.token.value == "min" && node.token.kind == "identifier";
+            let isPrimitivesNodesCorrect = node.args[0].token.value == "5" && node.args[1].token.value == "2";
+
+            assert(isBuiltinNodeCorrect && isPrimitivesNodesCorrect);
+        });
+
+        it('should create AST for expression "a"', function () {
+            let parser = new NewParser(tokenizer, "a", context);
+            let node = parser.parse();
+            // let toke
+
+            let isBuiltinNodeCorrect = node.token.value == "a" && node.token.kind == "identifier";
+            let isPrimitivesNodesCorrect = node.args[0] === undefined;
+
+            assert(isBuiltinNodeCorrect && isPrimitivesNodesCorrect);
+        });
+    }
+);
+
+describe(
     'Check interpreter',
     () => {
         it('should interpret AST for expression "-2"', function () {
