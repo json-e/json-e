@@ -454,6 +454,35 @@ describe(
             assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
         });
 
+        it('should interpret AST for expression "{}"', function () {
+            let context = {};
+            let expr = "{}";
+            let parser = new NewParser(tokenizer, expr, context);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter(context);
+
+            assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
+        });
+
+        it('should interpret AST for expression "{k : 2}"', function () {
+            let context = {};
+            let expr = "{k : 2}";
+            let parser = new NewParser(tokenizer, expr, context);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter(context);
+
+            assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
+        });
+
+        it('should interpret AST for expression "{"a" : 2+5, b : "zxc"}"', function () {
+            let context = {};
+            let expr = "{\"a\" : 2+5, b : \"zxc\"}";
+            let parser = new NewParser(tokenizer, expr, context);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter(context);
+
+            assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
+        });
     }
 );
 

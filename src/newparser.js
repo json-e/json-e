@@ -233,16 +233,16 @@ class Parser {
         //    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID expr)*)? RCURLYBRACE
         let node;
         let obj = {};
-        let name, value;
+        let key, value;
         let token = this.current_token;
 
         this.eat("{");
 
         while (this.current_token.kind == "string" || this.current_token.kind == "identifier") {
-            name = this.current_token.value;
+            key = this.current_token.value;
 
             if(this.current_token.kind == "string") {
-                name = parseString(name);
+                key = parseString(key);
             }
 
             this.eat(this.current_token.kind);
@@ -254,7 +254,7 @@ class Parser {
                 value.token.value = parseString(value.token.value);
             }
 
-            obj[name] = value;
+            obj[key] = value;
 
             if (this.current_token == "}") {
                 break;

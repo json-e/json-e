@@ -16,7 +16,7 @@ class Interpreter {
                 return +node.token.value;
             case("null"):
                 return null;
-            case("str"):
+            case("string"):
                 return node.token.value;
             case("true"):
                 return true;
@@ -110,6 +110,16 @@ class Interpreter {
             return builtin.apply(null, args);
         }
         return builtin
+    }
+
+    visit_Object(node) {
+        let obj = {};
+
+        for (let key in node.obj) {
+            obj[key] = this.visit(node.obj[key])
+        }
+
+        return obj
     }
 
     interpret(tree) {
