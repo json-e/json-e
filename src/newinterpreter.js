@@ -1,4 +1,4 @@
-const {isFunction} = require("../src/type-utils")
+const {isFunction} = require("../src/type-utils");
 
 class Interpreter {
     constructor(context) {
@@ -68,12 +68,43 @@ class Interpreter {
 
     }
 
+    visit_List(node) {
+        let list = [];
+
+        if (node.list[0] != undefined) {
+            node.list.forEach(function (item) {
+                list.push(this.visit(item))
+            }, this);
+        }
+
+        return list
+    }
+
+    visit_ArrayAccess(node) {
+        let array = this.context[node.token.value];
+        let left = null, right = null;
+
+        if (node.left) {
+            left = this.visit(node.left);
+        }
+
+        if (node.right) {
+            right = this.visit(node.right);
+        }
+
+        if (node.isInterval) {
+            right = right === null ? array.length : right;
+            return array.slice(left, right)
+        } else {
+            return array[left]
+        }
+    }
+
     visit_Builtin(node) {
         let args = [];
         let builtin = this.context[node.token.value];
         if (isFunction(builtin)) {
             node.args.forEach(function (item) {
-                // this.visit(item)
                 args.push(this.visit(item))
             }, this);
             return builtin.apply(null, args);
