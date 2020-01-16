@@ -191,6 +191,44 @@ describe(
 );
 
 describe(
+    'Check parser for objects',
+    () => {
+        let tokenizer = createTokenizer();
+        let context = {};
+
+        it('should create AST for expression "{}"', function () {
+            let parser = new NewParser(tokenizer, "{}", context);
+            let node = parser.parse();
+
+            let isTokenCorrect = node.token.value == "{" && node.token.kind == "{";
+            let isObjCorrect = Object.keys(node.obj).length == 0
+
+            assert(isTokenCorrect && isObjCorrect);
+        });
+
+        it('should create AST for expression "{k:2}"', function () {
+            let parser = new NewParser(tokenizer, "{k:2}", context);
+            let node = parser.parse();
+
+            let isTokenCorrect = node.token.value == "{" && node.token.kind == "{";
+            let isObjCorrect = node.obj["k"].token.value == 2;
+
+            assert(isTokenCorrect && isObjCorrect);
+        });
+
+        it('should create AST for expression "{"a": 2, b : "abcd"}"', function () {
+            let parser = new NewParser(tokenizer, "{\"a\": 2, b : \"abcd\"}", context);
+            let node = parser.parse();
+
+            let isTokenCorrect = node.token.value == "{" && node.token.kind == "{";
+            let isObjCorrect = node.obj["a"].token.value == 2 && node.obj["b"].token.value == "abcd";
+
+            assert(isTokenCorrect && isObjCorrect);
+        });
+    }
+);
+
+describe(
     'Check interpreter',
     () => {
         let tokenizer = createTokenizer();

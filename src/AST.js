@@ -45,9 +45,17 @@ class ArrayAccess extends ASTNode {
     }
 }
 
+class Object extends ASTNode {
+    constructor(token,obj) {
+        super(token);
+        this.obj = obj;
+    }
+}
+
 exports.ASTNode = ASTNode;
 exports.BinOp = BinOp;
 exports.UnaryOp = UnaryOp;
 exports.Builtin = Builtin;
 exports.ArrayAccess = ArrayAccess;
 exports.List = List;
+exports.Object = Object;

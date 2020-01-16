@@ -1,4 +1,4 @@
-const {ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, List} = require("../src/AST");
+const {ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, List, Object} = require("../src/AST");
 const Tokenizer = require("../src/tokenizer");
 
 class Parser {
@@ -10,7 +10,7 @@ class Parser {
         this.unaryOpTokens = ["-", "+", "!"];
         this.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
         "!=", "==", "&&", "||", "in"];
-        this.primitivesTokens = ["number", "null", "str", "true", "false"];
+        this.primitivesTokens = ["number", "null", "string", "true", "false"];
     }
 
     eat(token_type) {
@@ -112,7 +112,8 @@ class Parser {
     }
 
     factor() {
-        //    factor : unaryOp factor | primitives | LPAREN expr RPAREN | builtins | list | arrayAccess
+        //    factor : unaryOp factor | primitives | LPAREN expr RPAREN | builtins | list | arrayAccess |
+        //              | object
         let token = this.current_token;
         let node;
         let isUnaryOpToken = this.unaryOpTokens.indexOf(token.kind) !== -1;
@@ -138,6 +139,8 @@ class Parser {
             }
         } else if (token.kind == "[") {
             node = this.list();
+        } else if (token.kind == "{") {
+            node =this.object();
         }
 
         return node
@@ -225,7 +228,51 @@ class Parser {
 
         return node;
     }
+
+    object() {
+        //    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID expr)*)? RCURLYBRACE
+        let node;
+        let obj = {};
+        let name, value;
+        let token = this.current_token;
+
+        this.eat("{");
+
+        while (this.current_token.kind == "string" || this.current_token.kind == "identifier") {
+            name = this.current_token.value;
+
+            if(this.current_token.kind == "string") {
+                name = parseString(name);
+            }
+
+            this.eat(this.current_token.kind);
+            this.eat(":");
+
+            value = this.parse();
+
+            if(value.token.kind == "string") {
+                value.token.value = parseString(value.token.value);
+            }
+
+            obj[name] = value;
+
+            if (this.current_token == "}") {
+                break;
+            } else  {
+                this.eat(",")
+            }
+        }
+        this.eat("}");
+
+        node = new Object(token, obj);
+
+        return node;
+    }
 }
+
+let parseString = (str) => {
+    return str.slice(1, -1);
+};
 
 let createTokenizer = function () {
     let tokenizer = new Tokenizer({
