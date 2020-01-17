@@ -131,16 +131,18 @@ class Parser {
             this.eat(")");
         } else if (token.kind == "identifier") {
             let nextToken = this._tokenizer.next(this._source, this.current_token.end);
+
             if (nextToken != null && nextToken.kind == "[") {
                 node = this.arrayAccess();
             } else if (nextToken != null && nextToken.kind == ".") {
-                let left = new ASTNode(token);
+
+                let left = new Builtin(this.current_token, []);
                 this.eat(token.kind);
 
                 token = this.current_token;
                 this.eat(".");
 
-                let right = new ASTNode(this.current_token);
+                let right = new Builtin(this.current_token, []);
                 this.eat(right.kind);
 
                 node = new BinOp(token, left, right);
@@ -282,7 +284,7 @@ class Parser {
         if (token != null && token.kind == ".") {
             this.eat(".");
 
-            let right = new ASTNode(this.current_token);
+            let right = new Builtin(this.current_token, []);
             this.eat(right.kind);
 
             node = new BinOp(token, node, right);

@@ -64,6 +64,14 @@ class Interpreter {
                 return this.visit(node.left) && this.visit(node.right);
             case ("**"):
                 return Math.pow(this.visit(node.left), this.visit(node.right));
+            case ("."): {
+                let obj = this.visit(node.left);
+                let key = node.right.token.value;
+
+                if (obj.hasOwnProperty(key)) {
+                    return obj[key];
+                }
+            }
         }
 
     }
