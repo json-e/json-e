@@ -229,6 +229,36 @@ describe(
 );
 
 describe(
+    'Check parser for operation "."',
+    () => {
+        let tokenizer = createTokenizer();
+        let context = {};
+
+        it('should create AST for expression "{a: 1}.a"', function () {
+            let parser = new NewParser(tokenizer, "{a: 1}.a", context);
+            let node = parser.parse();
+
+            let isTokenCorrect = node.token.value == "." && node.token.kind == ".";
+            let isObjCorrect = node.left.obj["a"].token.value == 1;
+            let isKeyCorrect = node.right.token.kind == "identifier" && node.right.token.value == "a" ;
+
+            assert(isTokenCorrect && isObjCorrect && isKeyCorrect);
+        });
+
+        it('should create AST for expression "k.b"', function () {
+            let parser = new NewParser(tokenizer, "k.b", context);
+            let node = parser.parse();
+
+            let isTokenCorrect = node.token.value == "." && node.token.kind == ".";
+            let isObjCorrect = node.left.token.value == "k";
+            let isKeyCorrect = node.right.token.value == "b";
+
+            assert(isTokenCorrect && isObjCorrect && isKeyCorrect);
+        });
+    }
+);
+
+describe(
     'Check interpreter',
     () => {
         let tokenizer = createTokenizer();

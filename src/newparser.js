@@ -112,13 +112,12 @@ class Parser {
     }
 
     factor() {
-        //    factor : unaryOp factor | primitives | LPAREN expr RPAREN | builtins | list | arrayAccess |
-        //              | object
+        //    factor : unaryOp factor | primitives | LPAREN expr RPAREN | list | object |
+        //              |  ID (arrayAccess | DOT ID | builtins)
         let token = this.current_token;
         let node;
         let isUnaryOpToken = this.unaryOpTokens.indexOf(token.kind) !== -1;
         let isPrimitivesToken = this.primitivesTokens.indexOf(token.kind) !== -1;
-        let isIdentifierToken = this.context.hasOwnProperty(token.value);
 
         if (isUnaryOpToken) {
             this.eat(token.kind);
@@ -130,24 +129,36 @@ class Parser {
             this.eat("(");
             node = this.parse();
             this.eat(")");
-        } else if (isIdentifierToken) {
+        } else if (token.kind == "identifier") {
             let nextToken = this._tokenizer.next(this._source, this.current_token.end);
             if (nextToken != null && nextToken.kind == "[") {
                 node = this.arrayAccess();
+            } else if (nextToken != null && nextToken.kind == ".") {
+                let left = new ASTNode(token);
+                this.eat(token.kind);
+
+                token = this.current_token;
+                this.eat(".");
+
+                let right = new ASTNode(this.current_token);
+                this.eat(right.kind);
+
+                node = new BinOp(token, left, right);
+
             } else {
                 node = this.builtins()
             }
         } else if (token.kind == "[") {
             node = this.list();
         } else if (token.kind == "{") {
-            node =this.object();
+            node = this.object();
         }
 
         return node
     }
 
     builtins() {
-        //    builtins : ID (LPAREN (expr ( COMMA expr)*)? RPAREN)?
+        //    builtins : (LPAREN (expr ( COMMA expr)*)? RPAREN)?
         let args = [];
         let token = this.current_token;
         let node;
@@ -200,7 +211,7 @@ class Parser {
     }
 
     arrayAccess() {
-        //    arrayAccess : ID LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)
+        //    arrayAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)
         let node, left = null, right = null;
         let token = this.current_token;
         let isInterval = false;
@@ -230,7 +241,7 @@ class Parser {
     }
 
     object() {
-        //    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID expr)*)? RCURLYBRACE
+        //    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID expr)*)? RCURLYBRACE (DOT ID)?
         let node;
         let obj = {};
         let key, value;
@@ -241,7 +252,7 @@ class Parser {
         while (this.current_token.kind == "string" || this.current_token.kind == "identifier") {
             key = this.current_token.value;
 
-            if(this.current_token.kind == "string") {
+            if (this.current_token.kind == "string") {
                 key = parseString(key);
             }
 
@@ -250,7 +261,7 @@ class Parser {
 
             value = this.parse();
 
-            if(value.token.kind == "string") {
+            if (value.token.kind == "string") {
                 value.token.value = parseString(value.token.value);
             }
 
@@ -258,7 +269,7 @@ class Parser {
 
             if (this.current_token == "}") {
                 break;
-            } else  {
+            } else {
                 this.eat(",")
             }
         }
@@ -266,8 +277,20 @@ class Parser {
 
         node = new Object(token, obj);
 
+        token = this.current_token;
+
+        if (token != null && token.kind == ".") {
+            this.eat(".");
+
+            let right = new ASTNode(this.current_token);
+            this.eat(right.kind);
+
+            node = new BinOp(token, node, right);
+        }
+
         return node;
     }
+
 }
 
 let parseString = (str) => {
