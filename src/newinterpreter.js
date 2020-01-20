@@ -109,11 +109,9 @@ class Interpreter {
         if (node.left) {
             left = this.visit(node.left);
         }
-
         if (node.right) {
             right = this.visit(node.right);
         }
-
         if (node.isInterval) {
             right = right === null ? array.length : right;
             return array.slice(left, right)

@@ -25,8 +25,8 @@
   "devDependencies": {
     "assume": "^2.0.0",
     "browserify": "^14.5.0",
-    "eslint": "^5.12.1",
-    "mocha": "^4.0.1",
+    "eslint": "^5.16.0",
+    "mocha": "^4.1.0",
     "source-map-support": "^0.5.0",
     "timekeeper": "^2.0.0"
   },
