@@ -259,6 +259,35 @@ describe(
 );
 
 describe(
+    'Check parser for operation "in"',
+    () => {
+        let tokenizer = createTokenizer();
+
+        it('should create AST for expression "1 in [1,2]"', function () {
+            let parser = new NewParser(tokenizer, "1 in [1,2]", {});
+            let node = parser.parse();
+
+            let isInTokenCorrect = node.token.value == "in" && node.token.kind == "in"
+            let isLeftNodeCorrect = node.left.token.value == 1;
+            let isRightNodeCorrect = node.right.token.kind == "[";
+
+            assert(isInTokenCorrect && isLeftNodeCorrect && isRightNodeCorrect);
+        });
+
+        it('should create AST for expression "\"a\" in \"bac\""', function () {
+            let parser = new NewParser(tokenizer, '"a" in "bac"', {});
+            let node = parser.parse();
+
+            let isInTokenCorrect = node.token.value == "in" && node.token.kind == "in"
+            let isLeftNodeCorrect = node.left.token.value == "\"a\"";
+            let isRightNodeCorrect = node.right.token.value == "\"bac\"";
+
+            assert(isInTokenCorrect && isLeftNodeCorrect && isRightNodeCorrect);
+        });
+    }
+);
+
+describe(
     'Check interpreter',
     () => {
         let tokenizer = createTokenizer();

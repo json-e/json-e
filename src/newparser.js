@@ -34,10 +34,23 @@ class Parser {
 
     logicalAnd() {
         //    logicalAnd : equality (AND equality)*
-        let node = this.equality();
+        let node = this.inStatement();
         let token = this.current_token;
 
         for (; token != null && token.kind == "&&"; token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.inStatement());
+        }
+
+        return node
+    }
+
+    inStatement() {
+        //    inStatement : equality (IN equality)*
+        let node = this.equality();
+        let token = this.current_token;
+
+        for (; token != null && token.kind == "in"; token = this.current_token) {
             this.eat(token.kind);
             node = new BinOp(token, node, this.equality());
         }
