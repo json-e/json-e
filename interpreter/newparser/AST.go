@@ -1,6 +1,6 @@
 package newparser
 
-import "json-e/interpreter/prattparser"
+import "../prattparser"
 
 type IASTNode interface {
 	GetToken() prattparser.Token
@@ -31,13 +31,11 @@ func (a ASTNode) GetRightChild() *IASTNode {
 type BinOp struct {
 	Left, Right IASTNode
 	node        ASTNode
-	op          prattparser.Token
 }
 
-func (b *BinOp) NewNode(op prattparser.Token, left, right IASTNode) {
+func (b *BinOp) NewNode(token prattparser.Token, left, right IASTNode) {
+	b.node.Token = token
 	b.Left = left
-	b.node.Token = op
-	b.op = op
 	b.Right = right
 }
 
@@ -55,13 +53,11 @@ func (b BinOp) GetRightChild() *IASTNode {
 
 type UnaryOp struct {
 	node ASTNode
-	Op   prattparser.Token
 	Expr IASTNode
 }
 
-func (u *UnaryOp) NewNode(op prattparser.Token, expr IASTNode) {
-	u.node.Token = op
-	u.Op = op
+func (u *UnaryOp) NewNode(token prattparser.Token, expr IASTNode) {
+	u.node.Token = token
 	u.Expr = expr
 }
 
@@ -78,17 +74,61 @@ func (u UnaryOp) GetRightChild() *IASTNode {
 }
 
 type Builtin struct {
-	Builtin string
-	node    ASTNode
-	Args    []IASTNode
+	node ASTNode
+	Args []IASTNode
 }
 
-func (b *Builtin) NewNode(token prattparser.Token, builtin string, args []IASTNode) {
-	b.Builtin = builtin
+func (b *Builtin) NewNode(token prattparser.Token, args []IASTNode) {
 	b.node.Token = token
 	b.Args = args
 }
 
 func (b Builtin) GetToken() prattparser.Token {
 	return b.node.Token
+}
+
+type List struct {
+	node ASTNode
+	List []IASTNode
+}
+
+func (l *List) NewNode(token prattparser.Token, list []IASTNode) {
+	l.node.Token = token
+	l.List = list
+}
+
+func (l List) GetToken() prattparser.Token {
+	return l.node.Token
+}
+
+type ArrayAccess struct {
+	node       ASTNode
+	isInterval bool
+	left       IASTNode
+	right      IASTNode
+}
+
+func (a *ArrayAccess) NewNode(token prattparser.Token, isInterval bool, left, right IASTNode) {
+	a.node.Token = token
+	a.isInterval = isInterval
+	a.left = left
+	a.right = right
+}
+
+func (a ArrayAccess) GetToken() prattparser.Token {
+	return a.node.Token
+}
+
+type Object struct {
+	node ASTNode
+	obj  map[string]interface{}
+}
+
+func (o *Object) NewNode(token prattparser.Token, obj map[string]interface{}) {
+	o.node.Token = token
+	o.obj = obj
+}
+
+func (o Object) GetToken() prattparser.Token {
+	return o.node.Token
 }

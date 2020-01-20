@@ -1,8 +1,8 @@
 package interpreter
 
 import (
+	"./newparser"
 	"fmt"
-	"json-e/interpreter/newparser"
 	"math"
 	"reflect"
 	"strconv"

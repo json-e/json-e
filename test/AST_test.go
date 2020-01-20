@@ -1,9 +1,9 @@
 package tests
 
 import (
-	"json-e/interpreter"
-	"json-e/interpreter/newparser"
-	"json-e/interpreter/prattparser"
+	"../interpreter"
+	"../interpreter/newparser"
+	"../interpreter/prattparser"
 	"reflect"
 	"testing"
 )
@@ -23,9 +23,9 @@ func TestTermConstructor(t *testing.T) {
 func TestBinOpConstructor(t *testing.T) {
 	var node newparser.BinOp
 	var left, right newparser.UnaryOp
-	var op prattparser.Token
+	var token prattparser.Token
 
-	node.NewNode(op, left, right)
+	node.NewNode(token, left, right)
 
 	if reflect.TypeOf(node).Name() != "BinOp" {
 		t.Error("Constructor for binary operations failed")
@@ -36,9 +36,9 @@ func TestBinOpConstructor(t *testing.T) {
 func TestUnaryOpConstructor(t *testing.T) {
 	var node newparser.UnaryOp
 	var expr newparser.ASTNode
-	var op prattparser.Token
+	var token prattparser.Token
 
-	node.NewNode(op, expr)
+	node.NewNode(token, expr)
 
 	if reflect.TypeOf(node).Name() != "UnaryOp" {
 		t.Error("Constructor for unary operations failed")
@@ -50,9 +50,8 @@ func TestBuiltinConstructor(t *testing.T) {
 	var node newparser.Builtin
 	var token prattparser.Token
 	var args []newparser.IASTNode
-	var builtin string
 
-	node.NewNode(token, builtin, args)
+	node.NewNode(token, args)
 
 	if reflect.TypeOf(node).Name() != "Builtin" {
 		t.Error("Constructor for builtins failed")

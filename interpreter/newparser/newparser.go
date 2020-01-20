@@ -1,7 +1,7 @@
 package newparser
 
 import (
-	"json-e/interpreter/prattparser"
+	"../prattparser"
 	"strings"
 )
 

@@ -5,18 +5,16 @@ class ASTNode {
 }
 
 class BinOp extends ASTNode {
-    constructor(op, left, right) {
-        super(op);
+    constructor(token, left, right) {
+        super(token);
         this.left = left;
-        this.op = op;
         this.right = right;
     }
 }
 
 class UnaryOp extends ASTNode {
-    constructor(op, expr) {
-        super(op);
-        this.op = op;
+    constructor(token, expr) {
+        super(token);
         this.expr = expr;
     }
 }
