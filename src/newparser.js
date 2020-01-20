@@ -276,10 +276,6 @@ class Parser {
 
             value = this.parse();
 
-            if (value.token.kind == "string") {
-                value.token.value = parseString(value.token.value);
-            }
-
             obj[key] = value;
 
             if (this.current_token == "}") {

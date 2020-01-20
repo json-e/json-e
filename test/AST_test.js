@@ -211,7 +211,7 @@ describe(
             let node = parser.parse();
 
             let isTokenCorrect = node.token.value == "{" && node.token.kind == "{";
-            let isObjCorrect = node.obj["k"].token.value == 2;
+            let isObjCorrect = node.obj["k"].token.value == "2";
 
             assert(isTokenCorrect && isObjCorrect);
         });
@@ -221,7 +221,7 @@ describe(
             let node = parser.parse();
 
             let isTokenCorrect = node.token.value == "{" && node.token.kind == "{";
-            let isObjCorrect = node.obj["a"].token.value == 2 && node.obj["b"].token.value == "abcd";
+            let isObjCorrect = node.obj["a"].token.value == "2"&& node.obj["b"].token.value == "\"abcd\"";
 
             assert(isTokenCorrect && isObjCorrect);
         });
@@ -556,6 +556,37 @@ describe(
         it('should interpret AST for expression "{k.b} with context {k : {b : 8}}"', function () {
             let context = {k : {b : 8}};
             let expr = "k.b";
+            let parser = new NewParser(tokenizer, expr, context);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter(context);
+
+            assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
+        });
+
+
+        it('should interpret AST for expression "5 in [", "five"]"', function () {
+            let context = {};
+            let expr = "5 in [\"5\", \"five\"]";
+            let parser = new NewParser(tokenizer, expr, context);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter(context);
+
+            assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
+        });
+
+        it('should interpret AST for expression "\"5\" in {"5": "five"}"', function () {
+            let context = {};
+            let expr = "\"5\" in {\"5\": \"five\"}";
+            let parser = new NewParser(tokenizer, expr, context);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter(context);
+
+            assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
+        });
+
+        it('should interpret AST for expression ""abc" in "aabc""', function () {
+            let context = {};
+            let expr = "\"abc\" in \"aabc\"";
             let parser = new NewParser(tokenizer, expr, context);
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter(context);

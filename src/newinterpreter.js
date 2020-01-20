@@ -1,4 +1,4 @@
-const {isFunction} = require("../src/type-utils");
+const {isFunction, isObject, isString, isArray} = require("../src/type-utils");
 
 class Interpreter {
     constructor(context) {
@@ -11,13 +11,15 @@ class Interpreter {
     }
 
     visit_ASTNode(node) {
+        let str;
         switch (node.token.kind) {
             case("number"):
                 return +node.token.value;
             case("null"):
                 return null;
             case("string"):
-                return node.token.value;
+                str = node.token.value.slice(1, -1);
+                return str;
             case("true"):
                 return true;
             case("false"):
@@ -71,9 +73,21 @@ class Interpreter {
                 if (obj.hasOwnProperty(key)) {
                     return obj[key];
                 }
+                break
+            }
+            case ("in"): {
+                let left = this.visit(node.left);
+                let right = this.visit(node.right);
+
+                if (isObject(right)) {
+                    right = Object.keys(right);
+                } else if (isString(right)) {
+                    return right.indexOf(left) !== -1;
+                }
+
+                return right.some(r => isEqual(left, r));
             }
         }
-
     }
 
     visit_List(node) {
@@ -134,5 +148,26 @@ class Interpreter {
         return this.visit(tree);
     }
 }
+let isEqual = (a, b) =>  {
+    if (isArray(a) && isArray(b) && a.length === b.length) {
+        for (let i = 0; i < a.length; i++) {
+            if (!isEqual(a[i], b[i])) { return false; }
+        }
+        return true;
+    }
+    if (isFunction(a)) {
+        return a === b;
+    }
+    if (isObject(a) && isObject(b)) {
+        let keys = Object.keys(a).sort();
+        if (!isEqual(keys, Object.keys(b).sort())) { return false; }
+        for (let k of keys) {
+            if (!isEqual(a[k], b[k])) { return false; }
+        }
+        return true;
+    }
+    return a === b;
+};
 
-exports.NewInterpreter = Interpreter;
+exports
+    .NewInterpreter = Interpreter;
