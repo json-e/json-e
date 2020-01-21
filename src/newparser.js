@@ -19,56 +19,109 @@ class Parser {
         }
     }
 
-    simpleRule(next, args) {
-        let node = next.call(this);
+    parse() {
+        //    expr : logicalAnd (OR logicalAnd)*
+        let node = this.logicalAnd();
         let token = this.current_token;
 
-        for (; token !== null && args.indexOf(token.kind) !== -1; token = this.current_token) {
+        for (; token !== null && token.kind == "||"; token = this.current_token) {
             this.eat(token.kind);
-            node = new BinOp(token, node, next.call(this));
+            node = new BinOp(token, node, this.logicalAnd());
         }
 
         return node
     }
 
-    parse() {
-        //    expr : logicalAnd (OR logicalAnd)*
-        return this.simpleRule.call(this, this.logicalAnd, ["||"])
-    }
-
     logicalAnd() {
         //    logicalAnd : equality (AND equality)*
-        return this.simpleRule.call(this, this.inStatement, ["&&"])
+        let node = this.inStatement();
+        let token = this.current_token;
+
+        for (; token != null && token.kind == "&&"; token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.inStatement());
+        }
+
+        return node
     }
 
     inStatement() {
         //    inStatement : equality (IN equality)*
-        return this.simpleRule.call(this, this.equality, ["in"])
+        let node = this.equality();
+        let token = this.current_token;
+
+        for (; token != null && token.kind == "in"; token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.equality());
+        }
+
+        return node
     }
 
     equality() {
         //    logicalAnd : comparison (EQUALITY | INEQUALITY  comparison)*
-        return this.simpleRule.call(this, this.comparison, ["==", "!="])
+        let node = this.comparison();
+        let token = this.current_token;
+
+        for (; token != null && (token.kind == "==" || token.kind == "!="); token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.comparison());
+        }
+
+        return node
     }
 
     comparison() {
         //    comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)*
-        return this.simpleRule.call(this, this.addition, ["<", ">", ">=", "<="])
+        let node = this.addition();
+        let token = this.current_token;
+
+        while (token != null && (token.kind == "<" || token.kind == ">" || token.kind == ">=" || token.kind == "<=")) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.addition());
+            token = this.current_token;
+        }
+
+        return node
     }
 
     addition() {
         //    addition : multiplication (PLUS | MINUS multiplication)*
-        return this.simpleRule.call(this, this.multiplication, ["+", "-"])
+        let node = this.multiplication();
+        let token = this.current_token;
+
+        for (; token != null && (token.kind == "+" || token.kind == "-"); token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.multiplication());
+        }
+
+        return node
     }
 
     multiplication() {
         //    multiplication : exponentiation (MUL | DIV exponentiation)*
-        return this.simpleRule.call(this, this.exponentiation, ["*", "/"])
+        let node = this.exponentiation();
+        let token = this.current_token;
+
+        for (; token != null && (token.kind == "*" || token.kind == "/"); token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.exponentiation());
+        }
+
+        return node
     }
 
     exponentiation() {
         //    exponentiation : factor (EXP factor)*
-        return this.simpleRule.call(this, this.factor, ["**"])
+        let node = this.factor();
+        let token = this.current_token;
+
+        for (; token != null && token.kind == "**"; token = this.current_token) {
+            this.eat(token.kind);
+            node = new BinOp(token, node, this.factor());
+        }
+
+        return node
     }
 
     factor() {
