@@ -1,9 +1,9 @@
 package tests
 
 import (
-	"../interpreter"
-	"../interpreter/newparser"
-	"../interpreter/prattparser"
+	"json-e/interpreter"
+	"json-e/interpreter/newparser"
+	"json-e/interpreter/prattparser"
 	"reflect"
 	"testing"
 )

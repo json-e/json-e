@@ -1,6 +1,6 @@
 package newparser
 
-import "../prattparser"
+import "json-e/interpreter/prattparser"
 
 type IASTNode interface {
 	GetToken() prattparser.Token

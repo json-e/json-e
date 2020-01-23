@@ -24,9 +24,9 @@ func Render(template interface{}, context map[string]interface{}) (interface{}, 
 	}
 
 	// Inherit functions from builtins
-	c := make(map[string]interface{}, len(context)+len(builtin)+1)
+	c := make(map[string]interface{}, len(context)+len(Builtin)+1)
 	c["now"] = time.Now().UTC().Format(timeFormat)
-	for k, v := range builtin {
+	for k, v := range Builtin {
 		c[k] = v
 	}
 	for k, v := range context {
@@ -141,7 +141,7 @@ func fromNow(s string, reference time.Time) (string, error) {
 	return result.UTC().Format(timeFormat), nil
 }
 
-var builtin = map[string]interface{}{
+var Builtin = map[string]interface{}{
 	"min": i.WrapFunction(func(n float64, m ...float64) float64 {
 		for _, v := range m {
 			if v < n {

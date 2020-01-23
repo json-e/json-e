@@ -1,8 +1,8 @@
 package interpreter
 
 import (
-	"./newparser"
 	"fmt"
+	"json-e/interpreter/newparser"
 	"math"
 	"reflect"
 	"strconv"
@@ -23,7 +23,7 @@ func (i NewInterpreter) visit(node newparser.IASTNode) interface{} {
 	return val[0].Interface()
 }
 
-func (i NewInterpreter) Visit_ASTNode(node newparser.IASTNode) interface{} {
+func (i NewInterpreter) Visit_ASTNode(node newparser.ASTNode) interface{} {
 	token := node.GetToken()
 
 	switch token.Kind {
@@ -42,7 +42,7 @@ func (i NewInterpreter) Visit_ASTNode(node newparser.IASTNode) interface{} {
 	return nil
 }
 
-func (i NewInterpreter) Visit_UnaryOp(node newparser.IASTNode) interface{} {
+func (i NewInterpreter) Visit_UnaryOp(node newparser.UnaryOp) interface{} {
 	next := i.visit(*node.GetLeftChild())
 
 	switch node.GetToken().Kind {
@@ -60,7 +60,7 @@ func (i NewInterpreter) Visit_UnaryOp(node newparser.IASTNode) interface{} {
 	return nil
 }
 
-func (i NewInterpreter) Visit_BinOp(node newparser.IASTNode) interface{} {
+func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
 	left := i.visit(*node.GetLeftChild())
 	right := i.visit(*node.GetRightChild())
 
@@ -116,6 +116,25 @@ func (i NewInterpreter) Visit_BinOp(node newparser.IASTNode) interface{} {
 		}
 	}
 
+	return nil
+}
+
+func (i NewInterpreter) Visit_List(node newparser.List) interface{} {
+	if node.List != []IASTNode{} {
+
+	}
+	return nil
+}
+
+func (i NewInterpreter) Visit_ArrayAccess(node newparser.ArrayAccess) interface{} {
+	return nil
+}
+
+func (i NewInterpreter) Visit_Builtin(node newparser.Builtin) interface{} {
+	return nil
+}
+
+func (i NewInterpreter) Visit_Object(node newparser.Object) interface{} {
 	return nil
 }
 
