@@ -1,4 +1,4 @@
-from .AST import ASTNode, UnaryOp, BinOp
+from .AST import ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, Object
 from collections import namedtuple
 import re
 
@@ -13,7 +13,7 @@ class Parser(object):
         self.unaryOpTokens = ["-", "+", "!"]
         self.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
                             "!=", "==", "&&", "||", "in"]
-        self.primitivesTokens = ["number", "null", "str", "true", "false"]
+        self.primitivesTokens = ["number", "null", "string", "true", "false"]
 
     def eat(self, token_type):
         if self.current_token.kind == token_type:
@@ -23,37 +23,124 @@ class Parser(object):
                 self.current_token = None
 
     def parse(self):
-        """  expr : term (unaryOp term)* """
-        node = self.term()
+        """  expr : logicalAnd (OR logicalAnd)* """
+        node = self.logicalAnd()
         token = self.current_token
 
         if self.current_token is None:
             return node
 
-        while self.current_token.kind in self.unaryOpTokens:
+        while token.kind == "||":
             self.eat(token.kind)
-            node = UnaryOp(token, self.term())
+            node = BinOp(token, node, self.logicalAnd())
 
         return node
 
-    def term(self):
-        """ term : factor (binaryOp factor)* """
+    def logicalAnd(self):
+        """  logicalAnd : inStatement (AND inStatement)* """
+        node = self.inStatement()
+        token = self.current_token
+
+        if self.current_token is None:
+            return node
+
+        while token.kind == "&&":
+            self.eat(token.kind)
+            node = BinOp(token, node, self.inStatement())
+
+        return node
+
+    def inStatement(self):
+        """  inStatement : equality (IN equality)* """
+        node = self.equality()
+        token = self.current_token
+
+        if self.current_token is None:
+            return node
+
+        while token.kind == "in":
+            self.eat(token.kind)
+            node = BinOp(token, node, self.equality())
+
+        return node
+
+    def equality(self):
+        """  equality : comparison (EQUALITY | INEQUALITY  comparison)* """
+        node = self.comparison()
+        token = self.current_token
+        operations = ["==", "!="]
+
+        if self.current_token is None:
+            return node
+
+        while token.kind in operations:
+            self.eat(token.kind)
+            node = BinOp(token, node, self.comparison())
+
+        return node
+
+    def comparison(self):
+        """  comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)* """
+        node = self.addition()
+        token = self.current_token
+        operations = ["<", ">", ">=", "<="]
+
+        if self.current_token is None:
+            return node
+
+        while token.kind in operations:
+            self.eat(token.kind)
+            node = BinOp(token, node, self.addition())
+
+        return node
+
+    def addition(self):
+        """  addition : multiplication (PLUS | MINUS multiplication)* """
+        node = self.multiplication()
+        token = self.current_token
+        operations = ["-", "+"]
+
+        if self.current_token is None:
+            return node
+
+        while token.kind in operations:
+            self.eat(token.kind)
+            node = BinOp(token, node, self.multiplication())
+
+        return node
+
+    def multiplication(self):
+        """  multiplication : exponentiation (MUL | DIV exponentiation)* """
+        node = self.exponentiation()
+        token = self.current_token
+        operations = ["*", "/"]
+
+        if self.current_token is None:
+            return node
+
+        while token.kind in operations:
+            self.eat(token.kind)
+            node = BinOp(token, node, self.exponentiation())
+
+        return node
+
+    def exponentiation(self):
+        """  exponentiation : factor (EXP factor)* """
         node = self.factor()
         token = self.current_token
 
         if self.current_token is None:
             return node
 
-        while self.current_token.kind in self.binOpTokens:
+        while token.kind == "**":
             self.eat(token.kind)
             node = BinOp(token, node, self.factor())
-            if self.current_token is None:
-                return node
 
         return node
 
     def factor(self):
-        """ factor : unaryOp factor | Primitives | LPAREN expr RPAREN"""
+        # factor : unaryOp factor | primitives | LPAREN expr RPAREN | list | object |
+        #           | ID(arrayAccess | DOT ID | builtins)
         token = self.current_token
         node = None
 
@@ -67,8 +154,101 @@ class Parser(object):
             self.eat(token.kind)
             node = self.parse()
             self.eat(token.kind)
+        elif token.kind == "[":
+            node = self.list()
+        elif token.kind == "{":
+            node = self.object()
+        elif token.kind == "identifier":
+            nextToken = next(self.tokens)
+            if nextToken is not None and nextToken.kind == "[":
+                node = self.arrayAccess()
+            elif nextToken is not None and nextToken.kind == ".":
+                left = Builtin(self.current_token, [])
+                self.eat(token.kind)
+                token = self.current_token
+                self.eat(".")
+                right = Builtin(self.current_token, [])
+                self.eat(right.token.kind)
+                node = BinOp(token, left, right)
+            else:
+                node = self.builtins
 
         return node
+
+    def builtins(self):
+        """  builtins : (LPAREN (expr ( COMMA expr)*)? RPAREN)? """
+        args = []
+        token = self.current_token
+        self.eat("identifier")
+
+        if self.current_token is not None and self.current_token.kind == "(":
+            self.eat("(")
+            node = self.parse()
+            args.append(node)
+
+            while self.current_token.kind == ",":
+                self.eat(",")
+                node = self.parse()
+                args.append(node)
+            self.eat(")")
+        node = Builtin(token, args)
+
+        return node
+
+    def arrayAccess(self):
+        """  arrayAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)"""
+        args = []
+        left = None
+        right = None
+        isInterval = False
+        token = self.current_token
+        self.eat("identifier")
+        self.eat("[")
+
+        if self.current_token.kind != ":":
+            left = self.parse()
+        if self.current_token.kind == ":":
+            isInterval = True
+            self.eat(":")
+            if self.current_token.kind != "[":
+                right = self.parse()
+
+        self.eat("]")
+        node = ArrayAccess(token, isInterval, left, right)
+        return node
+
+    def object(self):
+        """   object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID SEMI expr)*)? RCURLYBRACE (DOT ID)?"""
+        obj = {}
+        token = self.current_token
+        self.eat("{")
+
+        while self.current_token.kind == "string" or self.current_token.kind == "identifier":
+            key = self.current_token.value
+            if self.current_token.kind == "string":
+                key = parseString(key)
+            self.eat(self.current_token.kind)
+            self.eat(":")
+            value = self.parse()
+            obj[key] = value
+            if self.current_token.kind == "}":
+                break
+            else:
+                self.eat(",")
+
+        self.eat("{")
+        node = Object(token, obj)
+        token = self.current_token
+        if token is not None and token.kind == ".":
+            self.eat(".")
+            right = Builtin(self.current_token, [])
+            self.eat(right.token.kind)
+            node = BinOp(token, node, right)
+        return node
+
+
+def parseString(string):
+    return string[1:-1]
 
 
 def generate_tokens(source):

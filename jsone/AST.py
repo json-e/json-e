@@ -18,8 +18,27 @@ class UnaryOp(ASTNode):
         self.expr = expr
 
 
-class Builtins(ASTNode):
-    def __init__(self, token, builtin, args):
+class Builtin(ASTNode):
+    def __init__(self, token, args):
         ASTNode.__init__(self, token)
-        self.builtin = builtin
         self.args = args
+
+
+class List(ASTNode):
+    def __init__(self, token, list):
+        ASTNode.__init__(self, token)
+        self.list = list
+
+
+class ArrayAccess(ASTNode):
+    def __init__(self, token, isInterval, left, right):
+        ASTNode.__init__(self, token)
+        self.isInterval = isInterval
+        self.left = left
+        self.right = right
+
+
+class Object(ASTNode):
+    def __init__(self, token, obj):
+        ASTNode.__init__(self, token)
+        self.obj = obj

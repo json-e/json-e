@@ -1,4 +1,6 @@
 class Interpreter:
+    def __init__(self, context):
+        self.context = context
 
     def visit(self, node):
         method_name = 'visit_' + type(node).__name__
@@ -52,6 +54,35 @@ class Interpreter:
             return self.visit(node.left) and self.visit(node.right)
         elif node.token.kind == "**":
             return self.visit(node.left) ** self.visit(node.right)
+
+    def visit_List(self, node):
+        list = []
+
+        if node.list is not None:
+            for item in node.list:
+                list.append(self.visit(item))
+
+        return list
+
+    def visitArrayAccess(self, node):
+        array = self.context[node.token.value]
+        left = None
+        right = None
+
+        if node.left:
+            left = self.visit(node.left)
+        if node.right:
+            right = self.visit(node.right)
+
+        if left < 0:
+            left = len(array) +left
+
+        if node.isInterval:
+            if right is None:
+                right = len(array)
+
+
+
 
     def interpret(self, tree):
         return self.visit(tree)
