@@ -25,8 +25,8 @@ class TestConstructors(unittest.TestCase):
         builtin = "max"
         args = []
         token = Token("MINUS", "-", 0, 1)
-        node = Builtins(token, builtin, args)
-        self.assertEqual(isinstance(node, Builtins), True)
+        node = Builtin(token, builtin, args)
+        self.assertEqual(isinstance(node, Builtin), True)
 
     def test_term(self):
         tokens = generate_tokens("2")
@@ -46,7 +46,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -55,7 +55,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -64,7 +64,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -73,7 +73,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -82,7 +82,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -91,7 +91,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -100,7 +100,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -109,7 +109,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -118,7 +118,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -127,7 +127,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -136,7 +136,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -145,7 +145,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -154,7 +154,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -163,7 +163,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -172,7 +172,7 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
 
@@ -181,6 +181,6 @@ class TestConstructors(unittest.TestCase):
         tokens = generate_tokens(expr)
         parser = Parser(tokens, expr)
         tree = parser.parse()
-        newInterpreter = Interpreter()
+        newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))

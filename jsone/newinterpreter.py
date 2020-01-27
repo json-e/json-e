@@ -54,6 +54,16 @@ class Interpreter:
             return self.visit(node.left) and self.visit(node.right)
         elif node.token.kind == "**":
             return self.visit(node.left) ** self.visit(node.right)
+        elif node.token.kind == ".":
+            obj = self.visit(node.left)
+            key = node.right.token.value
+
+            if key in obj:
+                return obj[key]
+        elif node.token.value == "in":
+            left = self.visit(node.left)
+            right = self.visit(node.right)
+            return left in right
 
     def visit_List(self, node):
         list = []
@@ -75,14 +85,26 @@ class Interpreter:
             right = self.visit(node.right)
 
         if left < 0:
-            left = len(array) +left
+            left = len(array) + left
 
         if node.isInterval:
             if right is None:
                 right = len(array)
+            if right < 0:
+                right = len(array) + right
+                if right < 0:
+                    right = 0
+            if left > right:
+                left = right
+            return array[left:right]
 
+        return array[left]
 
-
+    def visit_Object(self, node):
+        obj = {}
+        for key in node.obj:
+            obj[key] = self.visit(node.obj[key])
+        return obj
 
     def interpret(self, tree):
         return self.visit(tree)

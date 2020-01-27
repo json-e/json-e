@@ -33,6 +33,7 @@ class Parser(object):
         while token.kind == "||":
             self.eat(token.kind)
             node = BinOp(token, node, self.logicalAnd())
+            token = self.current_token
 
         return node
 
@@ -47,6 +48,7 @@ class Parser(object):
         while token.kind == "&&":
             self.eat(token.kind)
             node = BinOp(token, node, self.inStatement())
+            token = self.current_token
 
         return node
 
@@ -61,6 +63,7 @@ class Parser(object):
         while token.kind == "in":
             self.eat(token.kind)
             node = BinOp(token, node, self.equality())
+            token = self.current_token
 
         return node
 
@@ -76,6 +79,7 @@ class Parser(object):
         while token.kind in operations:
             self.eat(token.kind)
             node = BinOp(token, node, self.comparison())
+            token = self.current_token
 
         return node
 
@@ -91,6 +95,7 @@ class Parser(object):
         while token.kind in operations:
             self.eat(token.kind)
             node = BinOp(token, node, self.addition())
+            token = self.current_token
 
         return node
 
@@ -106,6 +111,7 @@ class Parser(object):
         while token.kind in operations:
             self.eat(token.kind)
             node = BinOp(token, node, self.multiplication())
+            token = self.current_token
 
         return node
 
@@ -121,6 +127,7 @@ class Parser(object):
         while token.kind in operations:
             self.eat(token.kind)
             node = BinOp(token, node, self.exponentiation())
+            token = self.current_token
 
         return node
 
@@ -135,6 +142,7 @@ class Parser(object):
         while token.kind == "**":
             self.eat(token.kind)
             node = BinOp(token, node, self.factor())
+            token = self.current_token
 
         return node
 
@@ -218,7 +226,8 @@ class Parser(object):
         return node
 
     def object(self):
-        """   object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID SEMI expr)*)? RCURLYBRACE (DOT ID)?"""
+        # """   object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID SEMI expr)*)?
+        # RCURLYBRACE (DOT ID)?"""
         obj = {}
         token = self.current_token
         self.eat("{")
