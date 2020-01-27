@@ -83,8 +83,8 @@ func TestParserForUnaryOp(t *testing.T) {
 	token := node.GetToken()
 
 	if token.Kind == "-" && token.Value == "-" {
-		child := node.GetLeftChild()
-		childToken := (*child).GetToken()
+		child := node.(newparser.UnaryOp).Expr
+		childToken := child.GetToken()
 		if childToken.Kind != "number" || childToken.Value != "2" {
 			t.Error("Expression '-2' failed")
 		}
@@ -102,10 +102,10 @@ func TestParserForBinaryOp(t *testing.T) {
 	token := node.GetToken()
 
 	if token.Kind == "-" && token.Value == "-" {
-		leftChild := node.GetLeftChild()
-		leftChildToken := (*leftChild).GetToken()
-		rightChild := node.GetRightChild()
-		rightChildToken := (*rightChild).GetToken()
+		leftChild := node.(newparser.BinOp).Left
+		leftChildToken := leftChild.GetToken()
+		rightChild := node.(newparser.BinOp).Right
+		rightChildToken := rightChild.GetToken()
 		if leftChildToken.Kind != "number" || leftChildToken.Value != "5" {
 			t.Error("Expression '5-2' failed")
 		}
@@ -378,12 +378,12 @@ func TestInterpreterForBuiltinFunction(t *testing.T) {
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 
-	с := make(map[string]interface{}, len(jsone.Builtin)+1)
+	c := make(map[string]interface{}, len(jsone.Builtin)+1)
 	for k, v := range jsone.Builtin {
-		с[k] = v
+		c[k] = v
 	}
 
-	newInterpreter.AddContext(с)
+	newInterpreter.AddContext(c)
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 

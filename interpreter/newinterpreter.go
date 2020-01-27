@@ -51,7 +51,7 @@ func (i NewInterpreter) Visit_ASTNode(node newparser.ASTNode) interface{} {
 func (i NewInterpreter) Visit_UnaryOp(node newparser.UnaryOp) interface{} {
 	next := i.visit(node.Expr)
 
-	switch node.Node.Token.Kind {
+	switch node.GetToken().Kind {
 	case "+":
 		return +next.(float64)
 	case "-":
@@ -70,7 +70,7 @@ func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
 	left := i.visit(node.Left)
 	right := i.visit(node.Right)
 
-	switch node.Node.Token.Kind {
+	switch node.GetToken().Kind {
 	case "&&":
 		return IsTruthy(left) && IsTruthy(right)
 	case "||":
@@ -81,7 +81,7 @@ func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
 		return !DeepEquals(left, right)
 	case ".":
 		obj := left
-		key := node.Right.(newparser.Builtin).Node.Token.Value
+		key := node.Right.GetToken().Value
 		if target, ok := obj.(map[string]interface{}); ok {
 			if value, ok := target[key]; ok {
 				return value
@@ -114,7 +114,7 @@ func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
 		l := left.(float64)
 		r := right.(float64)
 
-		switch node.Node.Token.Kind {
+		switch node.GetToken().Kind {
 		case ">=":
 			return l >= r
 		case "<=":
@@ -137,7 +137,7 @@ func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
 	} else if isString(left) && isString(right) {
 		l := left.(string)
 		r := right.(string)
-		switch node.Node.Token.Kind {
+		switch node.GetToken().Kind {
 		case "+":
 			return l >= r
 		case ">=":
@@ -167,7 +167,7 @@ func (i NewInterpreter) Visit_List(node newparser.List) interface{} {
 }
 
 func (i NewInterpreter) Visit_ArrayAccess(node newparser.ArrayAccess) interface{} {
-	arr := i.context[node.Node.Token.Value]
+	arr := i.context[node.GetToken().Value]
 	var right, left interface{}
 	var end, start int
 	if node.Left != nil {
@@ -214,7 +214,7 @@ func (i NewInterpreter) Visit_ArrayAccess(node newparser.ArrayAccess) interface{
 }
 
 func (i NewInterpreter) Visit_Builtin(node newparser.Builtin) interface{} {
-	builtin := i.context[node.Node.Token.Value]
+	builtin := i.context[node.GetToken().Value]
 	var args []interface{}
 	f, ok := builtin.(*function)
 	if ok {
