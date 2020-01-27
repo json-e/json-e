@@ -112,8 +112,19 @@ class Interpreter {
         if (node.right) {
             right = this.visit(node.right);
         }
+        if (left < 0) {
+            left = array.length + left
+        }
         if (node.isInterval) {
             right = right === null ? array.length : right;
+            if (right < 0) {
+                right = array.length + right;
+                if (right < 0)
+                    right = 0
+            }
+            if (left > right) {
+                left = right
+            }
             return array.slice(left, right)
         } else {
             return array[left]
@@ -146,10 +157,13 @@ class Interpreter {
         return this.visit(tree);
     }
 }
-let isEqual = (a, b) =>  {
+
+let isEqual = (a, b) => {
     if (isArray(a) && isArray(b) && a.length === b.length) {
         for (let i = 0; i < a.length; i++) {
-            if (!isEqual(a[i], b[i])) { return false; }
+            if (!isEqual(a[i], b[i])) {
+                return false;
+            }
         }
         return true;
     }
@@ -158,9 +172,13 @@ let isEqual = (a, b) =>  {
     }
     if (isObject(a) && isObject(b)) {
         let keys = Object.keys(a).sort();
-        if (!isEqual(keys, Object.keys(b).sort())) { return false; }
+        if (!isEqual(keys, Object.keys(b).sort())) {
+            return false;
+        }
         for (let k of keys) {
-            if (!isEqual(a[k], b[k])) { return false; }
+            if (!isEqual(a[k], b[k])) {
+                return false;
+            }
         }
         return true;
     }

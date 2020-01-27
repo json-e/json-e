@@ -33,7 +33,7 @@ class Parser {
     }
 
     logicalAnd() {
-        //    logicalAnd : equality (AND equality)*
+        //    logicalAnd : inStatement (AND inStatement)*
         let node = this.inStatement();
         let token = this.current_token;
 
@@ -252,7 +252,7 @@ class Parser {
             this.eat(":");
             value = this.parse();
             obj[key] = value;
-            if (this.current_token == "}") {
+            if (this.current_token.kind == "}") {
                 break;
             } else {
                 this.eat(",")
@@ -265,7 +265,7 @@ class Parser {
         if (token != null && token.kind == ".") {
             this.eat(".");
             let right = new Builtin(this.current_token, []);
-            this.eat(right.kind);
+            this.eat(right.token.kind);
             node = new BinOp(token, node, right);
         }
         return node;
