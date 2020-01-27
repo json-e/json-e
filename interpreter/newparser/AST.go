@@ -30,17 +30,17 @@ func (a ASTNode) GetRightChild() *IASTNode {
 
 type BinOp struct {
 	Left, Right IASTNode
-	node        ASTNode
+	Node        ASTNode
 }
 
 func (b *BinOp) NewNode(token prattparser.Token, left, right IASTNode) {
-	b.node.Token = token
+	b.Node.Token = token
 	b.Left = left
 	b.Right = right
 }
 
 func (b BinOp) GetToken() prattparser.Token {
-	return b.node.Token
+	return b.Node.Token
 }
 
 func (b BinOp) GetLeftChild() *IASTNode {
@@ -52,17 +52,17 @@ func (b BinOp) GetRightChild() *IASTNode {
 }
 
 type UnaryOp struct {
-	node ASTNode
+	Node ASTNode
 	Expr IASTNode
 }
 
 func (u *UnaryOp) NewNode(token prattparser.Token, expr IASTNode) {
-	u.node.Token = token
+	u.Node.Token = token
 	u.Expr = expr
 }
 
 func (u UnaryOp) GetToken() prattparser.Token {
-	return u.node.Token
+	return u.Node.Token
 }
 
 func (u UnaryOp) GetLeftChild() *IASTNode {
@@ -74,17 +74,25 @@ func (u UnaryOp) GetRightChild() *IASTNode {
 }
 
 type Builtin struct {
-	node ASTNode
+	Node ASTNode
 	Args []IASTNode
 }
 
 func (b *Builtin) NewNode(token prattparser.Token, args []IASTNode) {
-	b.node.Token = token
+	b.Node.Token = token
 	b.Args = args
 }
 
 func (b Builtin) GetToken() prattparser.Token {
-	return b.node.Token
+	return b.Node.Token
+}
+
+func (b Builtin) GetLeftChild() *IASTNode {
+	return nil
+}
+
+func (b Builtin) GetRightChild() *IASTNode {
+	return nil
 }
 
 type List struct {
@@ -101,34 +109,58 @@ func (l List) GetToken() prattparser.Token {
 	return l.node.Token
 }
 
+func (l List) GetLeftChild() *IASTNode {
+	return nil
+}
+
+func (l List) GetRightChild() *IASTNode {
+	return nil
+}
+
 type ArrayAccess struct {
-	node       ASTNode
-	isInterval bool
-	left       IASTNode
-	right      IASTNode
+	Node       ASTNode
+	IsInterval bool
+	Left       IASTNode
+	Right      IASTNode
 }
 
 func (a *ArrayAccess) NewNode(token prattparser.Token, isInterval bool, left, right IASTNode) {
-	a.node.Token = token
-	a.isInterval = isInterval
-	a.left = left
-	a.right = right
+	a.Node.Token = token
+	a.IsInterval = isInterval
+	a.Left = left
+	a.Right = right
 }
 
 func (a ArrayAccess) GetToken() prattparser.Token {
-	return a.node.Token
+	return a.Node.Token
+}
+
+func (a ArrayAccess) GetLeftChild() *IASTNode {
+	return nil
+}
+
+func (a ArrayAccess) GetRightChild() *IASTNode {
+	return nil
 }
 
 type Object struct {
 	node ASTNode
-	obj  map[string]interface{}
+	Obj  map[string]IASTNode
 }
 
-func (o *Object) NewNode(token prattparser.Token, obj map[string]interface{}) {
+func (o *Object) NewNode(token prattparser.Token, obj map[string]IASTNode) {
 	o.node.Token = token
-	o.obj = obj
+	o.Obj = obj
 }
 
 func (o Object) GetToken() prattparser.Token {
 	return o.node.Token
+}
+
+func (o Object) GetLeftChild() *IASTNode {
+	return nil
+}
+
+func (o Object) GetRightChild() *IASTNode {
+	return nil
 }

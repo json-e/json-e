@@ -59,7 +59,7 @@ class Parser {
     }
 
     equality() {
-        //    logicalAnd : comparison (EQUALITY | INEQUALITY  comparison)*
+        //    equality : comparison (EQUALITY | INEQUALITY  comparison)*
         let node = this.comparison();
         let token = this.current_token;
 
@@ -236,7 +236,7 @@ class Parser {
     }
 
     object() {
-        //    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID expr)*)? RCURLYBRACE (DOT ID)?
+        //    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID SEMI expr)*)? RCURLYBRACE (DOT ID)?
         let node;
         let obj = {};
         let key, value;

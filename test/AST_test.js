@@ -493,6 +493,16 @@ describe(
             assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
         });
 
+        it('should interpret AST for expression "a[2:]"', function () {
+            let context = {a: [1,2,3,4]};
+            let expr = "a[:2]";
+            let parser = new NewParser(tokenizer, expr, context);
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter(context);
+
+            assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
+        });
+
         it('should interpret AST for expression "a[:2]"', function () {
             let context = {a: [1,2,3,4]};
             let expr = "a[:2]";
@@ -503,9 +513,9 @@ describe(
             assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
         });
 
-        it('should interpret AST for expression "a[2:3]"', function () {
+        it('should interpret AST for expression "a[2:4]"', function () {
             let context = {a: [1,2,3,4]};
-            let expr = "a[2:3]";
+            let expr = "a[2:4]";
             let parser = new NewParser(tokenizer, expr, context);
             let tree = parser.parse();
             let newInterpreter = new NewInterpreter(context);

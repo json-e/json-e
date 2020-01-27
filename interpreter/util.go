@@ -282,7 +282,7 @@ func IsValidContext(context map[string]interface{}) error {
 	return nil
 }
 
-func deepEquals(a, b interface{}) bool {
+func DeepEquals(a, b interface{}) bool {
 	switch A := a.(type) {
 	case *function:
 		B, ok := b.(*function)
@@ -304,7 +304,7 @@ func deepEquals(a, b interface{}) bool {
 				return false
 			}
 			for i, v := range A {
-				if !deepEquals(v, B[i]) {
+				if !DeepEquals(v, B[i]) {
 					return false
 				}
 			}
@@ -317,7 +317,7 @@ func deepEquals(a, b interface{}) bool {
 				return false
 			}
 			for k, vA := range A {
-				if vB, ok := B[k]; !ok || !deepEquals(vA, vB) {
+				if vB, ok := B[k]; !ok || !DeepEquals(vA, vB) {
 					return false
 				}
 			}

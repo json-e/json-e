@@ -1,6 +1,7 @@
 package tests
 
 import (
+	jsone "json-e"
 	"json-e/interpreter"
 	"json-e/interpreter/newparser"
 	"json-e/interpreter/prattparser"
@@ -370,4 +371,392 @@ func TestInterpreterForSquaring(t *testing.T) {
 	if newInterpreter.Interpret(tree) != oldresult {
 		t.Error("Expression '2**3' failed")
 	}
+}
+
+func TestInterpreterForBuiltinFunction(t *testing.T) {
+	expr := "max(5,2,9)"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+
+	с := make(map[string]interface{}, len(jsone.Builtin)+1)
+	for k, v := range jsone.Builtin {
+		с[k] = v
+	}
+
+	newInterpreter.AddContext(с)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, с)
+	newresult := newInterpreter.Interpret(tree)
+
+	if newresult != oldresult {
+		t.Error("Expression 'max(5,2,9)' failed")
+	}
+}
+
+func TestInterpreterForBuiltin(t *testing.T) {
+	expr := "a"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{"a": 3}
+
+	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
+	for k, v := range jsone.Builtin {
+		c[k] = v
+	}
+	for k, v := range context {
+		c[k] = v
+	}
+
+	newInterpreter.AddContext(c)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
+	newresult := newInterpreter.Interpret(tree)
+
+	if newresult != oldresult {
+		t.Error("Expression 'a' with context 'a: 3' failed")
+	}
+}
+
+func TestInterpreterForList(t *testing.T) {
+	expr := "[]"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+
+	c := make(map[string]interface{}, len(jsone.Builtin)+1)
+	for k, v := range jsone.Builtin {
+		c[k] = v
+	}
+
+	newInterpreter.AddContext(c)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
+	newresult := newInterpreter.Interpret(tree)
+
+	if !interpreter.DeepEquals(oldresult, newresult) {
+		t.Error("Expression '[]'  failed")
+	}
+}
+
+func TestInterpreterForEmptyList(t *testing.T) {
+	expr := "[2,5]"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+
+	c := make(map[string]interface{}, len(jsone.Builtin)+1)
+	for k, v := range jsone.Builtin {
+		c[k] = v
+	}
+
+	newInterpreter.AddContext(c)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
+	newresult := newInterpreter.Interpret(tree)
+
+	if !interpreter.DeepEquals(oldresult, newresult) {
+		t.Error("Expression '[2,5]' with context failed")
+	}
+}
+
+func TestInterpreterForArrayAccess(t *testing.T) {
+	expr := "a[2]"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	contextList := []interface{}{1, 2, 3, 4}
+	context := map[string]interface{}{"a": contextList}
+
+	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
+	for k, v := range jsone.Builtin {
+		c[k] = v
+	}
+	for k, v := range context {
+		c[k] = v
+	}
+
+	newInterpreter.AddContext(c)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
+	newresult := newInterpreter.Interpret(tree)
+
+	if oldresult != newresult {
+		t.Error("Expression 'a[2]' failed")
+	}
+}
+
+func TestInterpreterForIntervalWithOneLeftArg(t *testing.T) {
+	expr := "a[2:]"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	contextList := []interface{}{1, 2, 3, 4}
+	context := map[string]interface{}{"a": contextList}
+
+	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
+	for k, v := range jsone.Builtin {
+		c[k] = v
+	}
+	for k, v := range context {
+		c[k] = v
+	}
+
+	newInterpreter.AddContext(c)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
+	newresult := newInterpreter.Interpret(tree)
+
+	if !equal(oldresult.([]interface{}), newresult.([]interface{})) {
+		t.Error("Expression 'a[2:]' failed")
+	}
+}
+
+func TestInterpreterForIntervalWithOneRightArg(t *testing.T) {
+	expr := "a[:2]"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	contextList := []interface{}{1, 2, 3, 4}
+	context := map[string]interface{}{"a": contextList}
+
+	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
+	for k, v := range jsone.Builtin {
+		c[k] = v
+	}
+	for k, v := range context {
+		c[k] = v
+	}
+
+	newInterpreter.AddContext(c)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
+	newresult := newInterpreter.Interpret(tree)
+
+	if !equal(oldresult.([]interface{}), newresult.([]interface{})) {
+		t.Error("Expression 'a[:2]' failed")
+	}
+}
+
+func TestInterpreterForInterval(t *testing.T) {
+	expr := "a[2:4]"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	contextList := []interface{}{1, 2, 3, 4}
+	context := map[string]interface{}{"a": contextList}
+
+	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
+	for k, v := range jsone.Builtin {
+		c[k] = v
+	}
+	for k, v := range context {
+		c[k] = v
+	}
+
+	newInterpreter.AddContext(c)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
+	newresult := newInterpreter.Interpret(tree)
+
+	if !equal(oldresult.([]interface{}), newresult.([]interface{})) {
+		t.Error("Expression 'a[2:3]' failed")
+	}
+}
+
+func TestInterpreterForEmptyObject(t *testing.T) {
+	expr := "{}"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{}
+
+	newInterpreter.AddContext(context)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
+	newresult := newInterpreter.Interpret(tree)
+
+	if !interpreter.DeepEquals(oldresult, newresult) {
+		t.Error("Expression {} failed")
+	}
+}
+
+func TestInterpreterForObject(t *testing.T) {
+	expr := "{k : 2}"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{}
+
+	newInterpreter.AddContext(context)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
+	newresult := newInterpreter.Interpret(tree)
+
+	if !interpreter.DeepEquals(oldresult, newresult) {
+		t.Error("Expression {k : 2} failed")
+	}
+}
+
+func TestInterpreterForComplexObject(t *testing.T) {
+	expr := "{\"a\" : 2+5, b : \"zxc\"}"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{}
+
+	newInterpreter.AddContext(context)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
+	newresult := newInterpreter.Interpret(tree)
+
+	if !interpreter.DeepEquals(oldresult, newresult) {
+		t.Error("Expression {\"a\" : 2+5, b : \"zxc\"} failed")
+	}
+}
+
+func TestInterpreterForDotOp(t *testing.T) {
+	expr := "{a: 1}.a"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{}
+
+	newInterpreter.AddContext(context)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
+	newresult := newInterpreter.Interpret(tree)
+
+	if !interpreter.DeepEquals(oldresult, newresult) {
+		t.Error("Expression {a: 1}.a failed")
+	}
+}
+
+func TestInterpreterForDotOpWithContext(t *testing.T) {
+	expr := "k.b"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	b := map[string]interface{}{"b": 8}
+	context := map[string]interface{}{"k": b}
+
+	newInterpreter.AddContext(context)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
+	newresult := newInterpreter.Interpret(tree)
+
+	if oldresult != newresult {
+		t.Error("Expression k.b failed")
+	}
+}
+
+func TestInterpreterForInOpWithArray(t *testing.T) {
+	expr := "5 in [\"5\", \"five\"]"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{}
+
+	newInterpreter.AddContext(context)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
+	newresult := newInterpreter.Interpret(tree)
+
+	if oldresult != newresult {
+		t.Error("Expression '5 in [\"5\", \"five\"]' failed")
+	}
+}
+
+func TestInterpreterForInOpWithObject(t *testing.T) {
+	expr := "\"5\" in {\"5\": \"five\"}"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{}
+
+	newInterpreter.AddContext(context)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
+	newresult := newInterpreter.Interpret(tree)
+
+	if oldresult != newresult {
+		t.Error("Expression '5\" in {\"5\": \"five\"}' failed")
+	}
+}
+func TestInterpreterForInOpWithString(t *testing.T) {
+	expr := "\"abc\" in \"aabc\""
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{}
+
+	newInterpreter.AddContext(context)
+	oldInterpreter := interpreter.Interpreter
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
+	newresult := newInterpreter.Interpret(tree)
+
+	if oldresult != newresult {
+		t.Error("Expression \"abc\" in \"aabc\" failed")
+	}
+}
+
+func equal(a, b []interface{}) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }

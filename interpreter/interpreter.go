@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	pp "github.com/taskcluster/json-e/interpreter/prattparser"
+	pp "json-e/interpreter/prattparser"
 )
 
 var Interpreter = pp.New(`\s+`, strings.Split(
@@ -491,10 +491,10 @@ func comparisonOperator(left interface{}, token pp.Token, ctx *pp.Context) (inte
 	}
 
 	if token.Kind == "==" {
-		return deepEquals(left, right), nil
+		return DeepEquals(left, right), nil
 	}
 	if token.Kind == "!=" {
-		return !deepEquals(left, right), nil
+		return !DeepEquals(left, right), nil
 	}
 
 	if isNumber(left) && isNumber(right) {
@@ -585,7 +585,7 @@ func inOperator(left interface{}, token pp.Token, ctx *pp.Context) (interface{},
 	// A in B; where B is an array
 	if a, ok := right.([]interface{}); ok {
 		for _, val := range a {
-			if deepEquals(left, val) {
+			if DeepEquals(left, val) {
 				return true, nil
 			}
 		}

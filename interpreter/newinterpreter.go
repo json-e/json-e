@@ -9,7 +9,13 @@ import (
 	"strings"
 )
 
-type NewInterpreter struct{}
+type NewInterpreter struct {
+	context map[string]interface{}
+}
+
+func (i *NewInterpreter) AddContext(context map[string]interface{}) {
+	i.context = context
+}
 
 func (i NewInterpreter) visit(node newparser.IASTNode) interface{} {
 	nodeType := strings.Split(fmt.Sprintf("%T", node), ".")[1]
@@ -24,7 +30,7 @@ func (i NewInterpreter) visit(node newparser.IASTNode) interface{} {
 }
 
 func (i NewInterpreter) Visit_ASTNode(node newparser.ASTNode) interface{} {
-	token := node.GetToken()
+	token := node.Token
 
 	switch token.Kind {
 	case "number":
@@ -33,7 +39,7 @@ func (i NewInterpreter) Visit_ASTNode(node newparser.ASTNode) interface{} {
 	case "null":
 		return nil
 	case "string":
-		return token.Value
+		return token.Value[1 : len(token.Value)-1]
 	case "true":
 		return true
 	case "false":
@@ -43,9 +49,9 @@ func (i NewInterpreter) Visit_ASTNode(node newparser.ASTNode) interface{} {
 }
 
 func (i NewInterpreter) Visit_UnaryOp(node newparser.UnaryOp) interface{} {
-	next := i.visit(*node.GetLeftChild())
+	next := i.visit(node.Expr)
 
-	switch node.GetToken().Kind {
+	switch node.Node.Token.Kind {
 	case "+":
 		return +next.(float64)
 	case "-":
@@ -61,25 +67,54 @@ func (i NewInterpreter) Visit_UnaryOp(node newparser.UnaryOp) interface{} {
 }
 
 func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
-	left := i.visit(*node.GetLeftChild())
-	right := i.visit(*node.GetRightChild())
+	left := i.visit(node.Left)
+	right := i.visit(node.Right)
 
-	switch node.GetToken().Kind {
+	switch node.Node.Token.Kind {
 	case "&&":
 		return IsTruthy(left) && IsTruthy(right)
 	case "||":
 		return IsTruthy(left) || IsTruthy(right)
 	case "==":
-		return deepEquals(left, right)
+		return DeepEquals(left, right)
 	case "!=":
-		return !deepEquals(left, right)
+		return !DeepEquals(left, right)
+	case ".":
+		obj := left
+		key := node.Right.(newparser.Builtin).Node.Token.Value
+		if target, ok := obj.(map[string]interface{}); ok {
+			if value, ok := target[key]; ok {
+				return value
+			}
+		}
+	case "in":
+		// A in B, where B is a string
+		if s, ok := right.(string); ok {
+			return strings.Contains(s, left.(string))
+		}
+
+		// A in B; where B is an object
+		if o, ok := right.(map[string]interface{}); ok {
+			_, result := o[left.(string)]
+			return result
+		}
+
+		// A in B; where B is an array
+		if a, ok := right.([]interface{}); ok {
+			for _, val := range a {
+				if DeepEquals(left, val) {
+					return true
+				}
+			}
+			return false
+		}
 	}
 
 	if isNumber(left) && isNumber(right) {
 		l := left.(float64)
 		r := right.(float64)
 
-		switch node.GetToken().Kind {
+		switch node.Node.Token.Kind {
 		case ">=":
 			return l >= r
 		case "<=":
@@ -102,7 +137,7 @@ func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
 	} else if isString(left) && isString(right) {
 		l := left.(string)
 		r := right.(string)
-		switch node.GetToken().Kind {
+		switch node.Node.Token.Kind {
 		case "+":
 			return l >= r
 		case ">=":
@@ -120,27 +155,91 @@ func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
 }
 
 func (i NewInterpreter) Visit_List(node newparser.List) interface{} {
-	if node.List != []IASTNode{} {
+	var list []interface{}
 
+	if len(node.List) > 0 {
+		for _, element := range node.List {
+			list = append(list, i.visit(element))
+		}
 	}
-	return nil
+
+	return list
 }
 
 func (i NewInterpreter) Visit_ArrayAccess(node newparser.ArrayAccess) interface{} {
-	return nil
+	arr := i.context[node.Node.Token.Value]
+	var right, left interface{}
+	var end, start int
+	if node.Left != nil {
+		left = i.visit(node.Left)
+	}
+	if node.Right != nil {
+		right = i.visit(node.Right)
+	}
+	if key, ok := left.(string); ok {
+		return arr.(map[string]interface{})[key]
+	} else {
+		if node.Left == nil {
+			start = 0
+		} else {
+			start = int(left.(float64))
+		}
+		length := len(arr.([]interface{}))
+
+		if start < 0 {
+			start = length + start
+		}
+
+		if node.IsInterval {
+			if node.Right == nil {
+				end = length
+			} else {
+				end = int(right.(float64))
+			}
+			if end < 0 {
+				end = length + end
+				if end < 0 {
+					end = 0
+				}
+			}
+			if start > end {
+				start = end
+			}
+
+			return arr.([]interface{})[start:end]
+		}
+
+		return arr.([]interface{})[start]
+	}
 }
 
 func (i NewInterpreter) Visit_Builtin(node newparser.Builtin) interface{} {
-	return nil
+	builtin := i.context[node.Node.Token.Value]
+	var args []interface{}
+	f, ok := builtin.(*function)
+	if ok {
+		var result interface{}
+
+		for _, element := range node.Args {
+			args = append(args, i.visit(element))
+		}
+
+		result, _ = f.Invoke(i.context, args)
+		return result
+	}
+	return builtin
 }
 
 func (i NewInterpreter) Visit_Object(node newparser.Object) interface{} {
-	return nil
+	obj := make(map[string]interface{})
+	for key, element := range node.Obj {
+		obj[key] = i.visit(element)
+	}
+	return obj
 }
 
 func (i NewInterpreter) Interpret(node newparser.IASTNode) interface{} {
 	res := i.visit(node)
-
 	return res
 }
 
