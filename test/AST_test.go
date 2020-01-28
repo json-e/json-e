@@ -389,7 +389,7 @@ func TestInterpreterForBuiltinFunction(t *testing.T) {
 
 	parser.NewParser(expr, tokenizer)
 	tree := parser.Parse()
-	oldresult, _ := oldInterpreter.Parse(expr, 0, с)
+	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
 	newresult := newInterpreter.Interpret(tree)
 
 	if newresult != oldresult {
@@ -729,6 +729,7 @@ func TestInterpreterForInOpWithObject(t *testing.T) {
 		t.Error("Expression '5\" in {\"5\": \"five\"}' failed")
 	}
 }
+
 func TestInterpreterForInOpWithString(t *testing.T) {
 	expr := "\"abc\" in \"aabc\""
 	var parser newparser.Parser
@@ -746,6 +747,42 @@ func TestInterpreterForInOpWithString(t *testing.T) {
 
 	if oldresult != newresult {
 		t.Error("Expression \"abc\" in \"aabc\" failed")
+	}
+}
+
+func TestInterpreterForOrShortCircuitEvaluation(t *testing.T) {
+	expr := "true || a"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{}
+
+	newInterpreter.AddContext(context)
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	newresult := newInterpreter.Interpret(tree)
+
+	if newresult != true {
+		t.Error("Expression 'true || a' failed")
+	}
+}
+
+func TestInterpreterForAndShortCircuitEvaluation(t *testing.T) {
+	expr := "false && a"
+	var parser newparser.Parser
+	var newInterpreter interpreter.NewInterpreter
+	context := map[string]interface{}{}
+
+	newInterpreter.AddContext(context)
+	tokenizer := newparser.CreateTokenizer()
+
+	parser.NewParser(expr, tokenizer)
+	tree := parser.Parse()
+	newresult := newInterpreter.Interpret(tree)
+
+	if newresult != false {
+		t.Error("Expression 'false && a' failed")
 	}
 }
 

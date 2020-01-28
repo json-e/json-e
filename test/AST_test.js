@@ -603,8 +603,25 @@ describe(
 
             assert.equal(JSON.stringify(oldIterpreter.parse(expr, context)),JSON.stringify(newInterpreter.interpret(tree)));
         });
+
+        it('should interpret AST "true || a"', function () {
+            let expr = "true || a";
+            let parser = new NewParser(tokenizer, expr, {});
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter({});
+
+            assert(newInterpreter.interpret(tree));
+        });
+
+        it('should interpret AST "false && a"', function () {
+            let expr = "false && a";
+            let parser = new NewParser(tokenizer, expr, {});
+            let tree = parser.parse();
+            let newInterpreter = new NewInterpreter({});
+
+            assert(!newInterpreter.interpret(tree));
+        });
     }
 );
-
 
 

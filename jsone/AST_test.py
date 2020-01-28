@@ -350,3 +350,21 @@ class TestConstructors(unittest.TestCase):
         newInterpreter = Interpreter(context)
         oldInterpreter = ExpressionEvaluator(context)
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForOrShortCircuitEvaluation(self):
+        expr = "true || a"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        self.assertEqual(newInterpreter.interpret(tree), True)
+
+    def test_interpreterForAndShortCircuitEvaluation(self):
+        expr = "false && a"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        self.assertEqual(newInterpreter.interpret(tree), False)
