@@ -12,8 +12,8 @@ class Interpreter:
             return int(node.token.value)
         elif node.token.kind == "null":
             return None
-        elif node.token.kind == "str":
-            return node.token.value
+        elif node.token.kind == "string":
+            return node.token.value[1:-1]
         elif node.token.kind == "true":
             return True
         elif node.token.kind == "false":
@@ -68,19 +68,21 @@ class Interpreter:
     def visit_List(self, node):
         list = []
 
-        if node.list is not None:
+        if node.list[0] is not None:
             for item in node.list:
                 list.append(self.visit(item))
 
         return list
 
-    def visitArrayAccess(self, node):
+    def visit_ArrayAccess(self, node):
         array = self.context[node.token.value]
         left = None
         right = None
 
         if node.left:
             left = self.visit(node.left)
+        else:
+            left = 0
         if node.right:
             right = self.visit(node.right)
 
@@ -99,6 +101,15 @@ class Interpreter:
             return array[left:right]
 
         return array[left]
+
+    def visit_Builtin(self, node):
+        args = []
+        builtin = self.context[node.token.value]
+        if callable(builtin):
+            for item in node.args:
+                args.append(self.visit(item))
+            return builtin(*args)
+        return builtin
 
     def visit_Object(self, node):
         obj = {}

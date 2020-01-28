@@ -425,7 +425,7 @@ func TestInterpreterForBuiltin(t *testing.T) {
 	}
 }
 
-func TestInterpreterForList(t *testing.T) {
+func TestInterpreterForEmptyList(t *testing.T) {
 	expr := "[]"
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
@@ -449,7 +449,7 @@ func TestInterpreterForList(t *testing.T) {
 	}
 }
 
-func TestInterpreterForEmptyList(t *testing.T) {
+func TestInterpreterForList(t *testing.T) {
 	expr := "[2,5]"
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter

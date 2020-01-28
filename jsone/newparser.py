@@ -1,4 +1,4 @@
-from .AST import ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, Object
+from .AST import ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, Object, List
 from collections import namedtuple
 import re
 
@@ -19,7 +19,7 @@ class Parser(object):
         if self.current_token.kind == token_type:
             try:
                 self.current_token = next(self.tokens)
-            except StopIteration:
+            except:
                 self.current_token = None
 
     def parse(self):
@@ -27,10 +27,7 @@ class Parser(object):
         node = self.logicalAnd()
         token = self.current_token
 
-        if self.current_token is None:
-            return node
-
-        while token.kind == "||":
+        while token is not None and token.kind == "||":
             self.eat(token.kind)
             node = BinOp(token, node, self.logicalAnd())
             token = self.current_token
@@ -42,10 +39,7 @@ class Parser(object):
         node = self.inStatement()
         token = self.current_token
 
-        if self.current_token is None:
-            return node
-
-        while token.kind == "&&":
+        while token is not None and token.kind == "&&":
             self.eat(token.kind)
             node = BinOp(token, node, self.inStatement())
             token = self.current_token
@@ -57,10 +51,7 @@ class Parser(object):
         node = self.equality()
         token = self.current_token
 
-        if self.current_token is None:
-            return node
-
-        while token.kind == "in":
+        while token is not None and token.kind == "in":
             self.eat(token.kind)
             node = BinOp(token, node, self.equality())
             token = self.current_token
@@ -73,10 +64,7 @@ class Parser(object):
         token = self.current_token
         operations = ["==", "!="]
 
-        if self.current_token is None:
-            return node
-
-        while token.kind in operations:
+        while token is not None and token.kind in operations:
             self.eat(token.kind)
             node = BinOp(token, node, self.comparison())
             token = self.current_token
@@ -89,10 +77,7 @@ class Parser(object):
         token = self.current_token
         operations = ["<", ">", ">=", "<="]
 
-        if self.current_token is None:
-            return node
-
-        while token.kind in operations:
+        while token is not None and token.kind in operations:
             self.eat(token.kind)
             node = BinOp(token, node, self.addition())
             token = self.current_token
@@ -105,10 +90,7 @@ class Parser(object):
         token = self.current_token
         operations = ["-", "+"]
 
-        if self.current_token is None:
-            return node
-
-        while token.kind in operations:
+        while token is not None and token.kind in operations:
             self.eat(token.kind)
             node = BinOp(token, node, self.multiplication())
             token = self.current_token
@@ -121,10 +103,7 @@ class Parser(object):
         token = self.current_token
         operations = ["*", "/"]
 
-        if self.current_token is None:
-            return node
-
-        while token.kind in operations:
+        while token is not None and token.kind in operations:
             self.eat(token.kind)
             node = BinOp(token, node, self.exponentiation())
             token = self.current_token
@@ -136,10 +115,7 @@ class Parser(object):
         node = self.factor()
         token = self.current_token
 
-        if self.current_token is None:
-            return node
-
-        while token.kind == "**":
+        while token is not None and token.kind == "**":
             self.eat(token.kind)
             node = BinOp(token, node, self.factor())
             token = self.current_token
@@ -167,28 +143,24 @@ class Parser(object):
         elif token.kind == "{":
             node = self.object()
         elif token.kind == "identifier":
-            nextToken = next(self.tokens)
-            if nextToken is not None and nextToken.kind == "[":
-                node = self.arrayAccess()
-            elif nextToken is not None and nextToken.kind == ".":
-                left = Builtin(self.current_token, [])
-                self.eat(token.kind)
+            self.eat("identifier")
+            if self.current_token is not None and self.current_token.kind == "[":
+                node = self.arrayAccess(token)
+            elif self.current_token is not None and self.current_token.kind == ".":
+                left = Builtin(token, [])
                 token = self.current_token
                 self.eat(".")
                 right = Builtin(self.current_token, [])
                 self.eat(right.token.kind)
                 node = BinOp(token, left, right)
             else:
-                node = self.builtins
+                node = self.builtins(token)
 
         return node
 
-    def builtins(self):
+    def builtins(self, token):
         """  builtins : (LPAREN (expr ( COMMA expr)*)? RPAREN)? """
         args = []
-        token = self.current_token
-        self.eat("identifier")
-
         if self.current_token is not None and self.current_token.kind == "(":
             self.eat("(")
             node = self.parse()
@@ -203,14 +175,28 @@ class Parser(object):
 
         return node
 
-    def arrayAccess(self):
+    def list(self):
+        arr = []
+        token = self.current_token
+        self.eat("[")
+
+        if self.current_token != "]":
+            node = self.parse()
+            arr.append(node)
+
+            while self.current_token.kind == ",":
+                self.eat(",")
+                node = self.parse()
+                arr.append(node)
+        self.eat("]")
+        node = List(token, arr)
+        return node
+
+    def arrayAccess(self, token):
         """  arrayAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)"""
-        args = []
         left = None
         right = None
         isInterval = False
-        token = self.current_token
-        self.eat("identifier")
         self.eat("[")
 
         if self.current_token.kind != ":":
@@ -245,7 +231,7 @@ class Parser(object):
             else:
                 self.eat(",")
 
-        self.eat("{")
+        self.eat("}")
         node = Object(token, obj)
         token = self.current_token
         if token is not None and token.kind == ".":
@@ -262,6 +248,7 @@ def parseString(string):
 
 def generate_tokens(source):
     offset = 0
+    ignore = '\\s+'
     patterns = {
         'number': '[0-9]+(?:\\.[0-9]+)?',
         'identifier': '[a-zA-Z_][a-zA-Z_0-9]*',
@@ -280,8 +267,10 @@ def generate_tokens(source):
     token_patterns = [
         '({})'.format(patterns.get(t, re.escape(t)))
         for t in tokens]
+    if ignore:
+        token_patterns.append(('(?:{})'.format(ignore)))
     token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
-
+    offset = 0
     while True:
         start = offset
         remainder = source[offset:]

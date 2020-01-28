@@ -4,6 +4,7 @@ from .AST import *
 from .newparser import Parser, generate_tokens, Token
 from .newinterpreter import Interpreter
 from .interpreter import ExpressionEvaluator
+from . import builtins
 
 
 class TestConstructors(unittest.TestCase):
@@ -22,10 +23,9 @@ class TestConstructors(unittest.TestCase):
         self.assertEqual(isinstance(node, UnaryOp), True)
 
     def test_builtin_constructor(self):
-        builtin = "max"
         args = []
         token = Token("MINUS", "-", 0, 1)
-        node = Builtin(token, builtin, args)
+        node = Builtin(token, args)
         self.assertEqual(isinstance(node, Builtin), True)
 
     def test_term(self):
@@ -183,4 +183,170 @@ class TestConstructors(unittest.TestCase):
         tree = parser.parse()
         newInterpreter = Interpreter({})
         oldInterpreter = ExpressionEvaluator({})
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForBuiltinFunction(self):
+        expr = "max(5,2,9)"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForBuiltin(self):
+        expr = "a"
+        context = builtins.build({})
+        context.update({"a": 3})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForEmptyList(self):
+        expr = "[]"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForList(self):
+        expr = "[2, 5]"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForArrayAccess(self):
+        expr = "a[2]"
+        context = builtins.build({})
+        context.update({"a": [1, 2, 3, 4]})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForIntervalWithOneLeftArg(self):
+        expr = "a[2:]"
+        context = builtins.build({})
+        context.update({"a": [1, 2, 3, 4]})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForIntervalWithOneRightArg(self):
+        expr = "a[:2]"
+        context = builtins.build({})
+        context.update({"a": [1, 2, 3, 4]})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForInterval(self):
+        expr = "a[2:4]"
+        context = builtins.build({})
+        context.update({"a": [1, 2, 3, 4]})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForEmptyObject(self):
+        expr = "{}"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForObject(self):
+        expr = "{k : 2}"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForComplexObject(self):
+        expr = "{\"a\" : 2+5, b : \"zxc\"}"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForDotOp(self):
+        expr = "{a: 1}.a"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForDotOpWithContext(self):
+        expr = "k.b"
+        context = builtins.build({})
+        context.update({"k": {"b": 8}})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForInOpWithArray(self):
+        expr = "5 in [\"5\", \"five\"]"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForInOpWithObject(self):
+        expr = "\"5\" in {\"5\": \"five\"}"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
+        self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
+
+    def test_interpreterForInOpWithString(self):
+        expr = "\"5\" in {\"5\": \"five\"}"
+        context = builtins.build({})
+        tokens = generate_tokens(expr)
+        parser = Parser(tokens, expr)
+        tree = parser.parse()
+        newInterpreter = Interpreter(context)
+        oldInterpreter = ExpressionEvaluator(context)
         self.assertEqual(newInterpreter.interpret(tree), oldInterpreter.parse(expr))
