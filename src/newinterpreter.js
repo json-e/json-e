@@ -1,4 +1,6 @@
-const {isFunction, isObject, isString, isArray} = require("../src/type-utils");
+const {isFunction, isObject, isString, isArray, isNumber, isInteger} = require("../src/type-utils");
+const {InterpreterError} = require('./error');
+let expectationError = (operator, expectation) => new InterpreterError(`${operator} expects ${expectation}`);
 
 class Interpreter {
     constructor(context) {
@@ -28,63 +30,94 @@ class Interpreter {
     }
 
     visit_UnaryOp(node) {
+        let value = this.visit(node.expr);
         switch (node.token.kind) {
             case ("+"):
-                return +this.visit(node.expr);
+                if (!isNumber(value)) {
+                    throw expectationError('unary +', 'number');
+                }
+                return +value;
             case ("-"):
-                return -this.visit(node.expr);
+                if (!isNumber(value)) {
+                    throw expectationError('unary -', 'number');
+                }
+                return -value;
             case ("!"):
-                return !this.visit(node.expr);
+                return !value
         }
     }
 
     visit_BinOp(node) {
+        let left = this.visit(node.left);
+        let right;
+
+        if (node.token.kind == ".") {
+            right = node.right.token.value;
+        } else {
+            right = this.visit(node.right);
+        }
+
         switch (node.token.kind) {
             case ("+"):
-                return this.visit(node.left) + this.visit(node.right);
+                testMathOperands("+", left, right);
+                return left + right;
             case ("-"):
-                return this.visit(node.left) - this.visit(node.right);
+                testMathOperands("-", left, right);
+                return left - right;
             case ("/"):
-                return this.visit(node.left) / this.visit(node.right);
+                testMathOperands("/", left, right);
+                return left / right;
             case ("*"):
-                return this.visit(node.left) * this.visit(node.right);
+                testMathOperands("*", left, right);
+                return left * right;
             case (">"):
-                return this.visit(node.left) > this.visit(node.right);
+                testComparisonOperands(">", left, right);
+                return left > right;
             case ("<"):
-                return this.visit(node.left) < this.visit(node.right);
+                testComparisonOperands("<", left, right);
+                return left < right;
             case (">="):
-                return this.visit(node.left) >= this.visit(node.right);
+                testComparisonOperands(">=", left, right);
+                return left >= right;
             case ("<="):
-                return this.visit(node.left) <= this.visit(node.right);
+                testComparisonOperands("<=", left, right);
+                return left <= right;
             case ("!="):
-                return this.visit(node.left) != this.visit(node.right);
+                testComparisonOperands("!=", left, right);
+                return left != right;
             case ("=="):
-                return this.visit(node.left) == this.visit(node.right);
+                testComparisonOperands("==", left, right);
+                return left == right;
             case ("||"):
-                return this.visit(node.left) || this.visit(node.right);
+                return left || right;
             case ("&&"):
-                return this.visit(node.left) && this.visit(node.right);
+                return left && right;
             case ("**"):
-                return Math.pow(this.visit(node.left), this.visit(node.right));
+                testMathOperands("**", left, right);
+                return Math.pow(left, right);
             case ("."): {
-                let obj = this.visit(node.left);
-                let key = node.right.token.value;
-
-                if (obj.hasOwnProperty(key)) {
-                    return obj[key];
+                if (isObject(left)) {
+                    if (left.hasOwnProperty(right)) {
+                        return left[right];
+                    }
+                    throw new InterpreterError(`object has no property "${right}"`);
                 }
-                break
+                throw expectationError('infix: .', 'objects');
             }
             case ("in"): {
-                let left = this.visit(node.left);
-                let right = this.visit(node.right);
-
                 if (isObject(right)) {
+                    if (!isString(left)) {
+                        throw expectationError('Infix: in-object', 'string on left side');
+                    }
                     right = Object.keys(right);
                 } else if (isString(right)) {
+                    if (!isString(left)) {
+                        throw expectationError('Infix: in-string', 'string on left side');
+                    }
                     return right.indexOf(left) !== -1;
+                } else if (!isArray(right)) {
+                    throw expectationError('Infix: in', 'Array, string, or object on right side');
                 }
-
                 return right.some(r => isEqual(left, r));
             }
         }
@@ -104,7 +137,7 @@ class Interpreter {
 
     visit_ArrayAccess(node) {
         let array = this.context[node.token.value];
-        let left = null, right = null;
+        let left = 0, right = 0;
 
         if (node.left) {
             left = this.visit(node.left);
@@ -125,22 +158,34 @@ class Interpreter {
             if (left > right) {
                 left = right
             }
+            if (!isInteger(left) || !isInteger(right)) {
+                throw new InterpreterError('cannot perform interval access with non-integers');
+            }
             return array.slice(left, right)
         } else {
+            if (!isInteger(left)) {
+                throw new InterpreterError('should only use integers to access arrays or strings');
+            }
+            if (left >= array.length) {
+                throw new InterpreterError('index out of bounds');
+            }
             return array[left]
         }
     }
 
     visit_Builtin(node) {
         let args = [];
-        let builtin = this.context[node.token.value];
-        if (isFunction(builtin)) {
-            node.args.forEach(function (item) {
-                args.push(this.visit(item))
-            }, this);
-            return builtin.apply(null, args);
+        if (this.context.hasOwnProperty(node.token.value)) {
+            let builtin = this.context[node.token.value];
+            if (isFunction(builtin)) {
+                node.args.forEach(function (item) {
+                    args.push(this.visit(item))
+                }, this);
+                return builtin.apply(null, args);
+            }
+            return builtin
         }
-        return builtin
+        throw new InterpreterError(`unknown context value ${node.token.value}`);
     }
 
     visit_Object(node) {
@@ -183,6 +228,30 @@ let isEqual = (a, b) => {
         return true;
     }
     return a === b;
+};
+
+let testMathOperands = (operator, left, right) => {
+    if (operator === '+' && !(isNumber(left) && isNumber(right) || isString(left) && isString(right))) {
+        throw expectationError('infix: +', 'number/string + number/string');
+    }
+    if (['-', '*', '/', '**'].some(v => v === operator) && !(isNumber(left) && isNumber(right))) {
+        throw expectationError(`infix: ${operator}`, `number ${operator} number`);
+    }
+    return;
+};
+
+let testComparisonOperands = (operator, left, right) => {
+    if (operator === '==' || operator === '!=') {
+        return null;
+    }
+
+    let test = ['>=', '<=', '<', '>'].some(v => v === operator)
+        && (isNumber(left) && isNumber(right) || isString(left) && isString(right));
+
+    if (!test) {
+        throw expectationError(`infix: ${operator}`, `numbers/strings ${operator} numbers/strings`);
+    }
+    return;
 };
 
 exports
