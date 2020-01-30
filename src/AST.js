@@ -33,10 +33,11 @@ class List extends ASTNode {
     }
 }
 
-class ArrayAccess extends ASTNode {
-    constructor(token,isInterval, left, right) {
+class ValueAccess extends ASTNode {
+    constructor(token, arr, isInterval, left, right) {
         super(token);
         this.isInterval = isInterval;
+        this.arr = arr;
         this.left = left;
         this.right = right;
 
@@ -54,6 +55,6 @@ exports.ASTNode = ASTNode;
 exports.BinOp = BinOp;
 exports.UnaryOp = UnaryOp;
 exports.Builtin = Builtin;
-exports.ArrayAccess = ArrayAccess;
+exports.ArrayAccess = ValueAccess;
 exports.List = List;
 exports.Object = Object;

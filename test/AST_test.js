@@ -119,7 +119,7 @@ describe(
             // let toke
 
             let isBuiltinNodeCorrect = node.token.value == "a" && node.token.kind == "identifier";
-            let isPrimitivesNodesCorrect = node.args[0] === undefined;
+            let isPrimitivesNodesCorrect = node.args === null;
 
             assert(isBuiltinNodeCorrect && isPrimitivesNodesCorrect);
         });
@@ -162,7 +162,7 @@ describe(
             let parser = new NewParser(tokenizer, "a[2]", context);
             let node = parser.parse();
 
-            let isIDCorrect = node.token.value == "a" && node.token.kind == "identifier";
+            let isIDCorrect = node.arr.token.value == "a";
             let isIndexCorrect = node.left.token.value == 2;
 
             assert(isIDCorrect && isIndexCorrect);
@@ -172,7 +172,7 @@ describe(
             let parser = new NewParser(tokenizer, "a[:2]", context);
             let node = parser.parse();
 
-            let isIDCorrect = node.token.value == "a" && node.token.kind == "identifier";
+            let isIDCorrect = node.arr.token.value == "a" && node.arr.token.kind == "identifier";
             let isIndexCorrect = node.left == null && node.right.token.value == 2;
 
             assert(isIDCorrect && isIndexCorrect);
@@ -182,7 +182,7 @@ describe(
             let parser = new NewParser(tokenizer, "a[2:3]", context);
             let node = parser.parse();
 
-            let isBuiltinNodeCorrect = node.token.value == "a" && node.token.kind == "identifier";
+            let isBuiltinNodeCorrect = node.arr.token.value == "a" && node.arr.token.kind == "identifier";
             let isPrimitivesNodesCorrect =  node.left.token.value == 2 && node.right.token.value == 3;
 
             assert(isBuiltinNodeCorrect && isPrimitivesNodesCorrect);
@@ -240,7 +240,7 @@ describe(
 
             let isTokenCorrect = node.token.value == "." && node.token.kind == ".";
             let isObjCorrect = node.left.obj["a"].token.value == 1;
-            let isKeyCorrect = node.right.token.kind == "identifier" && node.right.token.value == "a" ;
+            let isKeyCorrect = node.right.kind == "identifier" && node.right.value == "a" ;
 
             assert(isTokenCorrect && isObjCorrect && isKeyCorrect);
         });
@@ -251,7 +251,7 @@ describe(
 
             let isTokenCorrect = node.token.value == "." && node.token.kind == ".";
             let isObjCorrect = node.left.token.value == "k";
-            let isKeyCorrect = node.right.token.value == "b";
+            let isKeyCorrect = node.right.value == "b";
 
             assert(isTokenCorrect && isObjCorrect && isKeyCorrect);
         });

@@ -1,5 +1,11 @@
 const {ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, List, Object} = require("../src/AST");
 const Tokenizer = require("../src/tokenizer");
+const {SyntaxError} = require('./error');
+
+let syntaxRuleError = (token, expects) => {
+    expects.sort();
+    return new SyntaxError(`Found ${token.value}, expected ${expects.join(', ')}`, token);
+};
 
 class Parser {
     constructor(tokenizer, source, context, offset = 0) {
@@ -10,17 +16,27 @@ class Parser {
         this.unaryOpTokens = ["-", "+", "!"];
         this.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
         "!=", "==", "&&", "||", "in"];
-        this.primitivesTokens = ["number", "null", "string", "true", "false"];
+        this.primitivesTokens = ["number", "null", "true", "false"];
     }
 
-    eat(token_type) {
-        if (this.current_token.kind == token_type) {
+    eat(...kinds) {
+        if (kinds.length > 0 && kinds.indexOf(this.current_token.kind) === -1) {
+            throw syntaxRuleError(this.current_token, kinds);
+        }
+        try {
             this.current_token = this._tokenizer.next(this._source, this.current_token.end);
+        } catch (err) {
+            throw err;
         }
     }
 
+    /**
+     * Try to get the next token if it matches one of the kinds given, otherwise
+     * return null. If no kinds are given returns the next of any kind.
+     */
+
     parse() {
-        //    expr : logicalAnd (OR logicalAnd)*
+        //    logicalOr : logicalAnd (OR logicalAnd)*
         let node = this.logicalAnd();
         let token = this.current_token;
 
@@ -112,21 +128,20 @@ class Parser {
     }
 
     exponentiation() {
-        //    exponentiation : factor (EXP factor)*
+        //    exponentiation : factor (EXP exponentiation)*
         let node = this.factor();
         let token = this.current_token;
 
         for (; token != null && token.kind == "**"; token = this.current_token) {
             this.eat(token.kind);
-            node = new BinOp(token, node, this.factor());
+            node = new BinOp(token, this.exponentiation(), node);
         }
 
         return node
     }
 
     factor() {
-        //    factor : unaryOp factor | primitives | LPAREN expr RPAREN | list | object |
-        //              |  ID (arrayAccess | DOT ID | builtins)
+        //    factor : unaryOp factor | primitives | (string | list | builtin) (valueAccess)? | LPAREN expr RPAREN |object
         let token = this.current_token;
         let node;
         let isUnaryOpToken = this.unaryOpTokens.indexOf(token.kind) !== -1;
@@ -138,43 +153,36 @@ class Parser {
         } else if (isPrimitivesToken) {
             this.eat(token.kind);
             node = new ASTNode(token);
+        } else if (token.kind == "string") {
+            this.eat(token.kind);
+            node = new ASTNode(token);
+            node = this.valueAccess(node)
         } else if (token.kind == "(") {
             this.eat("(");
             node = this.parse();
             this.eat(")");
         } else if (token.kind == "[") {
             node = this.list();
+            node = this.valueAccess(node)
         } else if (token.kind == "{") {
             node = this.object();
         } else if (token.kind == "identifier") {
-            let nextToken = this._tokenizer.next(this._source, this.current_token.end);
-
-            if (nextToken != null && nextToken.kind == "[") {
-                node = this.arrayAccess();
-            } else if (nextToken != null && nextToken.kind == ".") {
-                let left = new Builtin(this.current_token, []);
-                this.eat(token.kind);
-                token = this.current_token;
-                this.eat(".");
-                let right = new Builtin(this.current_token, []);
-                this.eat(right.kind);
-                node = new BinOp(token, left, right);
-            } else {
-                node = this.builtins()
-            }
+            node = this.builtins();
+            node = this.valueAccess(node)
         }
 
         return node
     }
 
     builtins() {
-        //    builtins : (LPAREN (expr ( COMMA expr)*)? RPAREN)?
-        let args = [];
+        //    builtins : ID((LPAREN (expr ( COMMA expr)*)? RPAREN)? | (DOT ID)*)
+        let args = null;
         let token = this.current_token;
         let node;
         this.eat("identifier");
 
         if (this.current_token != null && this.current_token.kind == "(") {
+            args = [];
             this.eat("(");
             node = this.parse();
             args.push(node);
@@ -187,6 +195,16 @@ class Parser {
             this.eat(")")
         }
         node = new Builtin(token, args);
+
+        for (token = this.current_token; token != null && token.kind == "."; token = this.current_token) {
+            this.eat(".");
+            let right = this.current_token;
+            node = new BinOp(token, node, right);
+            if (this.current_token) {
+                this.eat(this.current_token.kind);
+            }
+        }
+
         return node
     }
 
@@ -197,7 +215,7 @@ class Parser {
         let token = this.current_token;
         this.eat("[");
 
-        if (this.current_token != "]") {
+        if (this.current_token.kind != "]") {
             node = this.parse();
             list.push(node);
 
@@ -212,26 +230,32 @@ class Parser {
         return node
     }
 
-    arrayAccess() {
-        //    arrayAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)
-        let node, left = null, right = null;
-        let token = this.current_token;
+    valueAccess(node) {
+        //    valueAccess : (LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)(LSQAREBRAKET expr
+        //   |(expr? SEMI expr?)  RSQAREBRAKET))*
+        let leftArg = null, rightArg = null;
+        let token;
         let isInterval = false;
-        this.eat("identifier");
-        this.eat("[");
 
-        if (this.current_token.kind != ":") {
-            left = this.parse();
-        }
-        if (this.current_token.kind == ":") {
-            isInterval = true;
-            this.eat(":");
-            if (this.current_token.kind != "]") {
-                right = this.parse();
+        for (token = this.current_token; this.current_token && this.current_token.kind == "[";) {
+            token = this.current_token;
+            this.eat("[");
+
+            if (this.current_token.kind != ":") {
+                leftArg = this.parse();
             }
+            if (this.current_token.kind == ":") {
+                isInterval = true;
+                this.eat(":");
+                if (this.current_token.kind != "]") {
+                    rightArg = this.parse();
+                }
+            }
+            this.eat("]");
+            node = new ArrayAccess(token, node, isInterval, leftArg, rightArg);
+            token = this.current_token
         }
-        this.eat("]");
-        node = new ArrayAccess(token, isInterval, left, right);
+
         return node;
     }
 
@@ -264,8 +288,8 @@ class Parser {
 
         if (token != null && token.kind == ".") {
             this.eat(".");
-            let right = new Builtin(this.current_token, []);
-            this.eat(right.token.kind);
+            let right = this.current_token;
+            this.eat(this.current_token.kind);
             node = new BinOp(token, node, right);
         }
         return node;
@@ -273,34 +297,38 @@ class Parser {
 
 }
 
-let parseString = (str) => {
-    return str.slice(1, -1);
-};
+let
+    parseString = (str) => {
+        return str.slice(1, -1);
+    };
 
-let createTokenizer = function () {
-    let tokenizer = new Tokenizer({
-            ignore: '\\s+', // ignore all whitespace including \n
-            patterns: {
-                number: '[0-9]+(?:\\.[0-9]+)?',
-                identifier: '[a-zA-Z_][a-zA-Z_0-9]*',
-                string: '\'[^\']*\'|"[^"]*"',
-                // avoid matching these as prefixes of identifiers e.g., `insinutations`
-                true: 'true(?![a-zA-Z_0-9])',
-                false: 'false(?![a-zA-Z_0-9])',
-                in: 'in(?![a-zA-Z_0-9])',
-                null: 'null(?![a-zA-Z_0-9])',
-            },
-            tokens: [
-                '**', ...'+-*/[].(){}:,'.split(''),
-                '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
-                'true', 'false', 'in', 'null', 'number',
-                'identifier', 'string',
-            ]
-        }
-    );
-    return tokenizer
-};
+let
+    createTokenizer = function () {
+        let tokenizer = new Tokenizer({
+                ignore: '\\s+', // ignore all whitespace including \n
+                patterns: {
+                    number: '[0-9]+(?:\\.[0-9]+)?',
+                    identifier: '[a-zA-Z_][a-zA-Z_0-9]*',
+                    string: '\'[^\']*\'|"[^"]*"',
+                    // avoid matching these as prefixes of identifiers e.g., `insinutations`
+                    true: 'true(?![a-zA-Z_0-9])',
+                    false: 'false(?![a-zA-Z_0-9])',
+                    in: 'in(?![a-zA-Z_0-9])',
+                    null: 'null(?![a-zA-Z_0-9])',
+                },
+                tokens: [
+                    '**', ...'+-*/[].(){}:,'.split(''),
+                    '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
+                    'true', 'false', 'in', 'null', 'number',
+                    'identifier', 'string',
+                ]
+            }
+        );
+        return tokenizer
+    };
 
 
-exports.NewParser = Parser;
-exports.createTokenizer = createTokenizer;
+exports
+    .NewParser = Parser;
+exports
+    .createTokenizer = createTokenizer;

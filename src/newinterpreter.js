@@ -1,4 +1,4 @@
-const {isFunction, isObject, isString, isArray, isNumber, isInteger} = require("../src/type-utils");
+const {isFunction, isObject, isString, isArray, isNumber, isInteger, isTruthy} = require("../src/type-utils");
 const {InterpreterError} = require('./error');
 let expectationError = (operator, expectation) => new InterpreterError(`${operator} expects ${expectation}`);
 
@@ -43,18 +43,23 @@ class Interpreter {
                 }
                 return -value;
             case ("!"):
-                return !value
+                return !isTruthy(value)
         }
     }
 
     visit_BinOp(node) {
         let left = this.visit(node.left);
         let right;
-
-        if (node.token.kind == ".") {
-            right = node.right.token.value;
-        } else {
-            right = this.visit(node.right);
+        switch (node.token.kind) {
+            case ("||"):
+                return isTruthy(left) || isTruthy(this.visit(node.right));
+            case ("&&"):
+                return isTruthy(left) && isTruthy(this.visit(node.right));
+            case ("."):
+                right = node.right.value;
+                break;
+            default:
+                right = this.visit(node.right);
         }
 
         switch (node.token.kind) {
@@ -84,17 +89,13 @@ class Interpreter {
                 return left <= right;
             case ("!="):
                 testComparisonOperands("!=", left, right);
-                return left != right;
+                return !isEqual(left, right);
             case ("=="):
                 testComparisonOperands("==", left, right);
-                return left == right;
-            case ("||"):
-                return left || right;
-            case ("&&"):
-                return left && right;
+                return isEqual(left, right);
             case ("**"):
                 testMathOperands("**", left, right);
-                return Math.pow(left, right);
+                return Math.pow(right, left);
             case ("."): {
                 if (isObject(left)) {
                     if (left.hasOwnProperty(right)) {
@@ -135,9 +136,9 @@ class Interpreter {
         return list
     }
 
-    visit_ArrayAccess(node) {
-        let array = this.context[node.token.value];
-        let left = 0, right = 0;
+    visit_ValueAccess(node) {
+        let array = this.visit(node.arr);
+        let left = 0, right = null;
 
         if (node.left) {
             left = this.visit(node.left);
@@ -148,21 +149,22 @@ class Interpreter {
         if (left < 0) {
             left = array.length + left
         }
-        if (node.isInterval) {
-            right = right === null ? array.length : right;
-            if (right < 0) {
-                right = array.length + right;
-                if (right < 0)
-                    right = 0
+        if (isArray(array) || isString(array)) {
+            if (node.isInterval) {
+                right = right === null ? array.length : right;
+                if (right < 0) {
+                    right = array.length + right;
+                    if (right < 0)
+                        right = 0
+                }
+                if (left > right) {
+                    left = right
+                }
+                if (!isInteger(left) || !isInteger(right)) {
+                    throw new InterpreterError('cannot perform interval access with non-integers');
+                }
+                return array.slice(left, right)
             }
-            if (left > right) {
-                left = right
-            }
-            if (!isInteger(left) || !isInteger(right)) {
-                throw new InterpreterError('cannot perform interval access with non-integers');
-            }
-            return array.slice(left, right)
-        } else {
             if (!isInteger(left)) {
                 throw new InterpreterError('should only use integers to access arrays or strings');
             }
@@ -171,17 +173,32 @@ class Interpreter {
             }
             return array[left]
         }
+        if (!isObject(array)) {
+            throw new InterpreterError('cannot access properties from non-objects');
+        }
+
+        if (!isString(left)) {
+            throw new InterpreterError('object keys must be strings');
+        }
+
+        if (array.hasOwnProperty(left)) {
+            return array[left];
+        } else {
+            return null;
+        }
     }
 
     visit_Builtin(node) {
         let args = [];
         if (this.context.hasOwnProperty(node.token.value)) {
             let builtin = this.context[node.token.value];
-            if (isFunction(builtin)) {
-                node.args.forEach(function (item) {
-                    args.push(this.visit(item))
-                }, this);
-                return builtin.apply(null, args);
+            if (node.args != null) {
+                if (isFunction(builtin)) {
+                    node.args.forEach(function (item) {
+                        args.push(this.visit(item))
+                    }, this);
+                    return builtin.apply(null, args);
+                }
             }
             return builtin
         }

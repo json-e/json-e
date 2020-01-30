@@ -2,6 +2,7 @@ const {NewParser, createTokenizer} = require('./../src/newparser');
 const {NewInterpreter} = require('./../src/newinterpreter');
 var fromNow = require('./from-now');
 var stringify = require('json-stable-stringify-without-jsonify');
+// var interpreter = require('./interpreter');
 var {
     isString, isNumber, isBool,
     isArray, isObject,
@@ -9,6 +10,11 @@ var {
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
+
+let syntaxRuleError = (token, expects) => {
+    expects.sort();
+    return new SyntaxError(`Found ${token.value}, expected ${expects.join(', ')}`, token);
+};
 
 function checkUndefinedProperties(template, allowed) {
     var unknownKeys = '';
@@ -35,8 +41,7 @@ let interpolate = (string, context) => {
         result += remaining.slice(0, offset);
 
         if (remaining[offset + 1] != '$') {
-            // let v = interpreter.parseUntilTerminator(remaining.slice(offset), 2, '}', context);
-            let v = newParse(remaining.slice(offset), context);
+            let v = newParseUntilTerminator(remaining.slice(offset+2),'}', context);
             if (isArray(v.result) || isObject(v.result)) {
                 let input = remaining.slice(offset + 2, offset + v.offset);
                 throw new TemplateError(`interpolation of '${input}' produced an array or object`);
@@ -71,7 +76,6 @@ operators.$eval = (template, context) => {
         throw new TemplateError('$eval must be given a string expression');
     }
 
-    // return interpreter.parse(template['$eval'], context);
     return newParse(template['$eval'], context)
 };
 
@@ -119,7 +123,6 @@ operators.$if = (template, context) => {
     if (!isString(template['$if'])) {
         throw new TemplateError('$if can evaluate string expressions only');
     }
-    // if (isTruthy(interpreter.parse(template['$if'], context))) {
     if (isTruthy(newParse(template['$if'], context))) {
         if (template.hasOwnProperty('$then')) {
             throw new TemplateError('$if Syntax error: $then: should be spelled then: (no $)')
@@ -161,7 +164,7 @@ operators.$let = (template, context) => {
         }
     });
 
-    var child_context = Object.assign(context, variables);
+    let child_context = Object.assign(context, variables);
 
     if (template.in == undefined) {
         throw new TemplateError('$let operator requires an `in` clause');
@@ -205,7 +208,6 @@ operators.$map = (template, context) => {
             }
             return eachValue;
         }).filter(v => v !== deleteMarker);
-        //return value.reduce((a, o) => Object.assign(a, o), {});
         return Object.assign({}, ...value);
     } else {
         return value.map((v, idx) => {
@@ -226,7 +228,6 @@ operators.$match = (template, context) => {
     const conditions = template['$match'];
 
     for (let condition of Object.keys(conditions).sort()) {
-        // if (isTruthy(interpreter.parse(condition, context))) {
         if (isTruthy(newParse(condition, context))) {
             result.push(render(conditions[condition], context));
         }
@@ -310,7 +311,6 @@ operators.$sort = (template, context) => {
         let byExpr = template[byKey];
         by = value => {
             contextClone[x] = value;
-            // return interpreter.parse(byExpr, contextClone);
             return newParse(byExpr, contextClone);
         };
     } else {
@@ -412,8 +412,31 @@ let newParse = (source, context) => {
     let tokenizer = createTokenizer();
     let parser = new NewParser(tokenizer, source, context);
     let tree = parser.parse();
+    if (parser.current_token != null) {
+        throw syntaxRuleError(parser.current_token, ["EOF"]);
+    }
     let newInterpreter = new NewInterpreter(context);
+
     return newInterpreter.interpret(tree);
+};
+
+let newParseUntilTerminator = (source, terminator, context) => {
+    let tokenizer = createTokenizer();
+    let parser = new NewParser(tokenizer, source, context);
+    let tree = parser.parse();
+    let next = parser.current_token;
+    if (!next) {
+        // string ended without the terminator
+        let errorLocation = source.length;
+        throw new SyntaxError(`Found end of string, expected ${terminator}`,
+            {start: errorLocation, end: errorLocation});
+    } else if (next.kind !== terminator) {
+        throw syntaxRuleError(next, [terminator]);
+    }
+    let newInterpreter = new NewInterpreter(context);
+    let result =  newInterpreter.interpret(tree);
+
+    return {result, offset: next.start+2};
 };
 
 module.exports = (template, context = {}) => {
