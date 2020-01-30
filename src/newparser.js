@@ -12,7 +12,6 @@ class Parser {
         this._source = source;
         this._tokenizer = tokenizer;
         this.current_token = this._tokenizer.next(this._source, offset);
-        this.context = context;
         this.unaryOpTokens = ["-", "+", "!"];
         this.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
         "!=", "==", "&&", "||", "in"];

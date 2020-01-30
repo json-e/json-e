@@ -410,7 +410,7 @@ let render = (template, context) => {
 
 let newParse = (source, context) => {
     let tokenizer = createTokenizer();
-    let parser = new NewParser(tokenizer, source, context);
+    let parser = new NewParser(tokenizer, source);
     let tree = parser.parse();
     if (parser.current_token != null) {
         throw syntaxRuleError(parser.current_token, ["EOF"]);
@@ -422,7 +422,7 @@ let newParse = (source, context) => {
 
 let newParseUntilTerminator = (source, terminator, context) => {
     let tokenizer = createTokenizer();
-    let parser = new NewParser(tokenizer, source, context);
+    let parser = new NewParser(tokenizer, source);
     let tree = parser.parse();
     let next = parser.current_token;
     if (!next) {
