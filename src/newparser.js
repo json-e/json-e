@@ -211,22 +211,22 @@ class Parser {
     list() {
         //    list : LSQAREBRAKET (expr ( COMMA expr)*)? RSQAREBRAKET)
         let node;
-        let list = [];
+        let arr = [];
         let token = this.current_token;
         this.eat("[");
 
         if (this.current_token.kind != "]") {
             node = this.parse();
-            list.push(node);
+            arr.push(node);
 
             while (this.current_token.kind == ",") {
                 this.eat(",");
                 node = this.parse();
-                list.push(node)
+                arr.push(node)
             }
         }
         this.eat("]");
-        node = new List(token, list);
+        node = new List(token, arr);
         return node
     }
 
@@ -237,8 +237,7 @@ class Parser {
         let token;
         let isInterval = false;
 
-        for (token = this.current_token; this.current_token && this.current_token.kind == "[";) {
-            token = this.current_token;
+        for (token = this.current_token; token && token.kind == "[";) {
             this.eat("[");
 
             if (this.current_token.kind != ":") {

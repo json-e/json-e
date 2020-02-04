@@ -56,7 +56,7 @@ class Interpreter:
             return self.visit(node.left) ** self.visit(node.right)
         elif node.token.kind == ".":
             obj = self.visit(node.left)
-            key = node.right.token.value
+            key = node.right.value
 
             if key in obj:
                 return obj[key]

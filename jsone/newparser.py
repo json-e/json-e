@@ -13,7 +13,7 @@ class Parser(object):
         self.unaryOpTokens = ["-", "+", "!"]
         self.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
                             "!=", "==", "&&", "||", "in"]
-        self.primitivesTokens = ["number", "null", "string", "true", "false"]
+        self.primitivesTokens = ["number", "null", "true", "false"]
 
     def eat(self, token_type):
         if self.current_token.kind == token_type:
@@ -123,8 +123,8 @@ class Parser(object):
         return node
 
     def factor(self):
-        # factor : unaryOp factor | primitives | LPAREN expr RPAREN | list | object |
-        #           | ID(arrayAccess | DOT ID | builtins)
+        # factor : unaryOp factor | primitives | (string | list | builtin) (valueAccess)? |
+        #           |  LPAREN expr RPAREN |object
         token = self.current_token
         node = None
 
@@ -134,34 +134,33 @@ class Parser(object):
         elif token.kind in self.primitivesTokens:
             self.eat(token.kind)
             node = ASTNode(token)
+        elif token.kind == "string":
+            self.eat(token.kind)
+            node = ASTNode(token)
+            node = self.valueAccess(node)
         elif token.kind == "(":
-            self.eat(token.kind)
+            self.eat("(")
             node = self.parse()
-            self.eat(token.kind)
+            self.eat(")")
         elif token.kind == "[":
             node = self.list()
+            node = self.valueAccess(node)
         elif token.kind == "{":
             node = self.object()
         elif token.kind == "identifier":
-            self.eat("identifier")
-            if self.current_token is not None and self.current_token.kind == "[":
-                node = self.arrayAccess(token)
-            elif self.current_token is not None and self.current_token.kind == ".":
-                left = Builtin(token, [])
-                token = self.current_token
-                self.eat(".")
-                right = Builtin(self.current_token, [])
-                self.eat(right.token.kind)
-                node = BinOp(token, left, right)
-            else:
-                node = self.builtins(token)
+            node = self.builtins()
+            node = self.valueAccess(node)
 
         return node
 
-    def builtins(self, token):
-        """  builtins : (LPAREN (expr ( COMMA expr)*)? RPAREN)? """
-        args = []
+    def builtins(self):
+        """  builtins : ID((LPAREN (expr ( COMMA expr)*)? RPAREN)? | (DOT ID)*) """
+        args = None
+        token = self.current_token
+        self.eat("identifier")
+
         if self.current_token is not None and self.current_token.kind == "(":
+            args = []
             self.eat("(")
             node = self.parse()
             args.append(node)
@@ -171,7 +170,17 @@ class Parser(object):
                 node = self.parse()
                 args.append(node)
             self.eat(")")
+
         node = Builtin(token, args)
+        token = self.current_token
+
+        while token is not None and token.kind == ".":
+            self.eat(".")
+            right = self.current_token
+            node = BinOp(token, node, right)
+            if self.current_token is not None:
+                self.eat(self.current_token.kind)
+            token = self.current_token
 
         return node
 
@@ -188,27 +197,33 @@ class Parser(object):
                 self.eat(",")
                 node = self.parse()
                 arr.append(node)
+
         self.eat("]")
         node = List(token, arr)
         return node
 
-    def arrayAccess(self, token):
-        """  arrayAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)"""
+    def valueAccess(self, node):
+        """  valueAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET) (LSQAREBRAKET expr
+        //   |(expr? SEMI expr?)  RSQAREBRAKET))*"""
         left = None
         right = None
         isInterval = False
-        self.eat("[")
+        token = self.current_token
 
-        if self.current_token.kind != ":":
-            left = self.parse()
-        if self.current_token.kind == ":":
-            isInterval = True
-            self.eat(":")
-            if self.current_token.kind != "[":
+        while token is not None and token.kind == "[":
+            self.eat("[")
+            if self.current_token.kind != ":":
+                left = self.parse()
+            if self.current_token.kind == ":":
+                isInterval = True
+                self.eat(":")
+            if self.current_token.kind != "]":
                 right = self.parse()
 
-        self.eat("]")
-        node = ArrayAccess(token, isInterval, left, right)
+            self.eat("]")
+            node = ArrayAccess(token, isInterval, left, right)
+            token = self.current_token
+
         return node
 
     def object(self):
