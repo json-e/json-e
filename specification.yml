@@ -756,7 +756,16 @@ title:    let with a non-object rendered value (boolean)
 template: {$let: {$eval: "true"}, in: "uhoh"}
 context:  {}
 error:    'TemplateError: $let value must be an object'
-
+---
+title:    fromNow with redefined `now`
+context:  {}
+template: {$let: {now: '2017-01-01T01:00:00.123Z'}, in: {$eval: "fromNow('1 day')"}}
+result:   '2017-01-02T01:00:00.123Z'
+---
+title: 'defined with empty variable from a let expression'
+context: {}
+template: {$let: {var: 10}, in: {$if: "defined('var')", then: 't', else: 'f'}}
+result: t
 ################################################################################
 ---
 section:  $map

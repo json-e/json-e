@@ -7,6 +7,7 @@ from . import shared
 from .interpreter import ExpressionEvaluator
 from .six import viewitems
 import functools
+from . import builtins
 
 operators = {}
 IDENTIFIER_RE = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*$')
@@ -158,6 +159,7 @@ def let(template, context):
     initial_result = renderValue(template['$let'], context)
     if not isinstance(initial_result, dict):
         raise TemplateError("$let value must be an object")
+    initial_result.update(builtins.build(initial_result))
     for k, v in initial_result.items():
         if not IDENTIFIER_RE.match(k):
             raise TemplateError("top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/")
