@@ -156,8 +156,9 @@ operators.$let = (template, context) => {
       variables[key] = initialResult[key];
     }
   });
-
-  let child_context = Object.assign(context, addBuiltins(Object.assign({}, variables)));
+    context["defined"] = addBuiltins(variables)["defined"];
+    context["fromNow"] = addBuiltins(variables)["fromNow"];
+    let child_context = Object.assign({}, context, variables);
 
   if (template.in == undefined) {
     throw new TemplateError('$let operator requires an `in` clause');

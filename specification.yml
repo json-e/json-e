@@ -762,10 +762,22 @@ context:  {}
 template: {$let: {now: '2017-01-01T01:00:00.123Z'}, in: {$eval: "fromNow('1 day')"}}
 result:   '2017-01-02T01:00:00.123Z'
 ---
-title: 'defined with empty variable from a let expression'
+title: defined with empty variable from a let expression
 context: {}
 template: {$let: {var: 10}, in: {$if: "defined('var')", then: 't', else: 'f'}}
 result: t
+---
+title: $let with nested redefinitions of builtins
+context: {}
+template:
+  $let: {lowercase: {$eval: uppercase}}
+  in:
+    $let: {var: 10}
+    in:
+      $if: "defined('var')"
+      then: "${lowercase('t')}"  # lowercase should be redefined as uppercase
+      else: "${lowercase('f')}"
+result: T
 ################################################################################
 ---
 section:  $map

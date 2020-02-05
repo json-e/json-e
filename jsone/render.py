@@ -159,7 +159,8 @@ def let(template, context):
     initial_result = renderValue(template['$let'], context)
     if not isinstance(initial_result, dict):
         raise TemplateError("$let value must be an object")
-    initial_result.update(builtins.build(initial_result))
+    subcontext["defined"] = builtins.build(initial_result)["defined"]
+    subcontext["fromNow"] = builtins.build(initial_result)["fromNow"]
     for k, v in initial_result.items():
         if not IDENTIFIER_RE.match(k):
             raise TemplateError("top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/")
