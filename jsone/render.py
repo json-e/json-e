@@ -6,17 +6,51 @@ from .shared import JSONTemplateError, TemplateError, DeleteMarker, string, to_s
 from . import shared
 from .interpreter import ExpressionEvaluator
 from .six import viewitems
+from .newparser import Parser, generate_tokens
+from .newinterpreter import Interpreter
 import functools
 
 operators = {}
 IDENTIFIER_RE = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*$')
 
 
+class SyntaxError(TemplateError):
+
+    @classmethod
+    def unexpected(cls, got, exp):
+        exp = ', '.join(sorted(exp))
+        return cls('Found {}, expected {}'.format(got.value, exp))
+
+
 def operator(name):
     def wrap(fn):
         operators[name] = fn
         return fn
+
     return wrap
+
+
+def newParse(source, context):
+    tokens = generate_tokens(source)
+    parser = Parser(tokens, source)
+    tree = parser.parse()
+    if parser.current_token is not None:
+        raise SyntaxError.unexpected(parser.current_token, ["EOF"])
+
+    newInterpreter = Interpreter(context)
+    result = newInterpreter.interpret(tree)
+    return result
+
+
+def newParseUntilTerminator(source, context, terminator):
+    tokens = generate_tokens(source)
+    parser = Parser(tokens, source)
+    tree = parser.parse()
+    if parser.current_token.kind != terminator:
+        raise SyntaxError.unexpected(parser.current_token, [terminator])
+    newInterpreter = Interpreter(context)
+    result = newInterpreter.interpret(tree)
+    return result, parser.current_token.start
 
 
 def evaluateExpression(expr, context):
@@ -39,7 +73,8 @@ def interpolate(string, context):
         result.append(string[:mo.start()])
         if mo.group() != '$${':
             string = string[mo.end():]
-            parsed, offset = evaluator.parseUntilTerminator(string, '}')
+            # parsed, offset = evaluator.parseUntilTerminator(string, '}')
+            parsed, offset = newParseUntilTerminator(string, context, '}')
             if isinstance(parsed, (list, dict)):
                 raise TemplateError(
                     "interpolation of '{}' produced an array or object".format(string[:offset]))
@@ -74,7 +109,8 @@ def eval(template, context):
     checkUndefinedProperties(template, ['\$eval'])
     if not isinstance(template['$eval'], string):
         raise TemplateError("$eval must be given a string expression")
-    return evaluateExpression(template['$eval'], context)
+    # return evaluateExpression(template['$eval'], context)
+    return newParse(template['$eval'], context)
 
 
 @operator('$flatten')
@@ -91,6 +127,7 @@ def flatten(template, context):
                     yield e2
             else:
                 yield e
+
     return list(gen())
 
 
@@ -127,7 +164,8 @@ def fromNow(template, context):
 @operator('$if')
 def ifConstruct(template, context):
     checkUndefinedProperties(template, ['\$if', 'then', 'else'])
-    condition = evaluateExpression(template['$if'], context)
+    # condition = evaluateExpression(template['$if'], context)
+    condition = newParse(template['$if'], context)
     try:
         if condition:
             rv = template['then']
@@ -202,6 +240,7 @@ def map(template, context):
             elt = renderValue(each_template, subcontext)
             if elt is not DeleteMarker:
                 yield elt
+
     if is_obj:
         value = [{'key': v[0], 'val': v[1]} for v in value.items()]
         v = dict()
@@ -224,7 +263,8 @@ def matchConstruct(template, context):
 
     result = []
     for condition in sorted(template['$match']):
-        if evaluateExpression(condition, context):
+        # if evaluateExpression(condition, context):
+        if newParse(condition, context):
             result.append(renderValue(template['$match'][condition], context))
 
     return result
@@ -263,6 +303,7 @@ def merge(template, context):
                     res[k] = v
             return res
         return r
+
     if len(value) == 0:
         return {}
     return functools.reduce(merge, value[1:], value[0])
@@ -296,7 +337,9 @@ def sort(template, context):
             subcontext = context.copy()
             for e in value:
                 subcontext[by_var] = e
-                yield evaluateExpression(by_expr, subcontext), e
+                # yield evaluateExpression(by_expr, subcontext), e
+                yield newParse(by_expr, subcontext), e
+
         to_sort = list(xform())
     elif len(by_keys) == 0:
         to_sort = [(e, e) for e in value]
@@ -348,6 +391,7 @@ def renderValue(template, context):
                     raise
                 if v is not DeleteMarker:
                     yield k, v
+
         return dict(updated())
 
     elif isinstance(template, list):
@@ -360,6 +404,7 @@ def renderValue(template, context):
                 except JSONTemplateError as e:
                     e.add_location('[{}]'.format(i))
                     raise
+
         return list(updated())
 
     else:

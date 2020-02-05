@@ -27,7 +27,6 @@ def infixExpectationError(operator, expected):
 
 
 class ExpressionEvaluator(PrattParser):
-
     ignore = '\\s+'
     patterns = {
         'number': '[0-9]+(?:\\.[0-9]+)?',

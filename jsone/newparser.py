@@ -1,8 +1,17 @@
-from .AST import ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, Object, List
+from .AST import ASTNode, UnaryOp, BinOp, Builtin, ValueAccess, Object, List
 from collections import namedtuple
 import re
+from .shared import TemplateError
 
 Token = namedtuple('Token', ['kind', 'value', 'start', 'end'])
+
+
+class SyntaxError(TemplateError):
+
+    @classmethod
+    def unexpected(cls, got, exp):
+        exp = ', '.join(sorted(exp))
+        return cls('Found {}, expected {}'.format(got.value, exp))
 
 
 class Parser(object):
@@ -15,12 +24,17 @@ class Parser(object):
                             "!=", "==", "&&", "||", "in"]
         self.primitivesTokens = ["number", "null", "true", "false"]
 
-    def eat(self, token_type):
-        if self.current_token.kind == token_type:
-            try:
-                self.current_token = next(self.tokens)
-            except:
-                self.current_token = None
+    def eat(self, *kinds):
+        if not self.current_token:
+            raise SyntaxError('Unexpected end of input')
+        if kinds and self.current_token.kind not in kinds:
+            raise SyntaxError.unexpected(self.current_token.kind, kinds)
+        try:
+            self.current_token = next(self.tokens)
+        except StopIteration:
+            self.current_token = None
+        except SyntaxError as exc:
+            raise exc
 
     def parse(self):
         """  expr : logicalAnd (OR logicalAnd)* """
@@ -117,7 +131,7 @@ class Parser(object):
 
         while token is not None and token.kind == "**":
             self.eat(token.kind)
-            node = BinOp(token, node, self.factor())
+            node = BinOp(token, self.exponentiation(), node)
             token = self.current_token
 
         return node
@@ -221,7 +235,7 @@ class Parser(object):
                 right = self.parse()
 
             self.eat("]")
-            node = ArrayAccess(token, isInterval, left, right)
+            node = ValueAccess(token, node, isInterval, left, right)
             token = self.current_token
 
         return node
@@ -251,8 +265,8 @@ class Parser(object):
         token = self.current_token
         if token is not None and token.kind == ".":
             self.eat(".")
-            right = Builtin(self.current_token, [])
-            self.eat(right.token.kind)
+            right = self.current_token
+            self.eat(right.kind)
             node = BinOp(token, node, right)
         return node
 
