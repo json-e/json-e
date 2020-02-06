@@ -13,7 +13,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	i "json-e/interpreter"
+	i "./interpreter"
 )
 
 // Render template with given context

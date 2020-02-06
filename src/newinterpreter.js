@@ -26,6 +26,8 @@ class Interpreter {
                 return true;
             case("false"):
                 return false;
+            case("identifier"):
+                return node.token.value;
         }
     }
 
@@ -55,9 +57,6 @@ class Interpreter {
                 return isTruthy(left) || isTruthy(this.visit(node.right));
             case ("&&"):
                 return isTruthy(left) && isTruthy(this.visit(node.right));
-            case ("."):
-                right = node.right.value;
-                break;
             default:
                 right = this.visit(node.right);
         }

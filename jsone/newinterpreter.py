@@ -28,6 +28,8 @@ class Interpreter:
             return True
         elif node.token.kind == "false":
             return False
+        elif node.token.kind == "identifier":
+            return node.token.value
 
     def visit_UnaryOp(self, node):
         value = self.visit(node.expr)
@@ -48,8 +50,6 @@ class Interpreter:
             return bool(left or self.visit(node.right))
         elif node.token.kind == "&&":
             return bool(left and self.visit(node.right))
-        elif node.token.kind == ".":
-            right = node.right.value
         else:
             right = self.visit(node.right)
 

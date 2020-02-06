@@ -20,8 +20,6 @@ class Parser(object):
         self.source = source
         self.current_token = next(self.tokens)
         self.unaryOpTokens = ["-", "+", "!"]
-        self.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
-                            "!=", "==", "&&", "||", "in"]
         self.primitivesTokens = ["number", "null", "true", "false"]
 
     def eat(self, *kinds):
@@ -125,7 +123,7 @@ class Parser(object):
         return node
 
     def exponentiation(self):
-        """  exponentiation : factor (EXP factor)* """
+        """  exponentiation : factor (EXP exponentiation)* """
         node = self.factor()
         token = self.current_token
 
@@ -191,7 +189,7 @@ class Parser(object):
 
         while token is not None and token.kind == ".":
             self.eat(".")
-            right = self.current_token
+            right = ASTNode(self.current_token)
             node = BinOp(token, node, right)
             if self.current_token is not None:
                 self.eat(self.current_token.kind)
@@ -266,8 +264,8 @@ class Parser(object):
         token = self.current_token
         if token is not None and token.kind == ".":
             self.eat(".")
-            right = self.current_token
-            self.eat(right.kind)
+            right = ASTNode(self.current_token)
+            self.eat(self.current_token.kind)
             node = BinOp(token, node, right)
         return node
 

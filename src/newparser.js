@@ -14,8 +14,6 @@ class Parser {
         this.current_token = this._tokenizer.next(this._source, offset);
         this.context = context;
         this.unaryOpTokens = ["-", "+", "!"];
-        this.binOpTokens = ["-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
-        "!=", "==", "&&", "||", "in"];
         this.primitivesTokens = ["number", "null", "true", "false"];
     }
 
@@ -195,10 +193,9 @@ class Parser {
             this.eat(")")
         }
         node = new Builtin(token, args);
-
         for (token = this.current_token; token != null && token.kind == "."; token = this.current_token) {
             this.eat(".");
-            let right = this.current_token;
+            let right = new ASTNode(this.current_token);
             node = new BinOp(token, node, right);
             if (this.current_token) {
                 this.eat(this.current_token.kind);
@@ -287,7 +284,7 @@ class Parser {
 
         if (token != null && token.kind == ".") {
             this.eat(".");
-            let right = this.current_token;
+            let right = new ASTNode(this.current_token);
             this.eat(this.current_token.kind);
             node = new BinOp(token, node, right);
         }

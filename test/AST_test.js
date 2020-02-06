@@ -240,7 +240,7 @@ describe(
 
             let isTokenCorrect = node.token.value == "." && node.token.kind == ".";
             let isObjCorrect = node.left.obj["a"].token.value == 1;
-            let isKeyCorrect = node.right.kind == "identifier" && node.right.value == "a" ;
+            let isKeyCorrect = node.right.token.kind == "identifier" && node.right.token.value == "a" ;
 
             assert(isTokenCorrect && isObjCorrect && isKeyCorrect);
         });
@@ -251,7 +251,7 @@ describe(
 
             let isTokenCorrect = node.token.value == "." && node.token.kind == ".";
             let isObjCorrect = node.left.token.value == "k";
-            let isKeyCorrect = node.right.value == "b";
+            let isKeyCorrect = node.right.token.value == "b";
 
             assert(isTokenCorrect && isObjCorrect && isKeyCorrect);
         });
