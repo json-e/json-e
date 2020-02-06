@@ -5040,7 +5040,7 @@ error: true
 title: 'missing opening "'
 context: {}
 template: {$eval: 'hello"'}
-error: "SyntaxError: unexpected EOF for 'hello\"' at '\"'"
+error: true
 ---
 title: 'Infix + type error'
 context: {}
@@ -5136,5 +5136,4 @@ title: 'Nested error has appropriate message'
 context: {}
 template: {foo: [1, {"123": [{$eval: 10}]}]}
 error: 'TemplateError at template.foo[1]["123"][0]: $eval must be given a string expression'
-
 ################################################################################

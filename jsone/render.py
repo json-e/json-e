@@ -337,8 +337,7 @@ def sort(template, context):
             subcontext = context.copy()
             for e in value:
                 subcontext[by_var] = e
-                # yield evaluateExpression(by_expr, subcontext), e
-                yield newParse(by_expr, subcontext), e
+                yield evaluateExpression(by_expr, subcontext), e
 
         to_sort = list(xform())
     elif len(by_keys) == 0:

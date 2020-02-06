@@ -28,7 +28,7 @@ class Parser(object):
         if not self.current_token:
             raise SyntaxError('Unexpected end of input')
         if kinds and self.current_token.kind not in kinds:
-            raise SyntaxError.unexpected(self.current_token.kind, kinds)
+            raise SyntaxError.unexpected(self.current_token, kinds)
         try:
             self.current_token = next(self.tokens)
         except StopIteration:
@@ -177,7 +177,8 @@ class Parser(object):
             args = []
             self.eat("(")
             node = self.parse()
-            args.append(node)
+            if node is not None:
+                args.append(node)
 
             while self.current_token.kind == ",":
                 self.eat(",")
@@ -207,7 +208,7 @@ class Parser(object):
             node = self.parse()
             arr.append(node)
 
-            while self.current_token.kind == ",":
+            while self.current_token and self.current_token.kind == ",":
                 self.eat(",")
                 node = self.parse()
                 arr.append(node)
@@ -255,7 +256,7 @@ class Parser(object):
             self.eat(":")
             value = self.parse()
             obj[key] = value
-            if self.current_token.kind == "}":
+            if self.current_token and self.current_token.kind == "}":
                 break
             else:
                 self.eat(",")

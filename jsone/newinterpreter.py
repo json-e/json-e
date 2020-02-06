@@ -167,7 +167,7 @@ class Interpreter:
             raise InterpreterError(
                 'unknown context value {}'.format(node.token.value))
         if callable(builtin):
-            if node.args is not None:
+            if node.args:
                 for item in node.args:
                     args.append(self.visit(item))
                 return builtin(*args)
