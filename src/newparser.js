@@ -196,10 +196,8 @@ class Parser {
         for (token = this.current_token; token != null && token.kind == "."; token = this.current_token) {
             this.eat(".");
             let right = new ASTNode(this.current_token);
+            this.eat(this.current_token.kind)
             node = new BinOp(token, node, right);
-            if (this.current_token) {
-                this.eat(this.current_token.kind);
-            }
         }
 
         return node
@@ -280,9 +278,8 @@ class Parser {
         }
         this.eat("}");
         node = new Object(token, obj);
-        token = this.current_token;
 
-        if (token != null && token.kind == ".") {
+        for (token = this.current_token; token != null && token.kind == "."; token = this.current_token) {
             this.eat(".");
             let right = new ASTNode(this.current_token);
             this.eat(this.current_token.kind);

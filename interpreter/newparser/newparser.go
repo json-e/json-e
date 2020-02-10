@@ -1,7 +1,7 @@
 package newparser
 
 import (
-	"json-e/interpreter/prattparser"
+	"../prattparser"
 	"strings"
 )
 
@@ -19,9 +19,7 @@ func (p *Parser) NewParser(source string, tokenizer prattparser.Tokenizer) {
 	p.tokenizer = tokenizer
 	p.currentToken, _ = p.tokenizer.Next(p.source, 0)
 	p.unaryOpTokens = []string{"-", "+", "!"}
-	p.binOpTokens = []string{"-", "+", "/", "*", "**", ".", ">", "<", ">=", "<=", "" +
-		"!=", "==", "&&", "||", "in"}
-	p.primitivesTokens = []string{"number", "null", "string", "true", "false"}
+	p.primitivesTokens = []string{"number", "null", "true", "false"}
 }
 
 func (p *Parser) eat(tokeType string) {
@@ -31,7 +29,7 @@ func (p *Parser) eat(tokeType string) {
 }
 
 func (p *Parser) Parse() (node IASTNode) {
-	//    expr : logicalAnd (OR logicalAnd)*
+	//    logicalOr : logicalAnd (OR logicalAnd)*
 	var binaryNode BinOp
 
 	node = p.logicalAnd()
@@ -146,7 +144,7 @@ func (p *Parser) multiplication() (node IASTNode) {
 }
 
 func (p *Parser) exponentiation() (node IASTNode) {
-	//    exponentiation : factor (EXP factor)*
+	//    exponentiation : factor (EXP exponentiation)*
 	var binaryNode BinOp
 
 	node = p.factor()
@@ -154,7 +152,7 @@ func (p *Parser) exponentiation() (node IASTNode) {
 
 	for ; token != (prattparser.Token{}) && token.Kind == "**"; token = p.currentToken {
 		p.eat(token.Kind)
-		binaryNode.NewNode(token, node, p.factor())
+		binaryNode.NewNode(token, p.exponentiation(), node)
 		node = binaryNode
 	}
 
@@ -162,9 +160,7 @@ func (p *Parser) exponentiation() (node IASTNode) {
 }
 
 func (p *Parser) factor() (node IASTNode) {
-	//    factor : unaryOp factor | primitives | LPAREN expr RPAREN | list | object |
-	//              |  ID (arrayAccess | DOT ID | builtins)
-
+	// factor : unaryOp factor | primitives | (string | list | builtin) (valueAccess)? | LPAREN expr RPAREN | object
 	var unaryNode UnaryOp
 	var primitiveNode ASTNode
 
@@ -180,44 +176,36 @@ func (p *Parser) factor() (node IASTNode) {
 		p.eat(token.Kind)
 		primitiveNode.NewNode(token)
 		node = primitiveNode
+	} else if token.Kind == "string" {
+		p.eat(token.Kind)
+		primitiveNode.NewNode(token)
+		node = primitiveNode
+		node = p.valueAccess(node)
 	} else if token.Kind == "(" {
 		p.eat("(")
 		node = p.Parse()
 		p.eat(")")
 	} else if token.Kind == "[" {
 		node = p.list()
+		node = p.valueAccess(node)
 	} else if token.Kind == "{" {
 		node = p.object()
 	} else if token.Kind == "identifier" {
-		nextToken, _ := p.tokenizer.Next(p.source, p.currentToken.End)
-		if nextToken != (prattparser.Token{}) && nextToken.Kind == "[" {
-			node = p.arrayAccess()
-		} else if nextToken != (prattparser.Token{}) && nextToken.Kind == "." {
-			var left Builtin
-			var right Builtin
-			var binaryNode BinOp
-			left.NewNode(p.currentToken, []IASTNode{})
-			p.eat(token.Kind)
-			token = p.currentToken
-			p.eat(".")
-			right.NewNode(p.currentToken, []IASTNode{})
-			p.eat(token.Kind)
-			binaryNode.NewNode(token, left, right)
-			node = binaryNode
-		} else {
-			node = p.builtins()
-		}
+		node = p.builtins()
+		node = p.valueAccess(node)
 	}
 	return
 }
 
 func (p *Parser) builtins() (node IASTNode) {
-	//    builtins : (LPAREN (expr ( COMMA expr)*)? RPAREN)?
+	//    builtins : (LPAREN (expr ( COMMA expr)*)? RPAREN)? | (DOT ID)*)
 	var args []IASTNode
 	var token = p.currentToken
 	var builtinNode Builtin
+	var binOpNode BinOp
+	var simpleNode ASTNode
 	p.eat("identifier")
-
+	args = nil
 	if p.currentToken != (prattparser.Token{}) && p.currentToken.Kind == "(" {
 		p.eat("(")
 		node = p.Parse()
@@ -232,6 +220,16 @@ func (p *Parser) builtins() (node IASTNode) {
 	}
 	builtinNode.NewNode(token, args)
 	node = builtinNode
+	token = p.currentToken
+	for token != (prattparser.Token{}) && token.Kind == "." {
+		p.eat(".")
+		simpleNode.NewNode(p.currentToken)
+		p.eat(p.currentToken.Kind)
+		binOpNode.NewNode(token, node, simpleNode)
+		node = binOpNode
+		token = p.currentToken
+	}
+
 	return
 }
 
@@ -255,41 +253,43 @@ func (p *Parser) list() (node IASTNode) {
 	p.eat("]")
 	listNode.NewNode(token, list)
 	node = listNode
-
 	return
 }
 
-func (p *Parser) arrayAccess() (node IASTNode) {
-	//    arrayAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)
-	var arrayNode ArrayAccess
+func (p *Parser) valueAccess(node IASTNode) IASTNode {
+	//    valueAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)
+	var arrayNode ValueAccess
 	var left, right IASTNode
 	token := p.currentToken
 	isInterval := false
 	p.eat("identifier")
-	p.eat("[")
-
-	if p.currentToken.Kind != ":" {
-		left = p.Parse()
-	}
-	if p.currentToken.Kind == ":" {
-		isInterval = true
-		p.eat(":")
-		if p.currentToken.Kind != "]" {
-			right = p.Parse()
+	token = p.currentToken
+	for token != (prattparser.Token{}) && token.Kind == "[" {
+		p.eat("[")
+		if p.currentToken.Kind != ":" {
+			left = p.Parse()
 		}
-	}
-	p.eat("]")
-	arrayNode.NewNode(token, isInterval, left, right)
-	node = arrayNode
+		if p.currentToken.Kind == ":" {
+			isInterval = true
+			p.eat(":")
+			if p.currentToken.Kind != "]" {
+				right = p.Parse()
+			}
+		}
 
-	return
+		p.eat("]")
+		arrayNode.NewNode(token, node, isInterval, left, right)
+		node = arrayNode
+		token = p.currentToken
+	}
+	return node
 }
 
 func (p *Parser) object() (node IASTNode) {
 	//    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID SEMI expr)*)? RCURLYBRACE (DOT ID)?
 	var objectNode Object
-	var builtinNode Builtin
 	var binOpNode BinOp
+	var simpleNode ASTNode
 	obj := make(map[string]IASTNode)
 	token := p.currentToken
 	p.eat("{")
@@ -313,13 +313,13 @@ func (p *Parser) object() (node IASTNode) {
 	objectNode.NewNode(token, obj)
 	node = objectNode
 	token = p.currentToken
-
-	if p.currentToken != (prattparser.Token{}) && token.Kind == "." {
+	for token != (prattparser.Token{}) && token.Kind == "." {
 		p.eat(".")
-		builtinNode.NewNode(p.currentToken, []IASTNode{})
+		simpleNode.NewNode(p.currentToken)
 		p.eat(p.currentToken.Kind)
-		binOpNode.NewNode(token, node, builtinNode)
+		binOpNode.NewNode(token, node, simpleNode)
 		node = binOpNode
+		token = p.currentToken
 	}
 	return
 }

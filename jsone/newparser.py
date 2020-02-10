@@ -190,9 +190,8 @@ class Parser(object):
         while token is not None and token.kind == ".":
             self.eat(".")
             right = ASTNode(self.current_token)
+            self.eat(self.current_token.kind)
             node = BinOp(token, node, right)
-            if self.current_token is not None:
-                self.eat(self.current_token.kind)
             token = self.current_token
 
         return node
@@ -262,11 +261,12 @@ class Parser(object):
         self.eat("}")
         node = Object(token, obj)
         token = self.current_token
-        if token is not None and token.kind == ".":
+        while token is not None and token.kind == ".":
             self.eat(".")
             right = ASTNode(self.current_token)
             self.eat(self.current_token.kind)
             node = BinOp(token, node, right)
+            token = self.current_token
         return node
 
 

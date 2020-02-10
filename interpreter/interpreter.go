@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	pp "json-e/interpreter/prattparser"
+	pp "../interpreter/prattparser"
 )
 
 var Interpreter = pp.New(`\s+`, strings.Split(

@@ -1,10 +1,9 @@
-package tests
+package jsone
 
 import (
-	jsone "json-e"
-	"json-e/interpreter"
-	"json-e/interpreter/newparser"
-	"json-e/interpreter/prattparser"
+	"./interpreter"
+	"./interpreter/newparser"
+	"./interpreter/prattparser"
 	"reflect"
 	"testing"
 )
@@ -378,8 +377,8 @@ func TestInterpreterForBuiltinFunction(t *testing.T) {
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 
-	c := make(map[string]interface{}, len(jsone.Builtin)+1)
-	for k, v := range jsone.Builtin {
+	c := make(map[string]interface{}, len(Builtin)+1)
+	for k, v := range Builtin {
 		c[k] = v
 	}
 
@@ -403,8 +402,8 @@ func TestInterpreterForBuiltin(t *testing.T) {
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{"a": 3}
 
-	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
-	for k, v := range jsone.Builtin {
+	c := make(map[string]interface{}, len(context)+len(Builtin)+1)
+	for k, v := range Builtin {
 		c[k] = v
 	}
 	for k, v := range context {
@@ -430,8 +429,8 @@ func TestInterpreterForEmptyList(t *testing.T) {
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 
-	c := make(map[string]interface{}, len(jsone.Builtin)+1)
-	for k, v := range jsone.Builtin {
+	c := make(map[string]interface{}, len(Builtin)+1)
+	for k, v := range Builtin {
 		c[k] = v
 	}
 
@@ -454,8 +453,8 @@ func TestInterpreterForList(t *testing.T) {
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 
-	c := make(map[string]interface{}, len(jsone.Builtin)+1)
-	for k, v := range jsone.Builtin {
+	c := make(map[string]interface{}, len(Builtin)+1)
+	for k, v := range Builtin {
 		c[k] = v
 	}
 
@@ -480,8 +479,8 @@ func TestInterpreterForArrayAccess(t *testing.T) {
 	contextList := []interface{}{1, 2, 3, 4}
 	context := map[string]interface{}{"a": contextList}
 
-	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
-	for k, v := range jsone.Builtin {
+	c := make(map[string]interface{}, len(context)+len(Builtin)+1)
+	for k, v := range Builtin {
 		c[k] = v
 	}
 	for k, v := range context {
@@ -509,8 +508,8 @@ func TestInterpreterForIntervalWithOneLeftArg(t *testing.T) {
 	contextList := []interface{}{1, 2, 3, 4}
 	context := map[string]interface{}{"a": contextList}
 
-	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
-	for k, v := range jsone.Builtin {
+	c := make(map[string]interface{}, len(context)+len(Builtin)+1)
+	for k, v := range Builtin {
 		c[k] = v
 	}
 	for k, v := range context {
@@ -538,8 +537,8 @@ func TestInterpreterForIntervalWithOneRightArg(t *testing.T) {
 	contextList := []interface{}{1, 2, 3, 4}
 	context := map[string]interface{}{"a": contextList}
 
-	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
-	for k, v := range jsone.Builtin {
+	c := make(map[string]interface{}, len(context)+len(Builtin)+1)
+	for k, v := range Builtin {
 		c[k] = v
 	}
 	for k, v := range context {
@@ -567,8 +566,8 @@ func TestInterpreterForInterval(t *testing.T) {
 	contextList := []interface{}{1, 2, 3, 4}
 	context := map[string]interface{}{"a": contextList}
 
-	c := make(map[string]interface{}, len(context)+len(jsone.Builtin)+1)
-	for k, v := range jsone.Builtin {
+	c := make(map[string]interface{}, len(context)+len(Builtin)+1)
+	for k, v := range Builtin {
 		c[k] = v
 	}
 	for k, v := range context {

@@ -1,6 +1,6 @@
 package newparser
 
-import "json-e/interpreter/prattparser"
+import "../prattparser"
 
 type IASTNode interface {
 	GetToken() prattparser.Token
@@ -75,22 +75,24 @@ func (l List) GetToken() prattparser.Token {
 	return l.node.Token
 }
 
-type ArrayAccess struct {
+type ValueAccess struct {
 	Node       ASTNode
+	Arr        IASTNode
 	IsInterval bool
 	Left       IASTNode
 	Right      IASTNode
 }
 
-func (a *ArrayAccess) NewNode(token prattparser.Token, isInterval bool, left, right IASTNode) {
-	a.Node.Token = token
-	a.IsInterval = isInterval
-	a.Left = left
-	a.Right = right
+func (v *ValueAccess) NewNode(token prattparser.Token, arr IASTNode, isInterval bool, left, right IASTNode) {
+	v.Node.Token = token
+	v.Arr = arr
+	v.IsInterval = isInterval
+	v.Left = left
+	v.Right = right
 }
 
-func (a ArrayAccess) GetToken() prattparser.Token {
-	return a.Node.Token
+func (v ValueAccess) GetToken() prattparser.Token {
+	return v.Node.Token
 }
 
 type Object struct {

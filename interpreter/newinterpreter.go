@@ -1,8 +1,8 @@
 package interpreter
 
 import (
+	"../interpreter/newparser"
 	"fmt"
-	"json-e/interpreter/newparser"
 	"math"
 	"reflect"
 	"strconv"
@@ -44,6 +44,8 @@ func (i NewInterpreter) Visit_ASTNode(node newparser.ASTNode) interface{} {
 		return true
 	case "false":
 		return false
+	case "identifier":
+		return node.GetToken().Value
 	}
 	return nil
 }
@@ -67,21 +69,26 @@ func (i NewInterpreter) Visit_UnaryOp(node newparser.UnaryOp) interface{} {
 }
 
 func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
+	var right interface{}
 	left := i.visit(node.Left)
-	right := i.visit(node.Right)
 
 	switch node.GetToken().Kind {
+	case "||":
+		return IsTruthy(left) || IsTruthy(i.visit(node.Right))
 	case "&&":
 		return IsTruthy(left) && IsTruthy(right)
-	case "||":
-		return IsTruthy(left) || IsTruthy(right)
+	default:
+		right = i.visit(node.Right)
+	}
+
+	switch node.GetToken().Kind {
 	case "==":
 		return DeepEquals(left, right)
 	case "!=":
 		return !DeepEquals(left, right)
 	case ".":
 		obj := left
-		key := node.Right.GetToken().Value
+		key := right.(string)
 		if target, ok := obj.(map[string]interface{}); ok {
 			if value, ok := target[key]; ok {
 				return value
@@ -132,7 +139,7 @@ func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
 		case "/":
 			return l / r
 		case "**":
-			return math.Pow(l, r)
+			return math.Pow(r, l)
 		}
 	} else if isString(left) && isString(right) {
 		l := left.(string)
@@ -166,8 +173,8 @@ func (i NewInterpreter) Visit_List(node newparser.List) interface{} {
 	return list
 }
 
-func (i NewInterpreter) Visit_ArrayAccess(node newparser.ArrayAccess) interface{} {
-	arr := i.context[node.GetToken().Value]
+func (i NewInterpreter) Visit_ValueAccess(node newparser.ValueAccess) interface{} {
+	arr := i.visit(node.Arr)
 	var right, left interface{}
 	var end, start int
 	if node.Left != nil {
