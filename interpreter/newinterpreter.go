@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"../interpreter/newparser"
+	"../interpreter/prattparser"
 	"fmt"
 	"math"
 	"reflect"
@@ -17,7 +18,8 @@ func (i *NewInterpreter) AddContext(context map[string]interface{}) {
 	i.context = context
 }
 
-func (i NewInterpreter) visit(node newparser.IASTNode) interface{} {
+func (i NewInterpreter) visit(node newparser.IASTNode) (interface{}, error) {
+	var err error
 	nodeType := strings.Split(fmt.Sprintf("%T", node), ".")[1]
 	funcName := "Visit_" + nodeType
 
@@ -25,258 +27,403 @@ func (i NewInterpreter) visit(node newparser.IASTNode) interface{} {
 	arg[0] = reflect.ValueOf(node)
 
 	val := reflect.ValueOf(i).MethodByName(funcName).Call(arg)
-
-	return val[0].Interface()
+	if val[1].Interface() == nil {
+		err = nil
+	} else {
+		err = val[1].Interface().(error)
+	}
+	return val[0].Interface(), err
 }
 
-func (i NewInterpreter) Visit_ASTNode(node newparser.ASTNode) interface{} {
+func (i NewInterpreter) Visit_ASTNode(node newparser.ASTNode) (interface{}, error) {
 	token := node.Token
 
 	switch token.Kind {
 	case "number":
 		value, _ := strconv.ParseFloat(token.Value, 64)
-		return value
+		return value, nil
 	case "null":
-		return nil
+		return nil, nil
 	case "string":
-		return token.Value[1 : len(token.Value)-1]
+		return token.Value[1 : len(token.Value)-1], nil
 	case "true":
-		return true
+		return true, nil
 	case "false":
-		return false
+		return false, nil
 	case "identifier":
-		return node.GetToken().Value
+		return node.GetToken().Value, nil
 	}
-	return nil
+	panic(fmt.Sprintf("unknown primitive token: '%s'", node.GetToken().Kind))
 }
 
-func (i NewInterpreter) Visit_UnaryOp(node newparser.UnaryOp) interface{} {
-	next := i.visit(node.Expr)
+func (i NewInterpreter) Visit_UnaryOp(node newparser.UnaryOp) (interface{}, error) {
+	value, err := i.visit(node.Expr)
+	if err != nil {
+		return nil, err
+	}
 
 	switch node.GetToken().Kind {
 	case "+":
-		return +next.(float64)
+		if !isNumber(value) {
+			return nil, prattparser.SyntaxError{
+				Message: fmt.Sprintf("Expected number after +"),
+			}
+		}
+		return +value.(float64), nil
 	case "-":
-		return -next.(float64)
+		if !isNumber(value) {
+			return nil, prattparser.SyntaxError{
+				Message: fmt.Sprintf("Expected number after -"),
+			}
+		}
+		return -value.(float64), nil
 	case "!":
-		return NOT(next)
+		return !IsTruthy(value), nil
 	case "true":
-		return true
+		return true, nil
 	case "false":
-		return false
+		return false, nil
 	}
-	return nil
+	panic(fmt.Sprintf("unknown unary operator: '%s'", node.GetToken().Kind))
 }
 
-func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) interface{} {
+func (i NewInterpreter) Visit_BinOp(node newparser.BinOp) (interface{}, error) {
 	var right interface{}
-	left := i.visit(node.Left)
-
-	switch node.GetToken().Kind {
-	case "||":
-		return IsTruthy(left) || IsTruthy(i.visit(node.Right))
-	case "&&":
-		return IsTruthy(left) && IsTruthy(right)
-	default:
-		right = i.visit(node.Right)
+	mathOperators := []string{"-", "*", "/", "**"}
+	compareOperators := []string{"<=", ">=", "<", ">"}
+	tokenKind := node.GetToken().Kind
+	left, err := i.visit(node.Left)
+	if err != nil {
+		return nil, err
 	}
 
-	switch node.GetToken().Kind {
+	switch tokenKind {
+	case "||":
+		if IsTruthy(left) {
+			return true, nil
+		} else {
+			right, err = i.visit(node.Right)
+			return IsTruthy(right), err
+		}
+	case "&&":
+		if !IsTruthy(left) {
+			return false, nil
+		} else {
+			right, err = i.visit(node.Right)
+			return IsTruthy(right), err
+		}
+	default:
+		right, err = i.visit(node.Right)
+	}
+
+	switch tokenKind {
 	case "==":
-		return DeepEquals(left, right)
+		return DeepEquals(left, right), nil
 	case "!=":
-		return !DeepEquals(left, right)
+		return !DeepEquals(left, right), nil
 	case ".":
 		obj := left
 		key := right.(string)
 		if target, ok := obj.(map[string]interface{}); ok {
 			if value, ok := target[key]; ok {
-				return value
+				return value, nil
 			}
+			return nil, prattparser.SyntaxError{
+				Message: "object has no such property",
+			}
+		}
+		return nil, prattparser.SyntaxError{
+			Message: "cannot access properties of non-object",
 		}
 	case "in":
 		// A in B, where B is a string
 		if s, ok := right.(string); ok {
-			return strings.Contains(s, left.(string))
+			if !isString(left) {
+				return nil, prattparser.SyntaxError{
+					Message: "in operator expected a string when querying on a string",
+				}
+			}
+			return strings.Contains(s, left.(string)), nil
 		}
 
 		// A in B; where B is an object
 		if o, ok := right.(map[string]interface{}); ok {
+			if !isString(left) {
+				return nil, prattparser.SyntaxError{
+					Message: "in operator expected a string when querying on an object",
+				}
+			}
 			_, result := o[left.(string)]
-			return result
+			return result, nil
 		}
 
 		// A in B; where B is an array
 		if a, ok := right.([]interface{}); ok {
 			for _, val := range a {
 				if DeepEquals(left, val) {
-					return true
+					return true, nil
 				}
 			}
-			return false
+			return false, nil
 		}
+
+		return nil, prattparser.SyntaxError{
+			Message: "in operator expected string, array or object",
+		}
+	case "+":
+		if isNumber(left) && isNumber(right) {
+			return left.(float64) + right.(float64), nil
+		}
+		if isString(left) && isString(right) {
+			return left.(string) + right.(string), nil
+		}
+		return nil, prattparser.SyntaxError{
+			Message: "Expected either number of string operands",
+		}
+
 	}
 
-	if isNumber(left) && isNumber(right) {
-		l := left.(float64)
-		r := right.(float64)
-
-		switch node.GetToken().Kind {
-		case ">=":
-			return l >= r
-		case "<=":
-			return l <= r
-		case "<":
-			return l < r
-		case ">":
-			return l > r
-		case "-":
-			return l - r
-		case "+":
-			return l + r
-		case "*":
-			return l * r
-		case "/":
-			return l / r
-		case "**":
-			return math.Pow(r, l)
-		}
-	} else if isString(left) && isString(right) {
-		l := left.(string)
-		r := right.(string)
-		switch node.GetToken().Kind {
-		case "+":
-			return l >= r
-		case ">=":
-			return l >= r
-		case "<=":
-			return l <= r
-		case "<":
-			return l < r
-		case ">":
-			return l > r
-		}
+	if prattparser.StringsContains(tokenKind, mathOperators) {
+		return mathOp(left, right, tokenKind)
+	} else if prattparser.StringsContains(tokenKind, compareOperators) {
+		return comparisonOp(left, right, tokenKind)
 	}
 
-	return nil
+	panic(fmt.Sprintf("unknown binary operator: '%s'", node.GetToken().Kind))
 }
 
-func (i NewInterpreter) Visit_List(node newparser.List) interface{} {
+func (i NewInterpreter) Visit_List(node newparser.List) (interface{}, error) {
 	var list []interface{}
 
 	if len(node.List) > 0 {
 		for _, element := range node.List {
-			list = append(list, i.visit(element))
+			elem, err := i.visit(element)
+			if err != nil {
+				return nil, err
+			}
+			list = append(list, elem)
 		}
 	}
 
-	return list
+	return list, nil
 }
 
-func (i NewInterpreter) Visit_ValueAccess(node newparser.ValueAccess) interface{} {
-	arr := i.visit(node.Arr)
+func (i NewInterpreter) Visit_ValueAccess(node newparser.ValueAccess) (interface{}, error) {
+	arr, err := i.visit(node.Arr)
+	if err != nil {
+		return nil, err
+	}
 	var right, left interface{}
-	var end, start int
 	if node.Left != nil {
-		left = i.visit(node.Left)
+		left, err = i.visit(node.Left)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		left = float64(0)
 	}
 	if node.Right != nil {
-		right = i.visit(node.Right)
+		right, err = i.visit(node.Right)
+		if err != nil {
+			return nil, err
+		}
 	}
-	if key, ok := left.(string); ok {
-		return arr.(map[string]interface{})[key]
-	} else {
-		if node.Left == nil {
-			start = 0
-		} else {
-			start = int(left.(float64))
-		}
-		length := len(arr.([]interface{}))
-
-		if start < 0 {
-			start = length + start
-		}
-
-		if node.IsInterval {
-			if node.Right == nil {
-				end = length
-			} else {
-				end = int(right.(float64))
+	// handle access to object properties
+	if !node.IsInterval {
+		if target, ok := arr.(map[string]interface{}); ok {
+			if k, ok := left.(string); ok {
+				if value, ok := target[k]; ok {
+					return value, nil
+				}
+				return nil, nil
 			}
+			return nil, prattparser.SyntaxError{
+				Message: "object properties must be accessed with strings",
+			}
+		}
+	}
+
+	// Check that we have integer arguments
+	A, aok := left.(float64)
+	B, bok := right.(float64)
+	if !aok || A != float64(int(A)) || (right != nil && !(bok && B == float64(int(B)))) {
+		return nil, prattparser.SyntaxError{
+			Message: "slicing can only be used with integer arguments",
+		}
+	}
+
+	// Handle slicing of arrays
+	if target, ok := arr.([]interface{}); ok {
+		start := int(A)
+		end := int(B)
+		if right == nil {
+			end = len(target)
+		}
+		if start < 0 {
+			start = len(target) + start
+		}
+		if end < 0 {
+			end = len(target) + end
 			if end < 0 {
-				end = length + end
-				if end < 0 {
-					end = 0
+				end = 0
+			}
+		}
+		if end > len(target) {
+			end = len(target)
+		}
+		if start > end {
+			start = end
+		}
+		if !node.IsInterval {
+			if start >= len(target) {
+				return nil, prattparser.SyntaxError{
+					Message: "string index out of bounds",
 				}
 			}
-			if start > end {
-				start = end
+			return target[start], nil
+		}
+		return target[start:end], nil
+	}
+	// Handle slicing of strings
+	if target, ok := arr.(string); ok {
+		// TODO: Handle utf-8 encoding...
+		start := int(A)
+		end := int(B)
+		if right == nil {
+			end = len(target)
+		}
+		if start < 0 {
+			start = len(target) + start
+		}
+		if end < 0 {
+			end = len(target) + end
+			if end < 0 {
+				end = 0
 			}
-
-			return arr.([]interface{})[start:end]
 		}
+		if end > len(target) {
+			end = len(target)
+		}
+		if start > end {
+			start = end
+		}
+		if !node.IsInterval {
+			if start >= len(target) {
+				return nil, prattparser.SyntaxError{
+					Message: "string index out of bounds",
+				}
+			}
+			return string(target[start]), nil
+		}
+		return target[start:end], nil
+	}
 
-		return arr.([]interface{})[start]
+	return nil, prattparser.SyntaxError{
+		Message: "slicing can only be used on arrays and strings",
 	}
 }
 
-func (i NewInterpreter) Visit_Builtin(node newparser.Builtin) interface{} {
-	builtin := i.context[node.GetToken().Value]
-	var args []interface{}
-	f, ok := builtin.(*function)
-	if ok {
-		var result interface{}
+func (i NewInterpreter) Visit_Builtin(node newparser.Builtin) (interface{}, error) {
+	if builtin, ok := i.context[node.GetToken().Value]; ok {
+		var args []interface{}
+		if node.Args != nil {
+			f, ok := builtin.(*function)
+			if ok {
+				var result interface{}
 
-		for _, element := range node.Args {
-			args = append(args, i.visit(element))
+				for _, element := range node.Args {
+					elem, err := i.visit(element)
+					if err != nil {
+						return nil, err
+					}
+					args = append(args, elem)
+				}
+
+				result, err := f.Invoke(i.context, args)
+				if err != nil {
+					return nil, err
+				}
+				return result, nil
+			}
 		}
-
-		result, _ = f.Invoke(i.context, args)
-		return result
+		return builtin, nil
 	}
-	return builtin
+	return nil, prattparser.SyntaxError{
+		Message: fmt.Sprintf("undefined variable %s", node.GetToken().Value),
+	}
 }
 
-func (i NewInterpreter) Visit_Object(node newparser.Object) interface{} {
+func (i NewInterpreter) Visit_Object(node newparser.Object) (interface{}, error) {
+	var err error
 	obj := make(map[string]interface{})
 	for key, element := range node.Obj {
-		obj[key] = i.visit(element)
-	}
-	return obj
-}
-
-func (i NewInterpreter) Interpret(node newparser.IASTNode) interface{} {
-	res := i.visit(node)
-	return res
-}
-
-func NOT(value interface{}) bool {
-	valueType := fmt.Sprintf("%T", value)
-
-	switch valueType {
-	case "int":
-		if value == 0 {
-			return false
-		} else {
-			return true
-		}
-	case "string":
-		{
-			if value == "" {
-				return false
-			} else {
-				return true
-			}
-		}
-	case "bool":
-		{
-			if value == false {
-				return false
-			} else {
-				return true
-			}
+		obj[key], err = i.visit(element)
+		if err != nil {
+			return nil, err
 		}
 	}
-	return false
+	return obj, nil
+}
 
+func (i NewInterpreter) Interpret(node newparser.IASTNode) (result interface{}, err error) {
+	result, err = i.visit(node)
+	return
+}
+
+func mathOp(left, right interface{}, tokenKind string) (interface{}, error) {
+
+	if isNumber(left) && isNumber(right) {
+		l := left.(float64)
+		r := right.(float64)
+		switch tokenKind {
+		case "-":
+			return l - r, nil
+		case "*":
+			return l * r, nil
+		case "/":
+			return l / r, nil
+		case "**":
+			return math.Pow(r, l), nil
+		default:
+			panic("unknown operator")
+		}
+	}
+	return nil, prattparser.SyntaxError{
+		Message: "expected number operands",
+	}
+}
+
+func comparisonOp(left, right interface{}, tokenKind string) (interface{}, error) {
+	if isNumber(left) && isNumber(right) {
+		l := left.(float64)
+		r := right.(float64)
+		switch tokenKind {
+		case ">=":
+			return l >= r, nil
+		case "<=":
+			return l <= r, nil
+		case "<":
+			return l < r, nil
+		case ">":
+			return l > r, nil
+		}
+	} else if isString(left) && isString(right) {
+		l := left.(string)
+		r := right.(string)
+		switch tokenKind {
+		case ">=":
+			return l >= r, nil
+		case "<=":
+			return l <= r, nil
+		case "<":
+			return l < r, nil
+		case ">":
+			return l > r, nil
+		}
+	} else {
+		return nil, prattparser.SyntaxError{
+			Message: "comparison operator requires two strings or numbers",
+		}
+	}
+	panic(fmt.Sprintf("unknown comparison operator: '%s'", tokenKind))
 }

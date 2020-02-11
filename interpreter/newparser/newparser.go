@@ -2,324 +2,551 @@ package newparser
 
 import (
 	"../prattparser"
+	"fmt"
 	"strings"
 )
 
 type Parser struct {
 	source           string
 	tokenizer        prattparser.Tokenizer
-	currentToken     prattparser.Token
+	CurrentToken     prattparser.Token
 	unaryOpTokens    []string
 	binOpTokens      []string
 	primitivesTokens []string
 }
 
-func (p *Parser) NewParser(source string, tokenizer prattparser.Tokenizer) {
+func (p *Parser) NewParser(source string, tokenizer prattparser.Tokenizer, offset int) (err error) {
 	p.source = source
 	p.tokenizer = tokenizer
-	p.currentToken, _ = p.tokenizer.Next(p.source, 0)
+	p.CurrentToken, err = p.tokenizer.Next(p.source, offset)
 	p.unaryOpTokens = []string{"-", "+", "!"}
 	p.primitivesTokens = []string{"number", "null", "true", "false"}
+	return
 }
 
-func (p *Parser) eat(tokeType string) {
-	if p.currentToken.Kind == tokeType {
-		p.currentToken, _ = p.tokenizer.Next(p.source, p.currentToken.End)
+func (p *Parser) eat(kinds ...string) error {
+	var err error
+	if p.CurrentToken.IsEmpty() {
+		return prattparser.SyntaxError{
+			Message: "unexpected end of input",
+			Source:  p.source,
+			Start:   len(p.source) - 1,
+			End:     len(p.source),
+		}
 	}
+	if len(kinds) > 0 && !prattparser.StringsContains(p.CurrentToken.Kind, kinds) {
+		return prattparser.SyntaxError{
+			Message:  fmt.Sprintf("unexpected '%s'", p.CurrentToken.Value),
+			Source:   p.source,
+			Start:    p.CurrentToken.Start,
+			End:      p.CurrentToken.End,
+			Expected: kinds,
+		}
+	}
+	p.CurrentToken, err = p.tokenizer.Next(p.source, p.CurrentToken.End)
+	return err
 }
 
-func (p *Parser) Parse() (node IASTNode) {
+func (p *Parser) Parse() (node IASTNode, err error) {
 	//    logicalOr : logicalAnd (OR logicalAnd)*
 	var binaryNode BinOp
+	var next IASTNode
 
-	node = p.logicalAnd()
-	token := p.currentToken
+	node, err = p.logicalAnd()
+	if err != nil {
+		return nil, err
+	}
+	token := p.CurrentToken
 
-	for ; token != (prattparser.Token{}) && token.Kind == "||"; token = p.currentToken {
-		p.eat(token.Kind)
-		binaryNode.NewNode(token, node, p.logicalAnd())
+	for ; token != (prattparser.Token{}) && token.Kind == "||"; token = p.CurrentToken {
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
+		next, err = p.logicalAnd()
+		if err != nil {
+			return nil, err
+		}
+		binaryNode.NewNode(token, node, next)
 		node = binaryNode
 	}
 
 	return
 }
 
-func (p *Parser) logicalAnd() (node IASTNode) {
+func (p *Parser) logicalAnd() (node IASTNode, err error) {
 	//    logicalAnd : equality (AND equality)*
 	var binaryNode BinOp
+	var next IASTNode
+	node, err = p.inStatement()
+	if err != nil {
+		return nil, err
+	}
+	token := p.CurrentToken
 
-	node = p.inStatement()
-	token := p.currentToken
-
-	for ; token != (prattparser.Token{}) && token.Kind == "&&"; token = p.currentToken {
-		p.eat(token.Kind)
-		binaryNode.NewNode(token, node, p.inStatement())
+	for ; token != (prattparser.Token{}) && token.Kind == "&&"; token = p.CurrentToken {
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
+		next, err = p.inStatement()
+		if err != nil {
+			return nil, err
+		}
+		binaryNode.NewNode(token, node, next)
 		node = binaryNode
 	}
 
 	return
 }
 
-func (p *Parser) inStatement() (node IASTNode) {
+func (p *Parser) inStatement() (node IASTNode, err error) {
 	//    inStatement : equality (IN equality)*
 	var binaryNode BinOp
+	var next IASTNode
+	node, err = p.equality()
+	if err != nil {
+		return nil, err
+	}
+	token := p.CurrentToken
 
-	node = p.equality()
-	token := p.currentToken
-
-	for ; token != (prattparser.Token{}) && token.Kind == "in"; token = p.currentToken {
-		p.eat(token.Kind)
-		binaryNode.NewNode(token, node, p.equality())
+	for ; token != (prattparser.Token{}) && token.Kind == "in"; token = p.CurrentToken {
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
+		next, err = p.equality()
+		if err != nil {
+			return nil, err
+		}
+		binaryNode.NewNode(token, node, next)
 		node = binaryNode
 	}
 
 	return
 }
 
-func (p *Parser) equality() (node IASTNode) {
+func (p *Parser) equality() (node IASTNode, err error) {
 	//    equality : comparison (EQUALITY | INEQUALITY  comparison)*
 	var binaryNode BinOp
 	operations := []string{"==", "!="}
-	node = p.comparison()
-	token := p.currentToken
+	var next IASTNode
+	node, err = p.comparison()
+	if err != nil {
+		return nil, err
+	}
+	token := p.CurrentToken
 
-	for ; token != (prattparser.Token{}) && contains(operations, token.Kind); token = p.currentToken {
-		p.eat(token.Kind)
-		binaryNode.NewNode(token, node, p.comparison())
+	for token != (prattparser.Token{}) && prattparser.StringsContains(token.Kind, operations) {
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
+		next, err = p.comparison()
+		if err != nil {
+			return nil, err
+		}
+		binaryNode.NewNode(token, node, next)
 		node = binaryNode
+		token = p.CurrentToken
 	}
 
 	return
 }
 
-func (p *Parser) comparison() (node IASTNode) {
+func (p *Parser) comparison() (node IASTNode, err error) {
 	//    comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)*
 	var binaryNode BinOp
-
+	var next IASTNode
 	operations := []string{"<", ">", ">=", "<="}
-	node = p.addition()
-	token := p.currentToken
+	node, err = p.addition()
+	if err != nil {
+		return nil, err
+	}
+	token := p.CurrentToken
 
-	for ; token != (prattparser.Token{}) && contains(operations, token.Kind); token = p.currentToken {
-		p.eat(token.Kind)
-		binaryNode.NewNode(token, node, p.addition())
+	for token != (prattparser.Token{}) && prattparser.StringsContains(token.Kind, operations) {
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
+		next, err = p.addition()
+		if err != nil {
+			return nil, err
+		}
+		binaryNode.NewNode(token, node, next)
 		node = binaryNode
+		token = p.CurrentToken
 	}
 
 	return
 }
 
-func (p *Parser) addition() (node IASTNode) {
+func (p *Parser) addition() (node IASTNode, err error) {
 	//    addition : multiplication (PLUS | MINUS multiplication)*
 	var binaryNode BinOp
-
+	var next IASTNode
 	operations := []string{"-", "+"}
-	node = p.multiplication()
-	token := p.currentToken
+	node, err = p.multiplication()
+	if err != nil {
+		return nil, err
+	}
+	token := p.CurrentToken
 
-	for ; token != (prattparser.Token{}) && contains(operations, token.Kind); token = p.currentToken {
-		p.eat(token.Kind)
-		binaryNode.NewNode(token, node, p.multiplication())
+	for token != (prattparser.Token{}) && prattparser.StringsContains(token.Kind, operations) {
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
+		next, err = p.multiplication()
+		if err != nil {
+			return nil, err
+		}
+		binaryNode.NewNode(token, node, next)
 		node = binaryNode
+		token = p.CurrentToken
 	}
 
 	return
 }
 
-func (p *Parser) multiplication() (node IASTNode) {
+func (p *Parser) multiplication() (node IASTNode, err error) {
 	//    multiplication : exponentiation (MUL | DIV exponentiation)*
 	var binaryNode BinOp
-
+	var next IASTNode
 	operations := []string{"*", "/"}
-	node = p.exponentiation()
-	token := p.currentToken
+	node, err = p.exponentiation()
+	if err != nil {
+		return nil, err
+	}
+	token := p.CurrentToken
 
-	for ; token != (prattparser.Token{}) && contains(operations, token.Kind); token = p.currentToken {
-		p.eat(token.Kind)
-		binaryNode.NewNode(token, node, p.exponentiation())
+	for token != (prattparser.Token{}) && prattparser.StringsContains(token.Kind, operations) {
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
+		next, err = p.exponentiation()
+		if err != nil {
+			return nil, err
+		}
+		binaryNode.NewNode(token, node, next)
 		node = binaryNode
+		token = p.CurrentToken
 	}
 
 	return
 }
 
-func (p *Parser) exponentiation() (node IASTNode) {
+func (p *Parser) exponentiation() (node IASTNode, err error) {
 	//    exponentiation : factor (EXP exponentiation)*
 	var binaryNode BinOp
+	var next IASTNode
+	node, err = p.factor()
+	if err != nil {
+		return nil, err
+	}
+	token := p.CurrentToken
 
-	node = p.factor()
-	token := p.currentToken
-
-	for ; token != (prattparser.Token{}) && token.Kind == "**"; token = p.currentToken {
-		p.eat(token.Kind)
-		binaryNode.NewNode(token, p.exponentiation(), node)
+	for ; token != (prattparser.Token{}) && token.Kind == "**"; token = p.CurrentToken {
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
+		next, err = p.exponentiation()
+		if err != nil {
+			return nil, err
+		}
+		binaryNode.NewNode(token, next, node)
 		node = binaryNode
 	}
 
 	return
 }
 
-func (p *Parser) factor() (node IASTNode) {
+func (p *Parser) factor() (node IASTNode, err error) {
 	// factor : unaryOp factor | primitives | (string | list | builtin) (valueAccess)? | LPAREN expr RPAREN | object
 	var unaryNode UnaryOp
 	var primitiveNode ASTNode
-
-	token := p.currentToken
-	isUnaryOpToken := contains(p.unaryOpTokens, token.Kind)
-	isPrimitivesToken := contains(p.primitivesTokens, token.Kind)
+	var next IASTNode
+	token := p.CurrentToken
+	isUnaryOpToken := prattparser.StringsContains(token.Kind, p.unaryOpTokens)
+	isPrimitivesToken := prattparser.StringsContains(token.Kind, p.primitivesTokens)
 
 	if isUnaryOpToken {
-		p.eat(token.Kind)
-		unaryNode.NewNode(token, p.factor())
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
+		next, err = p.factor()
+		if err != nil {
+			return nil, err
+		}
+		unaryNode.NewNode(token, next)
 		node = unaryNode
 	} else if isPrimitivesToken {
-		p.eat(token.Kind)
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
 		primitiveNode.NewNode(token)
 		node = primitiveNode
 	} else if token.Kind == "string" {
-		p.eat(token.Kind)
+		err = p.eat(token.Kind)
+		if err != nil {
+			return nil, err
+		}
 		primitiveNode.NewNode(token)
 		node = primitiveNode
-		node = p.valueAccess(node)
+		node, err = p.valueAccess(node)
+		if err != nil {
+			return nil, err
+		}
 	} else if token.Kind == "(" {
-		p.eat("(")
-		node = p.Parse()
-		p.eat(")")
+		err = p.eat("(")
+		if err != nil {
+			return nil, err
+		}
+		node, err = p.Parse()
+		if err != nil {
+			return nil, err
+		}
+		err = p.eat(")")
+		if err != nil {
+			return nil, err
+		}
 	} else if token.Kind == "[" {
-		node = p.list()
-		node = p.valueAccess(node)
+		node, err = p.list()
+		if err != nil {
+			return nil, err
+		}
+		node, err = p.valueAccess(node)
+		if err != nil {
+			return nil, err
+		}
 	} else if token.Kind == "{" {
-		node = p.object()
+		node, err = p.object()
+		if err != nil {
+			return nil, err
+		}
 	} else if token.Kind == "identifier" {
-		node = p.builtins()
-		node = p.valueAccess(node)
+		node, err = p.builtins()
+		if err != nil {
+			return nil, err
+		}
+		node, err = p.valueAccess(node)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return
 }
 
-func (p *Parser) builtins() (node IASTNode) {
+func (p *Parser) builtins() (node IASTNode, err error) {
 	//    builtins : (LPAREN (expr ( COMMA expr)*)? RPAREN)? | (DOT ID)*)
 	var args []IASTNode
-	var token = p.currentToken
+	var token = p.CurrentToken
 	var builtinNode Builtin
 	var binOpNode BinOp
 	var simpleNode ASTNode
-	p.eat("identifier")
+	err = p.eat("identifier")
+	if err != nil {
+		return nil, err
+	}
 	args = nil
-	if p.currentToken != (prattparser.Token{}) && p.currentToken.Kind == "(" {
-		p.eat("(")
-		node = p.Parse()
-		args = append(args, node)
-
-		for p.currentToken.Kind == "," {
-			p.eat(",")
-			node = p.Parse()
+	if p.CurrentToken != (prattparser.Token{}) && p.CurrentToken.Kind == "(" {
+		err = p.eat("(")
+		if err != nil {
+			return nil, err
+		}
+		node, err = p.Parse()
+		if err != nil {
+			return nil, err
+		}
+		if node != nil {
 			args = append(args, node)
 		}
-		p.eat(")")
+
+		for p.CurrentToken.Kind == "," {
+			err = p.eat(",")
+			if err != nil {
+				return nil, err
+			}
+			node, err = p.Parse()
+			if err != nil {
+				return nil, err
+			}
+			args = append(args, node)
+		}
+		err = p.eat(")")
+		if err != nil {
+			return nil, err
+		}
 	}
 	builtinNode.NewNode(token, args)
 	node = builtinNode
-	token = p.currentToken
+	token = p.CurrentToken
 	for token != (prattparser.Token{}) && token.Kind == "." {
-		p.eat(".")
-		simpleNode.NewNode(p.currentToken)
-		p.eat(p.currentToken.Kind)
+		err = p.eat(".")
+		if err != nil {
+			return nil, err
+		}
+		simpleNode.NewNode(p.CurrentToken)
+		err = p.eat(p.CurrentToken.Kind)
+		if err != nil {
+			return nil, err
+		}
 		binOpNode.NewNode(token, node, simpleNode)
 		node = binOpNode
-		token = p.currentToken
+		token = p.CurrentToken
 	}
 
 	return
 }
 
-func (p *Parser) list() (node IASTNode) {
+func (p *Parser) list() (node IASTNode, err error) {
 	//    list : LSQAREBRAKET (expr ( COMMA expr)*)? RSQAREBRAKET)
 	var list []IASTNode
 	var listNode List
-	var token = p.currentToken
-	p.eat("[")
+	var token = p.CurrentToken
+	err = p.eat("[")
+	if err != nil {
+		return nil, err
+	}
 
-	if p.currentToken.Kind != "]" {
-		node = p.Parse()
+	if p.CurrentToken.Kind != "]" {
+		node, err = p.Parse()
+		if err != nil {
+			return nil, err
+		}
 		list = append(list, node)
 
-		for p.currentToken.Kind == "," {
-			p.eat(",")
-			node = p.Parse()
+		for p.CurrentToken.Kind == "," {
+			err = p.eat(",")
+			if err != nil {
+				return nil, err
+			}
+			node, err = p.Parse()
+			if err != nil {
+				return nil, err
+			}
 			list = append(list, node)
 		}
 	}
-	p.eat("]")
+	err = p.eat("]")
+	if err != nil {
+		return nil, err
+	}
 	listNode.NewNode(token, list)
 	node = listNode
 	return
 }
 
-func (p *Parser) valueAccess(node IASTNode) IASTNode {
+func (p *Parser) valueAccess(node IASTNode) (IASTNode, error) {
 	//    valueAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)
 	var arrayNode ValueAccess
 	var left, right IASTNode
-	token := p.currentToken
+	var err error
+	token := p.CurrentToken
 	isInterval := false
-	p.eat("identifier")
-	token = p.currentToken
+
+	token = p.CurrentToken
 	for token != (prattparser.Token{}) && token.Kind == "[" {
-		p.eat("[")
-		if p.currentToken.Kind != ":" {
-			left = p.Parse()
+		err = p.eat("[")
+		if err != nil {
+			return nil, err
 		}
-		if p.currentToken.Kind == ":" {
+		if p.CurrentToken.Kind != ":" {
+			left, err = p.Parse()
+			if err != nil {
+				return nil, err
+			}
+		}
+		if p.CurrentToken.Kind == ":" {
 			isInterval = true
-			p.eat(":")
-			if p.currentToken.Kind != "]" {
-				right = p.Parse()
+			err = p.eat(":")
+			if err != nil {
+				return nil, err
+			}
+			if p.CurrentToken.Kind != "]" {
+				right, err = p.Parse()
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 
-		p.eat("]")
+		err = p.eat("]")
+		if err != nil {
+			return nil, err
+		}
 		arrayNode.NewNode(token, node, isInterval, left, right)
 		node = arrayNode
-		token = p.currentToken
+		token = p.CurrentToken
 	}
-	return node
+	return node, err
 }
 
-func (p *Parser) object() (node IASTNode) {
+func (p *Parser) object() (node IASTNode, err error) {
 	//    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID SEMI expr)*)? RCURLYBRACE (DOT ID)?
 	var objectNode Object
 	var binOpNode BinOp
 	var simpleNode ASTNode
+	var objValue IASTNode
 	obj := make(map[string]IASTNode)
-	token := p.currentToken
-	p.eat("{")
+	token := p.CurrentToken
+	err = p.eat("{")
+	if err != nil {
+		return nil, err
+	}
 
-	for p.currentToken.Kind == "string" || p.currentToken.Kind == "identifier" {
-		key := p.currentToken.Value
-		if p.currentToken.Kind == "string" {
+	for p.CurrentToken.Kind == "string" || p.CurrentToken.Kind == "identifier" {
+		key := p.CurrentToken.Value
+		if p.CurrentToken.Kind == "string" {
 			key = parseString(key)
 		}
-		p.eat(p.currentToken.Kind)
-		p.eat(":")
-		value := p.Parse()
-		obj[key] = value
-		if p.currentToken.Kind == "}" {
+		err = p.eat(p.CurrentToken.Kind)
+		if err != nil {
+			return nil, err
+		}
+		err = p.eat(":")
+		if err != nil {
+			return nil, err
+		}
+		objValue, err = p.Parse()
+		if err != nil {
+			return nil, err
+		}
+		obj[key] = objValue
+		if p.CurrentToken.Kind == "}" {
 			break
 		} else {
-			p.eat(",")
+			err = p.eat(",")
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
-	p.eat("}")
+	err = p.eat("}")
+	if err != nil {
+		return nil, err
+	}
 	objectNode.NewNode(token, obj)
 	node = objectNode
-	token = p.currentToken
+	token = p.CurrentToken
 	for token != (prattparser.Token{}) && token.Kind == "." {
-		p.eat(".")
-		simpleNode.NewNode(p.currentToken)
-		p.eat(p.currentToken.Kind)
+		err = p.eat(".")
+		if err != nil {
+			return nil, err
+		}
+		simpleNode.NewNode(p.CurrentToken)
+		err = p.eat(p.CurrentToken.Kind)
+		if err != nil {
+			return nil, err
+		}
 		binOpNode.NewNode(token, node, simpleNode)
 		node = binOpNode
-		token = p.currentToken
+		token = p.CurrentToken
 	}
 	return
 }
@@ -341,13 +568,4 @@ func CreateTokenizer() (tokenizer prattparser.Tokenizer) {
 		"null":       `null\b`,
 	})
 	return
-}
-
-func contains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-	return false
 }

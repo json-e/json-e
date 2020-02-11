@@ -130,7 +130,7 @@ func (c *Context) Attempt(kinds ...string) (Token, error) {
 	if c.next.IsEmpty() {
 		return Token{}, nil
 	}
-	if len(kinds) > 0 && !stringsContains(c.next.Kind, kinds) {
+	if len(kinds) > 0 && !StringsContains(c.next.Kind, kinds) {
 		return Token{}, nil
 	}
 	current := c.next
@@ -154,7 +154,7 @@ func (c *Context) Require(kinds ...string) (Token, error) {
 			End:     len(c.source),
 		}
 	}
-	if len(kinds) > 0 && !stringsContains(token.Kind, kinds) {
+	if len(kinds) > 0 && !StringsContains(token.Kind, kinds) {
 		return Token{}, SyntaxError{
 			Message:  fmt.Sprintf("unexpected '%s'", token.Value),
 			Source:   c.source,

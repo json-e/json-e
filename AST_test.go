@@ -63,8 +63,10 @@ func TestParserForPrimitives(t *testing.T) {
 	var parser newparser.Parser
 
 	tokenizer := newparser.CreateTokenizer()
-	parser.NewParser("2", tokenizer)
-	node := parser.Parse()
+	parser.NewParser("2", tokenizer, 0)
+	node, err := parser.Parse()
+	if err != nil {
+	}
 	token := node.GetToken()
 
 	if token.Kind != "number" || token.Value != "2" {
@@ -77,8 +79,10 @@ func TestParserForUnaryOp(t *testing.T) {
 	var parser newparser.Parser
 
 	tokenizer := newparser.CreateTokenizer()
-	parser.NewParser("-2", tokenizer)
-	node := parser.Parse()
+	parser.NewParser("-2", tokenizer, 0)
+	node, err := parser.Parse()
+	if err != nil {
+	}
 	token := node.GetToken()
 
 	if token.Kind == "-" && token.Value == "-" {
@@ -96,8 +100,10 @@ func TestParserForBinaryOp(t *testing.T) {
 	var parser newparser.Parser
 
 	tokenizer := newparser.CreateTokenizer()
-	parser.NewParser("5-2", tokenizer)
-	node := parser.Parse()
+	parser.NewParser("5-2", tokenizer, 0)
+	node, err := parser.Parse()
+	if err != nil {
+	}
 	token := node.GetToken()
 
 	if token.Kind == "-" && token.Value == "-" {
@@ -123,11 +129,13 @@ func TestInterpreterForUnaryMinus(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '5' failed")
 	}
 }
@@ -139,11 +147,13 @@ func TestInterpreterForUnaryPlus(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '+7' failed")
 	}
 }
@@ -155,11 +165,13 @@ func TestInterpreterForNot(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '!5' failed")
 	}
 }
@@ -171,11 +183,13 @@ func TestInterpreterForBinaryPlus(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '2+3' failed")
 	}
 }
@@ -187,11 +201,15 @@ func TestInterpreterForBinaryMinus(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
-	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 
-	if newInterpreter.Interpret(tree) != oldresult {
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+	newresult, err := newInterpreter.Interpret(tree)
+
+	if newresult != oldresult {
 		t.Error("Expression '2-3' failed")
 	}
 }
@@ -203,11 +221,14 @@ func TestInterpreterForDiv(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
-	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 
-	if newInterpreter.Interpret(tree) != oldresult {
+	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '6/2' failed")
 	}
 }
@@ -219,11 +240,14 @@ func TestInterpreterForMul(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
 
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '2*3' failed")
 	}
 }
@@ -235,11 +259,14 @@ func TestInterpreterForGreater(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
 
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '5>2' failed")
 	}
 }
@@ -251,11 +278,14 @@ func TestInterpreterForLess(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
 
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '4<7' failed")
 	}
 }
@@ -267,11 +297,13 @@ func TestInterpreterForMoreOrEqual(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '3>=3' failed")
 	}
 }
@@ -283,11 +315,13 @@ func TestInterpreterForLessOrEqual(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '6<=2' failed")
 	}
 }
@@ -299,11 +333,13 @@ func TestInterpreterForNotEqual(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '2!=3' failed")
 	}
 }
@@ -315,11 +351,13 @@ func TestInterpreterForEqual(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '5==2' failed")
 	}
 }
@@ -331,11 +369,14 @@ func TestInterpreterForOr(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
 
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression 'false||false' failed")
 	}
 }
@@ -347,11 +388,13 @@ func TestInterpreterForAND(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression 'true&&false' failed")
 	}
 }
@@ -363,11 +406,13 @@ func TestInterpreterForSquaring(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, "")
-
-	if newInterpreter.Interpret(tree) != oldresult {
+	newresult, err := newInterpreter.Interpret(tree)
+	if newresult != oldresult {
 		t.Error("Expression '2**3' failed")
 	}
 }
@@ -386,10 +431,12 @@ func TestInterpreterForBuiltinFunction(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if newresult != oldresult {
 		t.Error("Expression 'max(5,2,9)' failed")
@@ -414,10 +461,12 @@ func TestInterpreterForBuiltin(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if newresult != oldresult {
 		t.Error("Expression 'a' with context 'a: 3' failed")
@@ -438,10 +487,12 @@ func TestInterpreterForEmptyList(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if !interpreter.DeepEquals(oldresult, newresult) {
 		t.Error("Expression '[]'  failed")
@@ -462,10 +513,12 @@ func TestInterpreterForList(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if !interpreter.DeepEquals(oldresult, newresult) {
 		t.Error("Expression '[2,5]' with context failed")
@@ -491,10 +544,12 @@ func TestInterpreterForArrayAccess(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if oldresult != newresult {
 		t.Error("Expression 'a[2]' failed")
@@ -503,6 +558,7 @@ func TestInterpreterForArrayAccess(t *testing.T) {
 
 func TestInterpreterForIntervalWithOneLeftArg(t *testing.T) {
 	expr := "a[2:]"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	contextList := []interface{}{1, 2, 3, 4}
@@ -520,10 +576,12 @@ func TestInterpreterForIntervalWithOneLeftArg(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if !equal(oldresult.([]interface{}), newresult.([]interface{})) {
 		t.Error("Expression 'a[2:]' failed")
@@ -532,6 +590,7 @@ func TestInterpreterForIntervalWithOneLeftArg(t *testing.T) {
 
 func TestInterpreterForIntervalWithOneRightArg(t *testing.T) {
 	expr := "a[:2]"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	contextList := []interface{}{1, 2, 3, 4}
@@ -549,10 +608,19 @@ func TestInterpreterForIntervalWithOneRightArg(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
-	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
-	newresult := newInterpreter.Interpret(tree)
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+		t.Error("Expression 'a[:2]' failed")
+	}
+	oldresult, err := oldInterpreter.Parse(expr, 0, c)
+	if err != nil {
+		t.Error("Expression 'a[:2]' failed")
+	}
+	newresult, err := newInterpreter.Interpret(tree)
+	if err != nil {
+		t.Error("Expression 'a[:2]' failed")
+	}
 
 	if !equal(oldresult.([]interface{}), newresult.([]interface{})) {
 		t.Error("Expression 'a[:2]' failed")
@@ -561,6 +629,7 @@ func TestInterpreterForIntervalWithOneRightArg(t *testing.T) {
 
 func TestInterpreterForInterval(t *testing.T) {
 	expr := "a[2:4]"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	contextList := []interface{}{1, 2, 3, 4}
@@ -578,10 +647,12 @@ func TestInterpreterForInterval(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, c)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if !equal(oldresult.([]interface{}), newresult.([]interface{})) {
 		t.Error("Expression 'a[2:3]' failed")
@@ -590,6 +661,7 @@ func TestInterpreterForInterval(t *testing.T) {
 
 func TestInterpreterForEmptyObject(t *testing.T) {
 	expr := "{}"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{}
@@ -598,10 +670,12 @@ func TestInterpreterForEmptyObject(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if !interpreter.DeepEquals(oldresult, newresult) {
 		t.Error("Expression {} failed")
@@ -610,6 +684,7 @@ func TestInterpreterForEmptyObject(t *testing.T) {
 
 func TestInterpreterForObject(t *testing.T) {
 	expr := "{k : 2}"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{}
@@ -618,10 +693,12 @@ func TestInterpreterForObject(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
-	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
-	newresult := newInterpreter.Interpret(tree)
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
+	oldresult, err := oldInterpreter.Parse(expr, 0, context)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if !interpreter.DeepEquals(oldresult, newresult) {
 		t.Error("Expression {k : 2} failed")
@@ -630,6 +707,7 @@ func TestInterpreterForObject(t *testing.T) {
 
 func TestInterpreterForComplexObject(t *testing.T) {
 	expr := "{\"a\" : 2+5, b : \"zxc\"}"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{}
@@ -638,10 +716,12 @@ func TestInterpreterForComplexObject(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if !interpreter.DeepEquals(oldresult, newresult) {
 		t.Error("Expression {\"a\" : 2+5, b : \"zxc\"} failed")
@@ -650,6 +730,7 @@ func TestInterpreterForComplexObject(t *testing.T) {
 
 func TestInterpreterForDotOp(t *testing.T) {
 	expr := "{a: 1}.a"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{}
@@ -658,10 +739,12 @@ func TestInterpreterForDotOp(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if !interpreter.DeepEquals(oldresult, newresult) {
 		t.Error("Expression {a: 1}.a failed")
@@ -670,6 +753,7 @@ func TestInterpreterForDotOp(t *testing.T) {
 
 func TestInterpreterForDotOpWithContext(t *testing.T) {
 	expr := "k.b"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	b := map[string]interface{}{"b": 8}
@@ -679,10 +763,12 @@ func TestInterpreterForDotOpWithContext(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if oldresult != newresult {
 		t.Error("Expression k.b failed")
@@ -691,6 +777,7 @@ func TestInterpreterForDotOpWithContext(t *testing.T) {
 
 func TestInterpreterForInOpWithArray(t *testing.T) {
 	expr := "5 in [\"5\", \"five\"]"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{}
@@ -699,10 +786,12 @@ func TestInterpreterForInOpWithArray(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if oldresult != newresult {
 		t.Error("Expression '5 in [\"5\", \"five\"]' failed")
@@ -711,6 +800,7 @@ func TestInterpreterForInOpWithArray(t *testing.T) {
 
 func TestInterpreterForInOpWithObject(t *testing.T) {
 	expr := "\"5\" in {\"5\": \"five\"}"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{}
@@ -719,10 +809,12 @@ func TestInterpreterForInOpWithObject(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if oldresult != newresult {
 		t.Error("Expression '5\" in {\"5\": \"five\"}' failed")
@@ -731,6 +823,7 @@ func TestInterpreterForInOpWithObject(t *testing.T) {
 
 func TestInterpreterForInOpWithString(t *testing.T) {
 	expr := "\"abc\" in \"aabc\""
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{}
@@ -739,10 +832,12 @@ func TestInterpreterForInOpWithString(t *testing.T) {
 	oldInterpreter := interpreter.Interpreter
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
 	oldresult, _ := oldInterpreter.Parse(expr, 0, context)
-	newresult := newInterpreter.Interpret(tree)
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if oldresult != newresult {
 		t.Error("Expression \"abc\" in \"aabc\" failed")
@@ -751,6 +846,7 @@ func TestInterpreterForInOpWithString(t *testing.T) {
 
 func TestInterpreterForOrShortCircuitEvaluation(t *testing.T) {
 	expr := "true || a"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{}
@@ -758,9 +854,11 @@ func TestInterpreterForOrShortCircuitEvaluation(t *testing.T) {
 	newInterpreter.AddContext(context)
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
-	newresult := newInterpreter.Interpret(tree)
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if newresult != true {
 		t.Error("Expression 'true || a' failed")
@@ -769,6 +867,7 @@ func TestInterpreterForOrShortCircuitEvaluation(t *testing.T) {
 
 func TestInterpreterForAndShortCircuitEvaluation(t *testing.T) {
 	expr := "false && a"
+
 	var parser newparser.Parser
 	var newInterpreter interpreter.NewInterpreter
 	context := map[string]interface{}{}
@@ -776,9 +875,11 @@ func TestInterpreterForAndShortCircuitEvaluation(t *testing.T) {
 	newInterpreter.AddContext(context)
 	tokenizer := newparser.CreateTokenizer()
 
-	parser.NewParser(expr, tokenizer)
-	tree := parser.Parse()
-	newresult := newInterpreter.Interpret(tree)
+	parser.NewParser(expr, tokenizer, 0)
+	tree, err := parser.Parse()
+	if err != nil {
+	}
+	newresult, err := newInterpreter.Interpret(tree)
 
 	if newresult != false {
 		t.Error("Expression 'false && a' failed")
