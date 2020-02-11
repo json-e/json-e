@@ -4,10 +4,9 @@ import re
 import json as json
 from .shared import JSONTemplateError, TemplateError, DeleteMarker, string, to_str
 from . import shared
-from .interpreter import ExpressionEvaluator
 from .six import viewitems
-from .newparser import Parser, generate_tokens
-from .newinterpreter import Interpreter
+from .parser import Parser, generate_tokens
+from .interpreter import Interpreter
 import functools
 
 operators = {}
@@ -30,32 +29,27 @@ def operator(name):
     return wrap
 
 
-def newParse(source, context):
+def parse(source, context):
     tokens = generate_tokens(source)
     parser = Parser(tokens, source)
     tree = parser.parse()
     if parser.current_token is not None:
         raise SyntaxError.unexpected(parser.current_token, ["EOF"])
 
-    newInterpreter = Interpreter(context)
-    result = newInterpreter.interpret(tree)
+    interp = Interpreter(context)
+    result = interp.interpret(tree)
     return result
 
 
-def newParseUntilTerminator(source, context, terminator):
+def parseUntilTerminator(source, context, terminator):
     tokens = generate_tokens(source)
     parser = Parser(tokens, source)
     tree = parser.parse()
     if parser.current_token.kind != terminator:
         raise SyntaxError.unexpected(parser.current_token, [terminator])
-    newInterpreter = Interpreter(context)
-    result = newInterpreter.interpret(tree)
+    interp = Interpreter(context)
+    result = interp.interpret(tree)
     return result, parser.current_token.start
-
-
-def evaluateExpression(expr, context):
-    evaluator = ExpressionEvaluator(context)
-    return evaluator.parse(expr)
 
 
 _interpolation_start_re = re.compile(r'\$?\${')
@@ -67,14 +61,12 @@ def interpolate(string, context):
         return string
 
     result = []
-    evaluator = ExpressionEvaluator(context)
 
     while True:
         result.append(string[:mo.start()])
         if mo.group() != '$${':
             string = string[mo.end():]
-            # parsed, offset = evaluator.parseUntilTerminator(string, '}')
-            parsed, offset = newParseUntilTerminator(string, context, '}')
+            parsed, offset = parseUntilTerminator(string, context, '}')
             if isinstance(parsed, (list, dict)):
                 raise TemplateError(
                     "interpolation of '{}' produced an array or object".format(string[:offset]))
@@ -109,8 +101,7 @@ def eval(template, context):
     checkUndefinedProperties(template, ['\$eval'])
     if not isinstance(template['$eval'], string):
         raise TemplateError("$eval must be given a string expression")
-    # return evaluateExpression(template['$eval'], context)
-    return newParse(template['$eval'], context)
+    return parse(template['$eval'], context)
 
 
 @operator('$flatten')
@@ -164,8 +155,7 @@ def fromNow(template, context):
 @operator('$if')
 def ifConstruct(template, context):
     checkUndefinedProperties(template, ['\$if', 'then', 'else'])
-    # condition = evaluateExpression(template['$if'], context)
-    condition = newParse(template['$if'], context)
+    condition = parse(template['$if'], context)
     try:
         if condition:
             rv = template['then']
@@ -263,8 +253,7 @@ def matchConstruct(template, context):
 
     result = []
     for condition in sorted(template['$match']):
-        # if evaluateExpression(condition, context):
-        if newParse(condition, context):
+        if parse(condition, context):
             result.append(renderValue(template['$match'][condition], context))
 
     return result
@@ -337,8 +326,7 @@ def sort(template, context):
             subcontext = context.copy()
             for e in value:
                 subcontext[by_var] = e
-                yield evaluateExpression(by_expr, subcontext), e
-
+                yield parse(by_expr, subcontext), e
         to_sort = list(xform())
     elif len(by_keys) == 0:
         to_sort = [(e, e) for e in value]

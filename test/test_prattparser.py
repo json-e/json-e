@@ -2,7 +2,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from nose.tools import eq_
 from jsone import JSONTemplateError
-from jsone.prattparser import PrattParser, infix, prefix, Token
+from jsone.prattparser import PrattParser, infix, prefix
+from jsone.parser import Token
 
 
 class IgnoringAlgebraicParser(PrattParser):
