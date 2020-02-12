@@ -1,21 +1,20 @@
-package newparser
+package parser
 
 import (
-	"../prattparser"
 	"fmt"
 	"strings"
 )
 
 type Parser struct {
 	source           string
-	tokenizer        prattparser.Tokenizer
-	CurrentToken     prattparser.Token
+	tokenizer        Tokenizer
+	CurrentToken     Token
 	unaryOpTokens    []string
 	binOpTokens      []string
 	primitivesTokens []string
 }
 
-func (p *Parser) NewParser(source string, tokenizer prattparser.Tokenizer, offset int) (err error) {
+func (p *Parser) NewParser(source string, tokenizer Tokenizer, offset int) (err error) {
 	p.source = source
 	p.tokenizer = tokenizer
 	p.CurrentToken, err = p.tokenizer.Next(p.source, offset)
@@ -27,15 +26,15 @@ func (p *Parser) NewParser(source string, tokenizer prattparser.Tokenizer, offse
 func (p *Parser) eat(kinds ...string) error {
 	var err error
 	if p.CurrentToken.IsEmpty() {
-		return prattparser.SyntaxError{
+		return SyntaxError{
 			Message: "unexpected end of input",
 			Source:  p.source,
 			Start:   len(p.source) - 1,
 			End:     len(p.source),
 		}
 	}
-	if len(kinds) > 0 && !prattparser.StringsContains(p.CurrentToken.Kind, kinds) {
-		return prattparser.SyntaxError{
+	if len(kinds) > 0 && !StringsContains(p.CurrentToken.Kind, kinds) {
+		return SyntaxError{
 			Message:  fmt.Sprintf("unexpected '%s'", p.CurrentToken.Value),
 			Source:   p.source,
 			Start:    p.CurrentToken.Start,
@@ -58,7 +57,7 @@ func (p *Parser) Parse() (node IASTNode, err error) {
 	}
 	token := p.CurrentToken
 
-	for ; token != (prattparser.Token{}) && token.Kind == "||"; token = p.CurrentToken {
+	for ; token != (Token{}) && token.Kind == "||"; token = p.CurrentToken {
 		err = p.eat(token.Kind)
 		if err != nil {
 			return nil, err
@@ -84,7 +83,7 @@ func (p *Parser) logicalAnd() (node IASTNode, err error) {
 	}
 	token := p.CurrentToken
 
-	for ; token != (prattparser.Token{}) && token.Kind == "&&"; token = p.CurrentToken {
+	for ; token != (Token{}) && token.Kind == "&&"; token = p.CurrentToken {
 		err = p.eat(token.Kind)
 		if err != nil {
 			return nil, err
@@ -110,7 +109,7 @@ func (p *Parser) inStatement() (node IASTNode, err error) {
 	}
 	token := p.CurrentToken
 
-	for ; token != (prattparser.Token{}) && token.Kind == "in"; token = p.CurrentToken {
+	for ; token != (Token{}) && token.Kind == "in"; token = p.CurrentToken {
 		err = p.eat(token.Kind)
 		if err != nil {
 			return nil, err
@@ -137,7 +136,7 @@ func (p *Parser) equality() (node IASTNode, err error) {
 	}
 	token := p.CurrentToken
 
-	for token != (prattparser.Token{}) && prattparser.StringsContains(token.Kind, operations) {
+	for token != (Token{}) && StringsContains(token.Kind, operations) {
 		err = p.eat(token.Kind)
 		if err != nil {
 			return nil, err
@@ -165,7 +164,7 @@ func (p *Parser) comparison() (node IASTNode, err error) {
 	}
 	token := p.CurrentToken
 
-	for token != (prattparser.Token{}) && prattparser.StringsContains(token.Kind, operations) {
+	for token != (Token{}) && StringsContains(token.Kind, operations) {
 		err = p.eat(token.Kind)
 		if err != nil {
 			return nil, err
@@ -193,7 +192,7 @@ func (p *Parser) addition() (node IASTNode, err error) {
 	}
 	token := p.CurrentToken
 
-	for token != (prattparser.Token{}) && prattparser.StringsContains(token.Kind, operations) {
+	for token != (Token{}) && StringsContains(token.Kind, operations) {
 		err = p.eat(token.Kind)
 		if err != nil {
 			return nil, err
@@ -221,7 +220,7 @@ func (p *Parser) multiplication() (node IASTNode, err error) {
 	}
 	token := p.CurrentToken
 
-	for token != (prattparser.Token{}) && prattparser.StringsContains(token.Kind, operations) {
+	for token != (Token{}) && StringsContains(token.Kind, operations) {
 		err = p.eat(token.Kind)
 		if err != nil {
 			return nil, err
@@ -248,7 +247,7 @@ func (p *Parser) exponentiation() (node IASTNode, err error) {
 	}
 	token := p.CurrentToken
 
-	for ; token != (prattparser.Token{}) && token.Kind == "**"; token = p.CurrentToken {
+	for ; token != (Token{}) && token.Kind == "**"; token = p.CurrentToken {
 		err = p.eat(token.Kind)
 		if err != nil {
 			return nil, err
@@ -270,8 +269,8 @@ func (p *Parser) factor() (node IASTNode, err error) {
 	var primitiveNode ASTNode
 	var next IASTNode
 	token := p.CurrentToken
-	isUnaryOpToken := prattparser.StringsContains(token.Kind, p.unaryOpTokens)
-	isPrimitivesToken := prattparser.StringsContains(token.Kind, p.primitivesTokens)
+	isUnaryOpToken := StringsContains(token.Kind, p.unaryOpTokens)
+	isPrimitivesToken := StringsContains(token.Kind, p.primitivesTokens)
 
 	if isUnaryOpToken {
 		err = p.eat(token.Kind)
@@ -354,7 +353,7 @@ func (p *Parser) builtins() (node IASTNode, err error) {
 		return nil, err
 	}
 	args = nil
-	if p.CurrentToken != (prattparser.Token{}) && p.CurrentToken.Kind == "(" {
+	if p.CurrentToken != (Token{}) && p.CurrentToken.Kind == "(" {
 		err = p.eat("(")
 		if err != nil {
 			return nil, err
@@ -386,7 +385,7 @@ func (p *Parser) builtins() (node IASTNode, err error) {
 	builtinNode.NewNode(token, args)
 	node = builtinNode
 	token = p.CurrentToken
-	for token != (prattparser.Token{}) && token.Kind == "." {
+	for token != (Token{}) && token.Kind == "." {
 		err = p.eat(".")
 		if err != nil {
 			return nil, err
@@ -451,7 +450,7 @@ func (p *Parser) valueAccess(node IASTNode) (IASTNode, error) {
 	isInterval := false
 
 	token = p.CurrentToken
-	for token != (prattparser.Token{}) && token.Kind == "[" {
+	for token != (Token{}) && token.Kind == "[" {
 		err = p.eat("[")
 		if err != nil {
 			return nil, err
@@ -534,7 +533,7 @@ func (p *Parser) object() (node IASTNode, err error) {
 	objectNode.NewNode(token, obj)
 	node = objectNode
 	token = p.CurrentToken
-	for token != (prattparser.Token{}) && token.Kind == "." {
+	for token != (Token{}) && token.Kind == "." {
 		err = p.eat(".")
 		if err != nil {
 			return nil, err
@@ -555,8 +554,8 @@ func parseString(s string) string {
 	return s[1 : len(s)-1]
 }
 
-func CreateTokenizer() (tokenizer prattparser.Tokenizer) {
-	tokenizer = *prattparser.NewTokenizer(`\s+`, strings.Split(
+func CreateTokenizer() (tokenizer Tokenizer) {
+	tokenizer = *NewTokenizer(`\s+`, strings.Split(
 		`** + - * / [ ] . ( ) { } : , >= <= < > == != ! && || true false in null number identifier string`, " ",
 	), map[string]string{
 		"number":     `[0-9]+(?:\.[0-9]+)?`,
