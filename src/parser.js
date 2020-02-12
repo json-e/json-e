@@ -322,6 +322,6 @@ let
 
 
 exports
-    .NewParser = Parser;
+    .Parser = Parser;
 exports
     .createTokenizer = createTokenizer;

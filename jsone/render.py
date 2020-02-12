@@ -118,7 +118,6 @@ def flatten(template, context):
                     yield e2
             else:
                 yield e
-
     return list(gen())
 
 
@@ -230,7 +229,6 @@ def map(template, context):
             elt = renderValue(each_template, subcontext)
             if elt is not DeleteMarker:
                 yield elt
-
     if is_obj:
         value = [{'key': v[0], 'val': v[1]} for v in value.items()]
         v = dict()
@@ -292,7 +290,6 @@ def merge(template, context):
                     res[k] = v
             return res
         return r
-
     if len(value) == 0:
         return {}
     return functools.reduce(merge, value[1:], value[0])
@@ -378,7 +375,6 @@ def renderValue(template, context):
                     raise
                 if v is not DeleteMarker:
                     yield k, v
-
         return dict(updated())
 
     elif isinstance(template, list):
@@ -391,7 +387,6 @@ def renderValue(template, context):
                 except JSONTemplateError as e:
                     e.add_location('[{}]'.format(i))
                     raise
-
         return list(updated())
 
     else:

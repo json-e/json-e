@@ -272,4 +272,4 @@ let testComparisonOperands = (operator, left, right) => {
 };
 
 exports
-    .NewInterpreter = Interpreter;
+    .Interpreter = Interpreter;
