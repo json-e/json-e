@@ -25,7 +25,6 @@ def operator(name):
     def wrap(fn):
         operators[name] = fn
         return fn
-
     return wrap
 
 
