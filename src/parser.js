@@ -8,11 +8,10 @@ let syntaxRuleError = (token, expects) => {
 };
 
 class Parser {
-    constructor(tokenizer, source, context, offset = 0) {
+    constructor(tokenizer, source, offset = 0) {
         this._source = source;
         this._tokenizer = tokenizer;
         this.current_token = this._tokenizer.next(this._source, offset);
-        this.context = context;
         this.unaryOpTokens = ["-", "+", "!"];
         this.primitivesTokens = ["number", "null", "true", "false"];
     }
@@ -27,11 +26,6 @@ class Parser {
             throw err;
         }
     }
-
-    /**
-     * Try to get the next token if it matches one of the kinds given, otherwise
-     * return null. If no kinds are given returns the next of any kind.
-     */
 
     parse() {
         //    logicalOr : logicalAnd (OR logicalAnd)*
