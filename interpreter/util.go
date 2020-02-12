@@ -99,7 +99,7 @@ func IsWrappedFunction(value interface{}) bool {
 }
 
 // WrapFunction wraps a function for usage in context passed to
-// the Interpreter, panics if function is not valid.
+// the interpreter, panics if function is not valid.
 //
 // This is necessary to ensure that function values can be compared.
 func WrapFunction(f interface{}) interface{} {
@@ -111,10 +111,10 @@ func WrapFunction(f interface{}) interface{} {
 }
 
 // WrapFunctionWithContext wraps a function for usage in context passed to
-// the Interpreter, panics if function is not valid.
+// the interpreter, panics if function is not valid.
 //
 // This requires the function to take map[string]interface{} as first argument,
-// this will be the Interpreter context.
+// this will be the interpreter context.
 //
 // This is necessary to ensure that function values can be compared.
 func WrapFunctionWithContext(f interface{}) interface{} {
@@ -282,7 +282,7 @@ func IsValidContext(context map[string]interface{}) error {
 	return nil
 }
 
-func DeepEquals(a, b interface{}) bool {
+func deepEquals(a, b interface{}) bool {
 	switch A := a.(type) {
 	case *function:
 		B, ok := b.(*function)
@@ -304,7 +304,7 @@ func DeepEquals(a, b interface{}) bool {
 				return false
 			}
 			for i, v := range A {
-				if !DeepEquals(v, B[i]) {
+				if !deepEquals(v, B[i]) {
 					return false
 				}
 			}
@@ -317,7 +317,7 @@ func DeepEquals(a, b interface{}) bool {
 				return false
 			}
 			for k, vA := range A {
-				if vB, ok := B[k]; !ok || !DeepEquals(vA, vB) {
+				if vB, ok := B[k]; !ok || !deepEquals(vA, vB) {
 					return false
 				}
 			}

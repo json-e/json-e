@@ -117,9 +117,9 @@ func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
 
 	switch tokenKind {
 	case "==":
-		return DeepEquals(left, right), nil
+		return deepEquals(left, right), nil
 	case "!=":
-		return !DeepEquals(left, right), nil
+		return !deepEquals(left, right), nil
 	case ".":
 		obj := left
 		key := right.(string)
@@ -159,7 +159,7 @@ func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
 		// A in B; where B is an array
 		if a, ok := right.([]interface{}); ok {
 			for _, val := range a {
-				if DeepEquals(left, val) {
+				if deepEquals(left, val) {
 					return true, nil
 				}
 			}
