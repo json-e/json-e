@@ -2,7 +2,6 @@ package interpreter
 
 import (
 	p "./parser"
-	"github.com/taskcluster/json-e/interpreter/prattparser"
 )
 
 func Parse(source string, offset int, context interface{}) (interface{}, error) {
@@ -18,7 +17,7 @@ func Parse(source string, offset int, context interface{}) (interface{}, error) 
 		return nil, err
 	}
 	if !parser.CurrentToken.IsEmpty() {
-		return nil, prattparser.SyntaxError{
+		return nil, p.SyntaxError{
 			Message: "expected end of input",
 			Source:  source,
 			Start:   parser.CurrentToken.Start,
@@ -44,7 +43,7 @@ func ParseUntilTerminator(source string, offset int, terminator string, context 
 		return nil, 0, err
 	}
 	if parser.CurrentToken.Kind != terminator {
-		return nil, 0, prattparser.SyntaxError{
+		return nil, 0, p.SyntaxError{
 			Source:   source,
 			Start:    parser.CurrentToken.Start,
 			End:      parser.CurrentToken.End,
