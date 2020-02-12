@@ -872,7 +872,6 @@ func interpolate(template string, context map[string]interface{}) (string, error
 
 		result += remaining[:offset]
 		if remaining[offset+1] != '$' {
-			//value, end, err := i.ExecuteUntil(remaining, offset+2, "}", context)
 			value, end, err := i.ParseUntilTerminator(remaining, offset+2, "}", context)
 			if err != nil {
 				return "", err
