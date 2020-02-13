@@ -23,7 +23,7 @@ func (p *Parser) NewParser(source string, tokenizer Tokenizer, offset int) (err 
 	return
 }
 
-func (p *Parser) eat(kinds ...string) error {
+func (p *Parser) takeToken(kinds ...string) error {
 	var err error
 	if p.CurrentToken.IsEmpty() {
 		return SyntaxError{
@@ -58,7 +58,7 @@ func (p *Parser) Parse() (node IASTNode, err error) {
 	token := p.CurrentToken
 
 	for ; token != (Token{}) && token.Kind == "||"; token = p.CurrentToken {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -84,7 +84,7 @@ func (p *Parser) logicalAnd() (node IASTNode, err error) {
 	token := p.CurrentToken
 
 	for ; token != (Token{}) && token.Kind == "&&"; token = p.CurrentToken {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -110,7 +110,7 @@ func (p *Parser) inStatement() (node IASTNode, err error) {
 	token := p.CurrentToken
 
 	for ; token != (Token{}) && token.Kind == "in"; token = p.CurrentToken {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -137,7 +137,7 @@ func (p *Parser) equality() (node IASTNode, err error) {
 	token := p.CurrentToken
 
 	for token != (Token{}) && StringsContains(token.Kind, operations) {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +165,7 @@ func (p *Parser) comparison() (node IASTNode, err error) {
 	token := p.CurrentToken
 
 	for token != (Token{}) && StringsContains(token.Kind, operations) {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +193,7 @@ func (p *Parser) addition() (node IASTNode, err error) {
 	token := p.CurrentToken
 
 	for token != (Token{}) && StringsContains(token.Kind, operations) {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -221,7 +221,7 @@ func (p *Parser) multiplication() (node IASTNode, err error) {
 	token := p.CurrentToken
 
 	for token != (Token{}) && StringsContains(token.Kind, operations) {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -248,7 +248,7 @@ func (p *Parser) exponentiation() (node IASTNode, err error) {
 	token := p.CurrentToken
 
 	for ; token != (Token{}) && token.Kind == "**"; token = p.CurrentToken {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -273,7 +273,7 @@ func (p *Parser) factor() (node IASTNode, err error) {
 	isPrimitivesToken := StringsContains(token.Kind, p.primitivesTokens)
 
 	if isUnaryOpToken {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -284,14 +284,14 @@ func (p *Parser) factor() (node IASTNode, err error) {
 		unaryNode.NewNode(token, next)
 		node = unaryNode
 	} else if isPrimitivesToken {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
 		primitiveNode.NewNode(token)
 		node = primitiveNode
 	} else if token.Kind == "string" {
-		err = p.eat(token.Kind)
+		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -302,7 +302,7 @@ func (p *Parser) factor() (node IASTNode, err error) {
 			return nil, err
 		}
 	} else if token.Kind == "(" {
-		err = p.eat("(")
+		err = p.takeToken("(")
 		if err != nil {
 			return nil, err
 		}
@@ -310,7 +310,7 @@ func (p *Parser) factor() (node IASTNode, err error) {
 		if err != nil {
 			return nil, err
 		}
-		err = p.eat(")")
+		err = p.takeToken(")")
 		if err != nil {
 			return nil, err
 		}
@@ -348,13 +348,13 @@ func (p *Parser) builtins() (node IASTNode, err error) {
 	var builtinNode Builtin
 	var binOpNode BinOp
 	var simpleNode ASTNode
-	err = p.eat("identifier")
+	err = p.takeToken("identifier")
 	if err != nil {
 		return nil, err
 	}
 	args = nil
 	if p.CurrentToken != (Token{}) && p.CurrentToken.Kind == "(" {
-		err = p.eat("(")
+		err = p.takeToken("(")
 		if err != nil {
 			return nil, err
 		}
@@ -367,7 +367,7 @@ func (p *Parser) builtins() (node IASTNode, err error) {
 		}
 
 		for p.CurrentToken.Kind == "," {
-			err = p.eat(",")
+			err = p.takeToken(",")
 			if err != nil {
 				return nil, err
 			}
@@ -377,7 +377,7 @@ func (p *Parser) builtins() (node IASTNode, err error) {
 			}
 			args = append(args, node)
 		}
-		err = p.eat(")")
+		err = p.takeToken(")")
 		if err != nil {
 			return nil, err
 		}
@@ -386,12 +386,12 @@ func (p *Parser) builtins() (node IASTNode, err error) {
 	node = builtinNode
 	token = p.CurrentToken
 	for token != (Token{}) && token.Kind == "." {
-		err = p.eat(".")
+		err = p.takeToken(".")
 		if err != nil {
 			return nil, err
 		}
 		simpleNode.NewNode(p.CurrentToken)
-		err = p.eat(p.CurrentToken.Kind)
+		err = p.takeToken(p.CurrentToken.Kind)
 		if err != nil {
 			return nil, err
 		}
@@ -408,7 +408,7 @@ func (p *Parser) list() (node IASTNode, err error) {
 	var list []IASTNode
 	var listNode List
 	var token = p.CurrentToken
-	err = p.eat("[")
+	err = p.takeToken("[")
 	if err != nil {
 		return nil, err
 	}
@@ -421,7 +421,7 @@ func (p *Parser) list() (node IASTNode, err error) {
 		list = append(list, node)
 
 		for p.CurrentToken.Kind == "," {
-			err = p.eat(",")
+			err = p.takeToken(",")
 			if err != nil {
 				return nil, err
 			}
@@ -432,7 +432,7 @@ func (p *Parser) list() (node IASTNode, err error) {
 			list = append(list, node)
 		}
 	}
-	err = p.eat("]")
+	err = p.takeToken("]")
 	if err != nil {
 		return nil, err
 	}
@@ -451,7 +451,7 @@ func (p *Parser) valueAccess(node IASTNode) (IASTNode, error) {
 
 	token = p.CurrentToken
 	for token != (Token{}) && token.Kind == "[" {
-		err = p.eat("[")
+		err = p.takeToken("[")
 		if err != nil {
 			return nil, err
 		}
@@ -463,7 +463,7 @@ func (p *Parser) valueAccess(node IASTNode) (IASTNode, error) {
 		}
 		if p.CurrentToken.Kind == ":" {
 			isInterval = true
-			err = p.eat(":")
+			err = p.takeToken(":")
 			if err != nil {
 				return nil, err
 			}
@@ -475,7 +475,7 @@ func (p *Parser) valueAccess(node IASTNode) (IASTNode, error) {
 			}
 		}
 
-		err = p.eat("]")
+		err = p.takeToken("]")
 		if err != nil {
 			return nil, err
 		}
@@ -494,7 +494,7 @@ func (p *Parser) object() (node IASTNode, err error) {
 	var objValue IASTNode
 	obj := make(map[string]IASTNode)
 	token := p.CurrentToken
-	err = p.eat("{")
+	err = p.takeToken("{")
 	if err != nil {
 		return nil, err
 	}
@@ -504,11 +504,11 @@ func (p *Parser) object() (node IASTNode, err error) {
 		if p.CurrentToken.Kind == "string" {
 			key = parseString(key)
 		}
-		err = p.eat(p.CurrentToken.Kind)
+		err = p.takeToken(p.CurrentToken.Kind)
 		if err != nil {
 			return nil, err
 		}
-		err = p.eat(":")
+		err = p.takeToken(":")
 		if err != nil {
 			return nil, err
 		}
@@ -520,13 +520,13 @@ func (p *Parser) object() (node IASTNode, err error) {
 		if p.CurrentToken.Kind == "}" {
 			break
 		} else {
-			err = p.eat(",")
+			err = p.takeToken(",")
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
-	err = p.eat("}")
+	err = p.takeToken("}")
 	if err != nil {
 		return nil, err
 	}
@@ -534,12 +534,12 @@ func (p *Parser) object() (node IASTNode, err error) {
 	node = objectNode
 	token = p.CurrentToken
 	for token != (Token{}) && token.Kind == "." {
-		err = p.eat(".")
+		err = p.takeToken(".")
 		if err != nil {
 			return nil, err
 		}
 		simpleNode.NewNode(p.CurrentToken)
-		err = p.eat(p.CurrentToken.Kind)
+		err = p.takeToken(p.CurrentToken.Kind)
 		if err != nil {
 			return nil, err
 		}

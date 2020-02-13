@@ -16,7 +16,7 @@ class Parser {
         this.primitivesTokens = ["number", "null", "true", "false"];
     }
 
-    eat(...kinds) {
+    takeToken(...kinds) {
         if (kinds.length > 0 && kinds.indexOf(this.current_token.kind) === -1) {
             throw syntaxRuleError(this.current_token, kinds);
         }
@@ -33,7 +33,7 @@ class Parser {
         let token = this.current_token;
 
         for (; token !== null && token.kind == "||"; token = this.current_token) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new BinOp(token, node, this.logicalAnd());
         }
 
@@ -46,7 +46,7 @@ class Parser {
         let token = this.current_token;
 
         for (; token != null && token.kind == "&&"; token = this.current_token) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new BinOp(token, node, this.inStatement());
         }
 
@@ -59,7 +59,7 @@ class Parser {
         let token = this.current_token;
 
         for (; token != null && token.kind == "in"; token = this.current_token) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new BinOp(token, node, this.equality());
         }
 
@@ -72,7 +72,7 @@ class Parser {
         let token = this.current_token;
 
         for (; token != null && (token.kind == "==" || token.kind == "!="); token = this.current_token) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new BinOp(token, node, this.comparison());
         }
 
@@ -85,7 +85,7 @@ class Parser {
         let token = this.current_token;
 
         while (token != null && (token.kind == "<" || token.kind == ">" || token.kind == ">=" || token.kind == "<=")) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new BinOp(token, node, this.addition());
             token = this.current_token;
         }
@@ -99,7 +99,7 @@ class Parser {
         let token = this.current_token;
 
         for (; token != null && (token.kind == "+" || token.kind == "-"); token = this.current_token) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new BinOp(token, node, this.multiplication());
         }
 
@@ -112,7 +112,7 @@ class Parser {
         let token = this.current_token;
 
         for (; token != null && (token.kind == "*" || token.kind == "/"); token = this.current_token) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new BinOp(token, node, this.exponentiation());
         }
 
@@ -125,7 +125,7 @@ class Parser {
         let token = this.current_token;
 
         for (; token != null && token.kind == "**"; token = this.current_token) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new BinOp(token, this.exponentiation(), node);
         }
 
@@ -140,19 +140,19 @@ class Parser {
         let isPrimitivesToken = this.primitivesTokens.indexOf(token.kind) !== -1;
 
         if (isUnaryOpToken) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new UnaryOp(token, this.factor());
         } else if (isPrimitivesToken) {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new ASTNode(token);
         } else if (token.kind == "string") {
-            this.eat(token.kind);
+            this.takeToken(token.kind);
             node = new ASTNode(token);
             node = this.valueAccess(node)
         } else if (token.kind == "(") {
-            this.eat("(");
+            this.takeToken("(");
             node = this.parse();
-            this.eat(")");
+            this.takeToken(")");
         } else if (token.kind == "[") {
             node = this.list();
             node = this.valueAccess(node)
@@ -171,26 +171,26 @@ class Parser {
         let args = null;
         let token = this.current_token;
         let node;
-        this.eat("identifier");
+        this.takeToken("identifier");
 
         if (this.current_token != null && this.current_token.kind == "(") {
             args = [];
-            this.eat("(");
+            this.takeToken("(");
             node = this.parse();
             args.push(node);
 
             while (this.current_token.kind == ",") {
-                this.eat(",");
+                this.takeToken(",");
                 node = this.parse();
                 args.push(node)
             }
-            this.eat(")")
+            this.takeToken(")")
         }
         node = new Builtin(token, args);
         for (token = this.current_token; token != null && token.kind == "."; token = this.current_token) {
-            this.eat(".");
+            this.takeToken(".");
             let right = new ASTNode(this.current_token);
-            this.eat(this.current_token.kind)
+            this.takeToken(this.current_token.kind)
             node = new BinOp(token, node, right);
         }
 
@@ -202,19 +202,19 @@ class Parser {
         let node;
         let arr = [];
         let token = this.current_token;
-        this.eat("[");
+        this.takeToken("[");
 
         if (this.current_token.kind != "]") {
             node = this.parse();
             arr.push(node);
 
             while (this.current_token.kind == ",") {
-                this.eat(",");
+                this.takeToken(",");
                 node = this.parse();
                 arr.push(node)
             }
         }
-        this.eat("]");
+        this.takeToken("]");
         node = new List(token, arr);
         return node
     }
@@ -227,19 +227,19 @@ class Parser {
         let isInterval = false;
 
         for (token = this.current_token; token && token.kind == "[";) {
-            this.eat("[");
+            this.takeToken("[");
 
             if (this.current_token.kind != ":") {
                 leftArg = this.parse();
             }
             if (this.current_token.kind == ":") {
                 isInterval = true;
-                this.eat(":");
+                this.takeToken(":");
                 if (this.current_token.kind != "]") {
                     rightArg = this.parse();
                 }
             }
-            this.eat("]");
+            this.takeToken("]");
             node = new ArrayAccess(token, node, isInterval, leftArg, rightArg);
             token = this.current_token
         }
@@ -253,30 +253,30 @@ class Parser {
         let obj = {};
         let key, value;
         let token = this.current_token;
-        this.eat("{");
+        this.takeToken("{");
 
         while (this.current_token.kind == "string" || this.current_token.kind == "identifier") {
             key = this.current_token.value;
             if (this.current_token.kind == "string") {
                 key = parseString(key);
             }
-            this.eat(this.current_token.kind);
-            this.eat(":");
+            this.takeToken(this.current_token.kind);
+            this.takeToken(":");
             value = this.parse();
             obj[key] = value;
             if (this.current_token.kind == "}") {
                 break;
             } else {
-                this.eat(",")
+                this.takeToken(",")
             }
         }
-        this.eat("}");
+        this.takeToken("}");
         node = new Object(token, obj);
 
         for (token = this.current_token; token != null && token.kind == "."; token = this.current_token) {
-            this.eat(".");
+            this.takeToken(".");
             let right = new ASTNode(this.current_token);
-            this.eat(this.current_token.kind);
+            this.takeToken(this.current_token.kind);
             node = new BinOp(token, node, right);
         }
         return node;
