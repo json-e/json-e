@@ -466,119 +466,124 @@ template: {$flattenDeep: [[1, [2, 3]], [4], 5], foo: 'bar'}
 error: 'TemplateError: $flattenDeep has undefined properties: foo'
 ################################################################################
 ---
-section:  fromNow
+section:  $fromNow
 ---
-title:    fromNow 1 hour
+title:    $fromNow 1 hour
 context:  {}
 template: {$fromNow: '1 hour'}
 result:   '2017-01-19T17:27:20.974Z'
 ---
-title:    fromNow 2 hours
+title:    $fromNow 2 hours
 context:  {}
 template: {$fromNow: '2 hours'}
 result:   '2017-01-19T18:27:20.974Z'
 ---
-title:    fromNow 3h
+title:    $fromNow 3h
 context:  {}
 template: {$fromNow: '3h'}
 result:   '2017-01-19T19:27:20.974Z'
 ---
-title:    fromNow 1 hours
+title:    $fromNow 1 hours
 context:  {}
 template: {$fromNow: '1 hours'}
 result:   '2017-01-19T17:27:20.974Z'
 ---
-title:    fromNow -1 hour
+title:    $fromNow -1 hour
 context:  {}
 template: {$fromNow: '-1 hour'}
 result:   '2017-01-19T15:27:20.974Z'
 ---
-title:    fromNow 1 m
+title:    $fromNow 1 m
 context:  {}
 template: {$fromNow: '1 m'}
 result:   '2017-01-19T16:28:20.974Z'
 ---
-title:    fromNow 1m
+title:    $fromNow 1m
 context:  {}
 template: {$fromNow: '1m'}
 result:   '2017-01-19T16:28:20.974Z'
 ---
-title:    fromNow 12 min
+title:    $fromNow 12 min
 context:  {}
 template: {$fromNow: '12 min'}
 result:   '2017-01-19T16:39:20.974Z'
 ---
-title:    fromNow 12min
+title:    $fromNow 12min
 context:  {}
 template: {$fromNow: '12min'}
 result:   '2017-01-19T16:39:20.974Z'
 ---
-title:    fromNow 11m
+title:    $fromNow 11m
 context:  {}
 template: {$fromNow: '11m'}
 result:   '2017-01-19T16:38:20.974Z'
 ---
-title:    fromNow 11 m
+title:    $fromNow 11 m
 context:  {}
 template: {$fromNow: '11 m'}
 result:   '2017-01-19T16:38:20.974Z'
 ---
-title:    fromNow 1 day
+title:    $fromNow 1 day
 context:  {}
 template: {$fromNow: '1 day'}
 result:   '2017-01-20T16:27:20.974Z'
 ---
-title:    fromNow 2 days
+title:    $fromNow 2 days
 context:  {}
 template: {$fromNow: '2 days'}
 result:   '2017-01-21T16:27:20.974Z'
 ---
-title:    fromNow 1 second
+title:    $fromNow 1 second
 context:  {}
 template: {$fromNow: '1 second'}
 result:   '2017-01-19T16:27:21.974Z'
 ---
-title:    fromNow 1 week
+title:    $fromNow 1 week
 context:  {}
 template: {$fromNow: '1 week'}
 result:   '2017-01-26T16:27:20.974Z'
 ---
-title:    fromNow 1 month
+title:    $fromNow 1 month
 context:  {}
 template: {$fromNow: '1 month'}
 result:   '2017-02-18T16:27:20.974Z'
 ---
-title:    fromNow 30 mo
+title:    $fromNow 30 mo
 context:  {}
 template: {$fromNow: '30 mo'}
 result:   '2019-07-08T16:27:20.974Z'
 ---
-title:    fromNow -30 mo
+title:    $fromNow -30 mo
 context:  {}
 template: {$fromNow: '-30 mo'}
 result:   '2014-08-03T16:27:20.974Z'
 ---
-title:    fromNow 1 year
+title:    $fromNow 1 year
 context:  {}
 template: {$fromNow: '1 year'}
 result:   '2018-01-19T16:27:20.974Z'
 ---
-title:    fromNow of non-string
+title:    $fromNow of non-string
 context:  {}
 template: {$fromNow: 13}
 error:    'TemplateError: $fromNow expects a string'
 ---
-title:    fromNow with eval
+title:    $fromNow with eval
 context:  {ttl: 24}
 template: {$fromNow: {$eval: 'str(ttl) + " hours"'}}
 result:   '2017-01-20T16:27:20.974Z'
 ---
-title:    fromNow with reference
-context:  {now: '2019-01-01T01:00:00.123Z'}
-template: {$fromNow: '3 mo', from: {$eval: now}}
+title:    $fromNow with redefined `now`
+context:  {}
+template: {$let: {now: '2019-01-01T01:00:00.123Z'}, in: {$fromNow: '3 mo'}}
 result:   '2019-04-01T01:00:00.123Z'
 ---
-title:    fromNow with undefined properties
+title:    $fromNow with reference
+context:  {when: '2019-01-01T01:00:00.123Z'}
+template: {$fromNow: '3 mo', from: {$eval: when}}
+result:   '2019-04-01T01:00:00.123Z'
+---
+title:    $fromNow with undefined properties
 context:  {now: '2019-01-01T01:00:00.123Z'}
 template: {$fromNow: '3 mo', from: {$eval: now}, foo: 'bar'}
 error: 'TemplateError: $fromNow has undefined properties: foo'
