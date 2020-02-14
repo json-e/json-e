@@ -227,7 +227,7 @@ def generate_tokens(source):
         if not mo:
             if remainder:
                 raise SyntaxError(
-                    "Unexpected input: '{}'".format(remainder))
+                    "Unexpected input for '{}' at '{}'".format(source, remainder))
             break
         offset += mo.end()
 

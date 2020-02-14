@@ -5040,7 +5040,7 @@ error: true
 title: 'missing opening "'
 context: {}
 template: {$eval: 'hello"'}
-error: true
+error:  "SyntaxError: Unexpected input for 'hello\"' at '\"'"
 ---
 title: 'Infix + type error'
 context: {}
