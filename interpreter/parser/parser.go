@@ -12,6 +12,7 @@ type Parser struct {
 	unaryOpTokens    []string
 	binOpTokens      []string
 	primitivesTokens []string
+	operators        [][]string
 }
 
 func (p *Parser) NewParser(source string, tokenizer Tokenizer, offset int) (err error) {
@@ -20,6 +21,7 @@ func (p *Parser) NewParser(source string, tokenizer Tokenizer, offset int) (err 
 	p.CurrentToken, err = p.tokenizer.Next(p.source, offset)
 	p.unaryOpTokens = []string{"-", "+", "!"}
 	p.primitivesTokens = []string{"number", "null", "true", "false"}
+	p.operators = [][]string{{"||"}, {"&&"}, {"in"}, {"==", "!="}, {">", "<", "<=", ">="}, {"+", "-"}, {"*", "/"}, {"**"}}
 	return
 }
 
@@ -46,218 +48,47 @@ func (p *Parser) takeToken(kinds ...string) error {
 	return err
 }
 
-func (p *Parser) Parse() (node IASTNode, err error) {
-	//    logicalOr : logicalAnd (OR logicalAnd)*
+func (p *Parser) Parse(level int) (node IASTNode, err error) {
 	var binaryNode BinOp
 	var next IASTNode
-
-	node, err = p.logicalAnd()
-	if err != nil {
-		return nil, err
-	}
-	token := p.CurrentToken
-
-	for ; token != (Token{}) && token.Kind == "||"; token = p.CurrentToken {
-		err = p.takeToken(token.Kind)
+	if level == len(p.operators)-1 {
+		node, err = p.factor()
 		if err != nil {
 			return nil, err
 		}
-		next, err = p.logicalAnd()
+		token := p.CurrentToken
+
+		for ; token != (Token{}) && StringsContains(token.Kind, p.operators[level]); token = p.CurrentToken {
+			err = p.takeToken(token.Kind)
+			if err != nil {
+				return nil, err
+			}
+			next, err = p.Parse(level)
+			if err != nil {
+				return nil, err
+			}
+			binaryNode.NewNode(token, next, node)
+			node = binaryNode
+		}
+	} else {
+		node, err = p.Parse(level + 1)
 		if err != nil {
 			return nil, err
 		}
-		binaryNode.NewNode(token, node, next)
-		node = binaryNode
-	}
+		token := p.CurrentToken
 
-	return
-}
-
-func (p *Parser) logicalAnd() (node IASTNode, err error) {
-	//    logicalAnd : equality (AND equality)*
-	var binaryNode BinOp
-	var next IASTNode
-	node, err = p.inStatement()
-	if err != nil {
-		return nil, err
-	}
-	token := p.CurrentToken
-
-	for ; token != (Token{}) && token.Kind == "&&"; token = p.CurrentToken {
-		err = p.takeToken(token.Kind)
-		if err != nil {
-			return nil, err
+		for ; token != (Token{}) && StringsContains(token.Kind, p.operators[level]); token = p.CurrentToken {
+			err = p.takeToken(token.Kind)
+			if err != nil {
+				return nil, err
+			}
+			next, err = p.Parse(level + 1)
+			if err != nil {
+				return nil, err
+			}
+			binaryNode.NewNode(token, node, next)
+			node = binaryNode
 		}
-		next, err = p.inStatement()
-		if err != nil {
-			return nil, err
-		}
-		binaryNode.NewNode(token, node, next)
-		node = binaryNode
-	}
-
-	return
-}
-
-func (p *Parser) inStatement() (node IASTNode, err error) {
-	//    inStatement : equality (IN equality)*
-	var binaryNode BinOp
-	var next IASTNode
-	node, err = p.equality()
-	if err != nil {
-		return nil, err
-	}
-	token := p.CurrentToken
-
-	for ; token != (Token{}) && token.Kind == "in"; token = p.CurrentToken {
-		err = p.takeToken(token.Kind)
-		if err != nil {
-			return nil, err
-		}
-		next, err = p.equality()
-		if err != nil {
-			return nil, err
-		}
-		binaryNode.NewNode(token, node, next)
-		node = binaryNode
-	}
-
-	return
-}
-
-func (p *Parser) equality() (node IASTNode, err error) {
-	//    equality : comparison (EQUALITY | INEQUALITY  comparison)*
-	var binaryNode BinOp
-	operations := []string{"==", "!="}
-	var next IASTNode
-	node, err = p.comparison()
-	if err != nil {
-		return nil, err
-	}
-	token := p.CurrentToken
-
-	for token != (Token{}) && StringsContains(token.Kind, operations) {
-		err = p.takeToken(token.Kind)
-		if err != nil {
-			return nil, err
-		}
-		next, err = p.comparison()
-		if err != nil {
-			return nil, err
-		}
-		binaryNode.NewNode(token, node, next)
-		node = binaryNode
-		token = p.CurrentToken
-	}
-
-	return
-}
-
-func (p *Parser) comparison() (node IASTNode, err error) {
-	//    comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)*
-	var binaryNode BinOp
-	var next IASTNode
-	operations := []string{"<", ">", ">=", "<="}
-	node, err = p.addition()
-	if err != nil {
-		return nil, err
-	}
-	token := p.CurrentToken
-
-	for token != (Token{}) && StringsContains(token.Kind, operations) {
-		err = p.takeToken(token.Kind)
-		if err != nil {
-			return nil, err
-		}
-		next, err = p.addition()
-		if err != nil {
-			return nil, err
-		}
-		binaryNode.NewNode(token, node, next)
-		node = binaryNode
-		token = p.CurrentToken
-	}
-
-	return
-}
-
-func (p *Parser) addition() (node IASTNode, err error) {
-	//    addition : multiplication (PLUS | MINUS multiplication)*
-	var binaryNode BinOp
-	var next IASTNode
-	operations := []string{"-", "+"}
-	node, err = p.multiplication()
-	if err != nil {
-		return nil, err
-	}
-	token := p.CurrentToken
-
-	for token != (Token{}) && StringsContains(token.Kind, operations) {
-		err = p.takeToken(token.Kind)
-		if err != nil {
-			return nil, err
-		}
-		next, err = p.multiplication()
-		if err != nil {
-			return nil, err
-		}
-		binaryNode.NewNode(token, node, next)
-		node = binaryNode
-		token = p.CurrentToken
-	}
-
-	return
-}
-
-func (p *Parser) multiplication() (node IASTNode, err error) {
-	//    multiplication : exponentiation (MUL | DIV exponentiation)*
-	var binaryNode BinOp
-	var next IASTNode
-	operations := []string{"*", "/"}
-	node, err = p.exponentiation()
-	if err != nil {
-		return nil, err
-	}
-	token := p.CurrentToken
-
-	for token != (Token{}) && StringsContains(token.Kind, operations) {
-		err = p.takeToken(token.Kind)
-		if err != nil {
-			return nil, err
-		}
-		next, err = p.exponentiation()
-		if err != nil {
-			return nil, err
-		}
-		binaryNode.NewNode(token, node, next)
-		node = binaryNode
-		token = p.CurrentToken
-	}
-
-	return
-}
-
-func (p *Parser) exponentiation() (node IASTNode, err error) {
-	//    exponentiation : factor (EXP exponentiation)*
-	var binaryNode BinOp
-	var next IASTNode
-	node, err = p.factor()
-	if err != nil {
-		return nil, err
-	}
-	token := p.CurrentToken
-
-	for ; token != (Token{}) && token.Kind == "**"; token = p.CurrentToken {
-		err = p.takeToken(token.Kind)
-		if err != nil {
-			return nil, err
-		}
-		next, err = p.exponentiation()
-		if err != nil {
-			return nil, err
-		}
-		binaryNode.NewNode(token, next, node)
-		node = binaryNode
 	}
 
 	return
@@ -306,7 +137,7 @@ func (p *Parser) factor() (node IASTNode, err error) {
 		if err != nil {
 			return nil, err
 		}
-		node, err = p.Parse()
+		node, err = p.Parse(0)
 		if err != nil {
 			return nil, err
 		}
@@ -358,7 +189,7 @@ func (p *Parser) builtins() (node IASTNode, err error) {
 		if err != nil {
 			return nil, err
 		}
-		node, err = p.Parse()
+		node, err = p.Parse(0)
 		if err != nil {
 			return nil, err
 		}
@@ -371,7 +202,7 @@ func (p *Parser) builtins() (node IASTNode, err error) {
 			if err != nil {
 				return nil, err
 			}
-			node, err = p.Parse()
+			node, err = p.Parse(0)
 			if err != nil {
 				return nil, err
 			}
@@ -414,7 +245,7 @@ func (p *Parser) list() (node IASTNode, err error) {
 	}
 
 	if p.CurrentToken.Kind != "]" {
-		node, err = p.Parse()
+		node, err = p.Parse(0)
 		if err != nil {
 			return nil, err
 		}
@@ -425,7 +256,7 @@ func (p *Parser) list() (node IASTNode, err error) {
 			if err != nil {
 				return nil, err
 			}
-			node, err = p.Parse()
+			node, err = p.Parse(0)
 			if err != nil {
 				return nil, err
 			}
@@ -456,7 +287,7 @@ func (p *Parser) valueAccess(node IASTNode) (IASTNode, error) {
 			return nil, err
 		}
 		if p.CurrentToken.Kind != ":" {
-			left, err = p.Parse()
+			left, err = p.Parse(0)
 			if err != nil {
 				return nil, err
 			}
@@ -468,7 +299,7 @@ func (p *Parser) valueAccess(node IASTNode) (IASTNode, error) {
 				return nil, err
 			}
 			if p.CurrentToken.Kind != "]" {
-				right, err = p.Parse()
+				right, err = p.Parse(0)
 				if err != nil {
 					return nil, err
 				}
@@ -512,7 +343,7 @@ func (p *Parser) object() (node IASTNode, err error) {
 		if err != nil {
 			return nil, err
 		}
-		objValue, err = p.Parse()
+		objValue, err = p.Parse(0)
 		if err != nil {
 			return nil, err
 		}

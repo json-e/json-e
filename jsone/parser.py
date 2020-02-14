@@ -21,6 +21,7 @@ class Parser(object):
         self.current_token = next(self.tokens)
         self.unaryOpTokens = ["-", "+", "!"]
         self.primitivesTokens = ["number", "null", "true", "false"]
+        self.operators = [["||"], ["&&"], ["in"], ["==", "!="], ["<", ">", "<=", ">="], ["+", "-"], ["*", "/"], ["**"]]
 
     def takeToken(self, *kinds):
         if not self.current_token:
@@ -34,103 +35,23 @@ class Parser(object):
         except SyntaxError as exc:
             raise exc
 
-    def parse(self):
-        """  expr : logicalAnd (OR logicalAnd)* """
-        node = self.logicalAnd()
-        token = self.current_token
-
-        while token is not None and token.kind == "||":
-            self.takeToken(token.kind)
-            node = BinOp(token, node, self.logicalAnd())
+    def parse(self, level=0):
+        if level == len(self.operators) - 1:
+            node = self.factor()
             token = self.current_token
 
-        return node
-
-    def logicalAnd(self):
-        """  logicalAnd : inStatement (AND inStatement)* """
-        node = self.inStatement()
-        token = self.current_token
-
-        while token is not None and token.kind == "&&":
-            self.takeToken(token.kind)
-            node = BinOp(token, node, self.inStatement())
+            while token is not None and token.kind in self.operators[level]:
+                self.takeToken(token.kind)
+                node = BinOp(token, self.parse(level), node)
+                token = self.current_token
+        else:
+            node = self.parse(level + 1)
             token = self.current_token
 
-        return node
-
-    def inStatement(self):
-        """  inStatement : equality (IN equality)* """
-        node = self.equality()
-        token = self.current_token
-
-        while token is not None and token.kind == "in":
-            self.takeToken(token.kind)
-            node = BinOp(token, node, self.equality())
-            token = self.current_token
-
-        return node
-
-    def equality(self):
-        """  equality : comparison (EQUALITY | INEQUALITY  comparison)* """
-        node = self.comparison()
-        token = self.current_token
-        operations = ["==", "!="]
-
-        while token is not None and token.kind in operations:
-            self.takeToken(token.kind)
-            node = BinOp(token, node, self.comparison())
-            token = self.current_token
-
-        return node
-
-    def comparison(self):
-        """  comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)* """
-        node = self.addition()
-        token = self.current_token
-        operations = ["<", ">", ">=", "<="]
-
-        while token is not None and token.kind in operations:
-            self.takeToken(token.kind)
-            node = BinOp(token, node, self.addition())
-            token = self.current_token
-
-        return node
-
-    def addition(self):
-        """  addition : multiplication (PLUS | MINUS multiplication)* """
-        node = self.multiplication()
-        token = self.current_token
-        operations = ["-", "+"]
-
-        while token is not None and token.kind in operations:
-            self.takeToken(token.kind)
-            node = BinOp(token, node, self.multiplication())
-            token = self.current_token
-
-        return node
-
-    def multiplication(self):
-        """  multiplication : exponentiation (MUL | DIV exponentiation)* """
-        node = self.exponentiation()
-        token = self.current_token
-        operations = ["*", "/"]
-
-        while token is not None and token.kind in operations:
-            self.takeToken(token.kind)
-            node = BinOp(token, node, self.exponentiation())
-            token = self.current_token
-
-        return node
-
-    def exponentiation(self):
-        """  exponentiation : factor (EXP exponentiation)* """
-        node = self.factor()
-        token = self.current_token
-
-        while token is not None and token.kind == "**":
-            self.takeToken(token.kind)
-            node = BinOp(token, self.exponentiation(), node)
-            token = self.current_token
+            while token is not None and token.kind in self.operators[level]:
+                self.takeToken(token.kind)
+                node = BinOp(token, node, self.parse(level + 1))
+                token = self.current_token
 
         return node
 

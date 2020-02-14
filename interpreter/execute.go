@@ -12,7 +12,7 @@ func Parse(source string, offset int, context interface{}) (interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	tree, err := parser.Parse()
+	tree, err := parser.Parse(0)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func ParseUntilTerminator(source string, offset int, terminator string, context 
 	if err != nil {
 		return nil, 0, err
 	}
-	tree, err := parser.Parse()
+	tree, err := parser.Parse(0)
 	if err != nil {
 		return nil, 0, err
 	}
