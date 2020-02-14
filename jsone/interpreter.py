@@ -1,5 +1,5 @@
 from .shared import InterpreterError, string
-import json
+import operator
 
 
 def infixExpectationError(operator, expected):
@@ -67,7 +67,7 @@ class Interpreter:
             return left - right
         elif node.token.kind == "/":
             testMathOperands("/", left, right)
-            return left / right
+            return operator.truediv(left, right)
         elif node.token.kind == "*":
             testMathOperands("*", left, right)
             return left * right
