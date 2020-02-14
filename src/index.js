@@ -10,9 +10,8 @@ var {
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
 
-let syntaxRuleError = (token, expects) => {
-    expects.sort();
-    return new SyntaxError(`Found ${token.value}, expected ${expects.join(', ')}`, token);
+let syntaxRuleError = (token) => {
+    return new SyntaxError(`Found ${token.value}, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||`);
 };
 
 function checkUndefinedProperties(template, allowed) {
@@ -409,11 +408,11 @@ let parse = (source, context) => {
     let parser = new Parser(tokenizer, source);
     let tree = parser.parse();
     if (parser.current_token != null) {
-        throw syntaxRuleError(parser.current_token, ["EOF"]);
+        throw syntaxRuleError(parser.current_token);
     }
-    let intereter = new Interpreter(context);
+    let interpreter = new Interpreter(context);
 
-    return intereter.interpret(tree);
+    return interpreter.interpret(tree);
 };
 
 let parseUntilTerminator = (source, terminator, context) => {
@@ -427,7 +426,7 @@ let parseUntilTerminator = (source, terminator, context) => {
         throw new SyntaxError(`Found end of string, expected ${terminator}`,
             {start: errorLocation, end: errorLocation});
     } else if (next.kind !== terminator) {
-        throw syntaxRuleError(next, [terminator]);
+        throw syntaxRuleError(next);
     }
     let interpreter = new Interpreter(context);
     let result = interpreter.interpret(tree);

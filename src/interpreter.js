@@ -174,7 +174,7 @@ class Interpreter {
             return array[left]
         }
         if (!isObject(array)) {
-            throw new InterpreterError('cannot access properties from non-objects');
+            throw expectationError(`infix: "[..]"`, 'object, array, or string');
         }
 
         if (!isString(left)) {
@@ -249,7 +249,7 @@ let isEqual = (a, b) => {
 
 let testMathOperands = (operator, left, right) => {
     if (operator === '+' && !(isNumber(left) && isNumber(right) || isString(left) && isString(right))) {
-        throw expectationError('infix: +', 'number/string + number/string');
+        throw expectationError('infix: +', 'numbers/strings + numbers/strings');
     }
     if (['-', '*', '/', '**'].some(v => v === operator) && !(isNumber(left) && isNumber(right))) {
         throw expectationError(`infix: ${operator}`, `number ${operator} number`);

@@ -2,9 +2,8 @@ const {ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, List, Object} = require(".
 const Tokenizer = require("../src/tokenizer");
 const {SyntaxError} = require('./error');
 
-let syntaxRuleError = (token, expects) => {
-    expects.sort();
-    return new SyntaxError(`Found ${token.value}, expected ${expects.join(', ')}`, token);
+let syntaxRuleError = (token) => {
+    return new SyntaxError(`Found ${token.value}, expected !, (, +, -, [, false, identifier, null, number, string, true, {`);
 };
 
 class Parser {
@@ -18,7 +17,7 @@ class Parser {
 
     takeToken(...kinds) {
         if (kinds.length > 0 && kinds.indexOf(this.current_token.kind) === -1) {
-            throw syntaxRuleError(this.current_token, kinds);
+            throw syntaxRuleError(this.current_token);
         }
         try {
             this.current_token = this._tokenizer.next(this._source, this.current_token.end);
@@ -176,13 +175,15 @@ class Parser {
         if (this.current_token != null && this.current_token.kind == "(") {
             args = [];
             this.takeToken("(");
-            node = this.parse();
-            args.push(node);
-
-            while (this.current_token.kind == ",") {
-                this.takeToken(",");
+            if (this.current_token.kind != ")") {
                 node = this.parse();
-                args.push(node)
+                args.push(node);
+
+                while (this.current_token.kind == ",") {
+                    this.takeToken(",");
+                    node = this.parse();
+                    args.push(node)
+                }
             }
             this.takeToken(")")
         }

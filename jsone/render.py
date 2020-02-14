@@ -16,9 +16,9 @@ IDENTIFIER_RE = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*$')
 class SyntaxError(TemplateError):
 
     @classmethod
-    def unexpected(cls, got, exp):
-        exp = ', '.join(sorted(exp))
-        return cls('Found {}, expected {}'.format(got.value, exp))
+    def unexpected(cls, got):
+        return cls('Found {}, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in,'
+                   ' ||'.format(got.value))
 
 
 def operator(name):
@@ -33,7 +33,7 @@ def parse(source, context):
     parser = Parser(tokens, source)
     tree = parser.parse()
     if parser.current_token is not None:
-        raise SyntaxError.unexpected(parser.current_token, ["EOF"])
+        raise SyntaxError.unexpected(parser.current_token)
 
     interp = Interpreter(context)
     result = interp.interpret(tree)
@@ -45,7 +45,7 @@ def parseUntilTerminator(source, context, terminator):
     parser = Parser(tokens, source)
     tree = parser.parse()
     if parser.current_token.kind != terminator:
-        raise SyntaxError.unexpected(parser.current_token, [terminator])
+        raise SyntaxError.unexpected(parser.current_token)
     interp = Interpreter(context)
     result = interp.interpret(tree)
     return result, parser.current_token.start

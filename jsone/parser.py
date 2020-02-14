@@ -9,9 +9,9 @@ Token = namedtuple('Token', ['kind', 'value', 'start', 'end'])
 class SyntaxError(TemplateError):
 
     @classmethod
-    def unexpected(cls, got, exp):
-        exp = ', '.join(sorted(exp))
-        return cls('Found {}, expected {}'.format(got.value, exp))
+    def unexpected(cls, got):
+        return cls('Found {}, expected !, (, +, -, [, false, identifier, null, number, string, '
+                   'true, {}'.format(got.value, "{"))
 
 
 class Parser(object):
@@ -26,7 +26,7 @@ class Parser(object):
         if not self.current_token:
             raise SyntaxError('Unexpected end of input')
         if kinds and self.current_token.kind not in kinds:
-            raise SyntaxError.unexpected(self.current_token, kinds)
+            raise SyntaxError.unexpected(self.current_token)
         try:
             self.current_token = next(self.tokens)
         except StopIteration:

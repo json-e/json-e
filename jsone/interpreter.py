@@ -1,4 +1,4 @@
-from .shared import TemplateError, InterpreterError, string
+from .shared import InterpreterError, string
 import json
 
 
@@ -55,9 +55,9 @@ class Interpreter:
 
         if node.token.kind == "+":
             if not isinstance(left, (string, int, float)) or isinstance(left, bool):
-                raise infixExpectationError('+', 'number/string')
+                raise infixExpectationError('+', 'numbers/strings')
             if not isinstance(right, (string, int, float)) or isinstance(right, bool):
-                raise infixExpectationError('+', 'number/string')
+                raise infixExpectationError('+', 'numbers/strings')
             if type(right) != type(left) and \
                     (isinstance(left, string) or isinstance(right, string)):
                 raise infixExpectationError('+', 'numbers/strings')
@@ -107,12 +107,12 @@ class Interpreter:
 
         elif node.token.kind == ".":
             if not isinstance(left, dict):
-                raise infixExpectationError('.', 'object')
+                raise InterpreterError('infix: {} expects {}'.format(".", 'objects'))
             try:
                 return left[right]
             except KeyError:
-                raise TemplateError(
-                    '"{}" not found in {}'.format(right, json.dumps(left)))
+                raise InterpreterError(
+                    'object has no property "{}"'.format(right))
 
     def visit_List(self, node):
         list = []
@@ -140,19 +140,19 @@ class Interpreter:
                 try:
                     return value[left:right]
                 except TypeError:
-                    raise InterpreterError('should only use integers to access arrays or strings')
+                    raise InterpreterError('cannot perform interval access with non-integers')
             else:
                 try:
                     return value[left]
                 except IndexError:
-                    raise TemplateError('index out of bounds')
+                    raise InterpreterError('index out of bounds')
                 except TypeError:
                     raise InterpreterError('should only use integers to access arrays or strings')
 
         if not isinstance(value, dict):
-            raise infixExpectationError('[..]', 'object, array, or string')
+            raise InterpreterError('infix: {} expects {}'.format('"[..]"', 'object, array, or string'))
         if not isinstance(left, string):
-            raise infixExpectationError('[..]', 'string index')
+            raise InterpreterError('object keys must be strings')
 
         try:
             return value[left]
@@ -167,7 +167,7 @@ class Interpreter:
             raise InterpreterError(
                 'unknown context value {}'.format(node.token.value))
         if callable(builtin):
-            if node.args:
+            if node.args is not None:
                 for item in node.args:
                     args.append(self.visit(item))
                 return builtin(*args)
