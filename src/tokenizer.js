@@ -73,7 +73,7 @@ class Tokenizer {
       if (m === null) {
         // If not at end of input throw an error
         if (source.slice(offset) !== '') {
-          throw new SyntaxError(`unexpected EOF for '${source}' at '${source.slice(offset)}'`,
+          throw new SyntaxError(`Unexpected input for '${source}' at '${source.slice(offset)}'`,
             {start: offset, end: source.length});
         }
         return null;
