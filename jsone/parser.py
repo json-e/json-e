@@ -59,6 +59,8 @@ class Parser(object):
         # factor : unaryOp factor | primitives | (string | list | builtin) (valueAccess)? |
         #           |  LPAREN expr RPAREN |object
         token = self.current_token
+        if self.current_token is None:
+            raise SyntaxError('Unexpected end of input')
         node = None
 
         if token.kind in self.unaryOpTokens:
@@ -195,49 +197,61 @@ def parseString(string):
     return string[1:-1]
 
 
-def generate_tokens(source):
-    offset = 0
-    ignore = '\\s+'
-    patterns = {
-        'number': '[0-9]+(?:\\.[0-9]+)?',
-        'identifier': '[a-zA-Z_][a-zA-Z_0-9]*',
-        'string': '\'[^\']*\'|"[^"]*"',
-        # avoid matching these as prefixes of identifiers e.g., `insinutations`
-        'true': 'true(?![a-zA-Z_0-9])',
-        'false': 'false(?![a-zA-Z_0-9])',
-        'in': 'in(?![a-zA-Z_0-9])',
-        'null': 'null(?![a-zA-Z_0-9])',
-    }
-    tokens = [
-        '**', '+', '-', '*', '/', '[', ']', '.', '(', ')', '{', '}', ':', ',',
-        '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in',
-        'null', 'number', 'identifier', 'string',
-    ]
-    token_patterns = [
-        '({})'.format(patterns.get(t, re.escape(t)))
-        for t in tokens]
-    if ignore:
-        token_patterns.append(('(?:{})'.format(ignore)))
-    token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
-    offset = 0
-    while True:
-        start = offset
-        remainder = source[offset:]
-        mo = token_re.match(remainder)
-        if not mo:
-            if remainder:
-                raise SyntaxError(
-                    "Unexpected input for '{}' at '{}'".format(source, remainder))
-            break
-        offset += mo.end()
+class Tokenizer(object):
+    def __init__(self):
+        ignore = '\\s+'
+        patterns = {
+            'number': '[0-9]+(?:\\.[0-9]+)?',
+            'identifier': '[a-zA-Z_][a-zA-Z_0-9]*',
+            'string': '\'[^\']*\'|"[^"]*"',
+            # avoid matching these as prefixes of identifiers e.g., `insinutations`
+            'true': 'true(?![a-zA-Z_0-9])',
+            'false': 'false(?![a-zA-Z_0-9])',
+            'in': 'in(?![a-zA-Z_0-9])',
+            'null': 'null(?![a-zA-Z_0-9])',
+        }
+        self.tokens = [
+            '**', '+', '-', '*', '/', '[', ']', '.', '(', ')', '{', '}', ':', ',',
+            '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in',
+            'null', 'number', 'identifier', 'string',
+        ]
+        token_patterns = [
+            '({})'.format(patterns.get(t, re.escape(t)))
+            for t in self.tokens]
+        if ignore:
+            token_patterns.append(('(?:{})'.format(ignore)))
+        self.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
 
-        # figure out which token matched (note that idx is 0-based)
-        indexes = list(
-            filter(lambda x: x[1] is not None, enumerate(mo.groups())))
-        if indexes:
-            idx = indexes[0][0]
-            yield Token(
-                kind=tokens[idx],
-                value=mo.group(idx + 1),  # (mo.group is 1-based)
-                start=start,
-                end=offset)
+    def changeTokenizer(self, gramma):
+        # build a regular expression to generate a sequence of tokens
+        self.tokens = gramma.tokens
+        token_patterns = [
+            '({})'.format(gramma.patterns.get(t, re.escape(t)))
+            for t in self.tokens]
+        if gramma.ignore:
+            token_patterns.append(('(?:{})'.format(gramma.ignore)))
+        self.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
+
+    def generate_tokens(self, source):
+        offset = 0
+        while True:
+            start = offset
+            remainder = source[offset:]
+            mo = self.token_re.match(remainder)
+            if not mo:
+                if remainder:
+                    raise SyntaxError(
+                        "Unexpected input for '{}' at '{}'".format(source, remainder))
+                break
+            offset += mo.end()
+
+            # figure out which token matched (note that idx is 0-based)
+            indexes = list(
+                filter(lambda x: x[1] is not None, enumerate(mo.groups())))
+            if indexes:
+                idx = indexes[0][0]
+                yield Token(
+                    kind=self.tokens[idx],
+                    value=mo.group(idx + 1),  # (mo.group is 1-based)
+                    start=start,
+                    end=offset)

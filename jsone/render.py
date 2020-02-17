@@ -5,7 +5,7 @@ import json as json
 from .shared import JSONTemplateError, TemplateError, DeleteMarker, string, to_str
 from . import shared
 from .six import viewitems
-from .parser import Parser, generate_tokens
+from .parser import Parser, Tokenizer
 from .interpreter import Interpreter
 import functools
 
@@ -29,7 +29,8 @@ def operator(name):
 
 
 def parse(source, context):
-    tokens = generate_tokens(source)
+    tokenizer = Tokenizer()
+    tokens = tokenizer.generate_tokens(source)
     parser = Parser(tokens, source)
     tree = parser.parse()
     if parser.current_token is not None:
@@ -41,7 +42,8 @@ def parse(source, context):
 
 
 def parseUntilTerminator(source, context, terminator):
-    tokens = generate_tokens(source)
+    tokenizer = Tokenizer()
+    tokens = tokenizer.generate_tokens(source)
     parser = Parser(tokens, source)
     tree = parser.parse()
     if parser.current_token.kind != terminator:
