@@ -1,7 +1,7 @@
 package interpreter
 
 import (
-	p "./parser"
+	p "json-e/interpreter/parser"
 )
 
 func Parse(source string, offset int, context interface{}) (interface{}, error) {
