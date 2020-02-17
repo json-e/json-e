@@ -99,6 +99,14 @@ func (p *Parser) factor() (node IASTNode, err error) {
 	var unaryNode UnaryOp
 	var primitiveNode ASTNode
 	var next IASTNode
+	if p.CurrentToken.IsEmpty() {
+		return nil, SyntaxError{
+			Message: "unexpected end of input",
+			Source:  p.source,
+			Start:   len(p.source) - 1,
+			End:     len(p.source),
+		}
+	}
 	token := p.CurrentToken
 	isUnaryOpToken := StringsContains(token.Kind, p.unaryOpTokens)
 	isPrimitivesToken := StringsContains(token.Kind, p.primitivesTokens)
