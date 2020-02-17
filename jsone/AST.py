@@ -30,9 +30,10 @@ class List(ASTNode):
         self.list = list
 
 
-class ArrayAccess(ASTNode):
-    def __init__(self, token, isInterval, left, right):
+class ValueAccess(ASTNode):
+    def __init__(self, token, arr, isInterval, left, right):
         ASTNode.__init__(self, token)
+        self.arr = arr
         self.isInterval = isInterval
         self.left = left
         self.right = right

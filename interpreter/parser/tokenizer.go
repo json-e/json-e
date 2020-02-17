@@ -1,4 +1,4 @@
-package prattparser
+package parser
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ func NewTokenizer(ignore string, tokens []string, patterns map[string]string) *T
 	// Simple input validation
 	mustBeNonCaptureRegex(ignore)
 	for kind, pattern := range patterns {
-		if !stringsContains(kind, tokens) {
+		if !StringsContains(kind, tokens) {
 			panic(fmt.Sprintf("kind '%s' listed in patterns, but not in tokens", kind))
 		}
 		mustBeNonCaptureRegex(pattern)

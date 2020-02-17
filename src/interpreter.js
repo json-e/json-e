@@ -1,16 +1,224 @@
-/*
-* Author: Jonas Finnemann Jensen
-* Github: https://github.com/jonasfj
-*/
-
-var PrattParser = require('./prattparser');
-var {
-    isString, isNumber, isInteger,
-    isArray, isObject, isFunction, isTruthy
-} = require('./type-utils');
-var {InterpreterError} = require('./error');
+const {isFunction, isObject, isString, isArray, isNumber, isInteger, isTruthy} = require("../src/type-utils");
+const {InterpreterError} = require('./error');
 
 let expectationError = (operator, expectation) => new InterpreterError(`${operator} expects ${expectation}`);
+
+class Interpreter {
+    constructor(context) {
+        this.context = context;
+    }
+
+    visit(node) {
+        let funcName = "visit_" + node.constructor.name;
+        return this[funcName](node);
+    }
+
+    visit_ASTNode(node) {
+        let str;
+        switch (node.token.kind) {
+            case("number"):
+                return +node.token.value;
+            case("null"):
+                return null;
+            case("string"):
+                str = node.token.value.slice(1, -1);
+                return str;
+            case("true"):
+                return true;
+            case("false"):
+                return false;
+            case("identifier"):
+                return node.token.value;
+        }
+    }
+
+    visit_UnaryOp(node) {
+        let value = this.visit(node.expr);
+        switch (node.token.kind) {
+            case ("+"):
+                if (!isNumber(value)) {
+                    throw expectationError('unary +', 'number');
+                }
+                return +value;
+            case ("-"):
+                if (!isNumber(value)) {
+                    throw expectationError('unary -', 'number');
+                }
+                return -value;
+            case ("!"):
+                return !isTruthy(value)
+        }
+    }
+
+    visit_BinOp(node) {
+        let left = this.visit(node.left);
+        let right;
+        switch (node.token.kind) {
+            case ("||"):
+                return isTruthy(left) || isTruthy(this.visit(node.right));
+            case ("&&"):
+                return isTruthy(left) && isTruthy(this.visit(node.right));
+            default:
+                right = this.visit(node.right);
+        }
+
+        switch (node.token.kind) {
+            case ("+"):
+                testMathOperands("+", left, right);
+                return left + right;
+            case ("-"):
+                testMathOperands("-", left, right);
+                return left - right;
+            case ("/"):
+                testMathOperands("/", left, right);
+                return left / right;
+            case ("*"):
+                testMathOperands("*", left, right);
+                return left * right;
+            case (">"):
+                testComparisonOperands(">", left, right);
+                return left > right;
+            case ("<"):
+                testComparisonOperands("<", left, right);
+                return left < right;
+            case (">="):
+                testComparisonOperands(">=", left, right);
+                return left >= right;
+            case ("<="):
+                testComparisonOperands("<=", left, right);
+                return left <= right;
+            case ("!="):
+                testComparisonOperands("!=", left, right);
+                return !isEqual(left, right);
+            case ("=="):
+                testComparisonOperands("==", left, right);
+                return isEqual(left, right);
+            case ("**"):
+                testMathOperands("**", left, right);
+                return Math.pow(right, left);
+            case ("."): {
+                if (isObject(left)) {
+                    if (left.hasOwnProperty(right)) {
+                        return left[right];
+                    }
+                    throw new InterpreterError(`object has no property "${right}"`);
+                }
+                throw expectationError('infix: .', 'objects');
+            }
+            case ("in"): {
+                if (isObject(right)) {
+                    if (!isString(left)) {
+                        throw expectationError('Infix: in-object', 'string on left side');
+                    }
+                    right = Object.keys(right);
+                } else if (isString(right)) {
+                    if (!isString(left)) {
+                        throw expectationError('Infix: in-string', 'string on left side');
+                    }
+                    return right.indexOf(left) !== -1;
+                } else if (!isArray(right)) {
+                    throw expectationError('Infix: in', 'Array, string, or object on right side');
+                }
+                return right.some(r => isEqual(left, r));
+            }
+        }
+    }
+
+    visit_List(node) {
+        let list = [];
+
+        if (node.list[0] !== undefined) {
+            node.list.forEach(function (item) {
+                list.push(this.visit(item))
+            }, this);
+        }
+
+        return list
+    }
+
+    visit_ValueAccess(node) {
+        let array = this.visit(node.arr);
+        let left = 0, right = null;
+
+        if (node.left) {
+            left = this.visit(node.left);
+        }
+        if (node.right) {
+            right = this.visit(node.right);
+        }
+        if (left < 0) {
+            left = array.length + left
+        }
+        if (isArray(array) || isString(array)) {
+            if (node.isInterval) {
+                right = right === null ? array.length : right;
+                if (right < 0) {
+                    right = array.length + right;
+                    if (right < 0)
+                        right = 0
+                }
+                if (left > right) {
+                    left = right
+                }
+                if (!isInteger(left) || !isInteger(right)) {
+                    throw new InterpreterError('cannot perform interval access with non-integers');
+                }
+                return array.slice(left, right)
+            }
+            if (!isInteger(left)) {
+                throw new InterpreterError('should only use integers to access arrays or strings');
+            }
+            if (left >= array.length) {
+                throw new InterpreterError('index out of bounds');
+            }
+            return array[left]
+        }
+        if (!isObject(array)) {
+            throw expectationError(`infix: "[..]"`, 'object, array, or string');
+        }
+
+        if (!isString(left)) {
+            throw new InterpreterError('object keys must be strings');
+        }
+
+        if (array.hasOwnProperty(left)) {
+            return array[left];
+        } else {
+            return null;
+        }
+    }
+
+    visit_Builtin(node) {
+        let args = [];
+        if (this.context.hasOwnProperty(node.token.value)) {
+            let builtin = this.context[node.token.value];
+            if (node.args != null) {
+                if (isFunction(builtin)) {
+                    node.args.forEach(function (item) {
+                        args.push(this.visit(item))
+                    }, this);
+                    return builtin.apply(null, args);
+                }
+            }
+            return builtin
+        }
+        throw new InterpreterError(`unknown context value ${node.token.value}`);
+    }
+
+    visit_Object(node) {
+        let obj = {};
+
+        for (let key in node.obj) {
+            obj[key] = this.visit(node.obj[key])
+        }
+
+        return obj
+    }
+
+    interpret(tree) {
+        return this.visit(tree);
+    }
+}
 
 let isEqual = (a, b) => {
     if (isArray(a) && isArray(b) && a.length === b.length) {
@@ -39,101 +247,17 @@ let isEqual = (a, b) => {
     return a === b;
 };
 
-let parseList = (ctx, separator, terminator) => {
-    let list = [];
-    if (!ctx.attempt(terminator)) {
-        do {
-            list.push(ctx.parse());
-        } while (ctx.attempt(separator));
-        ctx.require(terminator);
+let testMathOperands = (operator, left, right) => {
+    if (operator === '+' && !(isNumber(left) && isNumber(right) || isString(left) && isString(right))) {
+        throw expectationError('infix: +', 'numbers/strings + numbers/strings');
     }
-    return list;
-};
-
-let parseObject = (ctx) => {
-    let obj = {};
-    if (!ctx.attempt('}')) {
-        do {
-            let k = ctx.require('identifier', 'string');
-            if (k.kind === 'string') {
-                k.value = parseString(k.value);
-            }
-            ctx.require(':');
-            let v = ctx.parse();
-            obj[k.value] = v;
-        } while (ctx.attempt(','));
-        ctx.require('}');
+    if (['-', '*', '/', '**'].some(v => v === operator) && !(isNumber(left) && isNumber(right))) {
+        throw expectationError(`infix: ${operator}`, `number ${operator} number`);
     }
-    return obj;
-};
-
-let parseInterval = (left, token, ctx) => {
-    let a = null, b = null, isInterval = false;
-    if (ctx.attempt(':')) {
-        a = 0;
-        isInterval = true;
-    } else {
-        a = ctx.parse();
-        if (ctx.attempt(':')) {
-            isInterval = true;
-        }
-    }
-
-    if (isInterval && !ctx.attempt(']')) {
-        b = ctx.parse();
-        ctx.require(']');
-    }
-
-    if (!isInterval) {
-        ctx.require(']');
-    }
-
-    return accessProperty(left, a, b, isInterval);
-};
-
-let accessProperty = (left, a, b, isInterval) => {
-    if (isArray(left) || isString(left)) {
-        if (isInterval) {
-            b = b === null ? left.length : b;
-            if (!isInteger(a) || !isInteger(b)) {
-                throw new InterpreterError('cannot perform interval access with non-integers');
-            }
-            return left.slice(a, b);
-        }
-        if (!isInteger(a)) {
-            throw new InterpreterError('should only use integers to access arrays or strings');
-        }
-
-        // for -ve index access
-        a = a < 0 ? (left.length + a) % left.length : a;
-        if (a >= left.length) {
-            throw new InterpreterError('index out of bounds');
-        }
-        return left[a];
-    }
-
-    // if we reach here it means we are accessing property value from object
-    if (!isObject(left)) {
-        throw new InterpreterError('cannot access properties from non-objects');
-    }
-
-    if (!isString(a)) {
-        throw new InterpreterError('object keys must be strings');
-    }
-
-    if (left.hasOwnProperty(a)) {
-        return left[a];
-    } else {
-        return null;
-    }
-};
-
-let parseString = (str) => {
-    return str.slice(1, -1);
+    return
 };
 
 let testComparisonOperands = (operator, left, right) => {
-
     if (operator === '==' || operator === '!=') {
         return null;
     }
@@ -144,232 +268,8 @@ let testComparisonOperands = (operator, left, right) => {
     if (!test) {
         throw expectationError(`infix: ${operator}`, `numbers/strings ${operator} numbers/strings`);
     }
-    return;
+    return
 };
 
-let testMathOperands = (operator, left, right) => {
-    if (operator === '+' && !(isNumber(left) && isNumber(right) || isString(left) && isString(right))) {
-        throw expectationError('infix: +', 'number/string + number/string');
-    }
-    if (['-', '*', '/', '**'].some(v => v === operator) && !(isNumber(left) && isNumber(right))) {
-        throw expectationError(`infix: ${operator}`, `number ${operator} number`);
-    }
-    return;
-};
-
-let prefixRules = {};
-let infixRules = {};
-
-// defining prefix rules
-prefixRules['number'] = (token, ctx) => {
-    let v = Number(token.value);
-    if (isNaN(v)) {
-        throw new Error(`${token.value} should be a number`);
-    }
-    return v;
-};
-
-prefixRules['!'] = (token, ctx) => {
-    let operand = ctx.parse('unary');
-    return !isTruthy(operand);
-};
-
-prefixRules['-'] = (token, ctx) => {
-    let v = ctx.parse('unary');
-
-    if (!isNumber(v)) {
-        throw expectationError('unary -', 'number');
-    }
-
-    return -v;
-};
-
-prefixRules['+'] = (token, ctx) => {
-    let v = ctx.parse('unary');
-
-    if (!isNumber(v)) {
-        throw expectationError('unary +', 'number');
-    }
-
-    return +v;
-};
-
-prefixRules['identifier'] = (token, ctx) => {
-    if (ctx.context.hasOwnProperty(token.value)) {
-        return ctx.context[token.value];
-    }
-    throw new InterpreterError(`unknown context value ${token.value}`);
-};
-
-prefixRules['null'] = (token, ctx) => {
-    return null;
-};
-
-prefixRules['['] = (token, ctx) => parseList(ctx, ',', ']');
-
-prefixRules['('] = (token, ctx) => {
-    let v = ctx.parse();
-    ctx.require(')');
-    return v;
-};
-
-prefixRules['{'] = (token, ctx) => parseObject(ctx);
-
-prefixRules['string'] = (token, ctx) => parseString(token.value);
-
-prefixRules['true'] = (token, ctx) => {
-    if (token.value === 'true') {
-        return true;
-    }
-    throw new Error('Only \'true/false\' is considered as bool');
-};
-
-prefixRules['false'] = (token, ctx) => {
-    if (token.value === 'false') {
-        return false;
-    }
-    throw new Error('Only \'true/false\' is considered as bool');
-};
-
-// infix rule definition starts here
-infixRules['+'] = infixRules['-'] = infixRules['*'] = infixRules['/']
-    = (left, token, ctx) => {
-    let operator = token.kind;
-    let right = ctx.parse(operator);
-    testMathOperands(operator, left, right);
-    switch (operator) {
-        case '+':
-            return left + right;
-        case '-':
-            return left - right;
-        case '*':
-            return left * right;
-        case '/':
-            return left / right;
-        default:
-            throw new Error(`unknown infix operator: '${operator}'`);
-    }
-};
-
-infixRules['**'] = (left, token, ctx) => {
-    let operator = token.kind;
-    let right = ctx.parse('**-right-associative');
-    testMathOperands(operator, left, right);
-    if (typeof left !== typeof right) {
-        throw new InterpreterError(`TypeError: ${typeof left} ${operator} ${typeof right}`);
-    }
-    return Math.pow(left, right);
-};
-
-infixRules['['] = (left, token, ctx) => parseInterval(left, token, ctx);
-
-infixRules['.'] = (left, token, ctx) => {
-    if (isObject(left)) {
-        let key = ctx.require('identifier').value;
-        if (left.hasOwnProperty(key)) {
-            return left[key];
-        }
-        throw new InterpreterError(`object has no property "${key}"`);
-    }
-    throw expectationError('infix: .', 'objects');
-};
-
-infixRules['('] = (left, token, ctx) => {
-    if (isFunction(left)) {
-        return left.apply(null, parseList(ctx, ',', ')'));
-    }
-    throw expectationError('infix: f(args)', 'f to be function');
-};
-
-infixRules['=='] = infixRules['!='] = infixRules['<='] =
-    infixRules['>='] = infixRules['<'] = infixRules['>']
-        = (left, token, ctx) => {
-        let operator = token.kind;
-        let right = ctx.parse(operator);
-        testComparisonOperands(operator, left, right);
-        switch (operator) {
-            case '>=':
-                return left >= right;
-            case '<=':
-                return left <= right;
-            case '>':
-                return left > right;
-            case '<':
-                return left < right;
-            case '==':
-                return isEqual(left, right);
-            case '!=':
-                return !isEqual(left, right);
-            default:
-                throw new Error('no rule for comparison operator: ' + operator);
-        }
-    };
-
-infixRules['||'] = infixRules['&&'] = (left, token, ctx) => {
-    let operator = token.kind;
-    let right = ctx.parse(operator);
-    switch (operator) {
-        case '||':
-            return isTruthy(left) || isTruthy(right);
-        case '&&':
-            return isTruthy(left) && isTruthy(right);
-        default:
-            throw new Error('no rule for boolean operator: ' + operator);
-    }
-};
-
-infixRules['in'] = (left, token, ctx) => {
-    let right = ctx.parse(token.kind);
-    if (isObject(right)) {
-        if (!isString(left)) {
-            throw expectationError('Infix: in-object', 'string on left side');
-        }
-        right = Object.keys(right);
-    } else if (isString(right)) {
-        if (!isString(left)) {
-            throw expectationError('Infix: in-string', 'string on left side');
-        }
-        // short-circuit to indexOf since this is a substring operation
-        return right.indexOf(left) !== -1;
-    } else if (!isArray(right)) {
-        throw expectationError('Infix: in', 'Array, string, or object on right side');
-    }
-
-    return right.some(r => isEqual(left, r));
-};
-
-module.exports = new PrattParser({
-    ignore: '\\s+', // ignore all whitespace including \n
-    patterns: {
-        number: '[0-9]+(?:\\.[0-9]+)?',
-        identifier: '[a-zA-Z_][a-zA-Z_0-9]*',
-        string: '\'[^\']*\'|"[^"]*"',
-        // avoid matching these as prefixes of identifiers e.g., `insinutations`
-        true: 'true(?![a-zA-Z_0-9])',
-        false: 'false(?![a-zA-Z_0-9])',
-        in: 'in(?![a-zA-Z_0-9])',
-        null: 'null(?![a-zA-Z_0-9])',
-    },
-    tokens: [
-        '**', ...'+-*/[].(){}:,'.split(''),
-        '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
-        'true', 'false', 'in', 'null', 'number',
-        'identifier', 'string',
-    ],
-    precedence: [
-        ['||'],
-        ['&&'],
-        ['in'],
-        ['==', '!='],
-        ['>=', '<=', '<', '>'],
-        ['+', '-'],
-        ['*', '/'],
-        ['**-right-associative'],
-        ['**'],
-        ['[', '.'],
-        ['('],
-        ['unary'],
-    ],
-    prefixRules,
-    infixRules,
-});
+exports
+    .Interpreter = Interpreter;
