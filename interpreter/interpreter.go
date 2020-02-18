@@ -50,9 +50,9 @@ func (i NewInterpreter) Visit_ASTNode(node parser.ASTNode) (interface{}, error) 
 	case "false":
 		return false, nil
 	case "identifier":
-		return node.GetToken().Value, nil
+		return node.Token.Value, nil
 	}
-	panic(fmt.Sprintf("unknown primitive token: '%s'", node.GetToken().Kind))
+	panic(fmt.Sprintf("unknown primitive token: '%s'", node.Token.Kind))
 }
 
 func (i NewInterpreter) Visit_UnaryOp(node parser.UnaryOp) (interface{}, error) {
@@ -61,7 +61,7 @@ func (i NewInterpreter) Visit_UnaryOp(node parser.UnaryOp) (interface{}, error) 
 		return nil, err
 	}
 
-	switch node.GetToken().Kind {
+	switch node.Token.Kind {
 	case "+":
 		if !isNumber(value) {
 			return nil, parser.SyntaxError{
@@ -83,14 +83,14 @@ func (i NewInterpreter) Visit_UnaryOp(node parser.UnaryOp) (interface{}, error) 
 	case "false":
 		return false, nil
 	}
-	panic(fmt.Sprintf("unknown unary operator: '%s'", node.GetToken().Kind))
+	panic(fmt.Sprintf("unknown unary operator: '%s'", node.Token.Kind))
 }
 
 func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
 	var right interface{}
 	mathOperators := []string{"-", "*", "/", "**"}
 	compareOperators := []string{"<=", ">=", "<", ">"}
-	tokenKind := node.GetToken().Kind
+	tokenKind := node.Token.Kind
 	left, err := i.visit(node.Left)
 	if err != nil {
 		return nil, err
@@ -188,7 +188,7 @@ func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
 		return comparisonOp(left, right, tokenKind)
 	}
 
-	panic(fmt.Sprintf("unknown binary operator: '%s'", node.GetToken().Kind))
+	panic(fmt.Sprintf("unknown binary operator: '%s'", node.Token.Kind))
 }
 
 func (i NewInterpreter) Visit_List(node parser.List) (interface{}, error) {
@@ -323,7 +323,7 @@ func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{},
 }
 
 func (i NewInterpreter) Visit_Builtin(node parser.Builtin) (interface{}, error) {
-	if builtin, ok := i.context[node.GetToken().Value]; ok {
+	if builtin, ok := i.context[node.Token.Value]; ok {
 		var args []interface{}
 		if node.Args != nil {
 			f, ok := builtin.(*function)
@@ -348,7 +348,7 @@ func (i NewInterpreter) Visit_Builtin(node parser.Builtin) (interface{}, error) 
 		return builtin, nil
 	}
 	return nil, parser.SyntaxError{
-		Message: fmt.Sprintf("undefined variable %s", node.GetToken().Value),
+		Message: fmt.Sprintf("undefined variable %s", node.Token.Value),
 	}
 }
 
