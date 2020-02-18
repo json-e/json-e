@@ -2,11 +2,12 @@ package interpreter
 
 import (
 	"fmt"
-	"json-e/interpreter/parser"
 	"math"
 	"reflect"
 	"strconv"
 	"strings"
+
+	p "github.com/taskcluster/json-e/interpreter/parser"
 )
 
 type NewInterpreter struct {
@@ -17,7 +18,7 @@ func (i *NewInterpreter) AddContext(context map[string]interface{}) {
 	i.context = context
 }
 
-func (i NewInterpreter) visit(node parser.IASTNode) (interface{}, error) {
+func (i NewInterpreter) visit(node p.IASTNode) (interface{}, error) {
 	var err error
 	nodeType := strings.Split(fmt.Sprintf("%T", node), ".")[1]
 	funcName := "Visit_" + nodeType
@@ -34,7 +35,7 @@ func (i NewInterpreter) visit(node parser.IASTNode) (interface{}, error) {
 	return val[0].Interface(), err
 }
 
-func (i NewInterpreter) Visit_ASTNode(node parser.ASTNode) (interface{}, error) {
+func (i NewInterpreter) Visit_ASTNode(node p.ASTNode) (interface{}, error) {
 	token := node.Token
 
 	switch token.Kind {
@@ -55,7 +56,7 @@ func (i NewInterpreter) Visit_ASTNode(node parser.ASTNode) (interface{}, error) 
 	panic(fmt.Sprintf("unknown primitive token: '%s'", node.Token.Kind))
 }
 
-func (i NewInterpreter) Visit_UnaryOp(node parser.UnaryOp) (interface{}, error) {
+func (i NewInterpreter) Visit_UnaryOp(node p.UnaryOp) (interface{}, error) {
 	value, err := i.visit(node.Expr)
 	if err != nil {
 		return nil, err
@@ -64,14 +65,14 @@ func (i NewInterpreter) Visit_UnaryOp(node parser.UnaryOp) (interface{}, error) 
 	switch node.Token.Kind {
 	case "+":
 		if !isNumber(value) {
-			return nil, parser.SyntaxError{
+			return nil, p.SyntaxError{
 				Message: fmt.Sprintf("Expected number after +"),
 			}
 		}
 		return +value.(float64), nil
 	case "-":
 		if !isNumber(value) {
-			return nil, parser.SyntaxError{
+			return nil, p.SyntaxError{
 				Message: fmt.Sprintf("Expected number after -"),
 			}
 		}
@@ -86,7 +87,7 @@ func (i NewInterpreter) Visit_UnaryOp(node parser.UnaryOp) (interface{}, error) 
 	panic(fmt.Sprintf("unknown unary operator: '%s'", node.Token.Kind))
 }
 
-func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
+func (i NewInterpreter) Visit_BinOp(node p.BinOp) (interface{}, error) {
 	var right interface{}
 	mathOperators := []string{"-", "*", "/", "**"}
 	compareOperators := []string{"<=", ">=", "<", ">"}
@@ -127,18 +128,18 @@ func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
 			if value, ok := target[key]; ok {
 				return value, nil
 			}
-			return nil, parser.SyntaxError{
+			return nil, p.SyntaxError{
 				Message: "object has no such property",
 			}
 		}
-		return nil, parser.SyntaxError{
+		return nil, p.SyntaxError{
 			Message: "cannot access properties of non-object",
 		}
 	case "in":
 		// A in B, where B is a string
 		if s, ok := right.(string); ok {
 			if !isString(left) {
-				return nil, parser.SyntaxError{
+				return nil, p.SyntaxError{
 					Message: "in operator expected a string when querying on a string",
 				}
 			}
@@ -148,7 +149,7 @@ func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
 		// A in B; where B is an object
 		if o, ok := right.(map[string]interface{}); ok {
 			if !isString(left) {
-				return nil, parser.SyntaxError{
+				return nil, p.SyntaxError{
 					Message: "in operator expected a string when querying on an object",
 				}
 			}
@@ -166,7 +167,7 @@ func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
 			return false, nil
 		}
 
-		return nil, parser.SyntaxError{
+		return nil, p.SyntaxError{
 			Message: "in operator expected string, array or object",
 		}
 	case "+":
@@ -176,22 +177,22 @@ func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
 		if isString(left) && isString(right) {
 			return left.(string) + right.(string), nil
 		}
-		return nil, parser.SyntaxError{
+		return nil, p.SyntaxError{
 			Message: "Expected either number of string operands",
 		}
 
 	}
 
-	if parser.StringsContains(tokenKind, mathOperators) {
+	if p.StringsContains(tokenKind, mathOperators) {
 		return mathOp(left, right, tokenKind)
-	} else if parser.StringsContains(tokenKind, compareOperators) {
+	} else if p.StringsContains(tokenKind, compareOperators) {
 		return comparisonOp(left, right, tokenKind)
 	}
 
 	panic(fmt.Sprintf("unknown binary operator: '%s'", node.Token.Kind))
 }
 
-func (i NewInterpreter) Visit_List(node parser.List) (interface{}, error) {
+func (i NewInterpreter) Visit_List(node p.List) (interface{}, error) {
 	var list []interface{}
 
 	if len(node.List) > 0 {
@@ -207,7 +208,7 @@ func (i NewInterpreter) Visit_List(node parser.List) (interface{}, error) {
 	return list, nil
 }
 
-func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{}, error) {
+func (i NewInterpreter) Visit_ValueAccess(node p.ValueAccess) (interface{}, error) {
 	arr, err := i.visit(node.Arr)
 	if err != nil {
 		return nil, err
@@ -236,7 +237,7 @@ func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{},
 				}
 				return nil, nil
 			}
-			return nil, parser.SyntaxError{
+			return nil, p.SyntaxError{
 				Message: "object properties must be accessed with strings",
 			}
 		}
@@ -246,7 +247,7 @@ func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{},
 	A, aok := left.(float64)
 	B, bok := right.(float64)
 	if !aok || A != float64(int(A)) || (right != nil && !(bok && B == float64(int(B)))) {
-		return nil, parser.SyntaxError{
+		return nil, p.SyntaxError{
 			Message: "slicing can only be used with integer arguments",
 		}
 	}
@@ -275,7 +276,7 @@ func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{},
 		}
 		if !node.IsInterval {
 			if start >= len(target) {
-				return nil, parser.SyntaxError{
+				return nil, p.SyntaxError{
 					Message: "string index out of bounds",
 				}
 			}
@@ -308,7 +309,7 @@ func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{},
 		}
 		if !node.IsInterval {
 			if start >= len(target) {
-				return nil, parser.SyntaxError{
+				return nil, p.SyntaxError{
 					Message: "string index out of bounds",
 				}
 			}
@@ -317,12 +318,12 @@ func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{},
 		return target[start:end], nil
 	}
 
-	return nil, parser.SyntaxError{
+	return nil, p.SyntaxError{
 		Message: "slicing can only be used on arrays and strings",
 	}
 }
 
-func (i NewInterpreter) Visit_Builtin(node parser.Builtin) (interface{}, error) {
+func (i NewInterpreter) Visit_Builtin(node p.Builtin) (interface{}, error) {
 	if builtin, ok := i.context[node.Token.Value]; ok {
 		var args []interface{}
 		if node.Args != nil {
@@ -347,12 +348,12 @@ func (i NewInterpreter) Visit_Builtin(node parser.Builtin) (interface{}, error) 
 		}
 		return builtin, nil
 	}
-	return nil, parser.SyntaxError{
+	return nil, p.SyntaxError{
 		Message: fmt.Sprintf("undefined variable %s", node.Token.Value),
 	}
 }
 
-func (i NewInterpreter) Visit_Object(node parser.Object) (interface{}, error) {
+func (i NewInterpreter) Visit_Object(node p.Object) (interface{}, error) {
 	var err error
 	obj := make(map[string]interface{})
 	for key, element := range node.Obj {
@@ -364,7 +365,7 @@ func (i NewInterpreter) Visit_Object(node parser.Object) (interface{}, error) {
 	return obj, nil
 }
 
-func (i NewInterpreter) Interpret(node parser.IASTNode) (result interface{}, err error) {
+func (i NewInterpreter) Interpret(node p.IASTNode) (result interface{}, err error) {
 	result, err = i.visit(node)
 	return
 }
@@ -387,7 +388,7 @@ func mathOp(left, right interface{}, tokenKind string) (interface{}, error) {
 			panic("unknown operator")
 		}
 	}
-	return nil, parser.SyntaxError{
+	return nil, p.SyntaxError{
 		Message: "expected number operands",
 	}
 }
@@ -420,7 +421,7 @@ func comparisonOp(left, right interface{}, tokenKind string) (interface{}, error
 			return l > r, nil
 		}
 	} else {
-		return nil, parser.SyntaxError{
+		return nil, p.SyntaxError{
 			Message: "comparison operator requires two strings or numbers",
 		}
 	}
