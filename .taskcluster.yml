@@ -88,7 +88,7 @@ tasks:
               pip install --no-use-pep517 -e . &&
               python setup.py test
         - image: golang:1.11
-          name: golang lint and tests
+          name: golang tests
           command:
             - /bin/bash
             - '-c'
@@ -99,7 +99,20 @@ tasks:
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
               go get -v -d -t ./... &&
-              go test -v -race ./... &&
+              go test -v -race ./...
+        - image: golang:1.11
+          name: golang lint
+          command:
+            - /bin/bash
+            - '-c'
+            - >-
+              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.17.1 &&
+              mkdir -p /go/src/github.com/taskcluster/json-e &&
+              cd /go/src/github.com/taskcluster/json-e &&
+              git clone ${repo.git_url} . &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              go get -v -d -t ./... &&
               golangci-lint run
     in:
       $let:
