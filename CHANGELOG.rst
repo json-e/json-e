@@ -1,3 +1,12 @@
+Jsone 4.0.0 (2018-11-01)
+========================
+Features
+--------
+- Separate parser and interpreter.
+- Parser build an abstract syntax tree.
+- Interpreter make tree traversal.
+
+
 Jsone 3.0.1 (2018-07-11)
 ========================
 

@@ -635,6 +635,7 @@ template: {$eval: '!(false || false) && true'}
 context: {}
 result: true
 ```
+Json-e supports short-circuit evaluation.
 
 ### Object Property Access
 
