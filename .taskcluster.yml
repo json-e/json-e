@@ -87,7 +87,7 @@ tasks:
               git checkout ${repo.ref} &&
               pip install --no-use-pep517 -e . &&
               python setup.py test
-        - image: golang:1.11
+        - image: golang:1.13
           name: golang tests
           command:
             - /bin/bash
@@ -100,7 +100,7 @@ tasks:
               git checkout ${repo.ref} &&
               go get -v -d -t ./... &&
               go test -v -race ./...
-        - image: golang:1.11
+        - image: golang:1.13
           name: golang lint
           command:
             - /bin/bash
