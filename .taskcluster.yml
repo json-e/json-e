@@ -87,7 +87,7 @@ tasks:
               git checkout ${repo.ref} &&
               pip install --no-use-pep517 -e . &&
               python setup.py test
-        - image: 'golangci/golangci-lint'
+        - image: golang:1.11
           name: golang lint and tests
           command:
             - /bin/bash
