@@ -75,7 +75,7 @@ def test_parser():
     def t(input, output):
         tokens = tokenizer.generate_tokens(input)
         parser = Parser(tokens, input)
-        eq_(parser.parse(), output)
+        eq_(treesequals(parser.parse(), output), True)
 
     yield t, '1+2+3', BinOp(Token('+', '+', 3, 4),
                             BinOp(Token('+', '+', 1, 2), ASTNode(Token('number', '1', 0, 1)),
@@ -112,3 +112,16 @@ def test_parser():
     yield fail, '1+', 'Unexpected end of input'
     yield fail, ')', 'Found ), expected (, number'
     yield fail, '((1+2)+3', 'Unexpected end of input'
+
+
+def treesequals(first, second):
+    if first is None and second is None:
+        return True
+    elif first is None or second is None:
+        return False
+    elif first.token != second.token:
+        return False
+    if isinstance(first, BinOp):
+        return treesequals(first.left, second.left) and treesequals(first.right, second.right)
+    else:
+        return True
