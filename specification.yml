@@ -3674,6 +3674,16 @@ title: 'array or array'
 context: {a: [], b: []}
 template: {$eval: "a || b"}
 result: false
+---
+title: 'short-circuit evaluation for and'
+context: {}
+template: {$eval: "false && b"}
+result: false
+---
+title: 'short-circuit evaluation for or'
+context: {}
+template: {$eval: "true || b"}
+result: true
 ################################################################################
 ---
 section: expression language - string operations
