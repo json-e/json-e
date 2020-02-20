@@ -41,7 +41,7 @@ def parse(source, context):
     return result
 
 
-def parseUntilTerminator(source, context, terminator):
+def parse_until_terminator(source, context, terminator):
     tokenizer = Tokenizer()
     tokens = tokenizer.generate_tokens(source)
     parser = Parser(tokens, source)
@@ -67,7 +67,7 @@ def interpolate(string, context):
         result.append(string[:mo.start()])
         if mo.group() != '$${':
             string = string[mo.end():]
-            parsed, offset = parseUntilTerminator(string, context, '}')
+            parsed, offset = parse_until_terminator(string, context, '}')
             if isinstance(parsed, (list, dict)):
                 raise TemplateError(
                     "interpolation of '{}' produced an array or object".format(string[:offset]))

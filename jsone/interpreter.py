@@ -34,11 +34,11 @@ class Interpreter:
     def visit_UnaryOp(self, node):
         value = self.visit(node.expr)
         if node.token.kind == "+":
-            if not isNumber(value):
+            if not is_number(value):
                 raise InterpreterError('{} expects {}'.format('unary +', 'number'))
             return value
         elif node.token.kind == "-":
-            if not isNumber(value):
+            if not is_number(value):
                 raise InterpreterError('{} expects {}'.format('unary -', 'number'))
             return -value
         elif node.token.kind == "!":
@@ -63,32 +63,32 @@ class Interpreter:
                 raise infixExpectationError('+', 'numbers/strings')
             return left + right
         elif node.token.kind == "-":
-            testMathOperands("-", left, right)
+            test_math_operands("-", left, right)
             return left - right
         elif node.token.kind == "/":
-            testMathOperands("/", left, right)
+            test_math_operands("/", left, right)
             return operator.truediv(left, right)
         elif node.token.kind == "*":
-            testMathOperands("*", left, right)
+            test_math_operands("*", left, right)
             return left * right
         elif node.token.kind == ">":
-            testComparisonOperands(">", left, right)
+            test_comparison_operands(">", left, right)
             return left > right
         elif node.token.kind == "<":
-            testComparisonOperands("<", left, right)
+            test_comparison_operands("<", left, right)
             return left < right
         elif node.token.kind == ">=":
-            testComparisonOperands(">=", left, right)
+            test_comparison_operands(">=", left, right)
             return left >= right
         elif node.token.kind == "<=":
-            testComparisonOperands("<=", left, right)
+            test_comparison_operands("<=", left, right)
             return left <= right
         elif node.token.kind == "!=":
             return left != right
         elif node.token.kind == "==":
             return left == right
         elif node.token.kind == "**":
-            testMathOperands("**", left, right)
+            test_math_operands("**", left, right)
             return right ** left
         elif node.token.value == "in":
             if isinstance(right, dict):
@@ -159,19 +159,19 @@ class Interpreter:
         except KeyError:
             return None
 
-    def visit_Builtin(self, node):
+    def visit_ContextValue(self, node):
         args = []
         try:
-            builtin = self.context[node.token.value]
+            contextValue = self.context[node.token.value]
         except KeyError:
             raise InterpreterError(
                 'unknown context value {}'.format(node.token.value))
-        if callable(builtin):
+        if callable(contextValue):
             if node.args is not None:
                 for item in node.args:
                     args.append(self.visit(item))
-                return builtin(*args)
-        return builtin
+                return contextValue(*args)
+        return contextValue
 
     def visit_Object(self, node):
         obj = {}
@@ -183,20 +183,20 @@ class Interpreter:
         return self.visit(tree)
 
 
-def testMathOperands(op, left, right):
-    if not isNumber(left):
+def test_math_operands(op, left, right):
+    if not is_number(left):
         raise infixExpectationError(op, 'number')
-    if not isNumber(right):
+    if not is_number(right):
         raise infixExpectationError(op, 'number')
     return
 
 
-def testComparisonOperands(op, left, right):
+def test_comparison_operands(op, left, right):
     if type(left) != type(right) or \
             not (isinstance(left, (int, float, string)) and not isinstance(left, bool)):
         raise infixExpectationError(op, 'numbers/strings')
     return
 
 
-def isNumber(v):
+def is_number(v):
     return isinstance(v, (int, float)) and not isinstance(v, bool)

@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 from nose.tools import eq_
 from jsone import JSONTemplateError
 from jsone.parser import Tokenizer, Token, Parser
-from jsone.AST import ASTNode, UnaryOp, BinOp, Builtin, ValueAccess, Object, List
+from jsone.AST import ASTNode, UnaryOp, BinOp, ContextValue, ValueAccess, Object, List
 
 
 class IgnoringAlgebraicParser(object):
@@ -52,7 +52,7 @@ def test_tokenizer():
     def t(name):
         gramma, input, output = tests[name]
         tokenizer = Tokenizer()
-        tokenizer.changeTokenizer(gramma)
+        tokenizer.change_tokenizer(gramma)
         try:
 
             got = list(tokenizer.generate_tokens(input))
@@ -70,7 +70,7 @@ def test_tokenizer():
 
 def test_parser():
     tokenizer = Tokenizer()
-    tokenizer.changeTokenizer(SimpleExpressionParser())
+    tokenizer.change_tokenizer(SimpleExpressionParser())
 
     def t(input, output):
         tokens = tokenizer.generate_tokens(input)

@@ -3,6 +3,9 @@ class ASTNode(object):
         self.token = token
 
 
+Primitive = ASTNode
+
+
 class BinOp(ASTNode):
     def __init__(self, token, left, right):
         ASTNode.__init__(self, token)
@@ -16,7 +19,7 @@ class UnaryOp(ASTNode):
         self.expr = expr
 
 
-class Builtin(ASTNode):
+class ContextValue(ASTNode):
     def __init__(self, token, args):
         ASTNode.__init__(self, token)
         self.args = args

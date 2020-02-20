@@ -3826,6 +3826,21 @@ context: {key: {key2: {key3: 1}}}
 template: {$eval: 'key["key2"]["key3"]'}
 result: 1
 ---
+title: 'nested property access with dot following ]'
+context: {key: {key2: {key3: 1}}}
+template: {$eval: 'key["key2"].key3'}
+result: 1
+---
+title: 'nested property with object in parentheses'
+context: {key: {key2: true}}
+template: {$eval: '(key)["key2"]'}
+result: true
+---
+title: 'nested property with object expression'
+context: {keyid: 1, keys: [false, {key2: true}]}
+template: {$eval: '(keys[keyid])["key2"]'}
+result: true
+---
 title: 'property access with expression value'
 context: {key: abc, values: {abc: 2, def: 3}}
 template: {$eval: 'values[key]'}
