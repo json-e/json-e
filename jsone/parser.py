@@ -9,9 +9,9 @@ Token = namedtuple('Token', ['kind', 'value', 'start', 'end'])
 class SyntaxError(TemplateError):
 
     @classmethod
-    def unexpected(cls, got):
-        return cls('Found {}, expected !, (, +, -, [, false, identifier, null, number, string, '
-                   'true, {}'.format(got.value, "{"))
+    def unexpected(cls, got, exp):
+        exp = ', '.join(sorted(exp))
+        return cls('Found {}, expected {}'.format(got.value, exp))
 
 
 class Parser(object):
@@ -28,7 +28,7 @@ class Parser(object):
         if not self.current_token:
             raise SyntaxError('Unexpected end of input')
         if kinds and self.current_token.kind not in kinds:
-            raise SyntaxError.unexpected(self.current_token)
+            raise SyntaxError.unexpected(self.current_token, kinds)
         try:
             self.current_token = next(self.tokens)
         except StopIteration:
@@ -45,6 +45,7 @@ class Parser(object):
         """  addition : multiplication (PLUS | MINUS multiplication)* """
         """  multiplication : exponentiation (MUL | DIV exponentiation)* """
         """  exponentiation : unit (EXP exponentiation)* """
+
         if level == len(self.operatorsByPriority) - 1:
             node = self.parse_unit()
             token = self.current_token
@@ -202,7 +203,7 @@ class Parser(object):
             left_part = node
             self.take_token(".")
             right_part = Primitive(self.current_token)
-            self.take_token(self.current_token.kind)
+            self.take_token("identifier")
             node = BinOp(token, left_part, right_part)
             token = self.current_token
         return node

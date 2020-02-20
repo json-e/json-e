@@ -1964,7 +1964,7 @@ section:  expression language - basics
 title:    missing right square bracket
 context:  {bar: "mystring"}
 template: {foo: '${bar[2:}'}
-error:   "SyntaxError at template.foo: Found }, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+error:   "SyntaxError at template.foo: Found }, expected ]"
 ---
 title:    decimal literal
 context:  {}
@@ -3787,6 +3787,11 @@ title: 'other string attributes are not set'
 context: {key: 'abc'}
 template: {$eval: 'key.toUpperCase()'}
 error: 'SyntaxError: Found (, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
+---
+title: 'non-identifier after dot'
+context: {key: {}}
+template: {$eval: 'key.{'}
+error: 'SyntaxError: Found {, expected identifier'
 ################################################################################
 ---
 section: expression language - property access
