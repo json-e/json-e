@@ -28,9 +28,42 @@ def operator(name):
     return wrap
 
 
+class tokenizer(Tokenizer):
+
+    ignore = '\\s+'
+    patterns = {
+        'number': '[0-9]+(?:\\.[0-9]+)?',
+        'identifier': '[a-zA-Z_][a-zA-Z_0-9]*',
+        'string': '\'[^\']*\'|"[^"]*"',
+        # avoid matching these as prefixes of identifiers e.g., `insinutations`
+        'true': 'true(?![a-zA-Z_0-9])',
+        'false': 'false(?![a-zA-Z_0-9])',
+        'in': 'in(?![a-zA-Z_0-9])',
+        'null': 'null(?![a-zA-Z_0-9])',
+    }
+    tokens = [
+        '**', '+', '-', '*', '/', '[', ']', '.', '(', ')', '{', '}', ':', ',',
+        '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in',
+        'null', 'number', 'identifier', 'string',
+    ]
+    precedence = [
+        ['||'],
+        ['&&'],
+        ['in'],
+        ['==', '!='],
+        ['>=', '<=', '<', '>'],
+        ['+', '-'],
+        ['*', '/'],
+        ['**-right-associative'],
+        ['**'],
+        ['[', '.'],
+        ['('],
+        ['unary'],
+    ]
+
+
 def parse(source, context):
-    tokenizer = Tokenizer()
-    tokens = tokenizer.generate_tokens(source)
+    tokens = tokenizer().generate_tokens(source)
     parser = Parser(tokens, source)
     tree = parser.parse()
     if parser.current_token is not None:
@@ -42,8 +75,7 @@ def parse(source, context):
 
 
 def parse_until_terminator(source, context, terminator):
-    tokenizer = Tokenizer()
-    tokens = tokenizer.generate_tokens(source)
+    tokens = tokenizer().generate_tokens(source)
     parser = Parser(tokens, source)
     tree = parser.parse()
     if parser.current_token.kind != terminator:

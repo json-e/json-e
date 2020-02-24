@@ -200,39 +200,14 @@ def parse_string(string):
 
 
 class Tokenizer(object):
-    def __init__(self):
-        ignore = '\\s+'
-        patterns = {
-            'number': '[0-9]+(?:\\.[0-9]+)?',
-            'identifier': '[a-zA-Z_][a-zA-Z_0-9]*',
-            'string': '\'[^\']*\'|"[^"]*"',
-            # avoid matching these as prefixes of identifiers e.g., `insinutations`
-            'true': 'true(?![a-zA-Z_0-9])',
-            'false': 'false(?![a-zA-Z_0-9])',
-            'in': 'in(?![a-zA-Z_0-9])',
-            'null': 'null(?![a-zA-Z_0-9])',
-        }
-        self.tokens = [
-            '**', '+', '-', '*', '/', '[', ']', '.', '(', ')', '{', '}', ':', ',',
-            '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in',
-            'null', 'number', 'identifier', 'string',
-        ]
-        token_patterns = [
-            '({})'.format(patterns.get(t, re.escape(t)))
-            for t in self.tokens]
-        if ignore:
-            token_patterns.append(('(?:{})'.format(ignore)))
-        self.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
-
-    def change_tokenizer(self, grammar):
+    def __init__(cls):
         # build a regular expression to generate a sequence of tokens
-        self.tokens = grammar.tokens
         token_patterns = [
-            '({})'.format(grammar.patterns.get(t, re.escape(t)))
-            for t in self.tokens]
-        if grammar.ignore:
-            token_patterns.append(('(?:{})'.format(grammar.ignore)))
-        self.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
+            '({})'.format(cls.patterns.get(t, re.escape(t)))
+            for t in cls.tokens]
+        if cls.ignore:
+            token_patterns.append('(?:{})'.format(cls.ignore))
+        cls.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
 
     def generate_tokens(self, source):
         offset = 0
