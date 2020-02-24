@@ -69,11 +69,11 @@ class Parser(object):
         node = self.parse_unit()
         token = self.current_token
         while token is not None and (token.kind == "[" or token.kind == "."):
-            if self.current_token.kind == "[":
+            if token.kind == "[":
                 node = self.parse_access_with_brackets(node)
-                if self.current_token == "(":
+                if self.current_token is not None and self.current_token.kind == "(":
                     node = self.parse_function_call(node)
-            elif self.current_token.kind == ".":
+            elif token.kind == ".":
                 token = self.current_token
                 self.take_token(".")
                 right_part = Primitive(self.current_token)
