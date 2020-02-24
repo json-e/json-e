@@ -3882,6 +3882,11 @@ title: 'property of array'
 context: {key: []}
 template: {$eval: 'key.valueOf'}
 error: 'InterpreterError: infix: . expects objects'
+---
+title: 'non-identifier after dot'
+context: {key: {}}
+template: {$eval: 'key.{'}
+error: 'SyntaxError: Found {, expected identifier'
 ################################################################################
 ---
 section: expression language - array access

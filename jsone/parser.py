@@ -5,13 +5,15 @@ from .shared import TemplateError
 
 Token = namedtuple('Token', ['kind', 'value', 'start', 'end'])
 
+expectedTokens = ["!", "(", "+", "-", "[", "false", "identifier", "null", "number", "string", "true", "{"]
+
 
 class SyntaxError(TemplateError):
 
     @classmethod
-    def unexpected(cls, got):
-        return cls('Found {}, expected !, (, +, -, [, false, identifier, null, number, string, '
-                   'true, {}'.format(got.value, "{"))
+    def unexpected(cls, got, exp):
+        exp = ', '.join(sorted(exp))
+        return cls('Found {}, expected {}'.format(got.value, exp))
 
 
 class Parser(object):
@@ -28,7 +30,7 @@ class Parser(object):
         if not self.current_token:
             raise SyntaxError('Unexpected end of input')
         if kinds and self.current_token.kind not in kinds:
-            raise SyntaxError.unexpected(self.current_token)
+            raise SyntaxError.unexpected(self.current_token, kinds)
         try:
             self.current_token = next(self.tokens)
         except StopIteration:
@@ -163,6 +165,9 @@ class Parser(object):
             self.take_token(":")
         if self.current_token.kind != "]":
             right = self.parse()
+
+        if is_interval and right is None and self.current_token.kind != "]":
+            raise SyntaxError.unexpected(self.current_token, expectedTokens)
 
         self.take_token("]")
         node = ValueAccess(token, node, is_interval, left, right)
