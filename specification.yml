@@ -4141,6 +4141,11 @@ title: 'function call (12)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(3, 2) + max(3, 2)'}
 result: 5
+---
+title: 'function name is not callable'
+context: {function: "hi"}
+template: {$eval: "function(10)"}
+error: "InterpreterError: hi is not callable"
 ################################################################################
 ---
 section: expression language - in operator

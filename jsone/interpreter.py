@@ -175,6 +175,9 @@ class Interpreter:
                 for item in node.args:
                     args.append(self.visit(item))
                 return func_name(*args)
+        else:
+            raise InterpreterError(
+                '{} is not callable'.format(func_name))
 
     def visit_Object(self, node):
         obj = {}
