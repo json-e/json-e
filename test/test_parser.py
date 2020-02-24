@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 from nose.tools import eq_
 from jsone import JSONTemplateError
 from jsone.parser import Tokenizer, Token, Parser
-from jsone.AST import ASTNode, UnaryOp, BinOp, ContextValue, ValueAccess, Object, List
+from jsone.AST import ASTNode, UnaryOp, BinOp, FunctionCall, ValueAccess, Object, List
 
 
 class IgnoringAlgebraicParser(object):

@@ -160,18 +160,21 @@ class Interpreter:
             return None
 
     def visit_ContextValue(self, node):
-        args = []
         try:
             contextValue = self.context[node.token.value]
         except KeyError:
             raise InterpreterError(
                 'unknown context value {}'.format(node.token.value))
-        if callable(contextValue):
+        return contextValue
+
+    def visit_FunctionCall(self, node):
+        args = []
+        func_name = self.visit(node.name)
+        if callable(func_name):
             if node.args is not None:
                 for item in node.args:
                     args.append(self.visit(item))
-                return contextValue(*args)
-        return contextValue
+                return func_name(*args)
 
     def visit_Object(self, node):
         obj = {}
