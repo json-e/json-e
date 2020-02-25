@@ -1,8 +1,8 @@
 package interpreter
 
 import (
+	"./parser"
 	"fmt"
-	"json-e/interpreter/parser"
 	"math"
 	"reflect"
 	"strconv"
@@ -322,33 +322,41 @@ func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{},
 	}
 }
 
-func (i NewInterpreter) Visit_Builtin(node parser.Builtin) (interface{}, error) {
-	if builtin, ok := i.context[node.Token.Value]; ok {
-		var args []interface{}
-		if node.Args != nil {
-			f, ok := builtin.(*function)
-			if ok {
-				var result interface{}
-
-				for _, element := range node.Args {
-					elem, err := i.visit(element)
-					if err != nil {
-						return nil, err
-					}
-					args = append(args, elem)
-				}
-
-				result, err := f.Invoke(i.context, args)
-				if err != nil {
-					return nil, err
-				}
-				return result, nil
-			}
-		}
-		return builtin, nil
+func (i NewInterpreter) Visit_ContextValue(node parser.ContextValue) (interface{}, error) {
+	if contextValue, ok := i.context[node.Token.Value]; ok {
+		return contextValue, nil
 	}
 	return nil, parser.SyntaxError{
 		Message: fmt.Sprintf("undefined variable %s", node.Token.Value),
+	}
+}
+func (i NewInterpreter) Visit_FunctionCall(node parser.FunctionCall) (interface{}, error) {
+
+	var args []interface{}
+	funcName, err := i.visit(node.Name)
+	if err != nil {
+		return nil, err
+	}
+	f, ok := funcName.(*function)
+	if ok {
+		var result interface{}
+
+		for _, element := range node.Args {
+			elem, err := i.visit(element)
+			if err != nil {
+				return nil, err
+			}
+			args = append(args, elem)
+		}
+
+		result, err := f.Invoke(i.context, args)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	}
+	return nil, parser.SyntaxError{
+		Message: fmt.Sprintf("%s is not callable", funcName),
 	}
 }
 

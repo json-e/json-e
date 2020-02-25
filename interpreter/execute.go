@@ -1,13 +1,25 @@
 package interpreter
 
 import (
-	p "json-e/interpreter/parser"
+	p "./parser"
+	"strings"
 )
 
-func Parse(source string, offset int, context interface{}) (interface{}, error) {
+var tokenizer = *p.NewTokenizer(`\s+`, strings.Split(
+	`** + - * / [ ] . ( ) { } : , >= <= < > == != ! && || true false in null number identifier string`, " ",
+), map[string]string{
+	"number":     `[0-9]+(?:\.[0-9]+)?`,
+	"identifier": `[a-zA-Z_][a-zA-Z_0-9]*`,
+	"string":     `'[^']*'|"[^"]*"`,
+	"true":       `true\b`,
+	"false":      `false\b`,
+	"in":         `in\b`,
+	"null":       `null\b`,
+})
+
+func Parse(source string, context interface{}) (interface{}, error) {
 	var parser p.Parser
 	var newInterpreter NewInterpreter
-	tokenizer := p.CreateTokenizer()
 	err := parser.NewParser(source, tokenizer, 0)
 	if err != nil {
 		return nil, err
@@ -32,7 +44,6 @@ func Parse(source string, offset int, context interface{}) (interface{}, error) 
 func ParseUntilTerminator(source string, offset int, terminator string, context interface{}) (interface{}, int, error) {
 	var parser p.Parser
 	var newInterpreter NewInterpreter
-	tokenizer := p.CreateTokenizer()
 
 	err := parser.NewParser(source, tokenizer, offset)
 	if err != nil {

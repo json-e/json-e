@@ -2,17 +2,17 @@ package parser
 
 import (
 	"fmt"
-	"strings"
 )
 
 type Parser struct {
-	source           string
-	tokenizer        Tokenizer
-	CurrentToken     Token
-	unaryOpTokens    []string
-	binOpTokens      []string
-	primitivesTokens []string
-	operators        [][]string
+	source              string
+	tokenizer           Tokenizer
+	CurrentToken        Token
+	unaryOpTokens       []string
+	binOpTokens         []string
+	primitivesTokens    []string
+	operatorsByPriority [][]string
+	expectedTokens      []string
 }
 
 func (p *Parser) NewParser(source string, tokenizer Tokenizer, offset int) (err error) {
@@ -20,8 +20,9 @@ func (p *Parser) NewParser(source string, tokenizer Tokenizer, offset int) (err 
 	p.tokenizer = tokenizer
 	p.CurrentToken, err = p.tokenizer.Next(p.source, offset)
 	p.unaryOpTokens = []string{"-", "+", "!"}
-	p.primitivesTokens = []string{"number", "null", "true", "false"}
-	p.operators = [][]string{{"||"}, {"&&"}, {"in"}, {"==", "!="}, {">", "<", "<=", ">="}, {"+", "-"}, {"*", "/"}, {"**"}}
+	p.primitivesTokens = []string{"number", "null", "true", "false", "string"}
+	p.operatorsByPriority = [][]string{{"||"}, {"&&"}, {"in"}, {"==", "!="}, {">", "<", "<=", ">="}, {"+", "-"}, {"*", "/"}, {"**"}}
+	p.expectedTokens = []string{"!", "(", "+", "-", "[", "false", "identifier", "null", "number", "string", "true", "{"}
 	return
 }
 
@@ -49,16 +50,24 @@ func (p *Parser) takeToken(kinds ...string) error {
 }
 
 func (p *Parser) Parse(level int) (node IASTNode, err error) {
+	//expr : logicalAnd (OR logicalAnd)*
+	//logicalAnd : inStatement (AND inStatement)*
+	//inStatement : equality (IN equality)*
+	//equality : comparison (EQUALITY | INEQUALITY  comparison)*
+	//comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)*
+	//addition : multiplication (PLUS | MINUS multiplication)* "
+	//multiplication : exponentiation (MUL | DIV exponentiation)*
+	//exponentiation : propertyAccessOrFunc (EXP exponentiation)*
 	var binaryNode BinOp
 	var next IASTNode
-	if level == len(p.operators)-1 {
-		node, err = p.factor()
+	if level == len(p.operatorsByPriority)-1 {
+		node, err = p.parsePropertyAccessOrFunc()
 		if err != nil {
 			return nil, err
 		}
 		token := p.CurrentToken
 
-		for ; token != (Token{}) && StringsContains(token.Kind, p.operators[level]); token = p.CurrentToken {
+		for ; token != (Token{}) && StringsContains(token.Kind, p.operatorsByPriority[level]); token = p.CurrentToken {
 			err = p.takeToken(token.Kind)
 			if err != nil {
 				return nil, err
@@ -77,7 +86,7 @@ func (p *Parser) Parse(level int) (node IASTNode, err error) {
 		}
 		token := p.CurrentToken
 
-		for ; token != (Token{}) && StringsContains(token.Kind, p.operators[level]); token = p.CurrentToken {
+		for ; token != (Token{}) && StringsContains(token.Kind, p.operatorsByPriority[level]); token = p.CurrentToken {
 			err = p.takeToken(token.Kind)
 			if err != nil {
 				return nil, err
@@ -94,10 +103,52 @@ func (p *Parser) Parse(level int) (node IASTNode, err error) {
 	return
 }
 
-func (p *Parser) factor() (node IASTNode, err error) {
-	// factor : unaryOp factor | primitives | (string | list | builtin) (valueAccess)? | LPAREN expr RPAREN | object
+func (p *Parser) parsePropertyAccessOrFunc() (node IASTNode, err error) {
+	//propertyAccessOrFunc : unit (accessWithBrackets | DOT id | functionCall)*
+	var primitiveNode ASTNode
+	var binaryNode BinOp
+	node, err = p.parseUnit()
+	if err != nil {
+		return nil, err
+	}
+	operators := []string{"[", "(", "."}
+
+	for token := p.CurrentToken; p.CurrentToken != (Token{}) && StringsContains(token.Kind, operators); token = p.CurrentToken {
+		if token.Kind == "[" {
+			node, err = p.parseAccessWithBrackets(node)
+			if err != nil {
+				return nil, err
+			}
+		} else if token.Kind == "." {
+			token = p.CurrentToken
+			err = p.takeToken(".")
+			if err != nil {
+				return nil, err
+			}
+			primitiveNode.NewNode(p.CurrentToken)
+			rightPart := primitiveNode
+			err = p.takeToken("identifier")
+			if err != nil {
+				return nil, err
+			}
+			binaryNode.NewNode(token, node, rightPart)
+			node = binaryNode
+		} else if token.Kind == "(" {
+			node, err = p.parseFunctionCall(node)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return
+}
+
+func (p *Parser) parseUnit() (node IASTNode, err error) {
+	// unit : unaryOp unit | primitives | contextValue | LPAREN expr RPAREN | list | object
 	var unaryNode UnaryOp
 	var primitiveNode ASTNode
+	var contextValueNode ContextValue
 	var next IASTNode
 	if p.CurrentToken.IsEmpty() {
 		return nil, SyntaxError{
@@ -116,7 +167,7 @@ func (p *Parser) factor() (node IASTNode, err error) {
 		if err != nil {
 			return nil, err
 		}
-		next, err = p.factor()
+		next, err = p.parseUnit()
 		if err != nil {
 			return nil, err
 		}
@@ -129,17 +180,13 @@ func (p *Parser) factor() (node IASTNode, err error) {
 		}
 		primitiveNode.NewNode(token)
 		node = primitiveNode
-	} else if token.Kind == "string" {
+	} else if token.Kind == "identifier" {
 		err = p.takeToken(token.Kind)
 		if err != nil {
 			return nil, err
 		}
-		primitiveNode.NewNode(token)
-		node = primitiveNode
-		node, err = p.valueAccess(node)
-		if err != nil {
-			return nil, err
-		}
+		contextValueNode.NewNode(token)
+		node = contextValueNode
 	} else if token.Kind == "(" {
 		err = p.takeToken("(")
 		if err != nil {
@@ -149,30 +196,26 @@ func (p *Parser) factor() (node IASTNode, err error) {
 		if err != nil {
 			return nil, err
 		}
+		if node == nil {
+			return nil, SyntaxError{
+				Message:  fmt.Sprintf("Found '%s'", p.CurrentToken.Kind),
+				Source:   p.source,
+				Start:    p.CurrentToken.Start,
+				End:      p.CurrentToken.End,
+				Expected: p.expectedTokens,
+			}
+		}
 		err = p.takeToken(")")
 		if err != nil {
 			return nil, err
 		}
 	} else if token.Kind == "[" {
-		node, err = p.list()
-		if err != nil {
-			return nil, err
-		}
-		node, err = p.valueAccess(node)
+		node, err = p.parseList()
 		if err != nil {
 			return nil, err
 		}
 	} else if token.Kind == "{" {
-		node, err = p.object()
-		if err != nil {
-			return nil, err
-		}
-	} else if token.Kind == "identifier" {
-		node, err = p.builtins()
-		if err != nil {
-			return nil, err
-		}
-		node, err = p.valueAccess(node)
+		node, err = p.parseObject()
 		if err != nil {
 			return nil, err
 		}
@@ -180,32 +223,33 @@ func (p *Parser) factor() (node IASTNode, err error) {
 	return
 }
 
-func (p *Parser) builtins() (node IASTNode, err error) {
-	//    builtins : (LPAREN (expr ( COMMA expr)*)? RPAREN)? | (DOT ID)*)
+func (p *Parser) parseFunctionCall(name IASTNode) (node IASTNode, err error) {
+	//    functionCall: LPAREN (expr ( COMMA expr)*)? RPAREN
 	var args []IASTNode
-	var token = p.CurrentToken
-	var builtinNode Builtin
-	var binOpNode BinOp
-	var simpleNode ASTNode
-	err = p.takeToken("identifier")
+	var functionCallNode FunctionCall
+	token := p.CurrentToken
+	err = p.takeToken("(")
 	if err != nil {
 		return nil, err
 	}
-	args = nil
-	if p.CurrentToken != (Token{}) && p.CurrentToken.Kind == "(" {
-		err = p.takeToken("(")
-		if err != nil {
-			return nil, err
-		}
+
+	if p.CurrentToken.Kind != ")" {
 		node, err = p.Parse(0)
 		if err != nil {
 			return nil, err
 		}
-		if node != nil {
-			args = append(args, node)
-		}
+		args = append(args, node)
 
-		for p.CurrentToken.Kind == "," {
+		for p.CurrentToken != (Token{}) && p.CurrentToken.Kind == "," {
+			if args[len(args)-1] == nil {
+				return nil, SyntaxError{
+					Message:  fmt.Sprintf("Found '%s'", p.CurrentToken.Kind),
+					Source:   p.source,
+					Start:    p.CurrentToken.Start,
+					End:      p.CurrentToken.End,
+					Expected: p.expectedTokens,
+				}
+			}
 			err = p.takeToken(",")
 			if err != nil {
 				return nil, err
@@ -216,33 +260,18 @@ func (p *Parser) builtins() (node IASTNode, err error) {
 			}
 			args = append(args, node)
 		}
-		err = p.takeToken(")")
-		if err != nil {
-			return nil, err
-		}
 	}
-	builtinNode.NewNode(token, args)
-	node = builtinNode
-	token = p.CurrentToken
-	for token != (Token{}) && token.Kind == "." {
-		err = p.takeToken(".")
-		if err != nil {
-			return nil, err
-		}
-		simpleNode.NewNode(p.CurrentToken)
-		err = p.takeToken(p.CurrentToken.Kind)
-		if err != nil {
-			return nil, err
-		}
-		binOpNode.NewNode(token, node, simpleNode)
-		node = binOpNode
-		token = p.CurrentToken
+	err = p.takeToken(")")
+	if err != nil {
+		return nil, err
 	}
+	functionCallNode.NewNode(token, name, args)
+	node = functionCallNode
 
 	return
 }
 
-func (p *Parser) list() (node IASTNode, err error) {
+func (p *Parser) parseList() (node IASTNode, err error) {
 	//    list : LSQAREBRAKET (expr ( COMMA expr)*)? RSQAREBRAKET)
 	var list []IASTNode
 	var listNode List
@@ -260,6 +289,15 @@ func (p *Parser) list() (node IASTNode, err error) {
 		list = append(list, node)
 
 		for p.CurrentToken.Kind == "," {
+			if list[len(list)-1] == nil {
+				return nil, SyntaxError{
+					Message:  fmt.Sprintf("Found '%s'", p.CurrentToken.Kind),
+					Source:   p.source,
+					Start:    p.CurrentToken.Start,
+					End:      p.CurrentToken.End,
+					Expected: p.expectedTokens,
+				}
+			}
 			err = p.takeToken(",")
 			if err != nil {
 				return nil, err
@@ -280,7 +318,7 @@ func (p *Parser) list() (node IASTNode, err error) {
 	return
 }
 
-func (p *Parser) valueAccess(node IASTNode) (IASTNode, error) {
+func (p *Parser) parseAccessWithBrackets(node IASTNode) (IASTNode, error) {
 	//    valueAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)
 	var arrayNode ValueAccess
 	var left, right IASTNode
@@ -288,48 +326,61 @@ func (p *Parser) valueAccess(node IASTNode) (IASTNode, error) {
 	token := p.CurrentToken
 	isInterval := false
 
-	token = p.CurrentToken
-	for token != (Token{}) && token.Kind == "[" {
-		err = p.takeToken("[")
-		if err != nil {
-			return nil, err
-		}
-		if p.CurrentToken.Kind != ":" {
-			left, err = p.Parse(0)
-			if err != nil {
-				return nil, err
-			}
-		}
-		if p.CurrentToken.Kind == ":" {
-			isInterval = true
-			err = p.takeToken(":")
-			if err != nil {
-				return nil, err
-			}
-			if p.CurrentToken.Kind != "]" {
-				right, err = p.Parse(0)
-				if err != nil {
-					return nil, err
-				}
-			}
-		}
-
-		err = p.takeToken("]")
-		if err != nil {
-			return nil, err
-		}
-		arrayNode.NewNode(token, node, isInterval, left, right)
-		node = arrayNode
-		token = p.CurrentToken
+	err = p.takeToken("[")
+	if err != nil {
+		return nil, err
 	}
+	if p.CurrentToken.Kind == "]" {
+		return nil, SyntaxError{
+			Message:  fmt.Sprintf("Found '%s'", p.CurrentToken.Kind),
+			Source:   p.source,
+			Start:    p.CurrentToken.Start,
+			End:      p.CurrentToken.End,
+			Expected: p.expectedTokens,
+		}
+	}
+	if p.CurrentToken.Kind != ":" {
+		left, err = p.Parse(0)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if p.CurrentToken.Kind == ":" {
+		isInterval = true
+		err = p.takeToken(":")
+		if err != nil {
+			return nil, err
+		}
+	}
+	if p.CurrentToken.Kind != "]" {
+		right, err = p.Parse(0)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if isInterval == true && right == nil && p.CurrentToken.Kind != "]" {
+		return nil, SyntaxError{
+			Message:  fmt.Sprintf("Found '%s'", p.CurrentToken.Kind),
+			Source:   p.source,
+			Start:    p.CurrentToken.Start,
+			End:      p.CurrentToken.End,
+			Expected: p.expectedTokens,
+		}
+	}
+
+	err = p.takeToken("]")
+	if err != nil {
+		return nil, err
+	}
+	arrayNode.NewNode(token, node, isInterval, left, right)
+	node = arrayNode
+
 	return node, err
 }
 
-func (p *Parser) object() (node IASTNode, err error) {
-	//    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID SEMI expr)*)? RCURLYBRACE (DOT ID)?
+func (p *Parser) parseObject() (node IASTNode, err error) {
+	//    object : LCURLYBRACE ( STR | ID COLON expr (COMMA STR | ID COLON expr)*)? RCURLYBRACE
 	var objectNode Object
-	var binOpNode BinOp
-	var simpleNode ASTNode
 	var objValue IASTNode
 	obj := make(map[string]IASTNode)
 	token := p.CurrentToken
@@ -352,6 +403,15 @@ func (p *Parser) object() (node IASTNode, err error) {
 			return nil, err
 		}
 		objValue, err = p.Parse(0)
+		if objValue == nil {
+			return nil, SyntaxError{
+				Message:  fmt.Sprintf("Found '%s'", p.CurrentToken.Kind),
+				Source:   p.source,
+				Start:    p.CurrentToken.Start,
+				End:      p.CurrentToken.End,
+				Expected: p.expectedTokens,
+			}
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -371,39 +431,10 @@ func (p *Parser) object() (node IASTNode, err error) {
 	}
 	objectNode.NewNode(token, obj)
 	node = objectNode
-	token = p.CurrentToken
-	for token != (Token{}) && token.Kind == "." {
-		err = p.takeToken(".")
-		if err != nil {
-			return nil, err
-		}
-		simpleNode.NewNode(p.CurrentToken)
-		err = p.takeToken(p.CurrentToken.Kind)
-		if err != nil {
-			return nil, err
-		}
-		binOpNode.NewNode(token, node, simpleNode)
-		node = binOpNode
-		token = p.CurrentToken
-	}
+
 	return
 }
 
 func parseString(s string) string {
 	return s[1 : len(s)-1]
-}
-
-func CreateTokenizer() (tokenizer Tokenizer) {
-	tokenizer = *NewTokenizer(`\s+`, strings.Split(
-		`** + - * / [ ] . ( ) { } : , >= <= < > == != ! && || true false in null number identifier string`, " ",
-	), map[string]string{
-		"number":     `[0-9]+(?:\.[0-9]+)?`,
-		"identifier": `[a-zA-Z_][a-zA-Z_0-9]*`,
-		"string":     `'[^']*'|"[^"]*"`,
-		"true":       `true\b`,
-		"false":      `false\b`,
-		"in":         `in\b`,
-		"null":       `null\b`,
-	})
-	return
 }

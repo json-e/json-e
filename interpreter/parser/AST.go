@@ -32,14 +32,26 @@ func (u *UnaryOp) NewNode(token Token, expr IASTNode) {
 	u.Expr = expr
 }
 
-type Builtin struct {
+type FunctionCall struct {
 	Token Token
+	Name  IASTNode
 	Args  []IASTNode
 }
 
-func (b *Builtin) NewNode(token Token, args []IASTNode) {
-	b.Token = token
-	b.Args = args
+func (f *FunctionCall) NewNode(token Token, name IASTNode, args []IASTNode) {
+	f.Token = token
+	f.Name = name
+	f.Args = args
+}
+
+type ContextValue struct {
+	Token Token
+	Name  ASTNode
+	Args  []IASTNode
+}
+
+func (c *ContextValue) NewNode(token Token) {
+	c.Token = token
 }
 
 type List struct {
