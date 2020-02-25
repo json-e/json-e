@@ -4166,6 +4166,16 @@ title: 'function name is not callable'
 context: {function: "hi"}
 template: {$eval: "function(10)"}
 error: "InterpreterError: hi is not callable"
+---
+title: 'parenthesized function expression'
+context: {}
+template: {$eval: "(min)(10, 20)"}
+result: 10
+---
+title: 'dotted function expression'
+context: {}
+template: {$let: {negated: {max: {$eval: min}, min: {$eval: max}}}, in: {$eval: "(negated.min)(10, 20)"}}
+result: 20
 ################################################################################
 ---
 section: expression language - in operator
@@ -5187,13 +5197,38 @@ context: {}
 template: {foo: [1, {"123": [{$eval: 10}]}]}
 error: 'TemplateError at template.foo[1]["123"][0]: $eval must be given a string expression'
 ---
-title: 'parenthesized function expression'
+title: 'object with missing value '
 context: {}
-template: {$eval: "(min)(10, 20)"}
-result: 10
+template: {$eval: '{a: 1, "b": }'}
+error:   "SyntaxError: Found }, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
 ---
-title: 'dotted function expression'
+title: 'object missing key and value after comma'
 context: {}
-template: {$let: {negated: {max: {$eval: min}, min: {$eval: max}}}, in: {$eval: "(negated.min)(10, 20)"}}
-result: 20
+template: {$eval: '{a: 1,'}
+error:   "SyntaxError: Unexpected end of input"
+---
+title: 'list with missing first value'
+context: {}
+template: {$eval: '[,2,3]'}
+error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+---
+title: 'list with missing value'
+context: {}
+template: {$eval: '[1,,3]'}
+error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+---
+title: 'empty brackets in property access'
+context: {a: "0123456789"}
+template: {$eval: 'a[]'}
+error:   "SyntaxError: Found ], expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+---
+title: 'function call with missing closing bracket'
+context: {}
+template: {$eval: 'max(2, 0'}
+error:   "SyntaxError: Unexpected end of input"
+---
+title: 'function call with missing argument in brackets'
+context: {}
+template: {$eval: 'max(, 0)'}
+error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
 ################################################################################

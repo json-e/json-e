@@ -74,8 +74,6 @@ class Parser(object):
         while token is not None and token.kind in operators:
             if token.kind == "[":
                 node = self.parse_access_with_brackets(node)
-                if self.current_token is not None and self.current_token.kind == "(":
-                    node = self.parse_function_call(node)
             elif token.kind == ".":
                 token = self.current_token
                 self.take_token(".")
@@ -106,6 +104,8 @@ class Parser(object):
         elif token.kind == "(":
             self.take_token("(")
             node = self.parse()
+            if node is None:
+                raise SyntaxError.unexpected(self.current_token, expectedTokens)
             self.take_token(")")
         elif token.kind == "[":
             node = self.parse_list()
@@ -119,16 +119,19 @@ class Parser(object):
         args = []
         token = self.current_token
         self.take_token("(")
-        node = self.parse()
 
-        if node is not None:
-            args.append(node)
-        while self.current_token.kind == ",":
-            self.take_token(",")
+        if self.current_token.kind != ")":
             node = self.parse()
             args.append(node)
-        self.take_token(")")
 
+            while self.current_token is not None and self.current_token.kind == ",":
+                if args[-1] is None:
+                    raise SyntaxError.unexpected(self.current_token, expectedTokens)
+                self.take_token(",")
+                node = self.parse()
+                args.append(node)
+
+        self.take_token(")")
         node = FunctionCall(token, name, args)
 
         return node
@@ -144,12 +147,15 @@ class Parser(object):
             arr.append(node)
 
             while self.current_token and self.current_token.kind == ",":
+                if arr[-1] is None:
+                    raise SyntaxError.unexpected(self.current_token, expectedTokens)
                 self.take_token(",")
                 node = self.parse()
                 arr.append(node)
 
         self.take_token("]")
         node = List(token, arr)
+
         return node
 
     def parse_access_with_brackets(self, node):
@@ -159,6 +165,8 @@ class Parser(object):
         is_interval = False
         token = self.current_token
         self.take_token("[")
+        if self.current_token.kind == "]":
+            raise SyntaxError.unexpected(self.current_token, expectedTokens)
         if self.current_token.kind != ":":
             left = self.parse()
         if self.current_token.kind == ":":
@@ -179,24 +187,28 @@ class Parser(object):
         # """   object : LCURLYBRACE ( STR | ID COLON expr (COMMA STR | ID COLON expr)*)?
         # RCURLYBRACE """
         obj = {}
-        token = self.current_token
+        objToken = self.current_token
         self.take_token("{")
+        token = self.current_token
 
-        while self.current_token.kind == "string" or self.current_token.kind == "identifier":
-            key = self.current_token.value
-            if self.current_token.kind == "string":
+        while token is not None and (token.kind == "string" or token.kind == "identifier"):
+            key = token.value
+            if token.kind == "string":
                 key = parse_string(key)
-            self.take_token(self.current_token.kind)
+            self.take_token(token.kind)
             self.take_token(":")
             value = self.parse()
+            if value is None:
+                raise SyntaxError.unexpected(self.current_token, expectedTokens)
             obj[key] = value
             if self.current_token and self.current_token.kind == "}":
                 break
             else:
                 self.take_token(",")
+            token = self.current_token
 
         self.take_token("}")
-        node = Object(token, obj)
+        node = Object(objToken, obj)
 
         return node
 
