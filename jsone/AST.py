@@ -19,10 +19,16 @@ class UnaryOp(ASTNode):
         self.expr = expr
 
 
-class ContextValue(ASTNode):
-    def __init__(self, token, args):
+class FunctionCall(ASTNode):
+    def __init__(self, token, name, args):
         ASTNode.__init__(self, token)
+        self.name = name
         self.args = args
+
+
+class ContextValue(ASTNode):
+    def __init__(self, token):
+        ASTNode.__init__(self, token)
 
 
 class List(ASTNode):

@@ -3887,6 +3887,11 @@ title: 'property of array'
 context: {key: []}
 template: {$eval: 'key.valueOf'}
 error: 'InterpreterError: infix: . expects objects'
+---
+title: 'non-identifier after dot'
+context: {key: {}}
+template: {$eval: 'key.{'}
+error: 'SyntaxError: Found {, expected identifier'
 ################################################################################
 ---
 section: expression language - array access
@@ -4146,6 +4151,21 @@ title: 'function call (12)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(3, 2) + max(3, 2)'}
 result: 5
+---
+title: 'function call (13)'
+context: {}
+template: {$let: {functions: [{$eval: min}, {$eval: max}]}, in: {$eval: 'functions[1](2, 3)'}}
+result: 3
+---
+title: 'function call (14)'
+context: {}
+template: {$eval: '[max,min][1](5, 1)'}
+result: 1
+---
+title: 'function name is not callable'
+context: {function: "hi"}
+template: {$eval: "function(10)"}
+error: "InterpreterError: hi is not callable"
 ################################################################################
 ---
 section: expression language - in operator

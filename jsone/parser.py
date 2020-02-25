@@ -1,9 +1,11 @@
-from .AST import Primitive, UnaryOp, BinOp, ContextValue, ValueAccess, Object, List
+from .AST import Primitive, UnaryOp, ContextValue, BinOp, FunctionCall, ValueAccess, Object, List
 from collections import namedtuple
 import re
 from .shared import TemplateError
 
 Token = namedtuple('Token', ['kind', 'value', 'start', 'end'])
+
+expectedTokens = ["!", "(", "+", "-", "[", "false", "identifier", "null", "number", "string", "true", "{"]
 
 
 class SyntaxError(TemplateError):
@@ -20,7 +22,7 @@ class Parser(object):
         self.source = source
         self.current_token = next(self.tokens)
         self.unaryOpTokens = ["-", "+", "!"]
-        self.primitivesTokens = ["number", "null", "true", "false"]
+        self.primitivesTokens = ["number", "null", "true", "false", "string"]
         self.operatorsByPriority = [["||"], ["&&"], ["in"], ["==", "!="], ["<", ">", "<=", ">="], ["+", "-"],
                                     ["*", "/"], ["**"]]
 
@@ -44,10 +46,9 @@ class Parser(object):
         """  comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)* """
         """  addition : multiplication (PLUS | MINUS multiplication)* """
         """  multiplication : exponentiation (MUL | DIV exponentiation)* """
-        """  exponentiation : unit (EXP exponentiation)* """
-
+        """  exponentiation : propertyAccess (EXP exponentiation)* """
         if level == len(self.operatorsByPriority) - 1:
-            node = self.parse_unit()
+            node = self.parse_property_access()
             token = self.current_token
 
             while token is not None and token.kind in self.operatorsByPriority[level]:
@@ -65,9 +66,26 @@ class Parser(object):
 
         return node
 
+    def parse_property_access(self):
+        """  propertyAccess : unit (accessWithBrackets (functionCall)? | DOT id)* """
+        node = self.parse_unit()
+        token = self.current_token
+        while token is not None and (token.kind == "[" or token.kind == "."):
+            if token.kind == "[":
+                node = self.parse_access_with_brackets(node)
+                if self.current_token is not None and self.current_token.kind == "(":
+                    node = self.parse_function_call(node)
+            elif token.kind == ".":
+                token = self.current_token
+                self.take_token(".")
+                right_part = Primitive(self.current_token)
+                self.take_token("identifier")
+                node = BinOp(token, node, right_part)
+            token = self.current_token
+        return node
+
     def parse_unit(self):
-        # unit : unaryOp unit | primitives | ( LPAREN expr RPAREN | string | list | contextValue(dotOp)?)
-        #           (valueAccess (dotOp)?)? |object (dotOp)?
+        # unit : unaryOp unit | primitives | contextValue (functionCall)? | LPAREN expr RPAREN | list | object
         token = self.current_token
         if self.current_token is None:
             raise SyntaxError('Unexpected end of input')
@@ -79,52 +97,38 @@ class Parser(object):
         elif token.kind in self.primitivesTokens:
             self.take_token(token.kind)
             node = Primitive(token)
-        elif token.kind == "string":
+        elif token.kind == "identifier":
             self.take_token(token.kind)
-            node = Primitive(token)
-            node = self.parse_value_access(node)
-            node = self.parse_dot_operation(node)
+            node = ContextValue(token)
+            if self.current_token is not None and self.current_token.kind == "(":
+                node = self.parse_function_call(node)
         elif token.kind == "(":
             self.take_token("(")
             node = self.parse()
             self.take_token(")")
-            node = self.parse_value_access(node)
-            node = self.parse_dot_operation(node)
         elif token.kind == "[":
             node = self.parse_list()
-            node = self.parse_value_access(node)
-            node = self.parse_dot_operation(node)
         elif token.kind == "{":
             node = self.parse_object()
-            node = self.parse_dot_operation(node)
-        elif token.kind == "identifier":
-            node = self.parse_context_value()
-            node = self.parse_dot_operation(node)
-            node = self.parse_value_access(node)
-            node = self.parse_dot_operation(node)
 
         return node
 
-    def parse_context_value(self):
-        """  contextValue : ID(LPAREN (expr ( COMMA expr)*)? RPAREN)? """
-        args = None
+    def parse_function_call(self, name):
+        """functionCall: LPAREN (expr ( COMMA expr)*)? RPAREN"""
+        args = []
         token = self.current_token
-        self.take_token("identifier")
+        self.take_token("(")
+        node = self.parse()
 
-        if self.current_token is not None and self.current_token.kind == "(":
-            args = []
-            self.take_token("(")
+        if node is not None:
+            args.append(node)
+        while self.current_token.kind == ",":
+            self.take_token(",")
             node = self.parse()
-            if node is not None:
-                args.append(node)
+            args.append(node)
+        self.take_token(")")
 
-            while self.current_token.kind == ",":
-                self.take_token(",")
-                node = self.parse()
-                args.append(node)
-            self.take_token(")")
-
-        node = ContextValue(token, args)
+        node = FunctionCall(token, name, args)
 
         return node
 
@@ -147,27 +151,26 @@ class Parser(object):
         node = List(token, arr)
         return node
 
-    def parse_value_access(self, node):
-        """  valueAccess : LSQAREBRAKET expr |(expr? COLON expr?)  RSQAREBRAKET) (LSQAREBRAKET expr
-        //   |(expr? COLON expr?)  RSQAREBRAKET))*"""
+    def parse_access_with_brackets(self, node):
+        """  valueAccess : LSQAREBRAKET expr |(expr? COLON expr?)  RSQAREBRAKET)"""
         left = None
         right = None
-        isInterval = False
+        is_interval = False
         token = self.current_token
+        self.take_token("[")
+        if self.current_token.kind != ":":
+            left = self.parse()
+        if self.current_token.kind == ":":
+            is_interval = True
+            self.take_token(":")
+        if self.current_token.kind != "]":
+            right = self.parse()
 
-        while token is not None and token.kind == "[":
-            self.take_token("[")
-            if self.current_token.kind != ":":
-                left = self.parse()
-            if self.current_token.kind == ":":
-                isInterval = True
-                self.take_token(":")
-            if self.current_token.kind != "]":
-                right = self.parse()
+        if is_interval and right is None and self.current_token.kind != "]":
+            raise SyntaxError.unexpected(self.current_token, expectedTokens)
 
-            self.take_token("]")
-            node = ValueAccess(token, node, isInterval, left, right)
-            token = self.current_token
+        self.take_token("]")
+        node = ValueAccess(token, node, is_interval, left, right)
 
         return node
 
@@ -196,57 +199,20 @@ class Parser(object):
 
         return node
 
-    def parse_dot_operation(self, node):
-        """dotOp: (DOT id (DOT id)*)?"""
-        token = self.current_token
-        while token is not None and token.kind == ".":
-            left_part = node
-            self.take_token(".")
-            right_part = Primitive(self.current_token)
-            self.take_token("identifier")
-            node = BinOp(token, left_part, right_part)
-            token = self.current_token
-        return node
-
 
 def parse_string(string):
     return string[1:-1]
 
 
 class Tokenizer(object):
-    def __init__(self):
-        ignore = '\\s+'
-        patterns = {
-            'number': '[0-9]+(?:\\.[0-9]+)?',
-            'identifier': '[a-zA-Z_][a-zA-Z_0-9]*',
-            'string': '\'[^\']*\'|"[^"]*"',
-            # avoid matching these as prefixes of identifiers e.g., `insinutations`
-            'true': 'true(?![a-zA-Z_0-9])',
-            'false': 'false(?![a-zA-Z_0-9])',
-            'in': 'in(?![a-zA-Z_0-9])',
-            'null': 'null(?![a-zA-Z_0-9])',
-        }
-        self.tokens = [
-            '**', '+', '-', '*', '/', '[', ']', '.', '(', ')', '{', '}', ':', ',',
-            '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in',
-            'null', 'number', 'identifier', 'string',
-        ]
-        token_patterns = [
-            '({})'.format(patterns.get(t, re.escape(t)))
-            for t in self.tokens]
-        if ignore:
-            token_patterns.append(('(?:{})'.format(ignore)))
-        self.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
-
-    def change_tokenizer(self, grammar):
+    def __init__(cls):
         # build a regular expression to generate a sequence of tokens
-        self.tokens = grammar.tokens
         token_patterns = [
-            '({})'.format(grammar.patterns.get(t, re.escape(t)))
-            for t in self.tokens]
-        if grammar.ignore:
-            token_patterns.append(('(?:{})'.format(grammar.ignore)))
-        self.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
+            '({})'.format(cls.patterns.get(t, re.escape(t)))
+            for t in cls.tokens]
+        if cls.ignore:
+            token_patterns.append('(?:{})'.format(cls.ignore))
+        cls.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
 
     def generate_tokens(self, source):
         offset = 0

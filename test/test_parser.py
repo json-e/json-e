@@ -3,10 +3,10 @@ from __future__ import absolute_import, print_function, unicode_literals
 from nose.tools import eq_
 from jsone import JSONTemplateError
 from jsone.parser import Tokenizer, Token, Parser
-from jsone.AST import ASTNode, UnaryOp, BinOp, ContextValue, ValueAccess, Object, List
+from jsone.AST import ASTNode, UnaryOp, BinOp, FunctionCall, ValueAccess, Object, List
 
 
-class IgnoringAlgebraicParser(object):
+class IgnoringAlgebraicParser(Tokenizer):
     ignore = r' +'
     patterns = {
         'symbol': r'[A-Z]+',
@@ -15,7 +15,7 @@ class IgnoringAlgebraicParser(object):
     tokens = ['symbol', 'number', '+', '-']
 
 
-class SimpleExpressionParser(object):
+class SimpleExpressionParser(Tokenizer):
     ignore = None
     patterns = {
         'number': r'[0-9]',
@@ -50,11 +50,8 @@ def test_tokenizer():
     }
 
     def t(name):
-        gramma, input, output = tests[name]
-        tokenizer = Tokenizer()
-        tokenizer.change_tokenizer(gramma)
+        tokenizer, input, output = tests[name]
         try:
-
             got = list(tokenizer.generate_tokens(input))
         except Exception as exc:
             if isinstance(output, list):
@@ -69,8 +66,7 @@ def test_tokenizer():
 
 
 def test_parser():
-    tokenizer = Tokenizer()
-    tokenizer.change_tokenizer(SimpleExpressionParser())
+    tokenizer = SimpleExpressionParser()
 
     def t(input, output):
         tokens = tokenizer.generate_tokens(input)
