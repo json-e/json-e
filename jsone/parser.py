@@ -46,9 +46,9 @@ class Parser(object):
         """  comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)* """
         """  addition : multiplication (PLUS | MINUS multiplication)* """
         """  multiplication : exponentiation (MUL | DIV exponentiation)* """
-        """  exponentiation : propertyAccess (EXP exponentiation)* """
+        """  exponentiation : propertyAccessOrFunc (EXP exponentiation)* """
         if level == len(self.operatorsByPriority) - 1:
-            node = self.parse_property_access()
+            node = self.parse_property_access_or_func()
             token = self.current_token
 
             while token is not None and token.kind in self.operatorsByPriority[level]:
@@ -66,11 +66,12 @@ class Parser(object):
 
         return node
 
-    def parse_property_access(self):
-        """  propertyAccess : unit (accessWithBrackets (functionCall)? | DOT id)* """
+    def parse_property_access_or_func(self):
+        """  propertyAccessOrFunc : unit (accessWithBrackets | DOT id | functionCall)* """
         node = self.parse_unit()
         token = self.current_token
-        while token is not None and (token.kind == "[" or token.kind == "."):
+        operators = ["[", "(", "."]
+        while token is not None and token.kind in operators:
             if token.kind == "[":
                 node = self.parse_access_with_brackets(node)
                 if self.current_token is not None and self.current_token.kind == "(":
@@ -81,11 +82,13 @@ class Parser(object):
                 right_part = Primitive(self.current_token)
                 self.take_token("identifier")
                 node = BinOp(token, node, right_part)
+            elif token.kind == "(":
+                node = self.parse_function_call(node)
             token = self.current_token
         return node
 
     def parse_unit(self):
-        # unit : unaryOp unit | primitives | contextValue (functionCall)? | LPAREN expr RPAREN | list | object
+        # unit : unaryOp unit | primitives | contextValue | LPAREN expr RPAREN | list | object
         token = self.current_token
         if self.current_token is None:
             raise SyntaxError('Unexpected end of input')
@@ -100,8 +103,6 @@ class Parser(object):
         elif token.kind == "identifier":
             self.take_token(token.kind)
             node = ContextValue(token)
-            if self.current_token is not None and self.current_token.kind == "(":
-                node = self.parse_function_call(node)
         elif token.kind == "(":
             self.take_token("(")
             node = self.parse()

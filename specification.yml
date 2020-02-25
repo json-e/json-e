@@ -1964,7 +1964,7 @@ section:  expression language - basics
 title:    missing right square bracket
 context:  {bar: "mystring"}
 template: {foo: '${bar[2:}'}
-error:   "SyntaxError at template.foo: Found }, expected ]"
+error:   "SyntaxError at template.foo: Found }, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
 ---
 title:    decimal literal
 context:  {}
@@ -5186,5 +5186,14 @@ title: 'Nested error has appropriate message'
 context: {}
 template: {foo: [1, {"123": [{$eval: 10}]}]}
 error: 'TemplateError at template.foo[1]["123"][0]: $eval must be given a string expression'
-
+---
+title: 'parenthesized function expression'
+context: {}
+template: {$eval: "(min)(10, 20)"}
+result: 10
+---
+title: 'dotted function expression'
+context: {}
+template: {$let: {negated: {max: {$eval: min}, min: {$eval: max}}}, in: {$eval: "(negated.min)(10, 20)"}}
+result: 20
 ################################################################################
