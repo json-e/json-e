@@ -3786,7 +3786,7 @@ error: 'InterpreterError: should only use integers to access arrays or strings'
 title: 'other string attributes are not set'
 context: {key: 'abc'}
 template: {$eval: 'key.toUpperCase()'}
-error: 'SyntaxError: Found (, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
+error: 'InterpreterError: infix: . expects objects'
 ---
 title: 'non-identifier after dot'
 context: {key: {}}
