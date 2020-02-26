@@ -188,21 +188,26 @@ class Interpreter {
         }
     }
 
-    visit_Builtin(node) {
-        let args = [];
+    visit_ContextValue(node) {
         if (this.context.hasOwnProperty(node.token.value)) {
-            let builtin = this.context[node.token.value];
-            if (node.args != null) {
-                if (isFunction(builtin)) {
-                    node.args.forEach(function (item) {
-                        args.push(this.visit(item))
-                    }, this);
-                    return builtin.apply(null, args);
-                }
-            }
-            return builtin
+            let contextValue = this.context[node.token.value];
+            return contextValue
         }
         throw new InterpreterError(`unknown context value ${node.token.value}`);
+    }
+
+    visit_FunctionCall(node) {
+        let args = [];
+
+        let funcName = this.visit(node.name);
+        if (isFunction(funcName)) {
+            node.args.forEach(function (item) {
+                args.push(this.visit(item))
+            }, this);
+            return funcName.apply(null, args);
+        } else {
+            throw new InterpreterError(`${funcName} is not callable`);
+        }
     }
 
     visit_Object(node) {

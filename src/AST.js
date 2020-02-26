@@ -4,6 +4,8 @@ class ASTNode {
     }
 }
 
+let Primitive = ASTNode;
+
 class BinOp extends ASTNode {
     constructor(token, left, right) {
         super(token);
@@ -19,10 +21,17 @@ class UnaryOp extends ASTNode {
     }
 }
 
-class Builtin extends ASTNode {
-    constructor(token, args) {
+class FunctionCall extends ASTNode {
+    constructor(token, name, args) {
         super(token);
+        this.name = name;
         this.args = args;
+    }
+}
+
+class ContextValue {
+    constructor(token) {
+        this.token = token;
     }
 }
 
@@ -45,7 +54,7 @@ class ValueAccess extends ASTNode {
 }
 
 class Object extends ASTNode {
-    constructor(token,obj) {
+    constructor(token, obj) {
         super(token);
         this.obj = obj;
     }
@@ -54,7 +63,9 @@ class Object extends ASTNode {
 exports.ASTNode = ASTNode;
 exports.BinOp = BinOp;
 exports.UnaryOp = UnaryOp;
-exports.Builtin = Builtin;
-exports.ArrayAccess = ValueAccess;
+exports.Primitive = Primitive;
+exports.FunctionCall = FunctionCall;
+exports.ContextValue = ContextValue;
+exports.ValueAccess = ValueAccess;
 exports.List = List;
 exports.Object = Object;

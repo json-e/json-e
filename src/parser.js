@@ -1,9 +1,9 @@
-const {ASTNode, UnaryOp, BinOp, Builtin, ArrayAccess, List, Object} = require("../src/AST");
-const Tokenizer = require("../src/tokenizer");
+const {UnaryOp, BinOp, Primitive, ContextValue, FunctionCall, ValueAccess, List, Object} = require("../src/AST");
 const {SyntaxError} = require('./error');
 
-let syntaxRuleError = (token) => {
-    return new SyntaxError(`Found ${token.value}, expected !, (, +, -, [, false, identifier, null, number, string, true, {`);
+let syntaxRuleError = (token, expects) => {
+    expects.sort();
+    return new SyntaxError(`Found ${token.value}, expected ${expects.join(', ')}`, token);
 };
 
 class Parser {
@@ -12,13 +12,19 @@ class Parser {
         this._tokenizer = tokenizer;
         this.current_token = this._tokenizer.next(this._source, offset);
         this.unaryOpTokens = ["-", "+", "!"];
-        this.primitivesTokens = ["number", "null", "true", "false"];
+        this.primitivesTokens = ["number", "null", "true", "false", "string"];
         this.operations = [["||"], ["&&"], ["in"], ["==", "!="], ["<", ">", "<=", ">="], ["+", "-"], ["*", "/"], ["**"]];
+        this.expectedTokens = ["!", "(", "+", "-", "[", "false", "identifier", "null", "number", "string", "true", "{"];
+
     }
 
     takeToken(...kinds) {
+        if (this.current_token == null) {
+            throw new SyntaxError('Unexpected end of input');
+        }
+
         if (kinds.length > 0 && kinds.indexOf(this.current_token.kind) === -1) {
-            throw syntaxRuleError(this.current_token);
+            throw syntaxRuleError(this.current_token, kinds);
         }
         try {
             this.current_token = this._tokenizer.next(this._source, this.current_token.end);
@@ -28,9 +34,17 @@ class Parser {
     }
 
     parse(level = 0) {
-        let node
+        //expr : logicalAnd (OR logicalAnd)*
+        //logicalAnd : inStatement (AND inStatement)*
+        //inStatement : equality (IN equality)*
+        //equality : comparison (EQUALITY | INEQUALITY  comparison)*
+        //comparison : addition (LESS | GREATER | LESSEQUAL | GREATEREQUAL addition)*
+        //addition : multiplication (PLUS | MINUS multiplication)* "
+        //multiplication : exponentiation (MUL | DIV exponentiation)*
+        //exponentiation : propertyAccessOrFunc (EXP exponentiation)*
+        let node;
         if (level == this.operations.length - 1) {
-            node = this.factor();
+            node = this.parsePropertyAccessOrFunc();
             let token = this.current_token;
 
             for (; token != null && this.operations[level].indexOf(token.kind) !== -1; token = this.current_token) {
@@ -50,74 +64,88 @@ class Parser {
         return node
     }
 
-    factor() {
-        //    factor : unaryOp factor | primitives | (string | list | builtin) (valueAccess)? | LPAREN expr RPAREN |object
+    parsePropertyAccessOrFunc() {
+        let node = this.parseUnit();
+        let operators = ["[", "(", "."];
+        let rightPart;
+        for (let token = this.current_token; token != null && operators.indexOf(token.kind) !== -1; token = this.current_token) {
+            if (token.kind == "[") {
+                node = this.parseAccessWithBrackets(node)
+            } else if (token.kind == ".") {
+                token = this.current_token;
+                this.takeToken(".");
+                rightPart = new Primitive(this.current_token);
+                this.takeToken("identifier");
+                node = new BinOp(token, node, rightPart)
+            } else if (token.kind == "(") {
+                node = this.parseFunctionCall(node)
+            }
+        }
+        return node
+    }
+
+
+    parseUnit() {
+        // unit : unaryOp unit | primitives | contextValue | LPAREN expr RPAREN | list | object
         let token = this.current_token;
         let node;
         let isUnaryOpToken = this.unaryOpTokens.indexOf(token.kind) !== -1;
         let isPrimitivesToken = this.primitivesTokens.indexOf(token.kind) !== -1;
-
+        if (this.current_token == null) {
+            throw new SyntaxError('Unexpected end of input');
+        }
         if (isUnaryOpToken) {
             this.takeToken(token.kind);
-            node = new UnaryOp(token, this.factor());
+            node = new UnaryOp(token, this.parseUnit());
         } else if (isPrimitivesToken) {
             this.takeToken(token.kind);
-            node = new ASTNode(token);
-        } else if (token.kind == "string") {
+            node = new Primitive(token);
+        } else if (token.kind == "identifier") {
             this.takeToken(token.kind);
-            node = new ASTNode(token);
-            node = this.valueAccess(node)
+            node = new ContextValue(token);
         } else if (token.kind == "(") {
             this.takeToken("(");
             node = this.parse();
+            if (node == null) {
+                throw syntaxRuleError(this.current_token, this.expectedTokens);
+            }
             this.takeToken(")");
         } else if (token.kind == "[") {
-            node = this.list();
-            node = this.valueAccess(node)
+            node = this.parseList();
         } else if (token.kind == "{") {
-            node = this.object();
-        } else if (token.kind == "identifier") {
-            node = this.builtins();
-            node = this.valueAccess(node)
+            node = this.parseObject();
         }
-
         return node
     }
 
-    builtins() {
-        //    builtins : ID((LPAREN (expr ( COMMA expr)*)? RPAREN)? | (DOT ID)*)
-        let args = null;
+    parseFunctionCall(name) {
+        //    functionCall: LPAREN (expr ( COMMA expr)*)? RPAREN
         let token = this.current_token;
         let node;
-        this.takeToken("identifier");
+        let args = [];
+        this.takeToken("(");
 
-        if (this.current_token != null && this.current_token.kind == "(") {
-            args = [];
-            this.takeToken("(");
-            if (this.current_token.kind != ")") {
-                node = this.parse();
-                args.push(node);
+        if (this.current_token.kind != ")") {
+            node = this.parse();
+            args.push(node);
 
-                while (this.current_token.kind == ",") {
-                    this.takeToken(",");
-                    node = this.parse();
-                    args.push(node)
+            while (this.current_token != null && this.current_token.kind == ",") {
+                if (args[args.length - 1] == null) {
+                    throw syntaxRuleError(this.current_token, this.expectedTokens);
                 }
+                this.takeToken(",");
+                node = this.parse();
+                args.push(node)
             }
-            this.takeToken(")")
         }
-        node = new Builtin(token, args);
-        for (token = this.current_token; token != null && token.kind == "."; token = this.current_token) {
-            this.takeToken(".");
-            let right = new ASTNode(this.current_token);
-            this.takeToken(this.current_token.kind)
-            node = new BinOp(token, node, right);
-        }
+        this.takeToken(")");
+
+        node = new FunctionCall(token, name, args);
 
         return node
     }
 
-    list() {
+    parseList() {
         //    list : LSQAREBRAKET (expr ( COMMA expr)*)? RSQAREBRAKET)
         let node;
         let arr = [];
@@ -129,6 +157,9 @@ class Parser {
             arr.push(node);
 
             while (this.current_token.kind == ",") {
+                if (arr[arr.length - 1] == null) {
+                    throw syntaxRuleError(this.current_token, this.expectedTokens);
+                }
                 this.takeToken(",");
                 node = this.parse();
                 arr.push(node)
@@ -139,66 +170,68 @@ class Parser {
         return node
     }
 
-    valueAccess(node) {
-        //    valueAccess : (LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)(LSQAREBRAKET expr
-        //   |(expr? SEMI expr?)  RSQAREBRAKET))*
+    parseAccessWithBrackets(node) {
+        //    valueAccess : LSQAREBRAKET expr |(expr? SEMI expr?)  RSQAREBRAKET)
         let leftArg = null, rightArg = null;
-        let token;
+        let token = this.current_token;
         let isInterval = false;
 
-        for (token = this.current_token; token && token.kind == "[";) {
-            this.takeToken("[");
-
-            if (this.current_token.kind != ":") {
-                leftArg = this.parse();
-            }
-            if (this.current_token.kind == ":") {
-                isInterval = true;
-                this.takeToken(":");
-                if (this.current_token.kind != "]") {
-                    rightArg = this.parse();
-                }
-            }
-            this.takeToken("]");
-            node = new ArrayAccess(token, node, isInterval, leftArg, rightArg);
-            token = this.current_token
+        this.takeToken("[");
+        if (this.current_token.kind == "]") {
+            throw syntaxRuleError(this.current_token, this.expectedTokens);
         }
+
+        if (this.current_token.kind != ":") {
+            leftArg = this.parse();
+        }
+        if (this.current_token.kind == ":") {
+            isInterval = true;
+            this.takeToken(":");
+        }
+        if (this.current_token.kind != "]") {
+            rightArg = this.parse();
+        }
+
+        if (isInterval && rightArg == null && this.current_token.kind != "]") {
+            throw syntaxRuleError(this.current_token, this.expectedTokens);
+        }
+        this.takeToken("]");
+        node = new ValueAccess(token, node, isInterval, leftArg, rightArg);
 
         return node;
     }
 
-    object() {
+    parseObject() {
         //    object : LCURLYBRACE ( STR | ID SEMI expr (COMMA STR | ID SEMI expr)*)? RCURLYBRACE (DOT ID)?
         let node;
         let obj = {};
         let key, value;
-        let token = this.current_token;
+        let objToken = this.current_token;
         this.takeToken("{");
+        let token = this.current_token;
 
-        while (this.current_token.kind == "string" || this.current_token.kind == "identifier") {
-            key = this.current_token.value;
-            if (this.current_token.kind == "string") {
+        while (token != null && (token.kind == "string" || token.kind == "identifier")) {
+            key = token.value;
+            if (token.kind == "string") {
                 key = parseString(key);
             }
-            this.takeToken(this.current_token.kind);
+            this.takeToken(token.kind);
             this.takeToken(":");
             value = this.parse();
+            if (value == null) {
+                throw syntaxRuleError(this.current_token, this.expectedTokens);
+            }
             obj[key] = value;
-            if (this.current_token.kind == "}") {
+            if (this.current_token != null && this.current_token.kind == "}") {
                 break;
             } else {
                 this.takeToken(",")
             }
+            token = this.current_token;
         }
         this.takeToken("}");
-        node = new Object(token, obj);
+        node = new Object(objToken, obj);
 
-        for (token = this.current_token; token != null && token.kind == "."; token = this.current_token) {
-            this.takeToken(".");
-            let right = new ASTNode(this.current_token);
-            this.takeToken(this.current_token.kind);
-            node = new BinOp(token, node, right);
-        }
         return node;
     }
 
@@ -209,33 +242,6 @@ let
         return str.slice(1, -1);
     };
 
-let
-    createTokenizer = function () {
-        let tokenizer = new Tokenizer({
-                ignore: '\\s+', // ignore all whitespace including \n
-                patterns: {
-                    number: '[0-9]+(?:\\.[0-9]+)?',
-                    identifier: '[a-zA-Z_][a-zA-Z_0-9]*',
-                    string: '\'[^\']*\'|"[^"]*"',
-                    // avoid matching these as prefixes of identifiers e.g., `insinutations`
-                    true: 'true(?![a-zA-Z_0-9])',
-                    false: 'false(?![a-zA-Z_0-9])',
-                    in: 'in(?![a-zA-Z_0-9])',
-                    null: 'null(?![a-zA-Z_0-9])',
-                },
-                tokens: [
-                    '**', ...'+-*/[].(){}:,'.split(''),
-                    '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
-                    'true', 'false', 'in', 'null', 'number',
-                    'identifier', 'string',
-                ]
-            }
-        );
-        return tokenizer
-    };
-
 
 exports
     .Parser = Parser;
-exports
-    .createTokenizer = createTokenizer;
