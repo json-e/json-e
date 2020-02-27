@@ -783,6 +783,18 @@ template:
       then: "${lowercase('t')}"  # lowercase should be redefined as uppercase
       else: "${lowercase('f')}"
 result: T
+---
+title: $let with nested redefinitions of builtins
+context: {}
+template:
+  $let: {fromNow: {$eval: uppercase}}
+  in:
+    $let: {var: 10}
+    in:
+      $if: "defined('var')"
+      then: "${fromNow('1 hour')}"
+      else: "f"
+result: '1 HOUR'
 ################################################################################
 ---
 section:  $map

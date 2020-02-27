@@ -1,1 +1,1 @@
-All variables defined with $let are now visible to defined and fromNow
+Builtin functions are now called with relevant context

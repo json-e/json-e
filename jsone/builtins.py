@@ -8,13 +8,13 @@ class BuiltinError(JSONTemplateError):
     pass
 
 
-def build(context):
+def build():
     builtins = {}
 
     def builtin(name, variadic=None, argument_tests=None, minArgs=None):
         def wrap(fn):
             if variadic:
-                def invoke(*args):
+                def invoke(context, *args):
                     if minArgs:
                         if len(args) < minArgs:
                             raise BuiltinError(
@@ -23,20 +23,24 @@ def build(context):
                     for arg in args:
                         if not variadic(arg):
                             raise BuiltinError('invalid arguments to builtin: {}'.format(name))
+                    if name == "fromNow":
+                        return fn(context, *args)
                     return fn(*args)
 
             elif argument_tests:
-                def invoke(*args):
+                def invoke(context, *args):
                     if len(args) != len(argument_tests):
                         raise BuiltinError('invalid arguments to builtin: {}'.format(name))
                     for t, arg in zip(argument_tests, args):
                         if not t(arg):
                             raise BuiltinError('invalid arguments to builtin: {}'.format(name))
+                    if name == "defined":
+                        return fn(context, *args)
                     return fn(*args)
 
             else:
-                def invoke(*args):
-                    return fn(*args)
+                def invoke(context, *args):
+                    return fn(context, *args)
 
             builtins[name] = invoke
             return fn
@@ -97,7 +101,7 @@ def build(context):
         return s.lstrip()
 
     @builtin('fromNow', variadic=is_string, minArgs=1)
-    def fromNow_builtin(offset, reference=None):
+    def fromNow_builtin(context, offset, reference=None):
         return fromNow(offset, reference or context.get('now'))
 
     @builtin('typeof', argument_tests=[anything])
@@ -118,7 +122,7 @@ def build(context):
             return 'function'
 
     @builtin('defined', argument_tests=[is_string])
-    def defined(s):
+    def defined(context, s):
         if s not in context:
             return False
         else:
