@@ -11,7 +11,7 @@ class BuiltinError(JSONTemplateError):
 def build():
     builtins = {}
 
-    def builtin(name, variadic=None, argument_tests=None, minArgs=None):
+    def builtin(name, variadic=None, argument_tests=None, minArgs=None, needs_context=False):
         def wrap(fn):
             if variadic:
                 def invoke(context, *args):
@@ -23,7 +23,7 @@ def build():
                     for arg in args:
                         if not variadic(arg):
                             raise BuiltinError('invalid arguments to builtin: {}'.format(name))
-                    if name == "fromNow":
+                    if needs_context is True:
                         return fn(context, *args)
                     return fn(*args)
 
@@ -34,13 +34,15 @@ def build():
                     for t, arg in zip(argument_tests, args):
                         if not t(arg):
                             raise BuiltinError('invalid arguments to builtin: {}'.format(name))
-                    if name == "defined":
+                    if needs_context is True:
                         return fn(context, *args)
                     return fn(*args)
 
             else:
                 def invoke(context, *args):
-                    return fn(context, *args)
+                    if needs_context is True:
+                        return fn(context, *args)
+                    return fn(*args)
 
             builtins[name] = invoke
             return fn
@@ -100,7 +102,7 @@ def build():
     def lstrip(s):
         return s.lstrip()
 
-    @builtin('fromNow', variadic=is_string, minArgs=1)
+    @builtin('fromNow', variadic=is_string, minArgs=1, needs_context=True)
     def fromNow_builtin(context, offset, reference=None):
         return fromNow(offset, reference or context.get('now'))
 
@@ -121,7 +123,7 @@ def build():
         elif callable(v):
             return 'function'
 
-    @builtin('defined', argument_tests=[is_string])
+    @builtin('defined', argument_tests=[is_string], needs_context=True)
     def defined(context, s):
         if s not in context:
             return False

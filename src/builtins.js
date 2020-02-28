@@ -25,9 +25,10 @@ module.exports = (context) => {
     argumentTests = [],
     minArgs = false,
     variadic = null,
+    needsContext = false,
     invoke,
   }) => context[name] = (...args) => {
-    let ctx = args.pop();
+    let ctx = args.shift();
     if (!variadic && args.length < argumentTests.length) {
       throw builtinError(`builtin: ${name}`, `${args.toString()}, too few arguments`);
     }
@@ -45,7 +46,7 @@ module.exports = (context) => {
         throw builtinError(`builtin: ${name}`, `argument ${i + 1} to be ${argumentTests[i]} found ${typeof arg}`);
       }
     });
-    if (name == "fromNow" || name == "defined")
+    if (needsContext)
       return invoke(ctx, ...args);
 
     return invoke(...args);
@@ -123,6 +124,7 @@ module.exports = (context) => {
   define('fromNow', builtins, {
     variadic: 'string',
     minArgs: 1,
+    needsContext: true,
     invoke: (ctx, str, reference) => fromNow(str, reference || ctx.now),
   });
 
@@ -143,6 +145,7 @@ module.exports = (context) => {
 
   define('defined', builtins, {
     argumentTests: ['string'],
+    needsContext: true,
     invoke:(ctx, str) => ctx.hasOwnProperty(str)
   });
 

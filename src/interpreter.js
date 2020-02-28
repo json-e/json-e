@@ -263,7 +263,7 @@ infixRules['.'] = (left, token, ctx) => {
 infixRules['('] =  (left, token, ctx) => {
   if (isFunction(left)) {
     let args = parseList(ctx, ',', ')');
-    args.push(ctx.context);
+    args.unshift(ctx.context);
     return left.apply(null, args);
   }
   throw expectationError('infix: f(args)', 'f to be function');
