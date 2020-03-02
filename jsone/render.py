@@ -25,13 +25,13 @@ def operator(name):
     def wrap(fn):
         operators[name] = fn
         return fn
+
     return wrap
 
 
-class tokenizer(Tokenizer):
-
-    ignore = '\\s+'
-    patterns = {
+tokenizer = Tokenizer(
+    '\\s+',
+    {
         'number': '[0-9]+(?:\\.[0-9]+)?',
         'identifier': '[a-zA-Z_][a-zA-Z_0-9]*',
         'string': '\'[^\']*\'|"[^"]*"',
@@ -40,31 +40,17 @@ class tokenizer(Tokenizer):
         'false': 'false(?![a-zA-Z_0-9])',
         'in': 'in(?![a-zA-Z_0-9])',
         'null': 'null(?![a-zA-Z_0-9])',
-    }
-    tokens = [
+    },
+    [
         '**', '+', '-', '*', '/', '[', ']', '.', '(', ')', '{', '}', ':', ',',
         '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in',
         'null', 'number', 'identifier', 'string',
-    ]
-    precedence = [
-        ['||'],
-        ['&&'],
-        ['in'],
-        ['==', '!='],
-        ['>=', '<=', '<', '>'],
-        ['+', '-'],
-        ['*', '/'],
-        ['**-right-associative'],
-        ['**'],
-        ['[', '.'],
-        ['('],
-        ['unary'],
-    ]
+    ],
+)
 
 
 def parse(source, context):
-    tokens = tokenizer().generate_tokens(source)
-    parser = Parser(tokens, source)
+    parser = Parser(source, tokenizer)
     tree = parser.parse()
     if parser.current_token is not None:
         raise SyntaxError.unexpected(parser.current_token)
@@ -75,8 +61,7 @@ def parse(source, context):
 
 
 def parse_until_terminator(source, context, terminator):
-    tokens = tokenizer().generate_tokens(source)
-    parser = Parser(tokens, source)
+    parser = Parser(source, tokenizer)
     tree = parser.parse()
     if parser.current_token.kind != terminator:
         raise SyntaxError.unexpected(parser.current_token)
@@ -151,6 +136,7 @@ def flatten(template, context):
                     yield e2
             else:
                 yield e
+
     return list(gen())
 
 
@@ -262,6 +248,7 @@ def map(template, context):
             elt = renderValue(each_template, subcontext)
             if elt is not DeleteMarker:
                 yield elt
+
     if is_obj:
         value = [{'key': v[0], 'val': v[1]} for v in value.items()]
         v = dict()
@@ -323,6 +310,7 @@ def merge(template, context):
                     res[k] = v
             return res
         return r
+
     if len(value) == 0:
         return {}
     return functools.reduce(merge, value[1:], value[0])
@@ -357,6 +345,7 @@ def sort(template, context):
             for e in value:
                 subcontext[by_var] = e
                 yield parse(by_expr, subcontext), e
+
         to_sort = list(xform())
     elif len(by_keys) == 0:
         to_sort = [(e, e) for e in value]
@@ -408,6 +397,7 @@ def renderValue(template, context):
                     raise
                 if v is not DeleteMarker:
                     yield k, v
+
         return dict(updated())
 
     elif isinstance(template, list):
@@ -420,6 +410,7 @@ def renderValue(template, context):
                 except JSONTemplateError as e:
                     e.add_location('[{}]'.format(i))
                     raise
+
         return list(updated())
 
     else:

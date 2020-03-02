@@ -17,8 +17,8 @@ class SyntaxError(TemplateError):
 
 
 class Parser(object):
-    def __init__(self, tokens, source):
-        self.tokens = tokens
+    def __init__(self, source, tokenizer):
+        self.tokens = tokenizer.generate_tokens(source)
         self.source = source
         self.current_token = next(self.tokens)
         self.unaryOpTokens = ["-", "+", "!"]
@@ -218,14 +218,17 @@ def parse_string(string):
 
 
 class Tokenizer(object):
-    def __init__(cls):
+    def __init__(self, ignore, patterns, tokens):
+        self.ignore = ignore
+        self.patterns = patterns
+        self.tokens = tokens
         # build a regular expression to generate a sequence of tokens
         token_patterns = [
-            '({})'.format(cls.patterns.get(t, re.escape(t)))
-            for t in cls.tokens]
-        if cls.ignore:
-            token_patterns.append('(?:{})'.format(cls.ignore))
-        cls.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
+            '({})'.format(self.patterns.get(t, re.escape(t)))
+            for t in self.tokens]
+        if self.ignore:
+            token_patterns.append('(?:{})'.format(self.ignore))
+        self.token_re = re.compile('^(?:' + '|'.join(token_patterns) + ')')
 
     def generate_tokens(self, source):
         offset = 0

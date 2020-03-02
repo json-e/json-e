@@ -5,48 +5,40 @@ from jsone import JSONTemplateError
 from jsone.parser import Tokenizer, Token, Parser
 from jsone.AST import ASTNode, UnaryOp, BinOp, FunctionCall, ValueAccess, Object, List
 
-
-class IgnoringAlgebraicParser(Tokenizer):
-    ignore = r' +'
-    patterns = {
+ignoring_tokenizer = Tokenizer(
+    r' +',
+    {
         'symbol': r'[A-Z]+',
         'number': r'[0-9]+',
-    }
-    tokens = ['symbol', 'number', '+', '-']
+    },
+    ['symbol', 'number', '+', '-']
+)
 
-
-class SimpleExpressionParser(Tokenizer):
-    ignore = None
-    patterns = {
+simple_tokenizer = Tokenizer(
+    None,
+    {
         'number': r'[0-9]',
-    }
-    tokens = ['number', '+', '-', '*', '(', ')']
-    precedence = [
-        ['+', '-'],
-        ['*'],
-        ['('],
-    ]
+    },
+    ['number', '+', '-', '*', '(', ')'],
+)
 
 
 def test_tokenizer():
-    ignoring_parser = IgnoringAlgebraicParser()
-    simple_parser = SimpleExpressionParser()
-
     tests = {
-        'empty': (ignoring_parser, '', []),
-        'whitespace-pre': (simple_parser, ' 1+2', JSONTemplateError),
-        'whitespace-in': (simple_parser, '1 + 2', JSONTemplateError),
-        'whitespace-post': (simple_parser, '1+2 ', JSONTemplateError),
-        'whitespace-ok': (ignoring_parser, ' 1 + 2 ', [
+        'empty': (ignoring_tokenizer, '', []),
+        'whitespace-pre': (simple_tokenizer, ' 1+2', JSONTemplateError),
+        'whitespace-in': (simple_tokenizer, '1 + 2', JSONTemplateError),
+        'whitespace-post': (simple_tokenizer, '1+2 ', JSONTemplateError),
+        'whitespace-ok': (ignoring_tokenizer, ' 1 + 2 ', [
             Token('number', '1', 1, 2),
             Token('+', '+', 3, 4),
             Token('number', '2', 5, 6),
         ]),
-        'multi-char': (ignoring_parser, '1234 ABCD', [
+        'multi-char': (ignoring_tokenizer, '1234 ABCD', [
             Token('number', '1234', 0, 4),
             Token('symbol', 'ABCD', 5, 9),
         ]),
-        'invalid': (simple_parser, 'xxx', JSONTemplateError),
+        'invalid': (simple_tokenizer, 'xxx', JSONTemplateError),
     }
 
     def t(name):
@@ -66,11 +58,8 @@ def test_tokenizer():
 
 
 def test_parser():
-    tokenizer = SimpleExpressionParser()
-
     def t(input, output):
-        tokens = tokenizer.generate_tokens(input)
-        parser = Parser(tokens, input)
+        parser = Parser(input, simple_tokenizer)
         eq_(treesequals(parser.parse(), output), True)
 
     yield t, '1+2+3', BinOp(Token('+', '+', 3, 4),
@@ -96,8 +85,7 @@ def test_parser():
 
     def fail(input, message):
         try:
-            tokens = tokenizer.generate_tokens(input)
-            parser = Parser(tokens, input)
+            parser = Parser(input, simple_tokenizer)
             parser.parse()
         except JSONTemplateError as exc:
             eq_(str(exc), "SyntaxError: " + message)
