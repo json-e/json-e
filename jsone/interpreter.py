@@ -189,7 +189,10 @@ class ExpressionEvaluator(PrattParser):
         if not callable(left):
             raise TemplateError('function call', 'callable')
         args = parseList(pc, ',', ')')
-        return left(self.context, *args)
+        if 'build' in left.func_globals:
+            return left(self.context, *args)
+        else:
+            return left(*args)
 
     @infix('==', '!=', '||', '&&')
     def equality_and_logic(self, left, token, pc):
