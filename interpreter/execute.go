@@ -1,7 +1,7 @@
 package interpreter
 
 import (
-	p "./parser"
+	p "github.com/taskcluster/json-e/interpreter/parser"
 	"strings"
 )
 

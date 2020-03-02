@@ -1,8 +1,8 @@
 package interpreter
 
 import (
-	"./parser"
 	"fmt"
+	"github.com/taskcluster/json-e/interpreter/parser"
 	"math"
 	"reflect"
 	"strconv"
