@@ -113,6 +113,9 @@ func (i NewInterpreter) Visit_BinOp(node parser.BinOp) (interface{}, error) {
 		}
 	default:
 		right, err = i.visit(node.Right)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	switch tokenKind {

@@ -9,7 +9,6 @@ type Parser struct {
 	tokenizer           Tokenizer
 	CurrentToken        Token
 	unaryOpTokens       []string
-	binOpTokens         []string
 	primitivesTokens    []string
 	operatorsByPriority [][]string
 	expectedTokens      []string
@@ -358,7 +357,7 @@ func (p *Parser) parseAccessWithBrackets(node IASTNode) (IASTNode, error) {
 			return nil, err
 		}
 	}
-	if isInterval == true && right == nil && p.CurrentToken.Kind != "]" {
+	if isInterval && right == nil && p.CurrentToken.Kind != "]" {
 		return nil, SyntaxError{
 			Message:  fmt.Sprintf("Found '%s'", p.CurrentToken.Kind),
 			Source:   p.source,
