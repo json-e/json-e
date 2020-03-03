@@ -1,1 +1,0 @@
-The `$fromNow` builtin is tested to properly handle a new value of `now` defined in a `$let`.

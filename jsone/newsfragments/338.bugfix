@@ -1,1 +1,0 @@
-Strings containing unicode are now handled correctly by str() on Python 2.
