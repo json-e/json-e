@@ -6,7 +6,7 @@ package_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'package
 with open(package_json) as f:
     version = json.load(f)['version']
 
-description='A data-structure parameterization system written for embedding context in JSON objects',
+description='A data-structure parameterization system written for embedding context in JSON objects'
 
 long_description = '''\
 {description}.
