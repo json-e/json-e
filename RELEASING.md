@@ -6,4 +6,8 @@
 * Release to PyPi:
   * `python setup.py sdist`
   * `twine upload dist/json-e-<version>.tar.gz`
+* Release to npm:
+  * `npm publish`
 * Go doesn't believe in versions, so there's notihng to do for a Go release!
+* To deploy the web-site:
+  * `deploy.sh`
