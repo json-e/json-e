@@ -1,3 +1,15 @@
+Jsone  (2020-03-04)
+===================
+
+Bugfixes
+--------
+
+- Added support for the short-circuiting of the boolean logic operators || and &&
+  Separated parser and interpreter.
+  Parser build an abstract syntax tree.
+  Interpreter make tree traversal. (#244)
+
+
 Jsone 3.0.2 (2020-03-03)
 ========================
 
