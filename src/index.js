@@ -1,4 +1,6 @@
-var interpreter = require('./interpreter');
+const {Parser} = require('./parser');
+const Tokenizer = require("../src/tokenizer");
+const {Interpreter} = require('./interpreter');
 var fromNow = require('./from-now');
 var stringify = require('json-stable-stringify-without-jsonify');
 var {
@@ -8,6 +10,10 @@ var {
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
+
+let syntaxRuleError = (token) => {
+    return new SyntaxError(`Found ${token.value}, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||`);
+};
 
 function checkUndefinedProperties(template, allowed) {
   var unknownKeys = '';
@@ -34,7 +40,7 @@ let interpolate = (string, context) => {
     result += remaining.slice(0, offset);
 
     if (remaining[offset+1] != '$') {
-      let v = interpreter.parseUntilTerminator(remaining.slice(offset), 2, '}', context);
+      let v = parseUntilTerminator(remaining.slice(offset + 2), '}', context);
       if (isArray(v.result) || isObject(v.result)) {
         let input = remaining.slice(offset + 2, offset + v.offset);
         throw new TemplateError(`interpolation of '${input}' produced an array or object`);
@@ -69,7 +75,7 @@ operators.$eval = (template, context) => {
     throw new TemplateError('$eval must be given a string expression');
   }
 
-  return interpreter.parse(template['$eval'], context);
+  return parse(template['$eval'], context);
 };
 
 operators.$flatten = (template, context) => {
@@ -116,11 +122,11 @@ operators.$if = (template, context) => {
   if (!isString(template['$if'])) {
     throw new TemplateError('$if can evaluate string expressions only');
   }
-  if (isTruthy(interpreter.parse(template['$if'], context))) {
+  if (isTruthy(parse(template['$if'], context))) {
     if(template.hasOwnProperty('$then')){
       throw new TemplateError('$if Syntax error: $then: should be spelled then: (no $)')
     }
-    
+
    return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
   }
 
@@ -189,7 +195,7 @@ operators.$map = (template, context) => {
   let each = template[eachKey];
 
   let object = isObject(value);
-  
+
   if (object) {
     value = Object.keys(value).map(key => ({key, val: value[key]}));
     let eachValue;
@@ -198,7 +204,7 @@ operators.$map = (template, context) => {
       eachValue = render(each, Object.assign({}, context, args));
       if (!isObject(eachValue)) {
         throw new TemplateError(`$map on objects expects each(${x}) to evaluate to an object`);
-      } 
+      }
       return eachValue;
     }).filter(v => v !== deleteMarker);
     //return value.reduce((a, o) => Object.assign(a, o), {});
@@ -222,7 +228,7 @@ operators.$match = (template, context) => {
   const conditions = template['$match'];
 
   for (let condition of Object.keys(conditions).sort()) {
-    if (isTruthy(interpreter.parse(condition, context))) {
+    if (isTruthy(parse(condition, context))) {
       result.push(render(conditions[condition], context));
     }
   }
@@ -305,7 +311,7 @@ operators.$sort = (template, context) => {
     let byExpr = template[byKey];
     by = value => {
       contextClone[x] = value;
-      return interpreter.parse(byExpr, contextClone);
+      return parse(byExpr, contextClone);
     };
   } else {
     let needBy = value.some(v => isArray(v) || isObject(v));
@@ -396,6 +402,55 @@ let render = (template, context) => {
     }
   }
   return result;
+};
+
+let tokenizer = new Tokenizer({
+    ignore: '\\s+', // ignore all whitespace including \n
+    patterns: {
+        number: '[0-9]+(?:\\.[0-9]+)?',
+        identifier: '[a-zA-Z_][a-zA-Z_0-9]*',
+        string: '\'[^\']*\'|"[^"]*"',
+        // avoid matching these as prefixes of identifiers e.g., `insinutations`
+        true: 'true(?![a-zA-Z_0-9])',
+        false: 'false(?![a-zA-Z_0-9])',
+        in: 'in(?![a-zA-Z_0-9])',
+        null: 'null(?![a-zA-Z_0-9])',
+    },
+    tokens: [
+        '**', ...'+-*/[].(){}:,'.split(''),
+        '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||',
+        'true', 'false', 'in', 'null', 'number',
+        'identifier', 'string',
+    ]
+});
+
+let parse = (source, context) => {
+    let parser = new Parser(tokenizer, source);
+    let tree = parser.parse();
+    if (parser.current_token != null) {
+        throw syntaxRuleError(parser.current_token);
+    }
+    let interpreter = new Interpreter(context);
+
+    return interpreter.interpret(tree);
+};
+
+let parseUntilTerminator = (source, terminator, context) => {
+    let parser = new Parser(tokenizer, source);
+    let tree = parser.parse();
+    let next = parser.current_token;
+    if (!next) {
+        // string ended without the terminator
+        let errorLocation = source.length;
+        throw new SyntaxError(`Found end of string, expected ${terminator}`,
+            {start: errorLocation, end: errorLocation});
+    } else if (next.kind !== terminator) {
+        throw syntaxRuleError(next);
+    }
+    let interpreter = new Interpreter(context);
+    let result = interpreter.interpret(tree);
+
+    return {result, offset: next.start + 2};
 };
 
 module.exports = (template, context = {}) => {

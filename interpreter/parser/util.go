@@ -1,4 +1,4 @@
-package prattparser
+package parser
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ func mustBeNonCaptureRegex(r string) {
 	}
 }
 
-func stringsContains(a string, list []string) bool {
+func StringsContains(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
 			return true

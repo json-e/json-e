@@ -4,12 +4,21 @@ import re
 import json as json
 from .shared import JSONTemplateError, TemplateError, DeleteMarker, string, to_str
 from . import shared
-from .interpreter import ExpressionEvaluator
 from .six import viewitems
+from .parser import Parser, Tokenizer
+from .interpreter import Interpreter
 import functools
 
 operators = {}
 IDENTIFIER_RE = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*$')
+
+
+class SyntaxError(TemplateError):
+
+    @classmethod
+    def unexpected(cls, got):
+        return cls('Found {}, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in,'
+                   ' ||'.format(got.value))
 
 
 def operator(name):
@@ -19,9 +28,45 @@ def operator(name):
     return wrap
 
 
-def evaluateExpression(expr, context):
-    evaluator = ExpressionEvaluator(context)
-    return evaluator.parse(expr)
+tokenizer = Tokenizer(
+    '\\s+',
+    {
+        'number': '[0-9]+(?:\\.[0-9]+)?',
+        'identifier': '[a-zA-Z_][a-zA-Z_0-9]*',
+        'string': '\'[^\']*\'|"[^"]*"',
+        # avoid matching these as prefixes of identifiers e.g., `insinutations`
+        'true': 'true(?![a-zA-Z_0-9])',
+        'false': 'false(?![a-zA-Z_0-9])',
+        'in': 'in(?![a-zA-Z_0-9])',
+        'null': 'null(?![a-zA-Z_0-9])',
+    },
+    [
+        '**', '+', '-', '*', '/', '[', ']', '.', '(', ')', '{', '}', ':', ',',
+        '>=', '<=', '<', '>', '==', '!=', '!', '&&', '||', 'true', 'false', 'in',
+        'null', 'number', 'identifier', 'string',
+    ],
+)
+
+
+def parse(source, context):
+    parser = Parser(source, tokenizer)
+    tree = parser.parse()
+    if parser.current_token is not None:
+        raise SyntaxError.unexpected(parser.current_token)
+
+    interp = Interpreter(context)
+    result = interp.interpret(tree)
+    return result
+
+
+def parse_until_terminator(source, context, terminator):
+    parser = Parser(source, tokenizer)
+    tree = parser.parse()
+    if parser.current_token.kind != terminator:
+        raise SyntaxError.unexpected(parser.current_token)
+    interp = Interpreter(context)
+    result = interp.interpret(tree)
+    return result, parser.current_token.start
 
 
 _interpolation_start_re = re.compile(r'\$?\${')
@@ -33,13 +78,12 @@ def interpolate(string, context):
         return string
 
     result = []
-    evaluator = ExpressionEvaluator(context)
 
     while True:
         result.append(string[:mo.start()])
         if mo.group() != '$${':
             string = string[mo.end():]
-            parsed, offset = evaluator.parseUntilTerminator(string, '}')
+            parsed, offset = parse_until_terminator(string, context, '}')
             if isinstance(parsed, (list, dict)):
                 raise TemplateError(
                     "interpolation of '{}' produced an array or object".format(string[:offset]))
@@ -74,7 +118,7 @@ def eval(template, context):
     checkUndefinedProperties(template, ['\$eval'])
     if not isinstance(template['$eval'], string):
         raise TemplateError("$eval must be given a string expression")
-    return evaluateExpression(template['$eval'], context)
+    return parse(template['$eval'], context)
 
 
 @operator('$flatten')
@@ -127,7 +171,7 @@ def fromNow(template, context):
 @operator('$if')
 def ifConstruct(template, context):
     checkUndefinedProperties(template, ['\$if', 'then', 'else'])
-    condition = evaluateExpression(template['$if'], context)
+    condition = parse(template['$if'], context)
     try:
         if condition:
             rv = template['then']
@@ -224,7 +268,7 @@ def matchConstruct(template, context):
 
     result = []
     for condition in sorted(template['$match']):
-        if evaluateExpression(condition, context):
+        if parse(condition, context):
             result.append(renderValue(template['$match'][condition], context))
 
     return result
@@ -296,7 +340,7 @@ def sort(template, context):
             subcontext = context.copy()
             for e in value:
                 subcontext[by_var] = e
-                yield evaluateExpression(by_expr, subcontext), e
+                yield parse(by_expr, subcontext), e
         to_sort = list(xform())
     elif len(by_keys) == 0:
         to_sort = [(e, e) for e in value]
@@ -360,6 +404,7 @@ def renderValue(template, context):
                 except JSONTemplateError as e:
                     e.add_location('[{}]'.format(i))
                     raise
+
         return list(updated())
 
     else:
