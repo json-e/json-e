@@ -1,3 +1,17 @@
+Jsone 4.0.1 (2020-03-11)
+========================
+
+Bugfixes
+--------
+
+- Revert PR # 330 (fix for issue 158)
+
+Improved Documentation
+----------------------
+
+- Update releasing documentation with information on how to release on npm and deploy the web-site (release)
+
+
 Jsone 4.0.0 (2020-03-04)
 ===================
 
