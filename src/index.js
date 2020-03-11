@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const {Parser} = require('./parser');
 const Tokenizer = require("../src/tokenizer");
 const {Interpreter} = require('./interpreter');
@@ -6,7 +8,7 @@ var stringify = require('json-stable-stringify-without-jsonify');
 var {
   isString, isNumber, isBool,
   isArray, isObject,
-   isTruthy, isFunction
+   isTruthy
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
@@ -136,11 +138,7 @@ operators.$if = (template, context) => {
 operators.$json = (template, context) => {
   checkUndefinedProperties(template, ['\\$json']);
 
-  let result = render(template['$json'], context);
-  if (result.length === 0) {
-    throw new TemplateError(`$json returns undefined property because functions are not allowed in JSON`);
-  }
-  return stringify(result);
+  return stringify(render(template['$json'], context));
 };
 
 operators.$let = (template, context) => {
@@ -463,8 +461,6 @@ module.exports = (template, context = {}) => {
   if (result === deleteMarker) {
     return null;
   }
-  if (isFunction(result)) {
-    throw new TemplateError('$eval ' + template.$eval + ' doesn\'t get any arguments in template')
-  }
+
   return result;
 };

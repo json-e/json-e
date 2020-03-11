@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -38,16 +37,9 @@ func Render(template interface{}, context map[string]interface{}) (interface{}, 
 		return nil, err
 	}
 
-	//Handle deleteMarker
+	// Handle deleteMarker
 	if result == deleteMarker {
 		result = nil
-	}
-
-	if result != nil && reflect.TypeOf(result).Kind() == reflect.Ptr {
-		return nil, TemplateError{
-			Message:  "$eval: function doesn't get any arguments in template",
-			Template: template,
-		}
 	}
 
 	// return result
