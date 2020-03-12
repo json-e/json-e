@@ -29,7 +29,6 @@ def build():
 
             elif argument_tests:
                 def invoke(context, *args):
-                    _jsone_builtin = True
                     if len(args) != len(argument_tests):
                         raise BuiltinError('invalid arguments to builtin: {}'.format(name))
                     for t, arg in zip(argument_tests, args):
