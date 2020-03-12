@@ -29,6 +29,7 @@ def build():
 
             elif argument_tests:
                 def invoke(context, *args):
+                    _jsone_builtin = True
                     if len(args) != len(argument_tests):
                         raise BuiltinError('invalid arguments to builtin: {}'.format(name))
                     for t, arg in zip(argument_tests, args):
@@ -44,8 +45,10 @@ def build():
                         return fn(context, *args)
                     return fn(*args)
 
+            invoke._jsone_builtin = True
             builtins[name] = invoke
             return fn
+
         return wrap
 
     def is_number(v):

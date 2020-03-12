@@ -263,7 +263,7 @@ infixRules['.'] = (left, token, ctx) => {
 infixRules['('] =  (left, token, ctx) => {
   if (isFunction(left)) {
     let args = parseList(ctx, ',', ')');
-    if (left.name == "") {
+    if (left.hasOwnProperty("jsone_builtin")) {
       args.unshift(ctx.context);
     }
     return left.apply(null, args);
