@@ -1,1 +1,0 @@
-[JS] Use `json-stable-stringify-without-jsonify`, dropping use of the unlicensed `jsonify`.

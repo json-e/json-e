@@ -636,6 +636,24 @@ context: {}
 result: true
 ```
 
+Json-e supports short-circuit evaluation, so if in `||` left operand is true 
+returning value will be true no matter what right operand is:
+
+```yaml
+context: {}
+template: {$eval: "true || b"}
+result: true
+```
+
+And if in `&&` left operand is false returning value will be false no matter 
+what right operand is:
+
+```yaml
+context: {}
+template: {$eval: "false && b"}
+result: false
+```
+
 ### Object Property Access
 
 Like Javascript, object properties can be accessed either with array-index

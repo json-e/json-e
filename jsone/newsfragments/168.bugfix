@@ -1,5 +1,0 @@
-## Part fix for #168: Enforce all error messages match
-
-Made sure error messages for arithmetic operations, builtins, and strings are the same.
-
-Added error messages for array indexing.

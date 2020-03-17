@@ -626,10 +626,10 @@ context:  {}
 template: {$json: [1,2,true,{},[]], foo: 'bar'}
 error:    'TemplateError: $json has undefined properties: foo'
 ---
-title: json returns undefined property
-context: {}
-template: {$json: {$eval: 'min'}}
-error: "TemplateError: $json returns undefined property because functions are not allowed in JSON"
+title:    $json can be evaluated to null without an error
+context:  {input: null}
+template: {$json: { '$eval': 'input' } }
+result: 'null'
 ################################################################################
 ---
 section: accessing nested objects => context
@@ -1355,11 +1355,6 @@ title: min - TypeError
 context: {}
 template: {$eval: 'min("11")'}
 error: 'BuiltinError: invalid arguments to builtin: min'
----
-title: min - no arguments in template
-context: {}
-template: {$eval: 'min'}
-error: "TemplateError: $eval min doesn't get any arguments in template"
 ---
 title: min (7)
 context: {}
@@ -3707,6 +3702,16 @@ title: 'array or array'
 context: {a: [], b: []}
 template: {$eval: "a || b"}
 result: false
+---
+title: 'short-circuit evaluation for and'
+context: {}
+template: {$eval: "false && b"}
+result: false
+---
+title: 'short-circuit evaluation for or'
+context: {}
+template: {$eval: "true || b"}
+result: true
 ################################################################################
 ---
 section: expression language - string operations
@@ -3810,6 +3815,11 @@ title: 'other string attributes are not set'
 context: {key: 'abc'}
 template: {$eval: 'key.toUpperCase()'}
 error: 'InterpreterError: infix: . expects objects'
+---
+title: 'non-identifier after dot'
+context: {key: {}}
+template: {$eval: 'key.{'}
+error: 'SyntaxError: Found {, expected identifier'
 ################################################################################
 ---
 section: expression language - property access
@@ -3859,6 +3869,21 @@ context: {key: {key2: {key3: 1}}}
 template: {$eval: 'key["key2"]["key3"]'}
 result: 1
 ---
+title: 'nested property access with dot following ]'
+context: {key: {key2: {key3: 1}}}
+template: {$eval: 'key["key2"].key3'}
+result: 1
+---
+title: 'nested property with object in parentheses'
+context: {key: {key2: true}}
+template: {$eval: '(key)["key2"]'}
+result: true
+---
+title: 'nested property with object expression'
+context: {keyid: 1, keys: [false, {key2: true}]}
+template: {$eval: '(keys[keyid])["key2"]'}
+result: true
+---
 title: 'property access with expression value'
 context: {key: abc, values: {abc: 2, def: 3}}
 template: {$eval: 'values[key]'}
@@ -3890,6 +3915,11 @@ title: 'property of array'
 context: {key: []}
 template: {$eval: 'key.valueOf'}
 error: 'InterpreterError: infix: . expects objects'
+---
+title: 'non-identifier after dot'
+context: {key: {}}
+template: {$eval: 'key.{'}
+error: 'SyntaxError: Found {, expected identifier'
 ################################################################################
 ---
 section: expression language - array access
@@ -4149,6 +4179,31 @@ title: 'function call (12)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(3, 2) + max(3, 2)'}
 result: 5
+---
+title: 'function call (13)'
+context: {}
+template: {$let: {functions: [{$eval: min}, {$eval: max}]}, in: {$eval: 'functions[1](2, 3)'}}
+result: 3
+---
+title: 'function call (14)'
+context: {}
+template: {$eval: '[max,min][1](5, 1)'}
+result: 1
+---
+title: 'function name is not callable'
+context: {function: "hi"}
+template: {$eval: "function(10)"}
+error: "InterpreterError: hi is not callable"
+---
+title: 'parenthesized function expression'
+context: {}
+template: {$eval: "(min)(10, 20)"}
+result: 10
+---
+title: 'dotted function expression'
+context: {}
+template: {$let: {negated: {max: {$eval: min}, min: {$eval: max}}}, in: {$eval: "(negated.min)(10, 20)"}}
+result: 20
 ################################################################################
 ---
 section: expression language - in operator
@@ -5073,7 +5128,7 @@ error: true
 title: 'missing opening "'
 context: {}
 template: {$eval: 'hello"'}
-error: 'InterpreterError: unknown context value hello'
+error:  "SyntaxError: Unexpected input for 'hello\"' at '\"'"
 ---
 title: 'Infix + type error'
 context: {}
@@ -5169,5 +5224,39 @@ title: 'Nested error has appropriate message'
 context: {}
 template: {foo: [1, {"123": [{$eval: 10}]}]}
 error: 'TemplateError at template.foo[1]["123"][0]: $eval must be given a string expression'
-
+---
+title: 'object with missing value '
+context: {}
+template: {$eval: '{a: 1, "b": }'}
+error:   "SyntaxError: Found }, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+---
+title: 'object missing key and value after comma'
+context: {}
+template: {$eval: '{a: 1,'}
+error:   "SyntaxError: Unexpected end of input"
+---
+title: 'list with missing first value'
+context: {}
+template: {$eval: '[,2,3]'}
+error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+---
+title: 'list with missing value'
+context: {}
+template: {$eval: '[1,,3]'}
+error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+---
+title: 'empty brackets in property access'
+context: {a: "0123456789"}
+template: {$eval: 'a[]'}
+error:   "SyntaxError: Found ], expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+---
+title: 'function call with missing closing bracket'
+context: {}
+template: {$eval: 'max(2, 0'}
+error:   "SyntaxError: Unexpected end of input"
+---
+title: 'function call with missing argument in brackets'
+context: {}
+template: {$eval: 'max(, 0)'}
+error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
 ################################################################################

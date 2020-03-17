@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -38,16 +37,9 @@ func Render(template interface{}, context map[string]interface{}) (interface{}, 
 		return nil, err
 	}
 
-	//Handle deleteMarker
+	// Handle deleteMarker
 	if result == deleteMarker {
 		result = nil
-	}
-
-	if result != nil && reflect.TypeOf(result).Kind() == reflect.Ptr {
-		return nil, TemplateError{
-			Message:  "$eval: function doesn't get any arguments in template",
-			Template: template,
-		}
 	}
 
 	// return result
@@ -261,7 +253,7 @@ var operators = map[string]operator{
 				Template: template,
 			}
 		}
-		value, err := i.Execute(s, 0, context)
+		value, err := i.Parse(s, context)
 		if err != nil {
 			return nil, TemplateError{
 				Message:  err.Error(),
@@ -391,7 +383,7 @@ var operators = map[string]operator{
 				Template: template,
 			}
 		}
-		val, err := i.Execute(s, 0, context)
+		val, err := i.Parse(s, context)
 		if err != nil {
 			return nil, TemplateError{
 				Message:  err.Error(),
@@ -596,7 +588,7 @@ var operators = map[string]operator{
 		result := make([]interface{}, 0, len(match))
 
 		for _, key := range conditions {
-			check, err := i.Execute(key, 0, context)
+			check, err := i.Parse(key, context)
 			if err != nil {
 				return nil, TemplateError{
 					Message:  err.Error(),
@@ -779,7 +771,7 @@ var operators = map[string]operator{
 					c[k] = v
 				}
 				c[byIdentifier] = item
-				val, err := i.Execute(byExpr, 0, c)
+				val, err := i.Parse(byExpr, c)
 				if err != nil {
 					return nil, TemplateError{
 						Message:  err.Error(),
@@ -872,7 +864,7 @@ func interpolate(template string, context map[string]interface{}) (string, error
 
 		result += remaining[:offset]
 		if remaining[offset+1] != '$' {
-			value, end, err := i.ExecuteUntil(remaining, offset+2, "}", context)
+			value, end, err := i.ParseUntilTerminator(remaining, offset+2, "}", context)
 			if err != nil {
 				return "", err
 			}
