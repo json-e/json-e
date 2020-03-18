@@ -13,7 +13,7 @@ def render(template, context):
         raise TemplateError('top level keys of context must follow '
                             '/[a-zA-Z_][a-zA-Z0-9_]*/')
     full_context = {'now': fromNow('0 seconds', None)}
-    full_context.update(builtins.build(full_context))
+    full_context.update(builtins.build())
     full_context.update(context)
     rv = renderValue(template, full_context)
     if rv is DeleteMarker:

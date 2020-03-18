@@ -25,27 +25,36 @@ module.exports = (context) => {
     argumentTests = [],
     minArgs = false,
     variadic = null,
+    needsContext = false,
     invoke,
-  }) => context[name] = (...args) => {
-    if (!variadic && args.length < argumentTests.length) {
-      throw builtinError(`builtin: ${name}`, `${args.toString()}, too few arguments`);
-    }
-
-    if (minArgs && args.length < minArgs) {
-      throw builtinError(`builtin: ${name}: expected at least ${minArgs} arguments`);
-    }
-
-    if (variadic) {
-      argumentTests = args.map(() => variadic);
-    }
-
-    args.forEach((arg, i) => {
-      if (!argumentTests[i].split('|').some(test => types[test](arg))) {
-        throw builtinError(`builtin: ${name}`, `argument ${i + 1} to be ${argumentTests[i]} found ${typeof arg}`);
+  }) => {
+    context[name] = (...args) => {
+      let ctx = args.shift();
+      if (!variadic && args.length < argumentTests.length) {
+        throw builtinError(`builtin: ${name}`, `${args.toString()}, too few arguments`);
       }
-    });
 
-    return invoke(...args);
+      if (minArgs && args.length < minArgs) {
+        throw builtinError(`builtin: ${name}: expected at least ${minArgs} arguments`);
+      }
+
+      if (variadic) {
+        argumentTests = args.map(() => variadic);
+      }
+
+      args.forEach((arg, i) => {
+        if (!argumentTests[i].split('|').some(test => types[test](arg))) {
+          throw builtinError(`builtin: ${name}`, `argument ${i + 1} to be ${argumentTests[i]} found ${typeof arg}`);
+        }
+      });
+      if (needsContext)
+        return invoke(ctx, ...args);
+
+      return invoke(...args);
+    };
+    context[name].jsone_builtin = true;
+
+    return context[name];
   };
 
   // Math functions
@@ -120,7 +129,8 @@ module.exports = (context) => {
   define('fromNow', builtins, {
     variadic: 'string',
     minArgs: 1,
-    invoke: (str, reference) => fromNow(str, reference || context.now),
+    needsContext: true,
+    invoke: (ctx, str, reference) => fromNow(str, reference || ctx.now),
   });
 
   define('typeof', builtins, {
@@ -140,7 +150,8 @@ module.exports = (context) => {
 
   define('defined', builtins, {
     argumentTests: ['string'],
-    invoke: str => context.hasOwnProperty(str)
+    needsContext: true,
+    invoke: (ctx, str) => ctx.hasOwnProperty(str)
   });
 
   return Object.assign({}, builtins, context);

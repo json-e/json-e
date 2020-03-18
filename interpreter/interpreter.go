@@ -65,14 +65,14 @@ func (i NewInterpreter) Visit_UnaryOp(node parser.UnaryOp) (interface{}, error) 
 	case "+":
 		if !isNumber(value) {
 			return nil, parser.SyntaxError{
-				Message: fmt.Sprintf("Expected number after +"),
+				Message: "Expected number after +",
 			}
 		}
 		return +value.(float64), nil
 	case "-":
 		if !isNumber(value) {
 			return nil, parser.SyntaxError{
-				Message: fmt.Sprintf("Expected number after -"),
+				Message: "Expected number after -",
 			}
 		}
 		return -value.(float64), nil

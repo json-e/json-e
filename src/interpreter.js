@@ -204,6 +204,9 @@ class Interpreter {
             node.args.forEach(function (item) {
                 args.push(this.visit(item))
             }, this);
+            if (funcName.hasOwnProperty("jsone_builtin")) {
+                args.unshift(this.context);
+            }
             return funcName.apply(null, args);
         } else {
             throw new InterpreterError(`${funcName} is not callable`);

@@ -174,7 +174,10 @@ class Interpreter:
             if node.args is not None:
                 for item in node.args:
                     args.append(self.visit(item))
-                return func_name(*args)
+                if hasattr(func_name, "_jsone_builtin"):
+                    return func_name(self.context, *args)
+                else:
+                    return func_name(*args)
         else:
             raise InterpreterError(
                 '{} is not callable'.format(func_name))
