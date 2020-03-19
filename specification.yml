@@ -5260,3 +5260,10 @@ context: {}
 template: {$eval: 'max(, 0)'}
 error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
 ################################################################################
+---
+section: Regression tests
+---
+title: issue 354
+template: {$eval: 'max(3, 2)'}
+context: {}
+result: 3
