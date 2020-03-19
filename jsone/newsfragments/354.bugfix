@@ -1,0 +1,1 @@
+Fix error (constructor.name) when using with Webpack in production mode
