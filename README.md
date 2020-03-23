@@ -786,6 +786,18 @@ result:
   - room
 ```
 
+#### Context
+
+The `defined(varname)` built-in determines if the named variable is defined in the current context.
+The current context includes any variables defined or redefined by `$let` or similar operators.
+Note that the name must be given as a string.
+
+```yaml
+template: {$if: 'defined("x")', then: {$eval: 'x'}, else: 20}
+context: {y: 10}
+result: 20
+```
+
 #### Type
 
 The `typeof()` built-in returns the type of an object. Its behavior around
