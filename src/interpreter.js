@@ -9,7 +9,7 @@ class Interpreter {
     }
 
     visit(node) {
-        let funcName = "visit_" + node.constructor.name;
+        let funcName = "visit_" + node.constructorName;
         return this[funcName](node);
     }
 
