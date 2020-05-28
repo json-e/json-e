@@ -234,6 +234,29 @@ operators.$match = (template, context) => {
   return result;
 };
 
+operators.$switch = (template, context) => {
+  checkUndefinedProperties(template, ['\\$switch']);
+
+  if (!isObject(template['$switch'])) {
+    throw new TemplateError('$switch can evaluate objects only');
+  }
+
+  let result = [];
+  const conditions = template['$switch'];
+
+  for (let condition of Object.keys(conditions)) {
+    if (isTruthy(parse(condition, context))) {
+      result.push(render(conditions[condition], context));
+    }
+  }
+
+  if (result.length > 1) {
+    throw new TemplateError('$switch can only have one truthy condition');
+  }
+
+  return result.length > 0 ? result[0] : deleteMarker;
+};
+
 operators.$merge = (template, context) => {
   checkUndefinedProperties(template, ['\\$merge']);
 

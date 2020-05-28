@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -80,6 +81,11 @@ func restrictProperties(template map[string]interface{}, allowed ...string) erro
 		}
 	}
 	return nil
+}
+
+// IsZero is great
+func IsZero(v reflect.Value) bool {
+	return !v.IsValid() || reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }
 
 var fromNowPattern = regexp.MustCompile(strings.Join([]string{
@@ -610,6 +616,63 @@ var operators = map[string]operator{
 		}
 
 		return result, nil
+	},
+	"$switch": func(template, context map[string]interface{}) (interface{}, error) {
+		if err := restrictProperties(template, "$switch"); err != nil {
+			return nil, err
+		}
+
+		match, ok := template["$switch"].(map[string]interface{})
+		if !ok {
+			return nil, TemplateError{
+				Message:  "$switch can evaluate objects only",
+				Template: template,
+			}
+		}
+
+		// get the sorted list of conditions
+		conditions := make([]string, 0, len(match))
+		for condition := range match {
+			conditions = append(conditions, condition)
+		}
+		sort.Strings(conditions)
+
+		result := make([]interface{}, 0, len(match))
+
+		for _, key := range conditions {
+			check, err := i.Parse(key, context)
+			if err != nil {
+				return nil, TemplateError{
+					Message:  err.Error(),
+					Template: template,
+				}
+			}
+
+			if i.IsTruthy(check) {
+				value := match[key]
+				r, err := render(value, context)
+				if err != nil {
+					return nil, TemplateError{
+						Message:  err.Error(),
+						Template: template,
+					}
+				}
+				result = append(result, r)
+			}
+		}
+
+		if len(result) > 1 {
+			return nil, TemplateError{
+				Message:  "$switch can only have one truthy condition",
+				Template: template,
+			}
+		}
+
+		if len(result) == 0 {
+			return deleteMarker, nil
+		}
+
+		return result[0], nil
 	},
 	"$merge": func(template, context map[string]interface{}) (interface{}, error) {
 		if err := restrictProperties(template, "$merge"); err != nil {
