@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -81,11 +80,6 @@ func restrictProperties(template map[string]interface{}, allowed ...string) erro
 		}
 	}
 	return nil
-}
-
-// IsZero is great
-func IsZero(v reflect.Value) bool {
-	return !v.IsValid() || reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }
 
 var fromNowPattern = regexp.MustCompile(strings.Join([]string{
