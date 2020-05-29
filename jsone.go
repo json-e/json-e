@@ -624,12 +624,10 @@ var operators = map[string]operator{
 			}
 		}
 
-		// get the sorted list of conditions
 		conditions := make([]string, 0, len(match))
 		for condition := range match {
 			conditions = append(conditions, condition)
 		}
-		sort.Strings(conditions)
 
 		result := make([]interface{}, 0, len(match))
 
