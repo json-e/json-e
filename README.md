@@ -396,13 +396,13 @@ result:   [3, 6, 9]
 ```
 The array or object is the value of the `$map` property, and the expression to evaluate
 is given by `each(var[,key|index])` where `var` is the name of the variable containing each
-element and `key|index` is either the object key or array index of the value. In the case of
-iterating over an object and no `key|index` var name is given, `var` will be an object with
+element and `key|index` is either the object key or array index of the value. In the case of 
+iterating over an object and no `key|index` var name is given, `var` will be an object with 
 two keys: `key` and `val`. These keys correspond to a key in the object and its corresponding value.
 
 When $map is given an object, the expression defined by `each(var)` must evaluate to an
 object for each key/value pair (`key` and `val`). The objects constructed by each 'each(var)'
-can then be merged internally to give the resulting object with later keys overwriting
+can then be merged internally to give the resulting object with later keys overwriting 
 the previous ones. Otherwise the expression becomes invalid for the $map operator.
 
 ```yaml
@@ -684,7 +684,7 @@ context: {}
 result: true
 ```
 
-Json-e supports short-circuit evaluation, so if in `||` left operand is true
+Json-e supports short-circuit evaluation, so if in `||` left operand is true 
 returning value will be true no matter what right operand is:
 
 ```yaml
@@ -693,7 +693,7 @@ template: {$eval: "true || b"}
 result: true
 ```
 
-And if in `&&` left operand is false returning value will be false no matter
+And if in `&&` left operand is false returning value will be false no matter 
 what right operand is:
 
 ```yaml
@@ -871,7 +871,7 @@ result:
  - array
  - object
  - function
- - null
+ - null 
  - ''    # .. which interpolates to an empty string
 ```
 
