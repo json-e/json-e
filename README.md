@@ -396,13 +396,13 @@ result:   [3, 6, 9]
 ```
 The array or object is the value of the `$map` property, and the expression to evaluate
 is given by `each(var[,key|index])` where `var` is the name of the variable containing each
-element and `key|index` is either the object key or array index of the value. In the case of 
-iterating over an object and no `key|index` var name is given, `var` will be an object with 
+element and `key|index` is either the object key or array index of the value. In the case of
+iterating over an object and no `key|index` var name is given, `var` will be an object with
 two keys: `key` and `val`. These keys correspond to a key in the object and its corresponding value.
 
 When $map is given an object, the expression defined by `each(var)` must evaluate to an
 object for each key/value pair (`key` and `val`). The objects constructed by each 'each(var)'
-can then be merged internally to give the resulting object with later keys overwriting 
+can then be merged internally to give the resulting object with later keys overwriting
 the previous ones. Otherwise the expression becomes invalid for the $map operator.
 
 ```yaml
@@ -445,6 +445,54 @@ another possible result: ["ten", "tens"]
 template: {$match: {"x < 10": "tens"}}
 context: {x: 10}
 result: []
+```
+
+### `$switch`
+
+The `$switch` operator behaves like a combination of the `$if` and
+`$match` operator for more complex boolean logic. It gets an object,
+in which every key is a string expression(s), where only *one* must
+evaluate to `true` and the remaining to `false` based on the context.
+The result will be the value corresponding to the key that were
+evaluated to `true`.
+
+If there are no matches, the result is either null or if used within an
+object or array, omitted from the parent object.
+
+```yaml
+template: {$switch: {"x == 10": "ten", "x == 20": "twenty"}}
+context: {x: 10}
+result: "ten"
+```
+
+```yaml
+template: {$switch: {"x < 10": 1}}
+context: {x: 10}
+result: null
+```
+
+```yaml
+template: {a: 1, b: {$switch: {"x == 10 || x == 20": 2, "x > 20": 3}}}
+context: {x: 10}
+result: {a: 1, b: 2}
+```
+
+```yaml
+template: {a: 1, b: {$switch: {"x == 1": 2, "x == 3": 3}}}
+context: {x: 2}
+result: {a: 1}
+```
+
+```yaml
+template: [1, b: {$switch: {"x == 1": 2, "x == 10": 3}}]
+context: {x: 2}
+result: [1, 2]
+```
+
+```yaml
+context:  {cond: 3}
+template: [0, {$switch: {'cond > 3': 2, 'cond == 5': 3}}]
+result:   [0]
 ```
 
 ### `$merge`
@@ -636,7 +684,7 @@ context: {}
 result: true
 ```
 
-Json-e supports short-circuit evaluation, so if in `||` left operand is true 
+Json-e supports short-circuit evaluation, so if in `||` left operand is true
 returning value will be true no matter what right operand is:
 
 ```yaml
@@ -645,7 +693,7 @@ template: {$eval: "true || b"}
 result: true
 ```
 
-And if in `&&` left operand is false returning value will be false no matter 
+And if in `&&` left operand is false returning value will be false no matter
 what right operand is:
 
 ```yaml
@@ -823,7 +871,7 @@ result:
  - array
  - object
  - function
- - null 
+ - null
  - ''    # .. which interpolates to an empty string
 ```
 
