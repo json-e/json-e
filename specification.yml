@@ -324,6 +324,11 @@ context:  {x: 1}
 template: {$$match: [{'x == 1': 2}]}
 result:   {$match: [{'x == 1': 2}]}
 ---
+title:    escape $switch
+context:  {x: 1}
+template: {$$switch: [{'x == 1': 2}]}
+result:   {$switch: [{'x == 1': 2}]}
+---
 title:    escape $merge
 context:  {}
 template: {$$merge: [{a: 1}, {a: 2}]}
@@ -1037,8 +1042,9 @@ error:    'TemplateError: $switch can evaluate objects only'
 title:    $switch, value that also needs evaluation
 context:  {cond: 3, ifcond: false}
 template: {$switch: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
-result:   ["f"]
+result:   "f"
 ################################################################################
+---
 section:  $merge
 ---
 title:    simple merge
