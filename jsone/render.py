@@ -271,6 +271,24 @@ def matchConstruct(template, context):
     return result
 
 
+@operator('$switch')
+def switch(template, context):
+    checkUndefinedProperties(template, ['\$switch'])
+
+    if not isinstance(template['$switch'], dict):
+        raise TemplateError("$switch can evaluate objects only")
+
+    result = []
+    for condition in template['$switch']:
+        if parse(condition, context):
+            result.append(renderValue(template['$switch'][condition], context))
+
+    if len(result) > 1:
+        raise TemplateError("$switch can only have one truthy condition")
+
+    return result[0] if len(result) > 0 else DeleteMarker
+
+
 @operator('$merge')
 def merge(template, context):
     checkUndefinedProperties(template, ['\$merge'])
