@@ -35,13 +35,13 @@ class InterpreterError(JSONTemplateError):
 # Regular expression matching: X days Y hours Z minutes
 # todo: support hr, wk, yr
 FROMNOW_RE = re.compile(''.join([
-    '^(\s*(?P<years>\d+)\s*y(ears?)?)?',
-    '(\s*(?P<months>\d+)\s*mo(nths?)?)?',
-    '(\s*(?P<weeks>\d+)\s*w(eeks?)?)?',
-    '(\s*(?P<days>\d+)\s*d(ays?)?)?',
-    '(\s*(?P<hours>\d+)\s*h(ours?)?)?',
-    '(\s*(?P<minutes>\d+)\s*m(in(utes?)?)?)?\s*',
-    '(\s*(?P<seconds>\d+)\s*s(ec(onds?)?)?)?\s*$',
+    r'^(\s*(?P<years>\d+)\s*y(ears?)?)?',
+    r'(\s*(?P<months>\d+)\s*mo(nths?)?)?',
+    r'(\s*(?P<weeks>\d+)\s*w(eeks?)?)?',
+    r'(\s*(?P<days>\d+)\s*d(ays?)?)?',
+    r'(\s*(?P<hours>\d+)\s*h(ours?)?)?',
+    r'(\s*(?P<minutes>\d+)\s*m(in(utes?)?)?)?\s*',
+    r'(\s*(?P<seconds>\d+)\s*s(ec(onds?)?)?)?\s*$',
 ]))
 
 
