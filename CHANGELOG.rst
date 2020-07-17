@@ -1,3 +1,11 @@
+Jsone 4.2.0 (2020-07-17)
+========================
+
+Bugfixes
+--------
+
+- The Python implementation no longer causes warnings about invalid escape sequences (#361).
+
 Jsone 4.1.0 (2020-05-29)
 ========================
 
