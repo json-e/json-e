@@ -115,7 +115,7 @@ def checkUndefinedProperties(template, allowed):
 
 @operator('$eval')
 def eval(template, context):
-    checkUndefinedProperties(template, ['\$eval'])
+    checkUndefinedProperties(template, [r'\$eval'])
     if not isinstance(template['$eval'], string):
         raise TemplateError("$eval must be given a string expression")
     return parse(template['$eval'], context)
@@ -123,7 +123,7 @@ def eval(template, context):
 
 @operator('$flatten')
 def flatten(template, context):
-    checkUndefinedProperties(template, ['\$flatten'])
+    checkUndefinedProperties(template, [r'\$flatten'])
     value = renderValue(template['$flatten'], context)
     if not isinstance(value, list):
         raise TemplateError('$flatten value must evaluate to an array')
@@ -140,7 +140,7 @@ def flatten(template, context):
 
 @operator('$flattenDeep')
 def flattenDeep(template, context):
-    checkUndefinedProperties(template, ['\$flattenDeep'])
+    checkUndefinedProperties(template, [r'\$flattenDeep'])
     value = renderValue(template['$flattenDeep'], context)
     if not isinstance(value, list):
         raise TemplateError('$flattenDeep value must evaluate to an array')
@@ -158,7 +158,7 @@ def flattenDeep(template, context):
 
 @operator('$fromNow')
 def fromNow(template, context):
-    checkUndefinedProperties(template, ['\$fromNow', 'from'])
+    checkUndefinedProperties(template, [r'\$fromNow', 'from'])
     offset = renderValue(template['$fromNow'], context)
     reference = renderValue(
         template['from'], context) if 'from' in template else context.get('now')
@@ -170,7 +170,7 @@ def fromNow(template, context):
 
 @operator('$if')
 def ifConstruct(template, context):
-    checkUndefinedProperties(template, ['\$if', 'then', 'else'])
+    checkUndefinedProperties(template, [r'\$if', 'then', 'else'])
     condition = parse(template['$if'], context)
     try:
         if condition:
@@ -184,14 +184,14 @@ def ifConstruct(template, context):
 
 @operator('$json')
 def jsonConstruct(template, context):
-    checkUndefinedProperties(template, ['\$json'])
+    checkUndefinedProperties(template, [r'\$json'])
     value = renderValue(template['$json'], context)
     return json.dumps(value, separators=(',', ':'), sort_keys=True, ensure_ascii=False)
 
 
 @operator('$let')
 def let(template, context):
-    checkUndefinedProperties(template, ['\$let', 'in'])
+    checkUndefinedProperties(template, [r'\$let', 'in'])
     if not isinstance(template['$let'], dict):
         raise TemplateError("$let value must be an object")
 
@@ -213,8 +213,8 @@ def let(template, context):
 
 @operator('$map')
 def map(template, context):
-    EACH_RE = 'each\([a-zA-Z_][a-zA-Z0-9_]*(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)'
-    checkUndefinedProperties(template, ['\$map', EACH_RE])
+    EACH_RE = r'each\([a-zA-Z_][a-zA-Z0-9_]*(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)'
+    checkUndefinedProperties(template, [r'\$map', EACH_RE])
     value = renderValue(template['$map'], context)
     if not isinstance(value, list) and not isinstance(value, dict):
         raise TemplateError("$map value must evaluate to an array or object")
@@ -258,7 +258,7 @@ def map(template, context):
 
 @operator('$match')
 def matchConstruct(template, context):
-    checkUndefinedProperties(template, ['\$match'])
+    checkUndefinedProperties(template, [r'\$match'])
 
     if not isinstance(template['$match'], dict):
         raise TemplateError("$match can evaluate objects only")
@@ -271,9 +271,27 @@ def matchConstruct(template, context):
     return result
 
 
+@operator('$switch')
+def switch(template, context):
+    checkUndefinedProperties(template, [r'\$switch'])
+
+    if not isinstance(template['$switch'], dict):
+        raise TemplateError("$switch can evaluate objects only")
+
+    result = []
+    for condition in template['$switch']:
+        if parse(condition, context):
+            result.append(renderValue(template['$switch'][condition], context))
+
+    if len(result) > 1:
+        raise TemplateError("$switch can only have one truthy condition")
+
+    return result[0] if len(result) > 0 else DeleteMarker
+
+
 @operator('$merge')
 def merge(template, context):
-    checkUndefinedProperties(template, ['\$merge'])
+    checkUndefinedProperties(template, [r'\$merge'])
     value = renderValue(template['$merge'], context)
     if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
         raise TemplateError(
@@ -286,7 +304,7 @@ def merge(template, context):
 
 @operator('$mergeDeep')
 def merge(template, context):
-    checkUndefinedProperties(template, ['\$mergeDeep'])
+    checkUndefinedProperties(template, [r'\$mergeDeep'])
     value = renderValue(template['$mergeDeep'], context)
     if not isinstance(value, list) or not all(isinstance(e, dict) for e in value):
         raise TemplateError(
@@ -311,7 +329,7 @@ def merge(template, context):
 
 @operator('$reverse')
 def reverse(template, context):
-    checkUndefinedProperties(template, ['\$reverse'])
+    checkUndefinedProperties(template, [r'\$reverse'])
     value = renderValue(template['$reverse'], context)
     if not isinstance(value, list):
         raise TemplateError("$reverse value must evaluate to an array of objects")
@@ -320,8 +338,8 @@ def reverse(template, context):
 
 @operator('$sort')
 def sort(template, context):
-    BY_RE = 'by\([a-zA-Z_][a-zA-Z0-9_]*\)'
-    checkUndefinedProperties(template, ['\$sort', BY_RE])
+    BY_RE = r'by\([a-zA-Z_][a-zA-Z0-9_]*\)'
+    checkUndefinedProperties(template, [r'\$sort', BY_RE])
     value = renderValue(template['$sort'], context)
     if not isinstance(value, list):
         raise TemplateError('$sorted values to be sorted must have the same type')

@@ -324,6 +324,11 @@ context:  {x: 1}
 template: {$$match: [{'x == 1': 2}]}
 result:   {$match: [{'x == 1': 2}]}
 ---
+title:    escape $switch
+context:  {x: 1}
+template: {$$switch: [{'x == 1': 2}]}
+result:   {$switch: [{'x == 1': 2}]}
+---
 title:    escape $merge
 context:  {}
 template: {$$merge: [{a: 1}, {a: 2}]}
@@ -991,6 +996,55 @@ context:  {cond: 3, ifcond: false}
 template: {$match: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
 result:   ["f"]
 ################################################################################
+---
+section: $switch operator
+---
+title:    $switch, 1 match
+context:  {cond: 3}
+template: {$switch: {'cond == 3': 2, 'cond == 5': 3}}
+result: 2
+---
+title:    $switch, 2 matches
+context:  {cond: 3}
+template: {$switch: {'cond == 3': 2, 'cond > 1': 3}}
+error:    'TemplateError: $switch can only have one truthy condition'
+---
+title:    $switch, no matches
+context:  {cond: 3}
+template: {$switch: {'cond > 5': 2, 'cond == 5': 3, 'cond == 4 || cond < 1': 4}}
+result:   null
+---
+title:    $switch, 1 match in array
+context:  {cond: 3}
+template: [0, $switch: {'cond == 3': 2, 'cond == 5': 3}]
+result:   [0, 2]
+---
+title:    $switch, 0 matches in array
+context:  {cond: 3}
+template: [0, $switch: {'cond > 3': 2, 'cond == 5': 3}]
+result:   [0]
+---
+title:    $switch, 1 match in object
+context:  {cond: 3}
+template: {key: 0, banana: {$switch: {'cond == 3': 2, 'cond == 5': 3}}}
+result:   {key: 0, banana: 2}
+---
+title:    $switch, 0 matches in object
+context:  {cond: 3}
+template: {key: 0, banana: {$switch: {'cond > 3': 2, 'cond == 5': 3}}}
+result:   {key: 0}
+---
+title:    $switch, is not an object
+context:  {cond: 3}
+template: {$switch: [{'cond < 5 && cond > 0': 2}]}
+error:    'TemplateError: $switch can evaluate objects only'
+---
+title:    $switch, value that also needs evaluation
+context:  {cond: 3, ifcond: false}
+template: {$switch: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
+result:   "f"
+################################################################################
+---
 section:  $merge
 ---
 title:    simple merge

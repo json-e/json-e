@@ -447,6 +447,54 @@ context: {x: 10}
 result: []
 ```
 
+### `$switch`
+
+The `$switch` operator behaves like a combination of the `$if` and
+`$match` operator for more complex boolean logic. It gets an object,
+in which every key is a string expression(s), where at most *one* must
+evaluate to `true` and the remaining to `false` based on the context.
+The result will be the value corresponding to the key that were
+evaluated to `true`.
+
+If there are no matches, the result is either null or if used within an
+object or array, omitted from the parent object.
+
+```yaml
+template: {$switch: {"x == 10": "ten", "x == 20": "twenty"}}
+context: {x: 10}
+result: "ten"
+```
+
+```yaml
+template: {$switch: {"x < 10": 1}}
+context: {x: 10}
+result: null
+```
+
+```yaml
+template: {a: 1, b: {$switch: {"x == 10 || x == 20": 2, "x > 20": 3}}}
+context: {x: 10}
+result: {a: 1, b: 2}
+```
+
+```yaml
+template: {a: 1, b: {$switch: {"x == 1": 2, "x == 3": 3}}}
+context: {x: 2}
+result: {a: 1}
+```
+
+```yaml
+template: [1, b: {$switch: {"x == 1": 2, "x == 10": 3}}]
+context: {x: 2}
+result: [1, 2]
+```
+
+```yaml
+context:  {cond: 3}
+template: [0, {$switch: {'cond > 3': 2, 'cond == 5': 3}}]
+result:   [0]
+```
+
 ### `$merge`
 
 The `$merge` operator merges an array of objects, returning a single object
@@ -836,4 +884,3 @@ template: {$eval: 'len([1, 2, 3])'}
 context: {}
 result: 3
 ```
-

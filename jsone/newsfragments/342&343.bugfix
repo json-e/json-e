@@ -1,2 +1,0 @@
-Builtin functions are now called with relevant context.
-This means that builtins like `fromNow()` and `defined()` respect variables defined via `$let`.
