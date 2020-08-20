@@ -1940,6 +1940,41 @@ context: {}
 template: {$eval: "lstrip(' \f\n\r\t\vabc \f\n\r\t\v')"}
 result: "abc \f\n\r\t\v"
 ---
+title: split string with delimiter
+context: {}
+template: {$eval: "split('left:right', ':')"}
+result: ['left', 'right']
+---
+title: split string without delimiter
+context: {}
+template: {$eval: "split('spellme', '')"}
+result: ['s', 'p', 'e', 'l', 'l', 'm', 'e']
+---
+title: split with empty string
+context: {}
+template: {$eval: "split('', ':')"}
+result: ['']
+---
+title: split string with no match
+context: {}
+template: {$eval: "split('no semicolon', ':')"}
+result: ['no semicolon']
+---
+title: split with number delimiter
+context: {}
+template: {$eval: "split('left1right', 1)"}
+result: ['left', 'right']
+---
+title: split error with object
+context: {}
+template: {$eval: "split({})"}
+error: 'BuiltinError: invalid arguments to builtin: split'
+---
+title: split error with array
+context: {}
+template: {$eval: "split([])"}
+error: 'BuiltinError: invalid arguments to builtin: split'
+---
 title:    fromNow
 context:  {}
 template: {$eval: fromNow("")}
