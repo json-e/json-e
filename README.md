@@ -824,6 +824,7 @@ template:
   - {$eval: 'lstrip("  room  ")'}
   - {$eval: 'rstrip("  room  ")'}
   - {$eval: 'strip("  room  ")'}
+  - {$eval: 'split("left:right", ":")'}
 context: {}
 result:
   - "fools!"
@@ -832,6 +833,7 @@ result:
   - "room  "
   - "  room"
   - room
+  - [left, right]
 ```
 
 #### Context
