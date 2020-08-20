@@ -125,6 +125,12 @@ module.exports = (context) => {
     invoke: str => str.replace(/^\s+/, ''),
   });
 
+  define('split', builtins, {
+    minArgs: 1,
+    variadic: 'string|number',
+    invoke: (input, delimiter) => input.split(delimiter)
+  });
+
   // Miscellaneous
   define('fromNow', builtins, {
     variadic: 'string',
