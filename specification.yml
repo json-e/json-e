@@ -1940,6 +1940,36 @@ context: {}
 template: {$eval: "lstrip(' \f\n\r\t\vabc \f\n\r\t\v')"}
 result: "abc \f\n\r\t\v"
 ---
+title: join with string separator
+context: {}
+template: {$eval: "join(['join', 'me'], ' ')"}
+result: "join me"
+---
+title: join with same
+context: {}
+template: {$eval: "join([',', ','], ',')"}
+result: ",,,"
+---
+title: join with number separator
+context: {}
+template: {$eval: "join([1, 3], 2)"}
+result: "123"
+---
+title: join with string
+context: {}
+template: {$eval: "join('cannot join string')"}
+error: "BuiltinError: invalid arguments to builtin: join"
+---
+title: join with object
+context: {}
+template: {$eval: "join({})"}
+error: "BuiltinError: invalid arguments to builtin: join"
+---
+title: join with boolean
+context: {}
+template: {$eval: "join(false)"}
+error: "BuiltinError: invalid arguments to builtin: join"
+---
 title:    fromNow
 context:  {}
 template: {$eval: fromNow("")}
