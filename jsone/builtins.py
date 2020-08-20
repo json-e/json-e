@@ -56,6 +56,9 @@ def build():
     def is_string(v):
         return isinstance(v, string)
 
+    def is_string_or_number(v):
+        return is_string(v) or is_number(v)
+
     def is_string_or_array(v):
         return isinstance(v, (string, list))
 
@@ -103,6 +106,13 @@ def build():
     @builtin('lstrip', argument_tests=[is_string])
     def lstrip(s):
         return s.lstrip()
+
+    @builtin('split', variadic=is_string_or_number, minArgs=1)
+    def split(s, d=''):
+        if not d and is_string(s):
+            return list(s)
+
+        return s.split(to_str(d))
 
     @builtin('fromNow', variadic=is_string, minArgs=1, needs_context=True)
     def fromNow_builtin(context, offset, reference=None):
