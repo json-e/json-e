@@ -834,6 +834,18 @@ result:
   - room
 ```
 
+#### Arrays
+
+```yaml
+template:
+  - {$eval: 'join(["carpe", "diem"], " ")'}
+  - {$eval: 'join([1, 3], 2)}'}
+context: {}
+result:
+  - carpe diem
+  - 123
+```
+
 #### Context
 
 The `defined(varname)` built-in determines if the named variable is defined in the current context.
