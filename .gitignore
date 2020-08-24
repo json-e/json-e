@@ -51,3 +51,4 @@ src/github.com
 
 #python env file
 env
+/.tox/
