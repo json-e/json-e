@@ -1957,7 +1957,7 @@ result: "123"
 ---
 title: join with strings separated with numbers
 context: {}
-template: {$eval: "join(["one", "three"], 2)"}
+template: {$eval: "join(['one', 'three'], 2)"}
 result: "one2three"
 ---
 title: join with numbers separated with string
