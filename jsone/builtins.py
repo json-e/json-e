@@ -114,7 +114,7 @@ def build():
     def join(list, separator):
         # convert potential numbers into strings
         string_list = [str(int) for int in list]
-        return str(seperator).join(string_list)
+        return str(separator).join(string_list)
 
     @builtin('fromNow', variadic=is_string, minArgs=1, needs_context=True)
     def fromNow_builtin(context, offset, reference=None):
