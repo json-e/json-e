@@ -111,7 +111,7 @@ def build():
         return s.lstrip()
 
     @builtin('join', argument_tests=[is_array, is_string_or_number])
-    def lstrip(list, seperator):
+    def join(list, separator):
         # convert potential numbers into strings
         string_list = [str(int) for int in list]
         return str(seperator).join(string_list)
