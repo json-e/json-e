@@ -1955,6 +1955,16 @@ context: {}
 template: {$eval: "join([1, 3], 2)"}
 result: "123"
 ---
+title: join with strings separated with numbers
+context: {}
+template: {$eval: "join(["one", "three"], 2)"}
+result: "one2three"
+---
+title: join with numbers separated with string
+context: {}
+template: {$eval: "join([1, 3], 'two')"}
+result: "1two3"
+---
 title: join with string
 context: {}
 template: {$eval: "join('cannot join string')"}
