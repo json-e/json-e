@@ -836,6 +836,8 @@ result:
 
 #### Arrays
 
+Joins arrays of strings and numbers (including mixed types) into a string using a separator
+
 ```yaml
 template:
   - {$eval: 'join(["carpe", "diem"], " ")'}
@@ -843,7 +845,7 @@ template:
 context: {}
 result:
   - carpe diem
-  - 123
+  - "123"
 ```
 
 #### Context
