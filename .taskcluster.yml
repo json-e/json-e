@@ -106,9 +106,8 @@ tasks:
             - /bin/bash
             - '-c'
             - >-
-              mkdir -p /go/src/github.com/taskcluster/json-e &&
-              cd /go/src/github.com/taskcluster/json-e &&
-              git clone ${repo.git_url} . &&
+              git clone ${repo.git_url} repo &&
+              cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
               go get -v -d -t ./... &&
