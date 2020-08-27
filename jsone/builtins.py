@@ -116,7 +116,7 @@ def build():
         string_list = [str(int) for int in list]
 
         return str(separator).join(string_list)
-      
+
     @builtin('split', variadic=is_string_or_number, minArgs=1)
     def split(s, d=''):
         if not d and is_string(s):
