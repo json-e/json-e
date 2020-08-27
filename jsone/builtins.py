@@ -114,7 +114,15 @@ def build():
     def join(list, separator):
         # convert potential numbers into strings
         string_list = [str(int) for int in list]
+      
         return str(separator).join(string_list)
+      
+    @builtin('split', variadic=is_string_or_number, minArgs=1)
+    def split(s, d=''):
+        if not d and is_string(s):
+            return list(s)
+
+        return s.split(to_str(d))
 
     @builtin('fromNow', variadic=is_string, minArgs=1, needs_context=True)
     def fromNow_builtin(context, offset, reference=None):

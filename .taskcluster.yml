@@ -72,8 +72,8 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
-              pip install --no-use-pep517 -e . &&
-              python setup.py test
+              pip install tox &&
+              tox -e py27
         - image: 'python:3.6'
           name: python:3.6 tests
           command:
@@ -85,17 +85,29 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
-              pip install --no-use-pep517 -e . &&
-              python setup.py test
+              pip install tox &&
+              tox -e py36
+        - image: 'python:3.7'
+          name: python:3.7 tests
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repo.git_url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              pip install tox &&
+              tox -e py37
         - image: 'golangci/golangci-lint'
           name: golang lint and tests
           command:
             - /bin/bash
             - '-c'
             - >-
-              mkdir -p /go/src/github.com/taskcluster/json-e &&
-              cd /go/src/github.com/taskcluster/json-e &&
-              git clone ${repo.git_url} . &&
+              git clone ${repo.git_url} repo &&
+              cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
               go get -v -d -t ./... &&

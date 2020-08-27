@@ -22,19 +22,10 @@ setup(name='json-e',
     url='https://taskcluster.github.io/json-e/',
     author_email='dustin@mozilla.com',
     packages=['jsone'],
-    test_suite='nose.collector',
     license='MPL2',
     extras_require={
         'release': [
             'towncrier',
         ],
-    },
-    tests_require=[
-        "freezegun",
-        "hypothesis",
-        "nose",
-        "PyYAML",
-        "python-dateutil",
-        'pep8',
-    ]
+    }
 )

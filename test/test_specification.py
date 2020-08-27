@@ -31,7 +31,7 @@ def test():
 
     with open(os.path.join(os.path.dirname(__file__), '../specification.yml')) as f:
         with freeze_time('2017-01-19T16:27:20.974Z'):
-            for spec in yaml.load_all(f):
+            for spec in yaml.load_all(f, Loader=yaml.FullLoader):
                 if 'section' in spec:
                     section = spec['section']
                     continue
