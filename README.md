@@ -23,7 +23,7 @@ finish in finite time.
 ## Changes
 
 See
-[CHANGELOG.rst](https://github.com/taskcluster/json-e/blob/master/CHANGELOG.rst)
+[CHANGELOG.rst](https://github.com/taskcluster/json-e/blob/main/CHANGELOG.rst)
 for the changes in each version of this library.
 
 # Interface
