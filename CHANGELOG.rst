@@ -1,3 +1,15 @@
+Jsone 4.3.0 (2020-08-27)
+========================
+
+Features
+--------
+
+- Introduces `split` to built-in string functions enabling string splitting with a delimiter. 
+  Input and delimiter can either be `string` or `number`. (#368)
+- Introduces join to the built-in functions to join lists with a seperator. list items and separator can either be string or number. (#370)
+- The Go port now uses GoModules.  It should nonetheless remain compatible with earlier versions of Go. (#373)
+
+
 Jsone 4.2.0 (2020-07-17)
 ========================
 
