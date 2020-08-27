@@ -114,7 +114,7 @@ def build():
     def join(list, separator):
         # convert potential numbers into strings
         string_list = [str(int) for int in list]
-      
+
         return str(separator).join(string_list)
       
     @builtin('split', variadic=is_string_or_number, minArgs=1)
