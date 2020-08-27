@@ -59,6 +59,9 @@ def build():
     def is_string_or_number(v):
         return is_string(v) or is_number(v)
 
+    def is_array(v):
+        return isinstance(v, list)
+
     def is_string_or_array(v):
         return isinstance(v, (string, list))
 
@@ -106,6 +109,13 @@ def build():
     @builtin('lstrip', argument_tests=[is_string])
     def lstrip(s):
         return s.lstrip()
+
+    @builtin('join', argument_tests=[is_array, is_string_or_number])
+    def join(list, separator):
+        # convert potential numbers into strings
+        string_list = [str(int) for int in list]
+
+        return str(separator).join(string_list)
 
     @builtin('split', variadic=is_string_or_number, minArgs=1)
     def split(s, d=''):

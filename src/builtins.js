@@ -131,6 +131,11 @@ module.exports = (context) => {
     invoke: (input, delimiter) => input.split(delimiter)
   });
 
+  define('join', builtins, {
+    argumentTests: ['array', 'string|number'],
+    invoke: (list, separator) => list.join(separator) 
+  });
+
   // Miscellaneous
   define('fromNow', builtins, {
     variadic: 'string',

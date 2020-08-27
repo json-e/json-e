@@ -248,6 +248,50 @@ var builtin = map[string]interface{}{
 		}
 		return 0, fmt.Errorf("len(value) only works on arrays and strings")
 	}),
+	"join": i.WrapFunction(func(v []interface{}, sep ...interface{}) (string, error) {
+		// We use variadic because golang doesn't support optional parameters
+		if len(sep) > 1 {
+			return "", fmt.Errorf("join(value, seperator) takes at-most two arguments, but was given %d", len(sep))
+		}
+
+		var reference interface{} = nil
+
+		if len(sep) == 1 {
+			reference = sep[0]
+			_, isNumber := reference.(float64)
+			_, isString := reference.(string)
+
+			if !isString && !isNumber {
+				return "", fmt.Errorf("join(value, seperator) seperator must be a string or a number")
+			}
+		}
+
+		var seperator string = ""
+
+		if reference != nil {
+			seperator = fmt.Sprintf("%v", reference)
+		}
+
+		valuesText := []string{}
+
+		// Ensure list entries are strings
+		for i := range v {
+			item := v[i]
+			var text string
+
+			switch item.(type) {
+			case string:
+				text = fmt.Sprintf("%v", item)
+			case float64:
+				text = fmt.Sprintf("%v", item)
+			default:
+				return "", fmt.Errorf("join(value, seperator) value must be a list of strings or numbers")
+			}
+			valuesText = append(valuesText, text)
+		}
+
+		return strings.Join(valuesText, seperator), nil
+	}),
 	"fromNow": i.WrapFunctionWithContext(func(context map[string]interface{}, offset string, from ...string) (string, error) {
 		// We use variadic because golang doesn't support optional parameters
 		if len(from) > 1 {
