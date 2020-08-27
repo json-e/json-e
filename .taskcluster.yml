@@ -138,7 +138,7 @@ tasks:
         - $if: 'tasks_for == "github-push"'
           then:
             - {$eval: tests}
-            - $if: 'event["ref"] == "refs/heads/master"'
+            - $if: 'event["ref"] == "refs/heads/main"'
               then:
                 taskId: {$eval: as_slugid("demo_build")}
                 provisionerId: proj-taskcluster
