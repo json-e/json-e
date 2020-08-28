@@ -1,18 +1,21 @@
 import React from 'react';
-import './app.css';
+import { hot } from 'react-hot-loader';
+import './App.css';
 import jsyaml from 'js-yaml';
-import jsone from '../../src';
 import { find, defaults } from 'lodash';
-import { Heading, Divider, Button, Link,
-         Text, Message, Footer, Tabs, TabItem } from 'rebass';
+import {
+  Heading, Button, Link,
+  Text, Footer, Tabs, TabItem,
+} from 'rebass';
 import sections from 'sections';
 import ReactMarkdown from 'react-markdown';
-import DemoBlock from './demoblock';
-import packageinfo from '../../package.json';
 import readme from 'raw-loader!../../README.md';
-import readmeTree from './readme';
 import CodeMirror from '@skidding/react-codemirror';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import DemoBlock from './demoblock';
+import packageinfo from '../../package.json';
+import readmeTree from './readme';
+import jsone from '../../src';
 
 import 'codemirror/mode/yaml/yaml';
 import 'codemirror/mode/javascript/javascript';
@@ -21,18 +24,18 @@ import 'codemirror/addon/lint/yaml-lint';
 
 window.jsyaml = jsyaml; // Making this available to yaml linter
 
-const codeMirrorOptions =  {
+const codeMirrorOptions = {
   mode: 'yaml',
   lint: true,
   theme: 'elegant',
   indentWithTabs: false,
   tabSize: 2,
-  gutters: [ 'CodeMirror-lint-markers', ],
+  gutters: ['CodeMirror-lint-markers'],
 };
 
 class Section extends React.Component {
   render() {
-    const { showDemo, section, key } = this.props;
+    const { showDemo, section } = this.props;
     const renderers = showDemo ? { CodeBlock: DemoBlock } : {};
 
     if (!section) {
@@ -40,17 +43,17 @@ class Section extends React.Component {
     }
 
     return (
-      <div key={key} id={section.anchor} className="demo">
-        {section.heading &&
-          <ReactMarkdown source={section.heading} />
-        }
+      <div id={section.anchor} className="demo">
+        {section.heading
+          && <ReactMarkdown source={section.heading} />}
         {section.body && (
           <ReactMarkdown
             source={section.body}
-            renderers={renderers} />
+            renderers={renderers}
+          />
         )}
-        {(section.children || []).map(child => (
-         <Section showDemo={showDemo} section={child} key={child.anchor} />
+        {(section.children || []).map((child) => (
+          <Section showDemo={showDemo} section={child} key={child.anchor} />
         ))}
       </div>
     );
@@ -61,14 +64,16 @@ class SidebarMenu extends React.Component {
   render() {
     const { section, title, tab } = this.props;
 
-    return <li>
-      <Link href={`#${tab}/${section.anchor}`}>{title || section.title}</Link>
-      {section.children.length > 0 && (
+    return (
+      <li>
+        <Link href={`#${tab}/${section ? section.anchor : ''}`}>{title}</Link>
+        {section && section.children.length > 0 && (
         <ul>
-          {section.children.map(child => <SidebarMenu tab={tab} key={child.anchor} section={child} />)}
+          {section.children.map((child) => <SidebarMenu key={child.anchor} tab={tab} title={child.title} section={child} />)}
         </ul>
-      )}
-    </li>;
+        )}
+      </li>
+    );
   }
 }
 
@@ -77,26 +82,18 @@ class Jsone extends React.Component {
     super(props);
     this.cmOptions = defaults({
       readOnly: 'nocursor',
-      gutters: []
+      gutters: [],
     }, codeMirrorOptions);
   }
 
   render() {
-    try {
-      const res = jsone(
-        jsyaml.safeLoad(this.props.template),
-        jsyaml.safeLoad(this.props.context)
-      );
-      return (
-        <CodeMirror value={jsyaml.safeDump(res)} options={this.cmOptions} />
-      );
-    } catch (err) {
-      return (
-        <Message bg="#f0b7bc">
-          {err.message}
-        </Message>
-      );
-    }
+    const res = jsone(
+      jsyaml.safeLoad(this.props.template),
+      jsyaml.safeLoad(this.props.context),
+    );
+    return (
+      <CodeMirror value={jsyaml.safeDump(res)} options={this.cmOptions} />
+    );
   }
 }
 
@@ -105,20 +102,30 @@ class Playground extends React.Component {
     super(props);
     this.state = {
       template: '{}',
-      context: '{}'
+      context: '{}',
     };
   }
 
   componentWillMount() {
+    window.addEventListener('hashchange', () => this.hashChanged());
+    // load the initial hash
+    this.hashChanged();
+  }
+
+  hashChanged() {
     if (window.location.hash) {
       const m = /#Playground\/(.*)&(.*)/.exec(window.location.hash);
       if (m) {
+        console.log('match', m);
         this.setState({
           context: decodeURIComponent(m[1]),
           template: decodeURIComponent(m[2]),
         });
         // zero out the link body
         history.replaceState({}, 'Playground', '#Playground');
+
+        const elt = document.getElementById('Playground/');
+        elt.scrollIntoView();
       }
     }
   }
@@ -150,24 +157,27 @@ class Playground extends React.Component {
   render() {
     const playgroundLink = `${document.location.origin}${document.location.pathname}#Playground/${encodeURIComponent(this.state.context)}&${encodeURIComponent(this.state.template)}`;
     return (
-      <div>
+      <div id="Playground/">
+        <Heading f={1}>Playground</Heading>
         <div className="codeblocks">
           <div>
             <Heading f={2}>Template</Heading>
-            <CodeMirror value={this.state.template} onChange={template => this.updateTemplate(template)} options={codeMirrorOptions} />
+            <CodeMirror value={this.state.template} onChange={(template) => this.updateTemplate(template)} options={codeMirrorOptions} />
           </div>
           <div>
             <Heading f={2}>Context</Heading>
-            <CodeMirror value={this.state.context} onChange={context => this.updateContext(context)} options={codeMirrorOptions} />
+            <CodeMirror value={this.state.context} onChange={(context) => this.updateContext(context)} options={codeMirrorOptions} />
           </div>
           <div>
             <Heading f={2}>Results</Heading>
             <Jsone context={this.state.context} template={this.state.template} />
           </div>
         </div>
-        <div className='notes'>
-          <CopyToClipboard text={playgroundLink}
-            onCopy={() => this.setState({copied: true})} >
+        <div className="notes">
+          <CopyToClipboard
+            text={playgroundLink}
+            onCopy={() => this.setState({ copied: true })}
+          >
             <span className="clicky">copy link to this example</span>
           </CopyToClipboard>
           { this.state.copied && <span>copied to clipboard!</span> }
@@ -177,17 +187,17 @@ class Playground extends React.Component {
   }
 }
 
-export default class App extends React.Component {
+class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       readme: readmeTree(readme),
-      activeTab: 'About'
+      activeTab: 'About',
     };
   }
 
   componentWillMount() {
-    window.addEventListener("hashchange", () => this.hashChanged());
+    window.addEventListener('hashchange', () => this.hashChanged());
     // load the initial hash
     this.hashChanged();
   }
@@ -197,7 +207,7 @@ export default class App extends React.Component {
       const hash = window.location.hash.split('/');
       this.setState({
         activeTab: hash[0].slice(1),
-        activeAnchor: hash[1]
+        activeAnchor: hash[1],
       });
     }
   }
@@ -217,56 +227,45 @@ export default class App extends React.Component {
 
     const tabs = [
       { name: 'About', section: readme.child('JSON-e') },
+      { name: 'Playground' },
       { name: 'Interface', section: readme.child('Interface') },
       { name: 'Language', section: readme.child('Language Reference'), showDemo: true },
     ];
-
-    const activeData = find(tabs, { name: activeTab }) || tabs[0];
 
     return (
       <div className="wrap">
         <div className="main">
           <aside className="sidebar">
             <Heading f={3}>
-              JSON-e v{packageinfo.version}
+              JSON-e v
+              {packageinfo.version}
             </Heading>
             <Text>
               A data-structure parameterization system for embedding context in JSON objects
             </Text>
-            <Divider width={100}/>
+            <hr />
             <ul>
-              {tabs.map(({ name, section }) =>
-                <SidebarMenu key={name} tab={name} title={name} section={section} />)}
+              {tabs.map(({ name, section }) => <SidebarMenu key={name} title={name} tab={name} section={section} />)}
             </ul>
-            <Divider width={100}/>
+            <hr />
             <div>
               <Text f={1}>
-              Brought to you by the Mozillians behind <a href={'https://docs.taskcluster.net/'}>Taskcluster</a>.
+                Brought to you by the Mozillians behind
+                {' '}
+                <a href="https://docs.taskcluster.net/">Taskcluster</a>
+                .
               </Text>
             </div>
           </aside>
           <div className="content">
-            <Tabs className="tabs">
-              {tabs.map(({ name }) => (
-                <TabItem
-                  key={name} 
-                  onClick={() => { window.location.hash = `#${name}`; }}
-                  active={name === activeTab }>
-                  {name}
-                </TabItem>
-              ))}
-              <TabItem
-                onClick={() => { window.location.hash = '#Playground'; }}
-                active={'Playground' === activeTab }>
-                Playground
-              </TabItem>
-            </Tabs>
-            {activeTab === 'Playground' ?
-              <Playground /> :
-              <Section section={activeData.section} showDemo={activeData.showDemo} />}
+            {tabs.map(({name, section, showDemo}) => name === 'Playground'
+                ? <Playground key={name} />
+                : <Section section={section} showDemo={showDemo} key={name} />)}
           </div>
         </div>
       </div>
     );
   }
 }
+
+export default hot(module)(App);
