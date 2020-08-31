@@ -843,7 +843,7 @@ template:
   # Joins arrays of strings and numbers (including mixed types) into a string using a separator, 
   # which can also be either string or number.
   - {$eval: 'join(["carpe", "diem"], " ")'}
-  - {$eval: 'join([1, 3], 2)}'}
+  - {$eval: 'join([1, 3], 2)'}
 context: {}
 result:
   - carpe diem
