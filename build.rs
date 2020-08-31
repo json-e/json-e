@@ -142,13 +142,11 @@ fn {test_name}() {{
         )
         .unwrap();
     } else if let Some(_error) = error {
-        // for now, ignore the error cases
-        // TODO: make render return an error, check is_err
-        // TODO: after that, check that the error message matches
+        // TODO: check that the error message matches
         write!(
             test_file,
             r##"
-    // TODO: assert!(render(&template, &context).is_err());
+    assert!(render(&template, &context).is_err());
 }}
 "##
         )

@@ -6,9 +6,20 @@ pub mod interpreter;
 pub mod prattparser;
 pub mod tokenizer;
 
+use failure::Fallible;
 use json::JsonValue;
 
-pub fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
+/// Render the given JSON-e template with the given context.
+pub fn render(template: &JsonValue, context: &JsonValue) -> Fallible<JsonValue> {
+    // Unwrap the Option from _render, replacing None with Null
+    match _render(template, context) {
+        Ok(Some(v)) => Ok(v),
+        Ok(None) => Ok(JsonValue::Null),
+        Err(e) => Err(e),
+    }
+}
+
+fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonValue>> {
     let m = match template {
         JsonValue::Number(_) | JsonValue::Boolean(_) | JsonValue::Null => template.clone(),
         JsonValue::String(s) => JsonValue::from(interpolate(s, context)),
@@ -16,23 +27,21 @@ pub fn render(template: &JsonValue, context: &JsonValue) -> Option<JsonValue> {
         JsonValue::Array(elements) => JsonValue::Array(
             elements
                 .into_iter()
-                .filter_map(|e| render(e, context))
-                .collect::<Vec<JsonValue>>(),
+                .filter_map(|e| _render(e, context).transpose())
+                .collect::<Fallible<Vec<JsonValue>>>()?,
         ),
-        JsonValue::Object(o) => JsonValue::Object(
-            o.iter()
-                .filter_map(|(k, v)| match render(v, context) {
-                    Some(v) => Some((k, v)),
-                    None => None,
-                })
-                .fold(json::object::Object::new(), |mut acc, (k, v)| {
-                    acc.insert(k, v);
-                    acc
-                }),
-        ),
+        JsonValue::Object(o) => JsonValue::Object({
+            let mut result = json::object::Object::new();
+            for (k, v) in o.iter() {
+                if let Some(v) = _render(v, context)? {
+                    result.insert(k, v);
+                }
+            }
+            result
+        }),
     };
 
-    Some(m)
+    Ok(Some(m))
 }
 
 fn interpolate(template: &str, _context: &JsonValue) -> String {
