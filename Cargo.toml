@@ -5,7 +5,11 @@ authors = ["owlishDeveloper <bugzeeeeee@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-json = "0.11.13"
+json = "0.12.4"
 fancy-regex = "0.2.0"
 regex = "1.2"
 failure = {version = "0.1.5", features = ["derive"] }
+
+[build-dependencies]
+yaml-rust = "0.4"
+json = "0.12.4"

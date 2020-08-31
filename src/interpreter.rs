@@ -270,12 +270,12 @@ pub fn create_interpreter(
             print!("parsed is {}\n", parsed);
             if let JsonValue::Number(n) = parsed {
                 let (_, _, exponent) = n.as_parts();
-                if exponent < 0 {
+                if exponent < 0 || n.is_nan() {
                     return Err(Error::InterpreterError(
                         "should only use integers to access arrays or strings".to_string(),
                     ));
                 }
-                a = n.into();
+                a = n.as_fixed_point_i64(0).unwrap();
                 if context.attempt(|t| t == ":")?.is_some() {
                     isInterval = true;
                 }
@@ -290,12 +290,12 @@ pub fn create_interpreter(
             let parsed = context.parse(None)?;
             if let JsonValue::Number(n) = parsed {
                 let (_, _, exponent) = n.as_parts();
-                if exponent < 0 {
+                if exponent < 0 || n.is_nan() {
                     return Err(Error::InterpreterError(
                         "cannot perform interval access with non-integers".to_string(),
                     ));
                 }
-                b = n.into();
+                b = n.as_fixed_point_i64(0).unwrap();
             } else {
                 return Err(Error::InterpreterError(
                     "right part of slice operator is not a number".to_string(),
@@ -349,7 +349,7 @@ pub fn create_interpreter(
 mod tests {
     use crate::errors::Error;
     use crate::interpreter::create_interpreter;
-    use json::JsonValue;
+    use json::{object::Object, JsonValue};
     use std::collections::HashMap;
 
     #[test]
@@ -537,7 +537,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("{}", HashMap::new(), 0).unwrap(),
-            JsonValue::from(HashMap::new()),
+            JsonValue::Object(Object::new()),
         );
     }
 
