@@ -4576,22 +4576,22 @@ template: {$eval: 'a != b'}
 result:   false
 ---
 title:    complex object equality, true
-context:  {a: {x: 1,'y': {e: {g: {1}}}}, b: {x: 1,'y': {e: {g: {1}}}}}
+context:  {a: {x: 1,'y': {e: {g: {one: 1}}}}, b: {x: 1,'y': {e: {g: {one: 1}}}}}
 template: {$eval: 'a == b'}
 result:   true
 ---
 title:    complex object equality, false
-context:  {a: {x: 1,'y': {e: {g: {1}}}}, b: {x: 1,'y': {e: {g: {2}}}}}
+context:  {a: {x: 1,'y': {e: {g: {one: 1}}}}, b: {x: 1,'y': {e: {g: {two: 2}}}}}
 template: {$eval: 'a == b'}
 result:   false
 ---
 title:    complex object in-equality, true
-context:  {a: {x: 1,'y': {e: {g: {1}}}}, b: {x: 1,'y': {e: {g: {2}}}}}
+context:  {a: {x: 1,'y': {e: {g: {one: 1}}}}, b: {x: 1,'y': {e: {g: {two: 2}}}}}
 template: {$eval: 'a != b'}
 result:   true
 ---
 title:    complex object in-equality, false
-context:  {a: {x: 1,'y': {e: {g: {1}}}}, b: {x: 1,'y': {e: {g: {1}}}}}
+context:  {a: {x: 1,'y': {e: {g: {one: 1}}}}, b: {x: 1,'y': {e: {g: {one: 1}}}}}
 template: {$eval: 'a != b'}
 result:   false
 ---
