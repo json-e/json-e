@@ -8,13 +8,13 @@ class Section {
   }
 
   child(title) {
-    return _.find(this.children, { title });
+    return find(this.children, { title });
   }
 
   get anchor() {
     return this.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
   }
-};
+}
 
 /**
  * Parse the README into a tree of sections.  These are similar
@@ -25,10 +25,10 @@ class Section {
  */
 export default function readmeTree(readme) {
   let last = [new Section()];
-	sections.parse(readme).sections.forEach((section) => {
-    section = new Section(section);
+  sections.parse(readme).sections.forEach((content) => {
+    const section = new Section(content);
     if (section.level > 0) {
-      last[section.level-1].children.push(section);
+      last[section.level - 1].children.push(section);
     }
     last = last.slice(0, section.level).concat([section]);
   });
