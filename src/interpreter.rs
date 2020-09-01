@@ -7,6 +7,28 @@ use json::number::Number;
 use json::JsonValue;
 use std::collections::HashMap;
 
+pub(crate) struct Interpreter {
+    parser: PrattParser<'static, JsonValue, HashMap<String, JsonValue>>,
+}
+
+impl Interpreter {
+    pub(crate) fn new() -> Interpreter {
+        Interpreter {
+            // this would only fail if the parser itself were malformed
+            parser: create_interpreter().expect("Interpreter initialization failed"),
+        }
+    }
+
+    /// Parse a string with the given context.
+    pub(crate) fn parse(
+        &self,
+        source: &str,
+        context: HashMap<String, JsonValue>,
+    ) -> Result<JsonValue, Error> {
+        self.parser.parse(source, context, 0)
+    }
+}
+
 fn parse_list(
     context: &mut Context<JsonValue, HashMap<String, JsonValue>>,
     separator: &str,
@@ -57,8 +79,8 @@ fn parse_string(string: &str) -> Result<JsonValue, Error> {
     Ok(JsonValue::String(string[1..string.len() - 1].into()))
 }
 
-pub(crate) fn create_interpreter(
-) -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error> {
+fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error>
+{
     let mut patterns = HashMap::new();
     patterns.insert("number", "[0-9]+(?:\\.[0-9]+)?");
     patterns.insert("identifier", "[a-zA-Z_][a-zA-Z_0-9]*");

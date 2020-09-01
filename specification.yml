@@ -33,6 +33,12 @@ context:  {}
 template: {$fromNow: '2 days 3 hours'}
 result:   '2017-01-21T19:27:20.974Z'
 ---
+rust: true
+title:    $eval without context
+context:  {}
+template: {$eval: '1 + 2'}
+result:   3
+---
 title:    $eval
 context:  {key: ['value', 1, 2, true, {}]}
 template: {$eval: 'key'}
@@ -1340,6 +1346,7 @@ context: {}
 error: 'TemplateError: $reverse has undefined properties: bing foo'
 ################################################################################
 ---
+rust: true
 section: $eval
 ---
 title: $eval of $eval

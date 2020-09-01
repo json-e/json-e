@@ -1,8 +1,15 @@
 #![allow(unused_variables)]
 use crate::errors::Error;
+use crate::interpreter::Interpreter;
 use failure::Fallible;
 use json::object::Object;
 use json::JsonValue;
+use lazy_static::lazy_static;
+use std::collections::HashMap;
+
+lazy_static! {
+    static ref INTERPRETER: Interpreter = Interpreter::new();
+}
 
 /// Render the given JSON-e template with the given context.
 pub fn render(template: &JsonValue, context: &JsonValue) -> Fallible<JsonValue> {
@@ -52,8 +59,27 @@ fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonVal
     }))
 }
 
-fn interpolate(template: &str, _context: &JsonValue) -> String {
-    template.to_string()
+/// Evaluate the given expression and return the resulting JsonValue
+fn evaluate(expression: &str, context: &JsonValue) -> Fallible<JsonValue> {
+    // convert the context into a HashMap (TODO: this is wasteful)
+    let mut hmcontext = HashMap::new();
+
+    if let JsonValue::Object(o) = context {
+        for (k, v) in o.iter() {
+            hmcontext.insert(k.into(), v.clone());
+        }
+    } else {
+        panic!("Context is not an Object");
+    }
+
+    // TODO: take context by reference
+    Ok(INTERPRETER.parse(expression, hmcontext)?)
+}
+
+/// Perform string interpolation on the given string.
+fn interpolate(source: &str, context: &JsonValue) -> String {
+    // TODO
+    return source.to_string();
 }
 
 /// The given object may be an operator: it has the given key that starts with `$`.  If so,
@@ -124,12 +150,15 @@ where
 
 fn eval_operator(
     operator: &str,
-    _value: &JsonValue,
+    value: &JsonValue,
     object: &Object,
 ) -> Fallible<Option<JsonValue>> {
     check_operator_properties(operator, object, |_| false)?;
-    // TODO
-    Ok(Some(JsonValue::Null))
+    let expr = value
+        .as_str()
+        .ok_or_else(|| Error::TemplateError(format!("$eval must be given a string expression")))?;
+    // TODO: need context..
+    Ok(Some(evaluate(expr, &JsonValue::Object(Object::new()))?))
 }
 
 fn flatten_operator(

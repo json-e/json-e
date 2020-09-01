@@ -2,6 +2,11 @@ Immediate next-steps
 
 * finish interpreter
 * finish implementing operators
+    * pass context to operators
+* use Fallible instead of Result in interpreter
+
+Improvements
+* avoid unnecessary allocation in checking operator properties
 
 Longer-term
 
