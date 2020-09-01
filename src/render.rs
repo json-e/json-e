@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 use crate::errors::Error;
 use failure::Fallible;
 use json::object::Object;
@@ -165,6 +166,8 @@ fn json_operator(
     object: &Object,
 ) -> Fallible<Option<JsonValue>> {
     check_operator_properties(operator, object, |_| false)?;
+    // TODO: `.dump` writes Object properties by insertion order, not lexically;
+    // need to override this?  https://github.com/maciejhirsz/json-rust/issues/189
     Ok(Some(JsonValue::from(value.dump())))
 }
 

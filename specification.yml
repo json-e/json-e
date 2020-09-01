@@ -38,6 +38,7 @@ context:  {key: ['value', 1, 2, true, {}]}
 template: {$eval: 'key'}
 result:   ['value', 1, 2, true, {}]
 ---
+rust: true
 title:    $json
 context:  {}
 template: {$json: [1,2,true,{},[]]}
@@ -602,6 +603,7 @@ context:  {a: 1, b: 2}
 template: {$json: {$eval: 'a + b + 7'}}
 result:   '10'
 ---
+rust: true
 title:    unwrap expressions not evaluated
 context:  {a: 1, b: 2}
 template: {$json: 'a + b + 7'}
@@ -612,6 +614,7 @@ context:  {a: 1, b: 2}
 template: {$json: [2, 5, {$eval: 'a + b + 7'}]}
 result:   '[2,5,10]'
 ---
+rust: true
 title:    representation of various unicode codepoints are consistent
 context:  {}
 template: {$json: ["\x10", "Z", "\u0103","\U0001F809"]}
@@ -627,6 +630,7 @@ context:  {}
 template: {$json: {"\U0001F809\u732b":'hey', "Z\U00010000P": 1, "\U000E1FFF\u0103": 2, "UaE": 3}}
 result:   "{\"UaE\":3,\"Z\U00010000P\":1,\"\U0001F809\u732b\":\"hey\",\"\U000E1FFF\u0103\":2}"
 ---
+rust: true
 title:    $json with undefined properties
 context:  {}
 template: {$json: [1,2,true,{},[]], foo: 'bar'}
