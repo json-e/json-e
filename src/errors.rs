@@ -11,6 +11,9 @@ pub enum Error {
 
     #[fail(display = "Interpreter Error: {}", _0)]
     InterpreterError(String),
+
+    #[fail(display = "TemplateError: {}", _0)]
+    TemplateError(String),
 }
 
 impl From<std::num::ParseIntError> for Error {
