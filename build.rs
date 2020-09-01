@@ -23,8 +23,10 @@ fn main() {
     writeln!(test_file, "use json_e::render;").unwrap();
 
     let mut section = String::from("unknown");
+    let mut should_test_section = false;
 
     let section_key = Yaml::String("section".into());
+    let rust_key = Yaml::String("rust".into());
     let title_key = Yaml::String("title".into());
     let context_key = Yaml::String("context".into());
     let template_key = Yaml::String("template".into());
@@ -38,6 +40,7 @@ fn main() {
             // update the section name if this is a new section
             if let Some(v) = h.get(&section_key) {
                 section = String::from(v.as_str().unwrap());
+                should_test_section = h.contains_key(&rust_key);
                 continue;
             }
 
@@ -46,6 +49,12 @@ fn main() {
             let template = h.get(&template_key).unwrap();
             let result = h.get(&result_key);
             let error = h.get(&error_key);
+            let should_test = h.contains_key(&rust_key);
+
+            // for the moment, only run tests that have `rust: true` in them
+            if !should_test && !should_test_section {
+                continue;
+            }
 
             write_test(
                 &mut test_file,

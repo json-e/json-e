@@ -17,6 +17,7 @@
 ---
 section:  Initial Minimal Subset
 ---
+rust: true
 title:    Identity
 context:  {}
 template: {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
