@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::errors::Error;
 use fancy_regex;
 use regex;

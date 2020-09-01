@@ -1,3 +1,5 @@
+#![allow(unused_variables)]
+#![allow(dead_code)]
 use crate::errors::Error;
 use crate::prattparser::{Context, PrattParser};
 use crate::tokenizer::Token;
@@ -55,7 +57,7 @@ fn parse_string(string: &str) -> Result<JsonValue, Error> {
     Ok(JsonValue::String(string[1..string.len() - 1].into()))
 }
 
-pub fn create_interpreter(
+pub(crate) fn create_interpreter(
 ) -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error> {
     let mut patterns = HashMap::new();
     patterns.insert("number", "[0-9]+(?:\\.[0-9]+)?");
@@ -250,10 +252,11 @@ pub fn create_interpreter(
     });
 
     // todo infix [
+    #[allow(unused_assignments)] // temporary
     infix_rules.insert("[", |left, token, context| {
         let mut a: i64;
-        let mut b: i64;
-        let mut isInterval = false;
+        let b: i64;
+        let mut is_interval = false;
 
         // Successful cases this function handles:
         //  [1,2][1] - integer index of array [DONE]
@@ -264,7 +267,7 @@ pub fn create_interpreter(
 
         if context.attempt(|t| t == ":")?.is_some() {
             a = 0;
-            isInterval = true;
+            is_interval = true;
         } else {
             let parsed = context.parse(None)?;
             print!("parsed is {}\n", parsed);
@@ -277,7 +280,7 @@ pub fn create_interpreter(
                 }
                 a = n.as_fixed_point_i64(0).unwrap();
                 if context.attempt(|t| t == ":")?.is_some() {
-                    isInterval = true;
+                    is_interval = true;
                 }
             } else {
                 return Err(Error::InterpreterError(
@@ -286,7 +289,7 @@ pub fn create_interpreter(
             }
         }
 
-        if isInterval && !context.attempt(|t| t == "]")?.is_some() {
+        if is_interval && !context.attempt(|t| t == "]")?.is_some() {
             let parsed = context.parse(None)?;
             if let JsonValue::Number(n) = parsed {
                 let (_, _, exponent) = n.as_parts();
@@ -305,7 +308,7 @@ pub fn create_interpreter(
             context.require(|t| t == "]")?;
         }
 
-        if isInterval {
+        if is_interval {
             unreachable!()
         } else {
             match left {

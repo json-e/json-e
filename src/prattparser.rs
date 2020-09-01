@@ -1,10 +1,10 @@
+#![allow(dead_code)]
 use crate::errors::Error;
 use crate::tokenizer::Token;
 use crate::tokenizer::Tokenizer;
-use json::JsonValue;
 use std::collections::HashMap;
 
-pub struct PrattParser<'a, T, C> {
+pub(crate) struct PrattParser<'a, T, C> {
     tokenizer: Tokenizer<'a>,
     precedence_map: HashMap<&'a str, usize>,
     prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T, C>) -> Result<T, Error>>,
@@ -12,7 +12,7 @@ pub struct PrattParser<'a, T, C> {
 }
 
 impl<'a, T, C> PrattParser<'a, T, C> {
-    pub fn new(
+    pub(crate) fn new(
         ignore: &str,
         patterns: HashMap<&str, &str>,
         token_types: Vec<&'a str>,
@@ -46,14 +46,14 @@ impl<'a, T, C> PrattParser<'a, T, C> {
         })
     }
 
-    pub fn parse(self: &Self, source: &str, context: C, offset: usize) -> Result<T, Error> {
+    pub(crate) fn parse(self: &Self, source: &str, context: C, offset: usize) -> Result<T, Error> {
         let mut ctx = Context::new(self, source, context, offset);
 
         ctx.parse(None) // todo javascript calls attempt
     }
 }
 
-pub struct Context<'a, 'v, T, C> {
+pub(crate) struct Context<'a, 'v, T, C> {
     parser: &'a PrattParser<'a, T, C>,
     source: &'v str,
     pub context: C, // todo find a better name
@@ -61,7 +61,7 @@ pub struct Context<'a, 'v, T, C> {
 }
 
 impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
-    pub fn new(
+    pub(crate) fn new(
         parser: &'a PrattParser<'a, T, C>,
         source: &'v str,
         context: C,
@@ -76,7 +76,7 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
         }
     }
 
-    pub fn attempt(
+    pub(crate) fn attempt(
         self: &mut Self,
         // TODO: come up with better name (checks whether token is of interest)
         is_type_allowed: impl Fn(&'a str) -> bool,
@@ -103,7 +103,7 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
         }
     }
 
-    pub fn require(
+    pub(crate) fn require(
         self: &mut Self,
         is_type_allowed: impl Fn(&'a str) -> bool,
     ) -> Result<Token<'a, 'v>, Error> {
@@ -122,13 +122,13 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
         }
     }
 
-    pub fn parse(self: &mut Self, precedence_type: Option<&str>) -> Result<T, Error> {
+    pub(crate) fn parse(self: &mut Self, precedence_type: Option<&str>) -> Result<T, Error> {
         let precedence = match precedence_type {
             Some(p) => *self.parser.precedence_map.get(p).unwrap(),
             //.expect("precedence_type has no precedence"),
             None => 0,
         };
-        let token = self.require(|ty| true)?;
+        let token = self.require(|_| true)?;
         let prefix_rule = self.parser.prefix_rules.get(token.token_type);
         match prefix_rule {
             Some(rule) => {
@@ -143,7 +143,7 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
                                     break;
                                 }
 
-                                let token = self.require(|ty| true)?;
+                                let token = self.require(|_| true)?;
                                 left = infix_rule(&left, &token, self)?;
                                 continue;
                             }
