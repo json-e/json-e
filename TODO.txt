@@ -1,0 +1,9 @@
+Immediate next-steps
+
+* finish interpreter
+* finish implementing operators
+
+Longer-term
+
+* support multiple JSON value backends (notably `json` and `serde_json`)
+  either with a trait wrapping both, or by converting to/from those types
