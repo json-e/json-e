@@ -4,11 +4,7 @@ Immediate next-steps
 * finish implementing operators
     * pass context to operators
 * use Fallible instead of Result in interpreter
+* switch from json crate to serde_json, as it's the standard
 
 Improvements
 * avoid unnecessary allocation in checking operator properties
-
-Longer-term
-
-* support multiple JSON value backends (notably `json` and `serde_json`)
-  either with a trait wrapping both, or by converting to/from those types
