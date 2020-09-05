@@ -1,11 +1,12 @@
 #![allow(unused_variables)]
 use crate::errors::Error;
 use crate::interpreter::Interpreter;
-use failure::Fallible;
+use failure::{bail, Fallible};
 use json::object::Object;
 use json::JsonValue;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+use std::fmt::Write;
 
 lazy_static! {
     static ref INTERPRETER: Interpreter = Interpreter::new();
@@ -28,8 +29,8 @@ pub fn render(template: &JsonValue, context: &JsonValue) -> Fallible<JsonValue> 
 fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonValue>> {
     Ok(Some(match template {
         JsonValue::Number(_) | JsonValue::Boolean(_) | JsonValue::Null => template.clone(),
-        JsonValue::String(s) => JsonValue::from(interpolate(s, context)),
-        JsonValue::Short(s) => JsonValue::from(interpolate(s.as_str(), context)),
+        JsonValue::String(s) => JsonValue::from(interpolate(s, context)?),
+        JsonValue::Short(s) => JsonValue::from(interpolate(s.as_str(), context)?),
         JsonValue::Array(elements) => JsonValue::Array(
             elements
                 .into_iter()
@@ -40,9 +41,8 @@ fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonVal
             // first, see if this is a operator invocation
             for (k, v) in o.iter() {
                 if k.chars().next() == Some('$') {
-                    if let Some(result) = maybe_operator(k, v, o, context)? {
-                        println!("found op {:?}", result);
-                        return Ok(Some(result));
+                    if let Some(rendered) = maybe_operator(k, v, o, context)? {
+                        return Ok(rendered);
                     }
                 }
             }
@@ -51,7 +51,7 @@ fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonVal
             let mut result = Object::new();
             for (k, v) in o.iter() {
                 if let Some(v) = _render(v, context)? {
-                    result.insert(k, v);
+                    result.insert(&interpolate(k, context)?, v);
                 }
             }
             JsonValue::Object(result)
@@ -60,9 +60,60 @@ fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonVal
 }
 
 /// Perform string interpolation on the given string.
-fn interpolate(source: &str, context: &JsonValue) -> String {
-    // TODO
-    return source.to_string();
+fn interpolate(mut source: &str, context: &JsonValue) -> Fallible<String> {
+    let mut result = String::new();
+
+    // TODO: lots of this could be get_unchecked, if the compiler isn't figuring that out..
+
+    while source.len() > 0 {
+        if let Some(offset) = source.find('$') {
+            // If this is an un-escaped `${`, interpolate..
+            if let Some(s) = source.get(offset..offset + 2) {
+                if s == "${" {
+                    // TODO: need a way to parse a single expression and return the end offset
+                    let mut expr = source.get(offset + 2..).unwrap();
+                    if let Some(end) = expr.find('}') {
+                        result.push_str(source.get(..offset).unwrap());
+                        source = expr.get(end + 1..).unwrap();
+                        expr = expr.get(..end).unwrap();
+
+                        let eval_result = evaluate(expr, context)?;
+                        match eval_result {
+                            JsonValue::Number(n) => write!(&mut result, "{}", n)?,
+                            JsonValue::Boolean(true) => result.push_str("true"),
+                            JsonValue::Boolean(false) => result.push_str("false"),
+                            // null interpolates to an empty string
+                            JsonValue::Null => {}
+                            JsonValue::String(s) => result.push_str(&s),
+                            JsonValue::Short(s) => result.push_str(s.as_str()),
+                            _ => bail!("interpolation of '{}' produced an array or object", expr),
+                        }
+
+                        continue;
+                    }
+                }
+            }
+
+            // If this is an escape (`$${`), un-escape it
+            if let Some(s) = source.get(offset..offset + 3) {
+                if s == "$${" {
+                    result.push_str(source.get(..offset + 1).unwrap());
+                    source = source.get(offset + 2..).unwrap();
+                    continue;
+                }
+            }
+
+            // otherwise, carry on..
+            result.push_str(source.get(..offset + 1).unwrap());
+            source = source.get(offset + 1..).unwrap();
+        } else {
+            // remainder of the string contains no interpolations..
+            result.push_str(source);
+            source = "";
+        }
+    }
+
+    Ok(result)
 }
 
 /// Evaluate the given expression and return the resulting JsonValue
@@ -90,26 +141,40 @@ fn maybe_operator(
     value: &JsonValue,
     object: &Object,
     context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
-    println!("maybe_operator {:?}, {:?}, {:?}", operator, object, context);
+) -> Fallible<Option<Option<JsonValue>>> {
     match operator {
-        "$eval" => eval_operator(operator, value, object, context),
-        "$flatten" => flatten_operator(operator, value, object, context),
-        "$flattenDeep" => flatten_deep_operator(operator, value, object, context),
-        "$fromNow" => from_now_operator(operator, value, object, context),
-        "$if" => if_operator(operator, value, object, context),
-        "$json" => json_operator(operator, value, object, context),
-        "$let" => let_operator(operator, value, object, context),
-        "$map" => map_operator(operator, value, object, context),
-        "$match" => match_operator(operator, value, object, context),
-        "$switch" => switch_operator(operator, value, object, context),
-        "$merge" => merge_operator(operator, value, object, context),
-        "$mergeDeep" => merge_deep_operator(operator, value, object, context),
-        "$reverse" => reverse_operator(operator, value, object, context),
-        "$sort" => sort_operator(operator, value, object, context),
+        "$eval" => Ok(Some(eval_operator(operator, value, object, context)?)),
+        "$flatten" => Ok(Some(flatten_operator(operator, value, object, context)?)),
+        "$flattenDeep" => Ok(Some(flatten_deep_operator(
+            operator, value, object, context,
+        )?)),
+        "$fromNow" => Ok(Some(from_now_operator(operator, value, object, context)?)),
+        "$if" => Ok(Some(if_operator(operator, value, object, context)?)),
+        "$json" => Ok(Some(json_operator(operator, value, object, context)?)),
+        "$let" => Ok(Some(let_operator(operator, value, object, context)?)),
+        "$map" => Ok(Some(map_operator(operator, value, object, context)?)),
+        "$match" => Ok(Some(match_operator(operator, value, object, context)?)),
+        "$switch" => Ok(Some(switch_operator(operator, value, object, context)?)),
+        "$merge" => Ok(Some(merge_operator(operator, value, object, context)?)),
+        "$mergeDeep" => Ok(Some(merge_deep_operator(operator, value, object, context)?)),
+        "$reverse" => Ok(Some(reverse_operator(operator, value, object, context)?)),
+        "$sort" => Ok(Some(sort_operator(operator, value, object, context)?)),
 
         // if the operator isn't recognized, just treat this as a normal object
         _ => Ok(None),
+    }
+}
+
+/// Determine if the given value meets the JSON-e definition of "truthy"
+fn is_truthy(value: &JsonValue) -> bool {
+    match value {
+        JsonValue::Number(n) => !n.is_zero(),
+        JsonValue::Boolean(b) => *b,
+        JsonValue::Null => false,
+        JsonValue::String(s) => s.len() > 0,
+        JsonValue::Short(s) => s.len() > 0,
+        JsonValue::Array(a) => !a.is_empty(),
+        JsonValue::Object(o) => !o.is_empty(),
     }
 }
 
@@ -120,13 +185,13 @@ fn check_operator_properties<F>(operator: &str, object: &Object, check: F) -> Fa
 where
     F: Fn(&str) -> bool,
 {
-    // TODO: avoid this allocation unless necessary
-    let mut unknown = Vec::new();
-
     // if the object only has one key, we already have it (the operator)
     if object.len() == 1 {
         return Ok(());
     }
+
+    // TODO: avoid this allocation unless necessary
+    let mut unknown = Vec::new();
 
     for (k, _) in object.iter() {
         if k == operator {
@@ -195,7 +260,23 @@ fn if_operator(
     object: &Object,
     context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
-    todo!()
+    check_operator_properties(operator, object, |prop| prop == "then" || prop == "else")?;
+
+    let eval_result = match value {
+        JsonValue::String(s) => evaluate(&s, context)?,
+        JsonValue::Short(s) => evaluate(s.as_str(), context)?,
+        _ => bail!("$if can evaluate string expressions only"),
+    };
+
+    let prop = if is_truthy(&eval_result) {
+        "then"
+    } else {
+        "else"
+    };
+    match object.get(prop) {
+        None => Ok(None),
+        Some(val) => Ok(_render(val, context)?),
+    }
 }
 
 fn json_operator(
@@ -284,52 +365,35 @@ fn sort_operator(
 
 #[cfg(test)]
 mod tests {
+    use super::is_truthy;
     use crate::render;
     use json::JsonValue;
 
     #[test]
-    fn json() {
-        let template = json::parse(r#"{"$json": {"abc": "123"}}"#).unwrap();
-        let context = json::parse(r#"{}"#).unwrap();
-        assert_eq!(
-            json::parse(r#""{\"abc\":\"123\"}""#).unwrap(),
-            render(&template, &context).unwrap()
-        )
-    }
-
-    #[test]
     fn render_returns_correct_template() {
         let template = json::parse(r#"{"code": 200}"#).unwrap();
-
         let context = json::parse("{}").unwrap();
-
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_number() {
         let template = json::parse("200").unwrap();
-
         let context = json::parse("{}").unwrap();
-
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_boolean() {
         let template = json::parse("true").unwrap();
-
         let context = json::parse("{}").unwrap();
-
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_null() {
         let template = json::parse("null").unwrap();
-
         let context = json::parse("{}").unwrap();
-
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
@@ -365,18 +429,71 @@ mod tests {
     #[test]
     fn render_gets_array() {
         let template = json::parse(r#"[1, 2, 3]"#).unwrap();
-
         let context = json::parse("{}").unwrap();
-
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_object() {
         let template = json::parse(r#"{"a":1, "b":2}"#).unwrap();
-
         let context = json::parse("{}").unwrap();
-
         assert_eq!(template, render(&template, &context).unwrap())
+    }
+
+    #[test]
+    fn test_is_truthy() {
+        let tests = vec![
+            (json::parse(r#"null"#), false),
+            (json::parse(r#"[]"#), false),
+            (json::parse(r#"[1]"#), true),
+            (json::parse(r#"{}"#), false),
+            (json::parse(r#"{"x": false}"#), true),
+            (json::parse(r#""""#), false),
+            (json::parse(r#""short string""#), true),
+            (
+                json::parse(r#""very very very very very very very very long (enough) string""#),
+                true,
+            ),
+            (json::parse(r#"0"#), false),
+            (json::parse(r#"0.0"#), false),
+            (json::parse(r#"-0.0"#), false),
+            (json::parse(r#"-1.0"#), true),
+            (json::parse(r#"false"#), false),
+            (json::parse(r#"true"#), true),
+        ];
+
+        for (value, expected) in tests {
+            let value = value.unwrap();
+            assert_eq!(
+                is_truthy(&value),
+                expected,
+                "{:?} should be {}",
+                value,
+                expected
+            );
+        }
+    }
+
+    mod interpolate {
+        use super::super::interpolate;
+        use json;
+
+        #[test]
+        fn plain_string() {
+            let context = json::parse("{}").unwrap();
+            assert_eq!(
+                interpolate("a string", &context).unwrap(),
+                String::from("a string")
+            );
+        }
+
+        #[test]
+        fn interpolation_in_middle() {
+            let context = json::parse("{}").unwrap();
+            assert_eq!(
+                interpolate("a${13}b", &context).unwrap(),
+                String::from("a13b")
+            );
+        }
     }
 }

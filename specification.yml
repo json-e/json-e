@@ -56,6 +56,7 @@ context:  {}
 template: {$json: {'Z':null,'q':1,'a':{'c':45,'b':['9',8,{}]},'r':true}}
 result:   '{"Z":null,"a":{"b":["9",8,{}],"c":45},"q":1,"r":true}'
 ---
+rust: true
 title:    string interpolation
 context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k-${num}': true}
@@ -66,31 +67,37 @@ context:  {key: 'world', num: 1}
 template: {message: 'hello ${{a: "world"}.a}', 'k-${{a: 1}.a + {a: 0}.a}': true}
 result:   {message: 'hello world', 'k-1': true}
 ---
+rust: true
 title: multiple string interpolation (1)
 context:  {a: 'hello', b: 'world'}
 template: {message: '${a} ${b}'}
 result:   {message: 'hello world'}
 ---
+rust: true
 title: multiple string interpolation (2)
 context:  {a: 'hello', b: 'world'}
 template: {message: '${a}$$${b}'}
 result:   {message: 'hello$${b}'}
 ---
+rust: true
 title: multiple string interpolation (3)
 context:  {a: 'hello', b: 'world'}
 template: {message: '${a}##${b}'}
 result:   {message: 'hello##world'}
 ---
+rust: true
 title: string interpolation escapes
 context:  {}
 template: {message: 'a literal $${in a string}'}
 result:   {message: 'a literal ${in a string}'}
 ---
+rust: true
 title: string interpolation escapes with more $
 context:  {x: 'a'}
 template: ['${x}', '$${x}', '$$${x}', '$$$${x}', '$$$$${x}']
 result:   ['a', '${x}', '$${x}', '$$${x}', '$$$${x}']
 ---
+rust: true
 title: string interpolation of keys
 context: {name: 'foo', value: 'bar'}
 template: {"tc_${name}": "${value}"}
@@ -101,26 +108,31 @@ context:  {}
 template: {message: 'tricky ${"}}}}"}'}
 result:   {message: 'tricky }}}}'}
 ---
+rust: true
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}
 error:    "TemplateError at template.message: interpolation of 'key' produced an array or object"
 ---
+rust: true
 title:    can't interpolate objects
 context:  {key: {}}
 template: 'hello ${key}'
 error:    "TemplateError: interpolation of 'key' produced an array or object"
 ---
+rust: true
 title:    booleans interpolate
 context:  {t: true, f: false}
 template: '${t} or ${f}: yeast is a bacterium'
 result:   'true or false: yeast is a bacterium'
 ---
+rust: true
 title:    numbers interpolate
 context:  {round: 3, decimal: 3.75}
 template: '${round}, really ${decimal}'
 result:   '3, really 3.75'
 ---
+rust: true
 title:    nulls interpolate
 context:  {nothing: null}
 template: 'big pile of ${nothing}'
@@ -134,6 +146,7 @@ panic: true
 ################################################################################
 ---
 section:  $if operator
+rust: true
 ---
 title:    $if-then-else, true
 context:  {cond: true}
