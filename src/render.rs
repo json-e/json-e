@@ -40,7 +40,7 @@ fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonVal
             // first, see if this is a operator invocation
             for (k, v) in o.iter() {
                 if k.chars().next() == Some('$') {
-                    if let Some(result) = maybe_operator(k, v, o)? {
+                    if let Some(result) = maybe_operator(k, v, o, context)? {
                         println!("found op {:?}", result);
                         return Ok(Some(result));
                     }
@@ -57,6 +57,12 @@ fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonVal
             JsonValue::Object(result)
         }
     }))
+}
+
+/// Perform string interpolation on the given string.
+fn interpolate(source: &str, context: &JsonValue) -> String {
+    // TODO
+    return source.to_string();
 }
 
 /// Evaluate the given expression and return the resulting JsonValue
@@ -76,12 +82,6 @@ fn evaluate(expression: &str, context: &JsonValue) -> Fallible<JsonValue> {
     Ok(INTERPRETER.parse(expression, hmcontext)?)
 }
 
-/// Perform string interpolation on the given string.
-fn interpolate(source: &str, context: &JsonValue) -> String {
-    // TODO
-    return source.to_string();
-}
-
 /// The given object may be an operator: it has the given key that starts with `$`.  If so,
 /// this function evaluates the operator and return Ok(Some(result)) or an error in
 /// evaluation.  Otherwise, it returns Ok(None) indicatig that this is a "normal" object.
@@ -89,23 +89,24 @@ fn maybe_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
-    println!("maybe_operator {:?}, {:?}", operator, object);
+    println!("maybe_operator {:?}, {:?}, {:?}", operator, object, context);
     match operator {
-        "$eval" => eval_operator(operator, value, object),
-        "$flatten" => flatten_operator(operator, value, object),
-        "$flattenDeep" => flatten_deep_operator(operator, value, object),
-        "$fromNow" => from_now_operator(operator, value, object),
-        "$if" => if_operator(operator, value, object),
-        "$json" => json_operator(operator, value, object),
-        "$let" => let_operator(operator, value, object),
-        "$map" => map_operator(operator, value, object),
-        "$match" => match_operator(operator, value, object),
-        "$switch" => switch_operator(operator, value, object),
-        "$merge" => merge_operator(operator, value, object),
-        "$mergeDeep" => merge_deep_operator(operator, value, object),
-        "$reverse" => reverse_operator(operator, value, object),
-        "$sort" => sort_operator(operator, value, object),
+        "$eval" => eval_operator(operator, value, object, context),
+        "$flatten" => flatten_operator(operator, value, object, context),
+        "$flattenDeep" => flatten_deep_operator(operator, value, object, context),
+        "$fromNow" => from_now_operator(operator, value, object, context),
+        "$if" => if_operator(operator, value, object, context),
+        "$json" => json_operator(operator, value, object, context),
+        "$let" => let_operator(operator, value, object, context),
+        "$map" => map_operator(operator, value, object, context),
+        "$match" => match_operator(operator, value, object, context),
+        "$switch" => switch_operator(operator, value, object, context),
+        "$merge" => merge_operator(operator, value, object, context),
+        "$mergeDeep" => merge_deep_operator(operator, value, object, context),
+        "$reverse" => reverse_operator(operator, value, object, context),
+        "$sort" => sort_operator(operator, value, object, context),
 
         // if the operator isn't recognized, just treat this as a normal object
         _ => Ok(None),
@@ -152,19 +153,20 @@ fn eval_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     check_operator_properties(operator, object, |_| false)?;
     let expr = value
         .as_str()
         .ok_or_else(|| Error::TemplateError(format!("$eval must be given a string expression")))?;
-    // TODO: need context..
-    Ok(Some(evaluate(expr, &JsonValue::Object(Object::new()))?))
+    Ok(Some(evaluate(expr, context)?))
 }
 
 fn flatten_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     todo!()
 }
@@ -173,6 +175,7 @@ fn flatten_deep_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     todo!()
 }
@@ -181,11 +184,17 @@ fn from_now_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     todo!()
 }
 
-fn if_operator(operator: &str, value: &JsonValue, object: &Object) -> Fallible<Option<JsonValue>> {
+fn if_operator(
+    operator: &str,
+    value: &JsonValue,
+    object: &Object,
+    context: &JsonValue,
+) -> Fallible<Option<JsonValue>> {
     todo!()
 }
 
@@ -193,6 +202,7 @@ fn json_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     check_operator_properties(operator, object, |_| false)?;
     // TODO: `.dump` writes Object properties by insertion order, not lexically;
@@ -200,11 +210,21 @@ fn json_operator(
     Ok(Some(JsonValue::from(value.dump())))
 }
 
-fn let_operator(operator: &str, value: &JsonValue, object: &Object) -> Fallible<Option<JsonValue>> {
+fn let_operator(
+    operator: &str,
+    value: &JsonValue,
+    object: &Object,
+    context: &JsonValue,
+) -> Fallible<Option<JsonValue>> {
     todo!()
 }
 
-fn map_operator(operator: &str, value: &JsonValue, object: &Object) -> Fallible<Option<JsonValue>> {
+fn map_operator(
+    operator: &str,
+    value: &JsonValue,
+    object: &Object,
+    context: &JsonValue,
+) -> Fallible<Option<JsonValue>> {
     todo!()
 }
 
@@ -212,6 +232,7 @@ fn match_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     todo!()
 }
@@ -220,6 +241,7 @@ fn switch_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     todo!()
 }
@@ -228,6 +250,7 @@ fn merge_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     todo!()
 }
@@ -236,6 +259,7 @@ fn merge_deep_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     todo!()
 }
@@ -244,6 +268,7 @@ fn reverse_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     todo!()
 }
@@ -252,6 +277,7 @@ fn sort_operator(
     operator: &str,
     value: &JsonValue,
     object: &Object,
+    context: &JsonValue,
 ) -> Fallible<Option<JsonValue>> {
     todo!()
 }

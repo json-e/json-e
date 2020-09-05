@@ -39,6 +39,7 @@ context:  {}
 template: {$eval: '1 + 2'}
 result:   3
 ---
+rust: true
 title:    $eval
 context:  {key: ['value', 1, 2, true, {}]}
 template: {$eval: 'key'}
