@@ -76,6 +76,38 @@ fn parse_string(string: &str) -> Result<Value, Error> {
     Ok(Value::String(string[1..string.len() - 1].into()))
 }
 
+fn number_binary_op<I64, U64, F64>(
+    a: &Number,
+    b: &Number,
+    op_i64: I64,
+    op_u64: U64,
+    op_f64: F64,
+) -> Number
+where
+    I64: Fn(i64, i64) -> Option<i64>,
+    U64: Fn(u64, u64) -> Option<u64>,
+    F64: Fn(f64, f64) -> f64,
+{
+    if let (Some(a), Some(b)) = (a.as_i64(), b.as_i64()) {
+        if let Some(r) = op_i64(a, b) {
+            return r.into();
+        }
+    }
+
+    if let (Some(a), Some(b)) = (a.as_u64(), b.as_u64()) {
+        if let Some(r) = op_u64(a, b) {
+            return r.into();
+        }
+    }
+
+    if let (Some(a), Some(b)) = (a.as_f64(), b.as_f64()) {
+        return Number::from_f64(op_f64(a, b)).unwrap();
+    }
+
+    // TODO: panic (and unwrap above)
+    panic!("cannot perform binary numeric operation")
+}
+
 /// Serde's Numbers aren't really meant for calculations, and as_i64 will fail if
 /// the Number was constructed with from_f64, even if it is an integer f64.
 fn number_to_i64(number: serde_json::Number) -> Option<i64> {
@@ -178,7 +210,18 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
 
     prefix_rules.insert("-", |_token, context| {
         let v = context.parse(Some("unary"))?;
+
+        println!("negating {:?}", v);
+
+        // try to keep integers as integers..
+        if let Some(n) = v.as_i64() {
+            if let Some(neg) = n.checked_neg() {
+                return Ok(Value::Number(neg.into()));
+            }
+        }
+
         if let Some(n) = v.as_f64() {
+            // unwrap is OK here as the number is defined
             return Ok(Value::Number(Number::from_f64(-n).unwrap()));
         } else {
             return Err(Error::InterpreterError(
@@ -189,8 +232,8 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
 
     prefix_rules.insert("+", |_token, context| {
         let v = context.parse(Some("unary"))?;
-        if let Some(n) = v.as_f64() {
-            return Ok(Value::Number(Number::from_f64(n).unwrap()));
+        if v.is_number() {
+            return Ok(v);
         } else {
             return Err(Error::InterpreterError(
                 "This operator expects a number".to_string(),
@@ -239,10 +282,13 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
         let right = context.parse(Some("+"))?;
 
         match (&left, &right) {
-            (&Value::Number(_), &Value::Number(_)) => {
-                let sum = left.as_f64().unwrap() + right.as_f64().unwrap();
-                Ok(Value::Number(Number::from_f64(sum.into()).unwrap()))
-            }
+            (&Value::Number(ref a), &Value::Number(ref b)) => Ok(Value::Number(number_binary_op(
+                a,
+                b,
+                i64::checked_add,
+                u64::checked_add,
+                |a, b| a + b,
+            ))),
             (&Value::String(_), &Value::String(_)) => {
                 let sum = [left.as_str().unwrap(), right.as_str().unwrap()].concat();
                 Ok(Value::String(sum))
@@ -257,10 +303,13 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
         let right = context.parse(Some("*"))?;
 
         match (&left, &right) {
-            (&Value::Number(_), &Value::Number(_)) => {
-                let product = left.as_f64().unwrap() * right.as_f64().unwrap();
-                Ok(Value::Number(Number::from_f64(product.into()).unwrap()))
-            }
+            (&Value::Number(ref a), &Value::Number(ref b)) => Ok(Value::Number(number_binary_op(
+                a,
+                b,
+                i64::checked_mul,
+                u64::checked_mul,
+                |a, b| a * b,
+            ))),
             (_, _) => Err(Error::InterpreterError(
                 "infix: *', 'number + number".to_string(),
             )),
@@ -271,10 +320,14 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
         let right = context.parse(Some("**-right-associative"))?;
 
         match (&left, &right) {
-            (&Value::Number(_), &Value::Number(_)) => {
-                let result = left.as_f64().unwrap().powf(right.as_f64().unwrap());
-                Ok(Value::Number(Number::from_f64(result.into()).unwrap()))
-            }
+            (&Value::Number(ref a), &Value::Number(ref b)) => Ok(Value::Number(number_binary_op(
+                a,
+                b,
+                // TODO: these 'as u32' could panic..
+                |a, b| i64::checked_pow(a, b as u32),
+                |a, b| u64::checked_pow(a, b as u32),
+                |a, b| a.powf(b),
+            ))),
             (_, _) => Err(Error::InterpreterError(
                 "infix: **', 'number + number".to_string(),
             )),
@@ -391,7 +444,7 @@ mod tests {
 
         assert_eq!(
             interpreter.parse("23.67", HashMap::new(), 0).unwrap(),
-            23.67
+            json!(23.67)
         );
     }
 
@@ -400,7 +453,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("!true", HashMap::new(), 0).unwrap(),
-            false
+            json!(false)
         );
     }
 
@@ -408,56 +461,80 @@ mod tests {
     fn parse_minus_expression_negative_number() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("-7", HashMap::new(), 0).unwrap(), -7.0);
+        assert_eq!(
+            interpreter.parse("-7", HashMap::new(), 0).unwrap(),
+            json!(-7)
+        );
     }
 
     #[test]
     fn parse_minus_expression_double_negative() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("--7", HashMap::new(), 0).unwrap(), 7.0);
+        assert_eq!(
+            interpreter.parse("--7", HashMap::new(), 0).unwrap(),
+            json!(7)
+        );
     }
 
     #[test]
     fn parse_minus_expression_plus() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("-+10", HashMap::new(), 0).unwrap(), -10.0);
+        assert_eq!(
+            interpreter.parse("-+10", HashMap::new(), 0).unwrap(),
+            json!(-10)
+        );
     }
 
     #[test]
     fn parse_minus_expression_zero() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("-0", HashMap::new(), 0).unwrap(), 0.0);
+        assert_eq!(
+            interpreter.parse("-0", HashMap::new(), 0).unwrap(),
+            json!(0)
+        );
     }
 
     #[test]
     fn parse_plus_expression_positive_number() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("+5", HashMap::new(), 0).unwrap(), 5.0);
+        assert_eq!(
+            interpreter.parse("+5", HashMap::new(), 0).unwrap(),
+            json!(5)
+        );
     }
 
     #[test]
     fn parse_plus_expression_zero() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("+0", HashMap::new(), 0).unwrap(), 0.0);
+        assert_eq!(
+            interpreter.parse("+0", HashMap::new(), 0).unwrap(),
+            json!(0)
+        );
     }
 
     #[test]
     fn parse_plus_expression_minus() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("+-10", HashMap::new(), 0).unwrap(), -10.0);
+        assert_eq!(
+            interpreter.parse("+-10", HashMap::new(), 0).unwrap(),
+            json!(-10)
+        );
     }
 
     #[test]
     fn parse_boolean_true() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("true", HashMap::new(), 0).unwrap(), true);
+        assert_eq!(
+            interpreter.parse("true", HashMap::new(), 0).unwrap(),
+            json!(true)
+        );
     }
 
     #[test]
@@ -466,7 +543,7 @@ mod tests {
 
         assert_eq!(
             interpreter.parse("false", HashMap::new(), 0).unwrap(),
-            false
+            json!(false)
         );
     }
 
@@ -476,7 +553,7 @@ mod tests {
         let mut context = HashMap::new();
         context.insert("x".to_string(), Value::Number(10.into()));
 
-        assert_eq!(interpreter.parse("x", context, 0).unwrap(), 10);
+        assert_eq!(interpreter.parse("x", context, 0).unwrap(), json!(10));
     }
 
     #[test]
@@ -498,7 +575,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("[1, 2]", HashMap::new(), 0).unwrap(),
-            Value::Array(vec![1.into(), 2.into()]),
+            json!([1, 2]),
         );
     }
 
@@ -507,7 +584,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("[]", HashMap::new(), 0).unwrap(),
-            Value::Array(vec![]),
+            json!([])
         );
     }
 
@@ -525,7 +602,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("2*(3+4)", HashMap::new(), 0).unwrap(),
-            json!(14.0),
+            json!(14),
         );
     }
 
@@ -614,7 +691,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("2**3", HashMap::new(), 0).unwrap(),
-            json!(8.0),
+            json!(8),
         );
     }
 
@@ -623,7 +700,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("2**0", HashMap::new(), 0).unwrap(),
-            json!(1.0),
+            json!(1),
         );
     }
 
