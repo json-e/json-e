@@ -15,6 +15,7 @@
 #   1) Time at test time is expected to be '2017-01-19T16:27:20.974Z'
 ################################################################################
 ---
+rust: true
 section:  Initial Minimal Subset
 ---
 title:    Identity
@@ -22,29 +23,28 @@ context:  {}
 template: {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 result:   {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 ---
+rust: false
 title:    fromNow
 context:  {}
 template: {$fromNow: ''}
 result:   '2017-01-19T16:27:20.974Z'
 ---
+rust: false
 title:    fromNow 2 days 3 hours
 context:  {}
 template: {$fromNow: '2 days 3 hours'}
 result:   '2017-01-21T19:27:20.974Z'
 ---
-rust: true
 title:    $eval without context
 context:  {}
 template: {$eval: '1 + 2'}
 result:   3
 ---
-rust: true
 title:    $eval
 context:  {key: ['value', 1, 2, true, {}]}
 template: {$eval: 'key'}
 result:   ['value', 1, 2, true, {}]
 ---
-rust: true
 title:    $json
 context:  {}
 template: {$json: [1,2,true,{},[]]}
@@ -55,88 +55,79 @@ context:  {}
 template: {$json: {'Z':null,'q':1,'a':{'c':45,'b':['9',8,{}]},'r':true}}
 result:   '{"Z":null,"a":{"b":["9",8,{}],"c":45},"q":1,"r":true}'
 ---
-rust: true
 title:    string interpolation
 context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k-${num}': true}
 result:   {message: 'hello world', 'k-1': true}
 ---
+rust: false # interpolation isn't smart enough yet
 title:    string interpolation with object evaluation
 context:  {key: 'world', num: 1}
 template: {message: 'hello ${{a: "world"}.a}', 'k-${{a: 1}.a + {a: 0}.a}': true}
 result:   {message: 'hello world', 'k-1': true}
 ---
-rust: true
 title: multiple string interpolation (1)
 context:  {a: 'hello', b: 'world'}
 template: {message: '${a} ${b}'}
 result:   {message: 'hello world'}
 ---
-rust: true
 title: multiple string interpolation (2)
 context:  {a: 'hello', b: 'world'}
 template: {message: '${a}$$${b}'}
 result:   {message: 'hello$${b}'}
 ---
-rust: true
 title: multiple string interpolation (3)
 context:  {a: 'hello', b: 'world'}
 template: {message: '${a}##${b}'}
 result:   {message: 'hello##world'}
 ---
-rust: true
 title: string interpolation escapes
 context:  {}
 template: {message: 'a literal $${in a string}'}
 result:   {message: 'a literal ${in a string}'}
 ---
-rust: true
 title: string interpolation escapes with more $
 context:  {x: 'a'}
 template: ['${x}', '$${x}', '$$${x}', '$$$${x}', '$$$$${x}']
 result:   ['a', '${x}', '$${x}', '$$${x}', '$$$${x}']
 ---
-rust: true
 title: string interpolation of keys
 context: {name: 'foo', value: 'bar'}
 template: {"tc_${name}": "${value}"}
 result: {"tc_foo": "bar"}
 ---
+rust: false
 title: string interpolation with unbalanced }
 context:  {}
 template: {message: 'tricky ${"}}}}"}'}
 result:   {message: 'tricky }}}}'}
 ---
-rust: true
 title:    can't interpolate arrays
 context:  {key: [1,2,3]}
 template: {message: 'hello ${key}'}
 error:    "TemplateError at template.message: interpolation of 'key' produced an array or object"
 ---
-rust: true
 title:    can't interpolate objects
 context:  {key: {}}
 template: 'hello ${key}'
 error:    "TemplateError: interpolation of 'key' produced an array or object"
 ---
-rust: true
 title:    booleans interpolate
 context:  {t: true, f: false}
 template: '${t} or ${f}: yeast is a bacterium'
 result:   'true or false: yeast is a bacterium'
 ---
-rust: true
 title:    numbers interpolate
 context:  {round: 3, decimal: 3.75}
 template: '${round}, really ${decimal}'
 result:   '3, really 3.75'
 ---
-rust: true
 title:    nulls interpolate
 context:  {nothing: null}
 template: 'big pile of ${nothing}'
 result:   'big pile of '
 ---
+rust: false
 title: invalid context
 context: {'a b c': 1}
 template: {}
@@ -287,6 +278,7 @@ context: {cond: {a: 2}, key: 'world'}
 template: {$if: 'cond', then: "t", else: "f"}
 result: t
 ---
+rust: false  # no support for functions yet
 title: $if->then->else, function
 context: {}
 template: {$if: 'min', then: "t", else: "f"}

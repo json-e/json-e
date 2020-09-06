@@ -5,7 +5,16 @@ use std::fs::read_to_string;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use yaml_rust::{Yaml, YamlLoader};
+use yaml_rust::{yaml::Hash, Yaml, YamlLoader};
+
+fn get_should(h: &Hash) -> Option<bool> {
+    let rust_key: Yaml = Yaml::String("rust".into());
+    if let Some(v) = h.get(&rust_key) {
+        v.as_bool()
+    } else {
+        None
+    }
+}
 
 fn main() {
     // request to be re-run whenever specification.yml changes
@@ -26,7 +35,6 @@ fn main() {
     let mut should_test_section = false;
 
     let section_key = Yaml::String("section".into());
-    let rust_key = Yaml::String("rust".into());
     let title_key = Yaml::String("title".into());
     let context_key = Yaml::String("context".into());
     let template_key = Yaml::String("template".into());
@@ -40,7 +48,7 @@ fn main() {
             // update the section name if this is a new section
             if let Some(v) = h.get(&section_key) {
                 section = String::from(v.as_str().unwrap());
-                should_test_section = h.contains_key(&rust_key);
+                should_test_section = get_should(h).unwrap_or(false);
                 continue;
             }
 
@@ -49,10 +57,10 @@ fn main() {
             let template = h.get(&template_key).unwrap();
             let result = h.get(&result_key);
             let error = h.get(&error_key);
-            let should_test = h.contains_key(&rust_key);
+            let should_test = get_should(h).unwrap_or(should_test_section);
 
             // for the moment, only run tests that have `rust: true` in them
-            if !should_test && !should_test_section {
+            if !should_test {
                 continue;
             }
 
