@@ -2,9 +2,8 @@
 use crate::errors::Error;
 use crate::interpreter::Interpreter;
 use failure::{bail, Fallible};
-use json::object::Object;
-use json::JsonValue;
 use lazy_static::lazy_static;
+use serde_json::{map::Map, Value};
 use std::collections::HashMap;
 use std::fmt::Write;
 
@@ -12,12 +11,15 @@ lazy_static! {
     static ref INTERPRETER: Interpreter = Interpreter::new();
 }
 
+// shorthand for a JSON object
+type Object = Map<String, Value>;
+
 /// Render the given JSON-e template with the given context.
-pub fn render(template: &JsonValue, context: &JsonValue) -> Fallible<JsonValue> {
+pub fn render(template: &Value, context: &Value) -> Fallible<Value> {
     // Unwrap the Option from _render, replacing None with Null
     match _render(template, context) {
         Ok(Some(v)) => Ok(v),
-        Ok(None) => Ok(JsonValue::Null),
+        Ok(None) => Ok(Value::Null),
         Err(e) => Err(e),
     }
 }
@@ -26,18 +28,17 @@ pub fn render(template: &JsonValue, context: &JsonValue) -> Fallible<JsonValue> 
 /// marker.  For example, `{$if: false, then: 10}` returns a deletion marker.  Deletion markers
 /// in arrays and objects are omitted.  The parent `render` function converts deletion markers
 /// at the top level into a JSON `null`.
-fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonValue>> {
+fn _render(template: &Value, context: &Value) -> Fallible<Option<Value>> {
     Ok(Some(match template {
-        JsonValue::Number(_) | JsonValue::Boolean(_) | JsonValue::Null => template.clone(),
-        JsonValue::String(s) => JsonValue::from(interpolate(s, context)?),
-        JsonValue::Short(s) => JsonValue::from(interpolate(s.as_str(), context)?),
-        JsonValue::Array(elements) => JsonValue::Array(
+        Value::Number(_) | Value::Bool(_) | Value::Null => template.clone(),
+        Value::String(s) => Value::from(interpolate(s, context)?),
+        Value::Array(elements) => Value::Array(
             elements
                 .into_iter()
                 .filter_map(|e| _render(e, context).transpose())
-                .collect::<Fallible<Vec<JsonValue>>>()?,
+                .collect::<Fallible<Vec<Value>>>()?,
         ),
-        JsonValue::Object(o) => {
+        Value::Object(o) => {
             // first, see if this is a operator invocation
             for (k, v) in o.iter() {
                 if k.chars().next() == Some('$') {
@@ -48,19 +49,19 @@ fn _render(template: &JsonValue, context: &JsonValue) -> Fallible<Option<JsonVal
             }
 
             // apparently not, so recursively render the content
-            let mut result = Object::new();
+            let mut result = Map::new();
             for (k, v) in o.iter() {
                 if let Some(v) = _render(v, context)? {
-                    result.insert(&interpolate(k, context)?, v);
+                    result.insert(interpolate(k, context)?, v);
                 }
             }
-            JsonValue::Object(result)
+            Value::Object(result)
         }
     }))
 }
 
 /// Perform string interpolation on the given string.
-fn interpolate(mut source: &str, context: &JsonValue) -> Fallible<String> {
+fn interpolate(mut source: &str, context: &Value) -> Fallible<String> {
     let mut result = String::new();
 
     // TODO: lots of this could be get_unchecked, if the compiler isn't figuring that out..
@@ -79,13 +80,12 @@ fn interpolate(mut source: &str, context: &JsonValue) -> Fallible<String> {
 
                         let eval_result = evaluate(expr, context)?;
                         match eval_result {
-                            JsonValue::Number(n) => write!(&mut result, "{}", n)?,
-                            JsonValue::Boolean(true) => result.push_str("true"),
-                            JsonValue::Boolean(false) => result.push_str("false"),
+                            Value::Number(n) => write!(&mut result, "{}", n)?,
+                            Value::Bool(true) => result.push_str("true"),
+                            Value::Bool(false) => result.push_str("false"),
                             // null interpolates to an empty string
-                            JsonValue::Null => {}
-                            JsonValue::String(s) => result.push_str(&s),
-                            JsonValue::Short(s) => result.push_str(s.as_str()),
+                            Value::Null => {}
+                            Value::String(s) => result.push_str(&s),
                             _ => bail!("interpolation of '{}' produced an array or object", expr),
                         }
 
@@ -116,12 +116,13 @@ fn interpolate(mut source: &str, context: &JsonValue) -> Fallible<String> {
     Ok(result)
 }
 
-/// Evaluate the given expression and return the resulting JsonValue
-fn evaluate(expression: &str, context: &JsonValue) -> Fallible<JsonValue> {
-    // convert the context into a HashMap (TODO: this is wasteful)
-    let mut hmcontext = HashMap::new();
+/// Evaluate the given expression and return the resulting Value
+fn evaluate(expression: &str, context: &Value) -> Fallible<Value> {
+    // convert the context into a HashMap (TODO: this is wasteful, and Map is keyed by Strings so
+    // not terrible to use directly)
+    let mut hmcontext: HashMap<String, Value> = HashMap::new();
 
-    if let JsonValue::Object(o) = context {
+    if let Value::Object(o) = context {
         for (k, v) in o.iter() {
             hmcontext.insert(k.into(), v.clone());
         }
@@ -138,10 +139,10 @@ fn evaluate(expression: &str, context: &JsonValue) -> Fallible<JsonValue> {
 /// evaluation.  Otherwise, it returns Ok(None) indicatig that this is a "normal" object.
 fn maybe_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<Option<JsonValue>>> {
+    context: &Value,
+) -> Fallible<Option<Option<Value>>> {
     match operator {
         "$eval" => Ok(Some(eval_operator(operator, value, object, context)?)),
         "$flatten" => Ok(Some(flatten_operator(operator, value, object, context)?)),
@@ -166,15 +167,14 @@ fn maybe_operator(
 }
 
 /// Determine if the given value meets the JSON-e definition of "truthy"
-fn is_truthy(value: &JsonValue) -> bool {
+fn is_truthy(value: &Value) -> bool {
     match value {
-        JsonValue::Number(n) => !n.is_zero(),
-        JsonValue::Boolean(b) => *b,
-        JsonValue::Null => false,
-        JsonValue::String(s) => s.len() > 0,
-        JsonValue::Short(s) => s.len() > 0,
-        JsonValue::Array(a) => !a.is_empty(),
-        JsonValue::Object(o) => !o.is_empty(),
+        Value::Number(n) => n.as_f64() != Some(0f64),
+        Value::Bool(b) => *b,
+        Value::Null => false,
+        Value::String(s) => s.len() > 0,
+        Value::Array(a) => !a.is_empty(),
+        Value::Object(o) => !o.is_empty(),
     }
 }
 
@@ -198,7 +198,7 @@ where
             continue;
         }
         if !check(k) {
-            unknown.push(k);
+            unknown.push(k.as_ref());
         }
     }
 
@@ -216,10 +216,10 @@ where
 
 fn eval_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     check_operator_properties(operator, object, |_| false)?;
     let expr = value
         .as_str()
@@ -229,42 +229,41 @@ fn eval_operator(
 
 fn flatten_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn flatten_deep_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn from_now_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn if_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     check_operator_properties(operator, object, |prop| prop == "then" || prop == "else")?;
 
     let eval_result = match value {
-        JsonValue::String(s) => evaluate(&s, context)?,
-        JsonValue::Short(s) => evaluate(s.as_str(), context)?,
+        Value::String(s) => evaluate(&s, context)?,
         _ => bail!("$if can evaluate string expressions only"),
     };
 
@@ -281,85 +280,85 @@ fn if_operator(
 
 fn json_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     check_operator_properties(operator, object, |_| false)?;
     // TODO: `.dump` writes Object properties by insertion order, not lexically;
     // need to override this?  https://github.com/maciejhirsz/json-rust/issues/189
-    Ok(Some(JsonValue::from(value.dump())))
+    todo!(); // Ok(Some(Value::from(value.dump())))
 }
 
 fn let_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn map_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn match_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn switch_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn merge_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn merge_deep_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn reverse_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
 fn sort_operator(
     operator: &str,
-    value: &JsonValue,
+    value: &Value,
     object: &Object,
-    context: &JsonValue,
-) -> Fallible<Option<JsonValue>> {
+    context: &Value,
+) -> Fallible<Option<Value>> {
     todo!()
 }
 
@@ -367,103 +366,80 @@ fn sort_operator(
 mod tests {
     use super::is_truthy;
     use crate::render;
-    use json::JsonValue;
+    use serde_json::json;
 
     #[test]
     fn render_returns_correct_template() {
-        let template = json::parse(r#"{"code": 200}"#).unwrap();
-        let context = json::parse("{}").unwrap();
+        let template = json!({"code": 200});
+        let context = json!({});
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_number() {
-        let template = json::parse("200").unwrap();
-        let context = json::parse("{}").unwrap();
+        let template = json!(200);
+        let context = json!({});
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_boolean() {
-        let template = json::parse("true").unwrap();
-        let context = json::parse("{}").unwrap();
+        let template = json!(true);
+        let context = json!({});
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_null() {
-        let template = json::parse("null").unwrap();
-        let context = json::parse("{}").unwrap();
+        let template = json!(null);
+        let context = json!({});
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_string() {
-        // longer than json::short::MAX_LEN
-        let template = json::parse(r#""this is a very very very very long string""#).unwrap();
-
-        assert!(match template {
-            JsonValue::String(_) => true,
-            _ => false,
-        });
-
-        let context = json::parse("{}").unwrap();
-
-        assert_eq!(template, render(&template, &context).unwrap())
-    }
-
-    #[test]
-    fn render_gets_short() {
-        // shorter than json::short::MAX_LEN
-        let template = "tiny".into();
-        assert!(match template {
-            JsonValue::Short(_) => true,
-            _ => false,
-        });
-
-        let context = json::parse("{}").unwrap();
-
+        let template = "tiny string".into();
+        let context = json!({});
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_array() {
-        let template = json::parse(r#"[1, 2, 3]"#).unwrap();
-        let context = json::parse("{}").unwrap();
+        let template = json!([1, 2, 3]);
+        let context = json!({});
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn render_gets_object() {
-        let template = json::parse(r#"{"a":1, "b":2}"#).unwrap();
-        let context = json::parse("{}").unwrap();
+        let template = json!({"a":1, "b":2});
+        let context = json!({});
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
     #[test]
     fn test_is_truthy() {
         let tests = vec![
-            (json::parse(r#"null"#), false),
-            (json::parse(r#"[]"#), false),
-            (json::parse(r#"[1]"#), true),
-            (json::parse(r#"{}"#), false),
-            (json::parse(r#"{"x": false}"#), true),
-            (json::parse(r#""""#), false),
-            (json::parse(r#""short string""#), true),
+            (json!(null), false),
+            (json!([]), false),
+            (json!([1]), true),
+            (json!({}), false),
+            (json!({"x": false}), true),
+            (json!(""), false),
+            (json!("short string"), true),
             (
-                json::parse(r#""very very very very very very very very long (enough) string""#),
+                json!("very very very very very very very very long (enough) string"),
                 true,
             ),
-            (json::parse(r#"0"#), false),
-            (json::parse(r#"0.0"#), false),
-            (json::parse(r#"-0.0"#), false),
-            (json::parse(r#"-1.0"#), true),
-            (json::parse(r#"false"#), false),
-            (json::parse(r#"true"#), true),
+            (json!(0), false),
+            (json!(0.0), false),
+            (json!(-0.0), false),
+            (json!(-1.0), true),
+            (json!(false), false),
+            (json!(true), true),
         ];
 
         for (value, expected) in tests {
-            let value = value.unwrap();
             assert_eq!(
                 is_truthy(&value),
                 expected,
@@ -476,11 +452,11 @@ mod tests {
 
     mod interpolate {
         use super::super::interpolate;
-        use json;
+        use serde_json::json;
 
         #[test]
         fn plain_string() {
-            let context = json::parse("{}").unwrap();
+            let context = json!({});
             assert_eq!(
                 interpolate("a string", &context).unwrap(),
                 String::from("a string")
@@ -489,7 +465,7 @@ mod tests {
 
         #[test]
         fn interpolation_in_middle() {
-            let context = json::parse("{}").unwrap();
+            let context = json!({});
             assert_eq!(
                 interpolate("a${13}b", &context).unwrap(),
                 String::from("a13b")

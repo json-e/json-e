@@ -5,13 +5,14 @@ authors = ["owlishDeveloper <bugzeeeeee@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-json = "0.12.4"
 # TODO: are both of these regex libs used?
 fancy-regex = "0.2.0"
 regex = "1.2"
 failure = {version = "0.1.5", features = ["derive"] }
 lazy_static = "1.4.0"
+serde_json = "1.0.57"
 
 [build-dependencies]
 yaml-rust = "0.4"
+# TODO: replace with serde_json
 json = "0.12.4"

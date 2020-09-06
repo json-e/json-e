@@ -3,12 +3,11 @@
 use crate::errors::Error;
 use crate::prattparser::{Context, PrattParser};
 use crate::tokenizer::Token;
-use json::number::Number;
-use json::JsonValue;
+use serde_json::{map::Map, Number, Value};
 use std::collections::HashMap;
 
 pub(crate) struct Interpreter {
-    parser: PrattParser<'static, JsonValue, HashMap<String, JsonValue>>,
+    parser: PrattParser<'static, Value, HashMap<String, Value>>,
 }
 
 impl Interpreter {
@@ -23,18 +22,18 @@ impl Interpreter {
     pub(crate) fn parse(
         &self,
         source: &str,
-        context: HashMap<String, JsonValue>,
-    ) -> Result<JsonValue, Error> {
+        context: HashMap<String, Value>,
+    ) -> Result<Value, Error> {
         self.parser.parse(source, context, 0)
     }
 }
 
 fn parse_list(
-    context: &mut Context<JsonValue, HashMap<String, JsonValue>>,
+    context: &mut Context<Value, HashMap<String, Value>>,
     separator: &str,
     terminator: &str,
-) -> Result<JsonValue, Error> {
-    let mut list: Vec<JsonValue> = vec![];
+) -> Result<Value, Error> {
+    let mut list: Vec<Value> = vec![];
 
     if context.attempt(|t| t == terminator)? == None {
         loop {
@@ -46,13 +45,11 @@ fn parse_list(
         context.require(|t| t == terminator)?;
     }
 
-    Ok(JsonValue::Array(list))
+    Ok(Value::Array(list))
 }
 
-fn parse_object(
-    context: &mut Context<JsonValue, HashMap<String, JsonValue>>,
-) -> Result<JsonValue, Error> {
-    let mut obj = HashMap::new();
+fn parse_object(context: &mut Context<Value, HashMap<String, Value>>) -> Result<Value, Error> {
+    let mut obj = Map::new();
 
     if context.attempt(|t| t == "}")? == None {
         loop {
@@ -72,15 +69,31 @@ fn parse_object(
         context.require(|t| t == "}")?;
     }
 
-    Ok(JsonValue::from(obj))
+    Ok(Value::Object(obj))
 }
 
-fn parse_string(string: &str) -> Result<JsonValue, Error> {
-    Ok(JsonValue::String(string[1..string.len() - 1].into()))
+fn parse_string(string: &str) -> Result<Value, Error> {
+    Ok(Value::String(string[1..string.len() - 1].into()))
 }
 
-fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String, JsonValue>>, Error>
-{
+/// Serde's Numbers aren't really meant for calculations, and as_i64 will fail if
+/// the Number was constructed with from_f64, even if it is an integer f64.
+fn number_to_i64(number: serde_json::Number) -> Option<i64> {
+    if let Some(i) = number.as_i64() {
+        return Some(i);
+    }
+
+    if let Some(i) = number.as_f64() {
+        if i.fract() == 0f64 {
+            // TODO: more chances for overflow here..
+            return Some(i as i64);
+        }
+    }
+
+    None
+}
+
+fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Value>>, Error> {
     let mut patterns = HashMap::new();
     patterns.insert("number", "[0-9]+(?:\\.[0-9]+)?");
     patterns.insert("identifier", "[a-zA-Z_][a-zA-Z_0-9]*");
@@ -141,31 +154,32 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
 
     let mut prefix_rules: HashMap<
         &str,
-        fn(&Token, &mut Context<JsonValue, HashMap<String, JsonValue>>) -> Result<JsonValue, Error>,
+        fn(&Token, &mut Context<Value, HashMap<String, Value>>) -> Result<Value, Error>,
     > = HashMap::new();
 
     prefix_rules.insert("number", |token, _context| {
-        let n: Number = token.value.parse::<f64>()?.into();
-        Ok(JsonValue::Number(n))
+        let n = serde_json::from_str(token.value)
+            .map_err(|e| Error::SyntaxError(format!("Error parsing number: {}", e)))?;
+        Ok(n)
     });
 
     prefix_rules.insert("!", |_token, context| {
         let operand = context.parse(Some("unary"))?;
         match operand {
-            JsonValue::Null => Ok(JsonValue::Boolean(true)),
-            JsonValue::Short(o) => Ok(JsonValue::Boolean(o.len() == 0)),
-            JsonValue::String(o) => Ok(JsonValue::Boolean(o.len() == 0)),
-            JsonValue::Number(o) => Ok(JsonValue::Boolean(o == 0)),
-            JsonValue::Array(o) => Ok(JsonValue::Boolean(o.len() == 0)),
-            JsonValue::Object(o) => Ok(JsonValue::Boolean(o.is_empty())),
-            JsonValue::Boolean(o) => Ok(JsonValue::Boolean(!o)),
+            // TODO: use is_truthy
+            Value::Null => Ok(Value::Bool(true)),
+            Value::String(o) => Ok(Value::Bool(o.len() == 0)),
+            Value::Number(o) => Ok(Value::Bool(o.as_f64() == Some(0f64))),
+            Value::Array(o) => Ok(Value::Bool(o.len() == 0)),
+            Value::Object(o) => Ok(Value::Bool(o.is_empty())),
+            Value::Bool(o) => Ok(Value::Bool(!o)),
         }
     });
 
     prefix_rules.insert("-", |_token, context| {
         let v = context.parse(Some("unary"))?;
-        if let Some(n) = v.as_number() {
-            return Ok(JsonValue::Number(-n));
+        if let Some(n) = v.as_f64() {
+            return Ok(Value::Number(Number::from_f64(-n).unwrap()));
         } else {
             return Err(Error::InterpreterError(
                 "This operator expects a number".to_string(),
@@ -175,8 +189,8 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
 
     prefix_rules.insert("+", |_token, context| {
         let v = context.parse(Some("unary"))?;
-        if let Some(n) = v.as_number() {
-            return Ok(JsonValue::Number(n));
+        if let Some(n) = v.as_f64() {
+            return Ok(Value::Number(Number::from_f64(n).unwrap()));
         } else {
             return Err(Error::InterpreterError(
                 "This operator expects a number".to_string(),
@@ -194,7 +208,7 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
         )));
     });
 
-    prefix_rules.insert("null", |_token, _context| Ok(JsonValue::Null));
+    prefix_rules.insert("null", |_token, _context| Ok(Value::Null));
 
     prefix_rules.insert("[", |_token, context| parse_list(context, ",", "]"));
 
@@ -209,35 +223,29 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
     prefix_rules.insert("{", |_token, context| parse_object(context));
 
     prefix_rules.insert("string", |token, _context| {
-        Ok(JsonValue::String(
-            token.value[1..token.value.len() - 1].into(),
-        ))
+        Ok(Value::String(token.value[1..token.value.len() - 1].into()))
     });
 
-    prefix_rules.insert("true", |_token, _context| Ok(JsonValue::Boolean(true)));
+    prefix_rules.insert("true", |_token, _context| Ok(Value::Bool(true)));
 
-    prefix_rules.insert("false", |_token, _context| Ok(JsonValue::Boolean(false)));
+    prefix_rules.insert("false", |_token, _context| Ok(Value::Bool(false)));
 
     let mut infix_rules: HashMap<
         &str,
-        fn(
-            &JsonValue,
-            &Token,
-            &mut Context<JsonValue, HashMap<String, JsonValue>>,
-        ) -> Result<JsonValue, Error>,
+        fn(&Value, &Token, &mut Context<Value, HashMap<String, Value>>) -> Result<Value, Error>,
     > = HashMap::new();
 
     infix_rules.insert("+", |left, token, context| {
         let right = context.parse(Some("+"))?;
 
         match (&left, &right) {
-            (&JsonValue::Number(_), &JsonValue::Number(_)) => {
+            (&Value::Number(_), &Value::Number(_)) => {
                 let sum = left.as_f64().unwrap() + right.as_f64().unwrap();
-                Ok(JsonValue::Number(sum.into()))
+                Ok(Value::Number(Number::from_f64(sum.into()).unwrap()))
             }
-            (&JsonValue::String(_), &JsonValue::String(_)) => {
+            (&Value::String(_), &Value::String(_)) => {
                 let sum = [left.as_str().unwrap(), right.as_str().unwrap()].concat();
-                Ok(JsonValue::String(sum))
+                Ok(Value::String(sum))
             }
             (_, _) => Err(Error::InterpreterError(
                 "infix: +', 'number/string + number/string".to_string(),
@@ -249,9 +257,9 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
         let right = context.parse(Some("*"))?;
 
         match (&left, &right) {
-            (&JsonValue::Number(_), &JsonValue::Number(_)) => {
+            (&Value::Number(_), &Value::Number(_)) => {
                 let product = left.as_f64().unwrap() * right.as_f64().unwrap();
-                Ok(JsonValue::Number(product.into()))
+                Ok(Value::Number(Number::from_f64(product.into()).unwrap()))
             }
             (_, _) => Err(Error::InterpreterError(
                 "infix: *', 'number + number".to_string(),
@@ -263,9 +271,9 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
         let right = context.parse(Some("**-right-associative"))?;
 
         match (&left, &right) {
-            (&JsonValue::Number(_), &JsonValue::Number(_)) => {
+            (&Value::Number(_), &Value::Number(_)) => {
                 let result = left.as_f64().unwrap().powf(right.as_f64().unwrap());
-                Ok(JsonValue::Number(result.into()))
+                Ok(Value::Number(Number::from_f64(result.into()).unwrap()))
             }
             (_, _) => Err(Error::InterpreterError(
                 "infix: **', 'number + number".to_string(),
@@ -292,15 +300,15 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
             is_interval = true;
         } else {
             let parsed = context.parse(None)?;
-            print!("parsed is {}\n", parsed);
-            if let JsonValue::Number(n) = parsed {
-                let (_, _, exponent) = n.as_parts();
-                if exponent < 0 || n.is_nan() {
+            print!("parsed is {:?}\n", parsed);
+            if let Value::Number(n) = parsed {
+                if let Some(int_val) = number_to_i64(n) {
+                    a = int_val;
+                } else {
                     return Err(Error::InterpreterError(
                         "should only use integers to access arrays or strings".to_string(),
                     ));
                 }
-                a = n.as_fixed_point_i64(0).unwrap();
                 if context.attempt(|t| t == ":")?.is_some() {
                     is_interval = true;
                 }
@@ -313,14 +321,14 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
 
         if is_interval && !context.attempt(|t| t == "]")?.is_some() {
             let parsed = context.parse(None)?;
-            if let JsonValue::Number(n) = parsed {
-                let (_, _, exponent) = n.as_parts();
-                if exponent < 0 || n.is_nan() {
+            if let Value::Number(n) = parsed {
+                if let Some(int_val) = number_to_i64(n) {
+                    b = int_val;
+                } else {
                     return Err(Error::InterpreterError(
                         "cannot perform interval access with non-integers".to_string(),
                     ));
                 }
-                b = n.as_fixed_point_i64(0).unwrap();
             } else {
                 return Err(Error::InterpreterError(
                     "right part of slice operator is not a number".to_string(),
@@ -334,7 +342,7 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
             unreachable!()
         } else {
             match left {
-                JsonValue::Array(ref arr) => {
+                Value::Array(ref arr) => {
                     if a < 0 {
                         a = a + (arr.len() as i64);
                     }
@@ -374,7 +382,7 @@ fn create_interpreter() -> Result<PrattParser<'static, JsonValue, HashMap<String
 mod tests {
     use crate::errors::Error;
     use crate::interpreter::create_interpreter;
-    use json::{object::Object, JsonValue};
+    use serde_json::{json, map::Map, Value};
     use std::collections::HashMap;
 
     #[test]
@@ -400,49 +408,49 @@ mod tests {
     fn parse_minus_expression_negative_number() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("-7", HashMap::new(), 0).unwrap(), -7);
+        assert_eq!(interpreter.parse("-7", HashMap::new(), 0).unwrap(), -7.0);
     }
 
     #[test]
     fn parse_minus_expression_double_negative() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("--7", HashMap::new(), 0).unwrap(), 7);
+        assert_eq!(interpreter.parse("--7", HashMap::new(), 0).unwrap(), 7.0);
     }
 
     #[test]
     fn parse_minus_expression_plus() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("-+10", HashMap::new(), 0).unwrap(), -10);
+        assert_eq!(interpreter.parse("-+10", HashMap::new(), 0).unwrap(), -10.0);
     }
 
     #[test]
     fn parse_minus_expression_zero() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("-0", HashMap::new(), 0).unwrap(), 0);
+        assert_eq!(interpreter.parse("-0", HashMap::new(), 0).unwrap(), 0.0);
     }
 
     #[test]
     fn parse_plus_expression_positive_number() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("+5", HashMap::new(), 0).unwrap(), 5);
+        assert_eq!(interpreter.parse("+5", HashMap::new(), 0).unwrap(), 5.0);
     }
 
     #[test]
     fn parse_plus_expression_zero() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("+0", HashMap::new(), 0).unwrap(), 0);
+        assert_eq!(interpreter.parse("+0", HashMap::new(), 0).unwrap(), 0.0);
     }
 
     #[test]
     fn parse_plus_expression_minus() {
         let interpreter = create_interpreter().unwrap();
 
-        assert_eq!(interpreter.parse("+-10", HashMap::new(), 0).unwrap(), -10);
+        assert_eq!(interpreter.parse("+-10", HashMap::new(), 0).unwrap(), -10.0);
     }
 
     #[test]
@@ -466,7 +474,7 @@ mod tests {
     fn parse_identifier_positive() {
         let interpreter = create_interpreter().unwrap();
         let mut context = HashMap::new();
-        context.insert("x".to_string(), JsonValue::Number(10.into()));
+        context.insert("x".to_string(), Value::Number(10.into()));
 
         assert_eq!(interpreter.parse("x", context, 0).unwrap(), 10);
     }
@@ -475,7 +483,7 @@ mod tests {
     fn parse_identifier_negative_non_existing_variable() {
         let interpreter = create_interpreter().unwrap();
         let mut context = HashMap::new();
-        context.insert("x".to_string(), JsonValue::Number(10.into()));
+        context.insert("x".to_string(), Value::Number(10.into()));
 
         assert_eq!(
             interpreter.parse("y", context, 0).err(),
@@ -490,7 +498,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("[1, 2]", HashMap::new(), 0).unwrap(),
-            JsonValue::Array(vec![1.into(), 2.into()]),
+            Value::Array(vec![1.into(), 2.into()]),
         );
     }
 
@@ -499,7 +507,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("[]", HashMap::new(), 0).unwrap(),
-            JsonValue::Array(vec![]),
+            Value::Array(vec![]),
         );
     }
 
@@ -517,18 +525,16 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("2*(3+4)", HashMap::new(), 0).unwrap(),
-            JsonValue::Number(14.into()),
+            json!(14.0),
         );
     }
 
     #[test]
     fn parse_curly_braces() {
         let interpreter = create_interpreter().unwrap();
-        let mut obj = HashMap::new();
-        obj.insert("a".to_string(), JsonValue::Number(10.into()));
         assert_eq!(
             interpreter.parse("{a: 10}", HashMap::new(), 0).unwrap(),
-            JsonValue::from(obj),
+            json!({"a": 10}),
         );
     }
 
@@ -546,14 +552,11 @@ mod tests {
     #[test]
     fn parse_curly_braces_two_keys() {
         let interpreter = create_interpreter().unwrap();
-        let mut obj = HashMap::new();
-        obj.insert("a".to_string(), JsonValue::Number(10.into()));
-        obj.insert("b".to_string(), JsonValue::Number(20.into()));
         assert_eq!(
             interpreter
                 .parse("{b: 20, a: 10}", HashMap::new(), 0)
                 .unwrap(),
-            JsonValue::from(obj),
+            json!({"a": 10, "b": 20}),
         );
     }
 
@@ -562,20 +565,18 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("{}", HashMap::new(), 0).unwrap(),
-            JsonValue::Object(Object::new()),
+            Value::Object(Map::new()),
         );
     }
 
     #[test]
     fn parse_curly_braces_string() {
         let interpreter = create_interpreter().unwrap();
-        let mut obj = HashMap::new();
-        obj.insert("abc def".to_string(), JsonValue::Number(10.into()));
         assert_eq!(
             interpreter
                 .parse("{\"abc def\": 10}", HashMap::new(), 0)
                 .unwrap(),
-            JsonValue::from(obj),
+            json!({"abc def": 10}),
         );
     }
 
@@ -584,7 +585,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("\"banana\"", HashMap::new(), 0).unwrap(),
-            JsonValue::String("banana".to_string()),
+            Value::String("banana".to_string()),
         );
     }
 
@@ -593,7 +594,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("\"\"", HashMap::new(), 0).unwrap(),
-            JsonValue::String("".to_string()),
+            Value::String("".to_string()),
         );
     }
 
@@ -604,7 +605,7 @@ mod tests {
             interpreter
                 .parse("\"banana\" + \"chocolate\"", HashMap::new(), 0)
                 .unwrap(),
-            JsonValue::String("bananachocolate".to_string()),
+            Value::String("bananachocolate".to_string()),
         );
     }
 
@@ -613,7 +614,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("2**3", HashMap::new(), 0).unwrap(),
-            JsonValue::Number(8.into()),
+            json!(8.0),
         );
     }
 
@@ -622,7 +623,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("2**0", HashMap::new(), 0).unwrap(),
-            JsonValue::Number(1.into()),
+            json!(1.0),
         );
     }
 
@@ -631,7 +632,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("[1,2][1]", HashMap::new(), 0).unwrap(),
-            JsonValue::Number(2.into()),
+            json!(2),
         );
     }
 
@@ -640,7 +641,7 @@ mod tests {
         let interpreter = create_interpreter().unwrap();
         assert_eq!(
             interpreter.parse("[1,2][-1]", HashMap::new(), 0).unwrap(),
-            JsonValue::Number(2.into()),
+            json!(2),
         );
     }
 

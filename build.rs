@@ -19,7 +19,7 @@ fn main() {
     println!("cargo:warning=Updating {:?}", test_path);
     let mut test_file = File::create(&test_path).unwrap();
 
-    writeln!(test_file, "use json;").unwrap();
+    writeln!(test_file, "use serde_json::Value;").unwrap();
     writeln!(test_file, "use json_e::render;").unwrap();
 
     let mut section = String::from("unknown");
@@ -126,8 +126,8 @@ fn write_test(
 #[test]
 fn {test_name}() {{
     println!("{{}} - {{}}", {section:?}, {title:?});
-    let context = json::parse(r#"{context}"#).unwrap();
-    let template = json::parse(r#"{template}"#).unwrap();
+    let context: Value = serde_json::from_str(r#"{context}"#).unwrap();
+    let template: Value = serde_json::from_str(r#"{template}"#).unwrap();
 "##,
         test_name = test_name,
         section = section,
@@ -143,7 +143,7 @@ fn {test_name}() {{
         write!(
             test_file,
             r##"
-    let result = json::parse(r#"{result}"#).unwrap();
+    let result: Value = serde_json::from_str(r#"{result}"#).unwrap();
     assert_eq!(render(&template, &context).unwrap(), result);
 }}
 "##,
