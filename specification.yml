@@ -17,7 +17,6 @@
 ---
 section:  Initial Minimal Subset
 ---
-rust: true
 title:    Identity
 context:  {}
 template: {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
@@ -617,13 +616,13 @@ error: 'TemplateError: $fromNow has undefined properties: foo'
 ################################################################################
 ---
 section:  $json
+rust: true
 ---
 title:    wrap expressions with $eval
 context:  {a: 1, b: 2}
 template: {$json: {$eval: 'a + b + 7'}}
 result:   '10'
 ---
-rust: true
 title:    unwrap expressions not evaluated
 context:  {a: 1, b: 2}
 template: {$json: 'a + b + 7'}
@@ -634,7 +633,6 @@ context:  {a: 1, b: 2}
 template: {$json: [2, 5, {$eval: 'a + b + 7'}]}
 result:   '[2,5,10]'
 ---
-rust: true
 title:    representation of various unicode codepoints are consistent
 context:  {}
 template: {$json: ["\x10", "Z", "\u0103","\U0001F809"]}
@@ -650,7 +648,6 @@ context:  {}
 template: {$json: {"\U0001F809\u732b":'hey', "Z\U00010000P": 1, "\U000E1FFF\u0103": 2, "UaE": 3}}
 result:   "{\"UaE\":3,\"Z\U00010000P\":1,\"\U0001F809\u732b\":\"hey\",\"\U000E1FFF\u0103\":2}"
 ---
-rust: true
 title:    $json with undefined properties
 context:  {}
 template: {$json: [1,2,true,{},[]], foo: 'bar'}

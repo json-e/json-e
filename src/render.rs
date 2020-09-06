@@ -285,9 +285,10 @@ fn json_operator(
     context: &Value,
 ) -> Fallible<Option<Value>> {
     check_operator_properties(operator, object, |_| false)?;
-    // TODO: `.dump` writes Object properties by insertion order, not lexically;
-    // need to override this?  https://github.com/maciejhirsz/json-rust/issues/189
-    todo!(); // Ok(Some(Value::from(value.dump())))
+    match _render(value, context)? {
+        Some(v) => Ok(Some(Value::from(serde_json::to_string(&v)?))),
+        None => Ok(None),
+    }
 }
 
 fn let_operator(
