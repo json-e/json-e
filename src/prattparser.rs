@@ -1,14 +1,14 @@
 #![allow(dead_code)]
-use crate::errors::Error;
 use crate::tokenizer::Token;
 use crate::tokenizer::Tokenizer;
+use anyhow::{anyhow, Result};
 use std::collections::HashMap;
 
 pub(crate) struct PrattParser<'a, T, C> {
     tokenizer: Tokenizer<'a>,
     precedence_map: HashMap<&'a str, usize>,
-    prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T, C>) -> Result<T, Error>>,
-    infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T, C>) -> Result<T, Error>>,
+    prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T, C>) -> Result<T>>,
+    infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T, C>) -> Result<T>>,
 }
 
 impl<'a, T, C> PrattParser<'a, T, C> {
@@ -17,9 +17,9 @@ impl<'a, T, C> PrattParser<'a, T, C> {
         patterns: HashMap<&str, &str>,
         token_types: Vec<&'a str>,
         precedence: Vec<Vec<&'a str>>,
-        prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T, C>) -> Result<T, Error>>,
-        infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T, C>) -> Result<T, Error>>,
-    ) -> Result<PrattParser<'a, T, C>, Error> {
+        prefix_rules: HashMap<&'a str, fn(&Token, &mut Context<T, C>) -> Result<T>>,
+        infix_rules: HashMap<&'a str, fn(&T, &Token, &mut Context<T, C>) -> Result<T>>,
+    ) -> Result<PrattParser<'a, T, C>> {
         let tokenizer = Tokenizer::new(ignore, patterns, token_types);
         let mut precedence_map: HashMap<&'a str, usize> = HashMap::new();
 
@@ -31,10 +31,7 @@ impl<'a, T, C> PrattParser<'a, T, C> {
 
         for kind in infix_rules.keys() {
             if !precedence_map.contains_key(kind) {
-                return Err(Error::InvalidParserError(format!(
-                    "token {} must have a precedence",
-                    kind
-                )));
+                return Err(anyhow!("token {} must have a precedence", kind));
             }
         }
 
@@ -46,7 +43,7 @@ impl<'a, T, C> PrattParser<'a, T, C> {
         })
     }
 
-    pub(crate) fn parse(self: &Self, source: &str, context: C, offset: usize) -> Result<T, Error> {
+    pub(crate) fn parse(self: &Self, source: &str, context: C, offset: usize) -> Result<T> {
         let mut ctx = Context::new(self, source, context, offset);
 
         ctx.parse(None) // todo javascript calls attempt
@@ -57,7 +54,7 @@ pub(crate) struct Context<'a, 'v, T, C> {
     parser: &'a PrattParser<'a, T, C>,
     source: &'v str,
     pub context: C, // todo find a better name
-    next: Result<Option<Token<'a, 'v>>, Error>,
+    next: Result<Option<Token<'a, 'v>>>,
 }
 
 impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
@@ -80,7 +77,7 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
         self: &mut Self,
         // TODO: come up with better name (checks whether token is of interest)
         is_type_allowed: impl Fn(&'a str) -> bool,
-    ) -> Result<Option<Token<'a, 'v>>, Error> {
+    ) -> Result<Option<Token<'a, 'v>>> {
         match self.next {
             Ok(ref mut t) => {
                 if let Some(ref token) = t {
@@ -97,32 +94,36 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
                     None => return Ok(None),
                 }
             }
-            // if a tokenizer error occurrs, all calls to attempt() after that will return the
-            // error, so we must copy it.
-            Err(ref err) => return Err((*err).clone()),
+            Err(ref mut err) => {
+                // if a tokenizer error is returned once, but we need to leave an error in place
+                // in case attempt() is called again.
+                let mut e = anyhow!("attempt() called after {}", err);
+                std::mem::swap(&mut e, err);
+                return Err(e);
+            }
         }
     }
 
     pub(crate) fn require(
         self: &mut Self,
         is_type_allowed: impl Fn(&'a str) -> bool,
-    ) -> Result<Token<'a, 'v>, Error> {
+    ) -> Result<Token<'a, 'v>> {
         match self.attempt(|_| true) {
             Ok(ot) => match ot {
                 Some(t) => {
                     if is_type_allowed(t.token_type) {
                         Ok(t)
                     } else {
-                        Err(Error::SyntaxError("Unexpected token error".to_string()))
+                        Err(syntax_error!("Unexpected token error"))
                     }
                 }
-                None => Err(Error::SyntaxError("unexpected end of input".to_string())),
+                None => Err(syntax_error!("unexpected end of input")),
             },
             Err(e) => Err(e),
         }
     }
 
-    pub(crate) fn parse(self: &mut Self, precedence_type: Option<&str>) -> Result<T, Error> {
+    pub(crate) fn parse(self: &mut Self, precedence_type: Option<&str>) -> Result<T> {
         let precedence = match precedence_type {
             Some(p) => *self.parser.precedence_map.get(p).unwrap(),
             //.expect("precedence_type has no precedence"),
@@ -162,11 +163,12 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
                     .cloned()
                     .collect::<Vec<&str>>();
                 prefix_rules.sort();
-                Err(Error::SyntaxError(format!(
+                Err(syntax_error!(
                     "Found: {} token, expected one of: {}",
                     token.value,
                     prefix_rules.join(", ")
-                )))
+                )
+                .into())
             }
         }
     }
@@ -174,10 +176,9 @@ impl<'a, 'v, T, C> Context<'a, 'v, T, C> {
 
 #[cfg(test)]
 mod tests {
-    use crate::errors::Error;
-    use crate::errors::Error::SyntaxError;
     use crate::prattparser::{Context, PrattParser};
     use crate::tokenizer::Token;
+    use anyhow::Result;
     use std::collections::HashMap;
 
     fn build_parser() -> PrattParser<'static, usize, ()> {
@@ -186,17 +187,15 @@ mod tests {
         patterns.insert("identifier", "[a-z]+");
         patterns.insert("snowman", "☃");
 
-        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize, ()>) -> Result<usize, Error>> =
+        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize, ()>) -> Result<usize>> =
             HashMap::new();
         prefix.insert("identifier", |_token, _context| Ok(10));
         prefix.insert("number", |token, _context| {
             Ok(token.value.parse::<usize>()?)
         });
 
-        let mut infix: HashMap<
-            &str,
-            fn(&usize, &Token, &mut Context<usize, ()>) -> Result<usize, Error>,
-        > = HashMap::new();
+        let mut infix: HashMap<&str, fn(&usize, &Token, &mut Context<usize, ()>) -> Result<usize>> =
+            HashMap::new();
         infix.insert("snowman", |left, _token, context| {
             let right = context.parse(Some("snowman")).unwrap();
             Ok(left * right)
@@ -226,17 +225,15 @@ mod tests {
         patterns.insert("identifier", "[a-z]+");
         patterns.insert("snowman", "☃");
 
-        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize, ()>) -> Result<usize, Error>> =
+        let mut prefix: HashMap<&str, fn(&Token, &mut Context<usize, ()>) -> Result<usize>> =
             HashMap::new();
         prefix.insert("identifier", |_token, _context| Ok(10));
         prefix.insert("number", |token, _context| {
             Ok(token.value.parse::<usize>().unwrap())
         });
 
-        let mut infix: HashMap<
-            &str,
-            fn(&usize, &Token, &mut Context<usize, ()>) -> Result<usize, Error>,
-        > = HashMap::new();
+        let mut infix: HashMap<&str, fn(&usize, &Token, &mut Context<usize, ()>) -> Result<usize>> =
+            HashMap::new();
         infix.insert("snowman", |left, _token, context| {
             let right = context.parse(Some("snowman")).unwrap();
             Ok(left * right)
@@ -255,10 +252,10 @@ mod tests {
                 prefix,
                 infix,
             )
-            .err(),
-            Some(Error::InvalidParserError(
-                "token snowman must have a precedence".to_string()
-            ))
+            .err()
+            .unwrap()
+            .to_string(),
+            String::from("token snowman must have a precedence"),
         );
     }
 
@@ -321,12 +318,7 @@ mod tests {
 
         let mut context = Context::new(&pp, "🍎 ", (), 0);
 
-        assert_eq!(
-            context.attempt(|_| true),
-            Err(Error::SyntaxError(
-                "unexpected EOF for 🍎  at 🍎 ".to_string()
-            ))
-        );
+        assert_syntax_error!(context.attempt(|_| true), "unexpected EOF for 🍎  at 🍎 ");
     }
 
     #[test]
@@ -352,10 +344,7 @@ mod tests {
 
         let mut context = Context::new(&pp, "   ", (), 0);
 
-        assert_eq!(
-            context.require(|_| true),
-            Err(Error::SyntaxError("unexpected end of input".to_string()))
-        );
+        assert_syntax_error!(context.require(|_| true), "unexpected end of input");
     }
 
     #[test]
@@ -364,12 +353,7 @@ mod tests {
 
         let mut context = Context::new(&pp, "🍎 ", (), 0);
 
-        assert_eq!(
-            context.require(|_| true),
-            Err(Error::SyntaxError(
-                "unexpected EOF for 🍎  at 🍎 ".to_string()
-            ))
-        );
+        assert_syntax_error!(context.require(|_| true), "unexpected EOF for 🍎  at 🍎 ");
     }
 
     #[test]
@@ -378,9 +362,9 @@ mod tests {
 
         let mut context = Context::new(&pp, "☃️", (), 0);
 
-        assert_eq!(
+        assert_syntax_error!(
             context.require(|ty| ty == "identifier"),
-            Err(Error::SyntaxError("Unexpected token error".to_string()))
+            "Unexpected token error"
         );
     }
 
@@ -389,11 +373,9 @@ mod tests {
         let pp = build_parser();
 
         let mut context = Context::new(&pp, "+ 10", (), 0);
-        assert_eq!(
-            context.parse(None).err(),
-            Some(Error::SyntaxError(
-                "Found: + token, expected one of: identifier, number".to_string()
-            ))
+        assert_syntax_error!(
+            context.parse(None),
+            "Found: + token, expected one of: identifier, number"
         );
     }
 
@@ -413,8 +395,12 @@ mod tests {
         let mut context = Context::new(&pp, "2.7", (), 0);
 
         assert_eq!(
-            context.parse(None).err(),
-            Some(SyntaxError("Invalid integer".to_string()))
+            context
+                .parse(None)
+                .expect_err("Expected an error")
+                .to_string(),
+            // This error comes from parse::<usize>()
+            "invalid digit found in string".to_string()
         );
     }
 

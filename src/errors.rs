@@ -1,35 +1,109 @@
-use failure::Fail;
-use fancy_regex;
+use thiserror::Error;
 
-#[derive(Debug, Fail, Eq, PartialEq, Clone)]
-pub enum Error {
-    #[fail(display = "Invalid Parser Error: {}", _0)]
-    InvalidParserError(String),
-
-    #[fail(display = "Syntax Error: {}", _0)]
-    SyntaxError(String),
-
-    #[fail(display = "Interpreter Error: {}", _0)]
-    InterpreterError(String),
-
-    #[fail(display = "TemplateError: {}", _0)]
-    TemplateError(String),
+/// Construct a new syntax error, as an anyhow::Error
+macro_rules! syntax_error {
+    ($err:expr $(,)?) => ({
+        anyhow::Error::new($crate::errors::SyntaxError($err.to_string()))
+    });
+    ($fmt:expr, $($arg:tt)*) => {
+        anyhow::Error::new($crate::errors::SyntaxError(format!($fmt, $($arg)*)))
+    };
 }
 
-impl From<std::num::ParseIntError> for Error {
-    fn from(_error: std::num::ParseIntError) -> Self {
-        Error::SyntaxError("Invalid integer".to_string())
-    }
+/// Construct a new interpreter error, as an anyhow::Error
+macro_rules! interpreter_error {
+    ($err:expr $(,)?) => ({
+        anyhow::Error::new($crate::errors::InterpreterError($err.to_string()))
+    });
+    ($fmt:expr, $($arg:tt)*) => {
+        anyhow::Error::new($crate::errors::InterpreterError(format!($fmt, $($arg)*)))
+    };
 }
 
-impl From<std::num::ParseFloatError> for Error {
-    fn from(_error: std::num::ParseFloatError) -> Self {
-        Error::SyntaxError("Invalid number".to_string())
-    }
+/// Construct a new template error, as an anyhow::Error
+macro_rules! template_error {
+    ($err:expr $(,)?) => ({
+        anyhow::Error::new($crate::errors::TemplateError($err.to_string()))
+    });
+    ($fmt:expr, $($arg:tt)*) => {
+        anyhow::Error::new($crate::errors::TemplateError(format!($fmt, $($arg)*)))
+    };
 }
 
-impl From<fancy_regex::Error> for Error {
-    fn from(error: fancy_regex::Error) -> Self {
-        Error::SyntaxError(format!("Invalid regular expression: {:?}", error))
-    }
+/// Utility for asserting that an anyhow::Result contains a syntax error
+#[cfg(test)]
+macro_rules! assert_syntax_error {
+    ($left:expr, $right:expr) => ({
+        assert_eq!(
+            $left.expect_err("Expected an error, got").downcast_ref::<$crate::errors::SyntaxError>().expect("Expected a SyntaxError"),
+            &$crate::errors::SyntaxError($right.to_string())
+        );
+    });
+    ($left:expr, $right:expr,) => ({
+        assert_syntax_error!($left, $right)
+    });
+    ($left:expr, $right:expr, $($arg:tt)+) => ({
+        assert_eq!(
+            $left.expect_err("Expected an error, got").downcast_ref::<$crate::errors::SyntaxError>().expect("Expected a SyntaxError"),
+            &$crate::errors::SyntaxError($right.to_string()),
+            $($arg)*
+        );
+    });
 }
+
+/// Utility for asserting that an anyhow::Result contains an interpreter error
+#[cfg(test)]
+macro_rules! assert_interpreter_error {
+    ($left:expr, $right:expr) => ({
+        assert_eq!(
+            $left.expect_err("Expected an error, got").downcast_ref::<$crate::errors::InterpreterError>().expect("Expected a InterpreterError"),
+            &$crate::errors::InterpreterError($right.to_string())
+        );
+    });
+    ($left:expr, $right:expr,) => ({
+        assert_interpreter_error!($left, $right)
+    });
+    ($left:expr, $right:expr, $($arg:tt)+) => ({
+        assert_eq!(
+            $left.expect_err("Expected an error, got").downcast_ref::<$crate::errors::InterpreterError>().expect("Expected a InterpreterError"),
+            &$crate::errors::InterpreterError($right.to_string()),
+            $($arg)*
+        );
+    });
+}
+
+/// Utility for asserting that an anyhow::Result contains an template error
+#[cfg(test)]
+macro_rules! assert_template_error {
+    ($left:expr, $right:expr) => ({
+        assert_eq!(
+            $left.expect_err("Expected an error, got").downcast_ref::<$crate::errors::TemplateError>().expect("Expected a TemplateError"),
+            &$crate::errors::TemplateError($right.to_string())
+        );
+    });
+    ($left:expr, $right:expr,) => ({
+        assert_template_error!($left, $right)
+    });
+    ($left:expr, $right:expr, $($arg:tt)+) => ({
+        assert_eq!(
+            $left.expect_err("Expected an error, got").downcast_ref::<$crate::errors::TemplateError>().expect("Expected a TemplateError"),
+            &$crate::errors::TemplateError($right.to_string()),
+            $($arg)*
+        );
+    });
+}
+
+/// A SyntaxError indicates something wrong with the syntax of a JSON-e expression.
+#[derive(Debug, Error, Eq, PartialEq, Clone)]
+#[error("Syntax Error: {0}")]
+pub struct SyntaxError(pub(crate) String);
+
+/// An InterpreterError indicates something that failed during evaluation of a JSON-e expression.
+#[derive(Debug, Error, Eq, PartialEq, Clone)]
+#[error("Interpreter Error: {0}")]
+pub struct InterpreterError(pub(crate) String);
+
+/// An TemplateError indicates something that failed during evaluation of a JSON-e expression.
+#[derive(Debug, Error, Eq, PartialEq, Clone)]
+#[error("TemplateError: {0}")]
+pub struct TemplateError(pub(crate) String);

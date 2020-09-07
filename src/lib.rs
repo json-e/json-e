@@ -1,3 +1,4 @@
+#[macro_use]
 mod errors;
 mod interpreter;
 mod prattparser;

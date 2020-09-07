@@ -1,7 +1,6 @@
 #![allow(unused_variables)]
-use crate::errors::Error;
 use crate::interpreter::Interpreter;
-use failure::{bail, Fallible};
+use anyhow::{bail, Result};
 use lazy_static::lazy_static;
 use serde_json::{map::Map, Value};
 use std::collections::HashMap;
@@ -15,7 +14,7 @@ lazy_static! {
 type Object = Map<String, Value>;
 
 /// Render the given JSON-e template with the given context.
-pub fn render(template: &Value, context: &Value) -> Fallible<Value> {
+pub fn render(template: &Value, context: &Value) -> Result<Value> {
     // Unwrap the Option from _render, replacing None with Null
     match _render(template, context) {
         Ok(Some(v)) => Ok(v),
@@ -28,7 +27,7 @@ pub fn render(template: &Value, context: &Value) -> Fallible<Value> {
 /// marker.  For example, `{$if: false, then: 10}` returns a deletion marker.  Deletion markers
 /// in arrays and objects are omitted.  The parent `render` function converts deletion markers
 /// at the top level into a JSON `null`.
-fn _render(template: &Value, context: &Value) -> Fallible<Option<Value>> {
+fn _render(template: &Value, context: &Value) -> Result<Option<Value>> {
     Ok(Some(match template {
         Value::Number(_) | Value::Bool(_) | Value::Null => template.clone(),
         Value::String(s) => Value::from(interpolate(s, context)?),
@@ -36,7 +35,7 @@ fn _render(template: &Value, context: &Value) -> Fallible<Option<Value>> {
             elements
                 .into_iter()
                 .filter_map(|e| _render(e, context).transpose())
-                .collect::<Fallible<Vec<Value>>>()?,
+                .collect::<Result<Vec<Value>>>()?,
         ),
         Value::Object(o) => {
             // first, see if this is a operator invocation
@@ -61,7 +60,7 @@ fn _render(template: &Value, context: &Value) -> Fallible<Option<Value>> {
 }
 
 /// Perform string interpolation on the given string.
-fn interpolate(mut source: &str, context: &Value) -> Fallible<String> {
+fn interpolate(mut source: &str, context: &Value) -> Result<String> {
     let mut result = String::new();
 
     // TODO: lots of this could be get_unchecked, if the compiler isn't figuring that out..
@@ -117,7 +116,7 @@ fn interpolate(mut source: &str, context: &Value) -> Fallible<String> {
 }
 
 /// Evaluate the given expression and return the resulting Value
-fn evaluate(expression: &str, context: &Value) -> Fallible<Value> {
+fn evaluate(expression: &str, context: &Value) -> Result<Value> {
     // convert the context into a HashMap (TODO: this is wasteful, and Map is keyed by Strings so
     // not terrible to use directly)
     let mut hmcontext: HashMap<String, Value> = HashMap::new();
@@ -142,7 +141,7 @@ fn maybe_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Option<Value>>> {
+) -> Result<Option<Option<Value>>> {
     match operator {
         "$eval" => Ok(Some(eval_operator(operator, value, object, context)?)),
         "$flatten" => Ok(Some(flatten_operator(operator, value, object, context)?)),
@@ -181,7 +180,7 @@ fn is_truthy(value: &Value) -> bool {
 /// Check for undefined properties for an operator, returning an appropriate error message if
 /// found; the check function is called for each value other than the operator.
 #[inline(always)]
-fn check_operator_properties<F>(operator: &str, object: &Object, check: F) -> Fallible<()>
+fn check_operator_properties<F>(operator: &str, object: &Object, check: F) -> Result<()>
 where
     F: Fn(&str) -> bool,
 {
@@ -204,11 +203,11 @@ where
 
     if unknown.len() > 0 {
         unknown.sort();
-        Err(Error::TemplateError(format!(
+        Err(template_error!(
             "{} has undefined properties: {}",
             operator,
             unknown.join(" ")
-        )))?;
+        ))?;
     }
 
     Ok(())
@@ -219,11 +218,11 @@ fn eval_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     check_operator_properties(operator, object, |_| false)?;
     let expr = value
         .as_str()
-        .ok_or_else(|| Error::TemplateError(format!("$eval must be given a string expression")))?;
+        .ok_or_else(|| template_error!("$eval must be given a string expression"))?;
     Ok(Some(evaluate(expr, context)?))
 }
 
@@ -232,7 +231,7 @@ fn flatten_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -241,7 +240,7 @@ fn flatten_deep_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -250,7 +249,7 @@ fn from_now_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -259,7 +258,7 @@ fn if_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     check_operator_properties(operator, object, |prop| prop == "then" || prop == "else")?;
 
     let eval_result = match value {
@@ -283,7 +282,7 @@ fn json_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     check_operator_properties(operator, object, |_| false)?;
     match _render(value, context)? {
         Some(v) => Ok(Some(Value::from(serde_json::to_string(&v)?))),
@@ -296,7 +295,7 @@ fn let_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -305,7 +304,7 @@ fn map_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -314,7 +313,7 @@ fn match_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -323,7 +322,7 @@ fn switch_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -332,7 +331,7 @@ fn merge_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -341,7 +340,7 @@ fn merge_deep_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -350,7 +349,7 @@ fn reverse_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -359,7 +358,7 @@ fn sort_operator(
     value: &Value,
     object: &Object,
     context: &Value,
-) -> Fallible<Option<Value>> {
+) -> Result<Option<Value>> {
     todo!()
 }
 
@@ -447,6 +446,53 @@ mod tests {
                 "{:?} should be {}",
                 value,
                 expected
+            );
+        }
+    }
+
+    mod check_operator_properties {
+        use super::super::{check_operator_properties, Object};
+        use serde_json::{map::Map, Value};
+
+        fn map(mut keys: Vec<&str>) -> Object {
+            let mut map = Map::new();
+            for key in keys.drain(..) {
+                map.insert(key.into(), Value::Null);
+            }
+            map
+        }
+
+        #[test]
+        fn single_property_is_ok() -> anyhow::Result<()> {
+            check_operator_properties("$foo", &map(vec!["$foo"]), |_| false)
+        }
+
+        #[test]
+        fn allowed_properties_are_ok() -> anyhow::Result<()> {
+            check_operator_properties("$foo", &map(vec!["$foo", "a", "b"]), |k| {
+                k == "a" || k == "b"
+            })
+        }
+
+        #[test]
+        fn missing_allowed_properties_are_ok() -> anyhow::Result<()> {
+            check_operator_properties("$foo", &map(vec!["$foo", "b"]), |k| k == "a" || k == "b")
+        }
+
+        #[test]
+        fn disalloewd_properties_not_ok() {
+            assert_template_error!(
+                check_operator_properties("$foo", &map(vec!["$foo", "nosuch"]), |k| k == "a"),
+                "$foo has undefined properties: nosuch",
+            );
+        }
+
+        #[test]
+        fn disalloewd_properties_sorted() {
+            assert_template_error!(
+                check_operator_properties("$foo", &map(vec!["$foo", "a", "b", "c", "d"]), |k| k
+                    == "a"),
+                "$foo has undefined properties: b c d",
             );
         }
     }

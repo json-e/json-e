@@ -1,8 +1,8 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
-use crate::errors::Error;
 use crate::prattparser::{Context, PrattParser};
 use crate::tokenizer::Token;
+use anyhow::Result;
 use serde_json::{map::Map, Number, Value};
 use std::collections::HashMap;
 
@@ -19,11 +19,7 @@ impl Interpreter {
     }
 
     /// Parse a string with the given context.
-    pub(crate) fn parse(
-        &self,
-        source: &str,
-        context: HashMap<String, Value>,
-    ) -> Result<Value, Error> {
+    pub(crate) fn parse(&self, source: &str, context: HashMap<String, Value>) -> Result<Value> {
         self.parser.parse(source, context, 0)
     }
 }
@@ -32,7 +28,7 @@ fn parse_list(
     context: &mut Context<Value, HashMap<String, Value>>,
     separator: &str,
     terminator: &str,
-) -> Result<Value, Error> {
+) -> Result<Value> {
     let mut list: Vec<Value> = vec![];
 
     if context.attempt(|t| t == terminator)? == None {
@@ -48,7 +44,7 @@ fn parse_list(
     Ok(Value::Array(list))
 }
 
-fn parse_object(context: &mut Context<Value, HashMap<String, Value>>) -> Result<Value, Error> {
+fn parse_object(context: &mut Context<Value, HashMap<String, Value>>) -> Result<Value> {
     let mut obj = Map::new();
 
     if context.attempt(|t| t == "}")? == None {
@@ -72,7 +68,7 @@ fn parse_object(context: &mut Context<Value, HashMap<String, Value>>) -> Result<
     Ok(Value::Object(obj))
 }
 
-fn parse_string(string: &str) -> Result<Value, Error> {
+fn parse_string(string: &str) -> Result<Value> {
     Ok(Value::String(string[1..string.len() - 1].into()))
 }
 
@@ -125,7 +121,7 @@ fn number_to_i64(number: serde_json::Number) -> Option<i64> {
     None
 }
 
-fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Value>>, Error> {
+fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Value>>> {
     let mut patterns = HashMap::new();
     patterns.insert("number", "[0-9]+(?:\\.[0-9]+)?");
     patterns.insert("identifier", "[a-zA-Z_][a-zA-Z_0-9]*");
@@ -186,12 +182,12 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
 
     let mut prefix_rules: HashMap<
         &str,
-        fn(&Token, &mut Context<Value, HashMap<String, Value>>) -> Result<Value, Error>,
+        fn(&Token, &mut Context<Value, HashMap<String, Value>>) -> Result<Value>,
     > = HashMap::new();
 
     prefix_rules.insert("number", |token, _context| {
         let n = serde_json::from_str(token.value)
-            .map_err(|e| Error::SyntaxError(format!("Error parsing number: {}", e)))?;
+            .map_err(|e| syntax_error!("Error parsing number: {}", e))?;
         Ok(n)
     });
 
@@ -224,7 +220,7 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
             // unwrap is OK here as the number is defined
             return Ok(Value::Number(Number::from_f64(-n).unwrap()));
         } else {
-            return Err(Error::InterpreterError(
+            return Err(interpreter_error!(
                 "This operator expects a number".to_string(),
             ));
         }
@@ -235,9 +231,7 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
         if v.is_number() {
             return Ok(v);
         } else {
-            return Err(Error::InterpreterError(
-                "This operator expects a number".to_string(),
-            ));
+            return Err(interpreter_error!("This operator expects a number"));
         }
     });
 
@@ -245,10 +239,7 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
         if let Some(v) = context.context.get(token.value) {
             return Ok(v.clone());
         }
-        return Err(Error::InterpreterError(format!(
-            "unknown context value {}",
-            token.value
-        )));
+        return Err(interpreter_error!("unknown context value {}", token.value));
     });
 
     prefix_rules.insert("null", |_token, _context| Ok(Value::Null));
@@ -275,7 +266,7 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
 
     let mut infix_rules: HashMap<
         &str,
-        fn(&Value, &Token, &mut Context<Value, HashMap<String, Value>>) -> Result<Value, Error>,
+        fn(&Value, &Token, &mut Context<Value, HashMap<String, Value>>) -> Result<Value>,
     > = HashMap::new();
 
     infix_rules.insert("+", |left, token, context| {
@@ -293,8 +284,8 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
                 let sum = [left.as_str().unwrap(), right.as_str().unwrap()].concat();
                 Ok(Value::String(sum))
             }
-            (_, _) => Err(Error::InterpreterError(
-                "infix: +', 'number/string + number/string".to_string(),
+            (_, _) => Err(interpreter_error!(
+                "infix: +', 'number/string + number/string",
             )),
         }
     });
@@ -310,9 +301,7 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
                 u64::checked_mul,
                 |a, b| a * b,
             ))),
-            (_, _) => Err(Error::InterpreterError(
-                "infix: *', 'number + number".to_string(),
-            )),
+            (_, _) => Err(interpreter_error!("infix: *', 'number + number")),
         }
     });
 
@@ -328,9 +317,7 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
                 |a, b| u64::checked_pow(a, b as u32),
                 |a, b| a.powf(b),
             ))),
-            (_, _) => Err(Error::InterpreterError(
-                "infix: **', 'number + number".to_string(),
-            )),
+            (_, _) => Err(interpreter_error!("infix: **', 'number + number")),
         }
     });
 
@@ -358,16 +345,16 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
                 if let Some(int_val) = number_to_i64(n) {
                     a = int_val;
                 } else {
-                    return Err(Error::InterpreterError(
-                        "should only use integers to access arrays or strings".to_string(),
+                    return Err(interpreter_error!(
+                        "should only use integers to access arrays or strings",
                     ));
                 }
                 if context.attempt(|t| t == ":")?.is_some() {
                     is_interval = true;
                 }
             } else {
-                return Err(Error::InterpreterError(
-                    "left part of slice operator is not a number".to_string(),
+                return Err(interpreter_error!(
+                    "left part of slice operator is not a number",
                 ));
             }
         }
@@ -378,13 +365,13 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
                 if let Some(int_val) = number_to_i64(n) {
                     b = int_val;
                 } else {
-                    return Err(Error::InterpreterError(
-                        "cannot perform interval access with non-integers".to_string(),
+                    return Err(interpreter_error!(
+                        "cannot perform interval access with non-integers",
                     ));
                 }
             } else {
-                return Err(Error::InterpreterError(
-                    "right part of slice operator is not a number".to_string(),
+                return Err(interpreter_error!(
+                    "right part of slice operator is not a number",
                 ));
             }
 
@@ -402,7 +389,7 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
 
                     if a >= (arr.len() as i64) || a < 0 {
                         print!("index is {}\n", a);
-                        return Err(Error::InterpreterError("index out of bounds".to_string()));
+                        return Err(interpreter_error!("index out of bounds"));
                     }
 
                     return Ok(arr[a as usize].clone());
@@ -433,7 +420,6 @@ fn create_interpreter() -> Result<PrattParser<'static, Value, HashMap<String, Va
 
 #[cfg(test)]
 mod tests {
-    use crate::errors::Error;
     use crate::interpreter::create_interpreter;
     use serde_json::{json, map::Map, Value};
     use std::collections::HashMap;
@@ -562,11 +548,9 @@ mod tests {
         let mut context = HashMap::new();
         context.insert("x".to_string(), Value::Number(10.into()));
 
-        assert_eq!(
-            interpreter.parse("y", context, 0).err(),
-            Some(Error::InterpreterError(
-                "unknown context value y".to_string()
-            ))
+        assert_interpreter_error!(
+            interpreter.parse("y", context, 0),
+            "unknown context value y",
         );
     }
 
@@ -591,9 +575,9 @@ mod tests {
     #[test]
     fn parse_parens_negative() {
         let interpreter = create_interpreter().unwrap();
-        assert_eq!(
-            interpreter.parse("(true]", HashMap::new(), 0).err(),
-            Some(Error::SyntaxError("Unexpected token error".to_string())),
+        assert_syntax_error!(
+            interpreter.parse("(true]", HashMap::new(), 0),
+            "Unexpected token error",
         );
     }
 
@@ -618,11 +602,9 @@ mod tests {
     #[test]
     fn parse_curly_braces_negative_semicolon() {
         let interpreter = create_interpreter().unwrap();
-        assert_eq!(
-            interpreter.parse("{b: 20; a: 10}", HashMap::new(), 0).err(),
-            Some(Error::SyntaxError(
-                "unexpected EOF for {b: 20; a: 10} at ; a: 10}".to_string()
-            )),
+        assert_syntax_error!(
+            interpreter.parse("{b: 20; a: 10}", HashMap::new(), 0),
+            "unexpected EOF for {b: 20; a: 10} at ; a: 10}",
         );
     }
 
@@ -725,41 +707,37 @@ mod tests {
     #[test]
     fn parse_array_noninteger_index() {
         let interpreter = create_interpreter().unwrap();
-        assert_eq!(
-            interpreter.parse("[1,2][0.7]", HashMap::new(), 0).err(),
-            Some(Error::InterpreterError(
-                "should only use integers to access arrays or strings".to_string()
-            ))
+        assert_interpreter_error!(
+            interpreter.parse("[1,2][0.7]", HashMap::new(), 0),
+            "should only use integers to access arrays or strings",
         );
     }
 
     #[test]
     fn parse_array_string_index() {
         let interpreter = create_interpreter().unwrap();
-        assert_eq!(
-            interpreter.parse("[1,2]['foo']", HashMap::new(), 0).err(),
-            Some(Error::InterpreterError(
-                // TODO: this is not the same message as JS
-                "left part of slice operator is not a number".to_string()
-            ))
+        assert_interpreter_error!(
+            interpreter.parse("[1,2]['foo']", HashMap::new(), 0),
+            // TODO: this is not the same message as JS
+            "left part of slice operator is not a number",
         );
     }
 
     #[test]
     fn parse_array_positive_index_overflow() {
         let interpreter = create_interpreter().unwrap();
-        assert_eq!(
-            interpreter.parse("[1,2][9]", HashMap::new(), 0).err(),
-            Some(Error::InterpreterError("index out of bounds".to_string()))
+        assert_interpreter_error!(
+            interpreter.parse("[1,2][9]", HashMap::new(), 0),
+            "index out of bounds",
         );
     }
 
     #[test]
     fn parse_array_negative_index_overflow() {
         let interpreter = create_interpreter().unwrap();
-        assert_eq!(
-            interpreter.parse("[1,2][-9]", HashMap::new(), 0).err(),
-            Some(Error::InterpreterError("index out of bounds".to_string()))
+        assert_interpreter_error!(
+            interpreter.parse("[1,2][-9]", HashMap::new(), 0),
+            "index out of bounds",
         );
     }
 }

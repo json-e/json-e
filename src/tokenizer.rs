@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::errors::Error;
+use anyhow::Result;
 use fancy_regex;
 use regex;
 use std::collections::HashMap;
@@ -35,7 +35,7 @@ impl<'a> Tokenizer<'a> {
         ignore: &str,
         patterns: HashMap<&str, &str>,
         token_types: &[&str],
-    ) -> Result<String, std::fmt::Error> {
+    ) -> Result<String> {
         let mut re = String::new();
 
         write!(&mut re, "^(?:")?;
@@ -58,7 +58,7 @@ impl<'a> Tokenizer<'a> {
         self: &'a Self,
         source: &'v str,
         offset: usize,
-    ) -> Result<Vec<Token<'a, 'v>>, Error> {
+    ) -> Result<Vec<Token<'a, 'v>>> {
         let mut last_end = offset;
         let mut tokens = vec![];
 
@@ -92,19 +92,23 @@ impl<'a> Tokenizer<'a> {
         self: &'a Self,
         source: &'v str,
         mut offset: usize,
-    ) -> Result<Option<Token<'a, 'v>>, Error> {
+    ) -> Result<Option<Token<'a, 'v>>> {
         let mut i: usize;
 
         loop {
-            match self.regex.captures(&source[offset..])? {
+            match self
+                .regex
+                .captures(&source[offset..])
+                .expect("invalid Pratt Parser regular expression")
+            {
                 None => {
                     if &source[offset..] != "" {
                         // no match, but there's input left, so we have an error
-                        return Err(Error::SyntaxError(format!(
+                        return Err(syntax_error!(
                             "unexpected EOF for {} at {}",
                             &source,
                             &source[offset..]
-                        )));
+                        ));
                     } else {
                         // we've parsed the whole string
                         return Ok(None);
@@ -131,7 +135,6 @@ impl<'a> Tokenizer<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::errors::Error;
     use crate::tokenizer::Token;
     use crate::tokenizer::Tokenizer;
     use std::collections::HashMap;
@@ -211,13 +214,13 @@ mod tests {
         let tokenizer = build_tokenizer();
 
         assert_eq!(
-            tokenizer.next("abc", 0),
-            Ok(Some(Token {
+            tokenizer.next("abc", 0).unwrap(),
+            Some(Token {
                 token_type: "identifier",
                 value: "abc",
                 start: 0,
                 end: 3
-            }))
+            })
         )
     }
 
@@ -226,13 +229,13 @@ mod tests {
         let tokenizer = build_tokenizer();
 
         assert_eq!(
-            tokenizer.next("  abc ", 0),
-            Ok(Some(Token {
+            tokenizer.next("  abc ", 0).unwrap(),
+            Some(Token {
                 token_type: "identifier",
                 value: "abc",
                 start: 2,
                 end: 5
-            }))
+            })
         )
     }
 
@@ -241,13 +244,13 @@ mod tests {
         let tokenizer = build_tokenizer();
 
         assert_eq!(
-            tokenizer.next("  +abc ", 0),
-            Ok(Some(Token {
+            tokenizer.next("  +abc ", 0).unwrap(),
+            Some(Token {
                 token_type: "+",
                 value: "+",
                 start: 2,
                 end: 3
-            }))
+            })
         )
     }
 
@@ -256,13 +259,13 @@ mod tests {
         let tokenizer = build_tokenizer();
 
         assert_eq!(
-            tokenizer.next(" 2 +abc ", 0),
-            Ok(Some(Token {
+            tokenizer.next(" 2 +abc ", 0).unwrap(),
+            Some(Token {
                 token_type: "number",
                 value: "2",
                 start: 1,
                 end: 2
-            }))
+            })
         )
     }
 
@@ -270,11 +273,9 @@ mod tests {
     fn next_negative_unrecognized() {
         let tokenizer = build_tokenizer();
 
-        assert_eq!(
+        assert_syntax_error!(
             tokenizer.next(" * +abc ", 0),
-            Err(Error::SyntaxError(
-                "unexpected EOF for  * +abc  at * +abc ".to_string()
-            ))
+            "unexpected EOF for  * +abc  at * +abc ",
         )
     }
 
@@ -282,7 +283,7 @@ mod tests {
     fn next_negative_empty() {
         let tokenizer = build_tokenizer();
 
-        assert_eq!(tokenizer.next("", 0), Ok(None))
+        assert_eq!(tokenizer.next("", 0).unwrap(), None)
     }
 
     #[test]
@@ -290,13 +291,13 @@ mod tests {
         let tokenizer = build_tokenizer();
 
         assert_eq!(
-            tokenizer.next("☃", 0),
-            Ok(Some(Token {
+            tokenizer.next("☃", 0).unwrap(),
+            Some(Token {
                 token_type: "snowman",
                 value: "☃",
                 start: 0,
                 end: 3, // snowman is 3 bytes long in utf-8
-            }))
+            })
         )
     }
 
@@ -352,13 +353,9 @@ mod tests {
     #[test]
     fn tokenize_negative_syntax_error() {
         let tokenizer = build_tokenizer();
-
-        let result = tokenizer.tokenize("abc !!!!", 0);
-        assert_eq!(
-            result,
-            Err(Error::SyntaxError(
-                "unexpected EOF for abc !!!! at !!!!".to_string()
-            ))
+        assert_syntax_error!(
+            tokenizer.tokenize("abc !!!!", 0),
+            "unexpected EOF for abc !!!! at !!!!"
         )
     }
 }

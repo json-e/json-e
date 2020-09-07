@@ -4,15 +4,13 @@ Immediate next-steps
   * parse a single expression and return offset
   * replace pratt parser with whatever other implementations use now
 * finish implementing operators
-* use Fallible instead of Result in interpreter
-   * or anyhow?
 * use an Option-like MaybeValue, or just a custom enum
-* switch from json crate to serde_json, as it's the standard
 
 Tests
 * unicode characters containing `$` and even `${`? (not possible?)
 * unicode characters right before `${` and `$${`
 * unterminated ${
+* functions not allowed except in context
 
 Improvements
 * avoid unnecessary allocation in checking operator properties
