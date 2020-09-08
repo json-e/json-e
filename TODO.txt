@@ -2,7 +2,9 @@ Immediate next-steps
 
 * finish interpreter
   * parse a single expression and return offset
-  * replace pratt parser with whatever other implementations use now
+  * [WIP] replace pratt parser with whatever other implementations use now
+    * missed stuff: array, object literals
+    * Node::Literal -> Node::True, Node::False, Node::Null
 * finish implementing operators
 * use an Option-like MaybeValue, or just a custom enum
 
@@ -11,6 +13,7 @@ Tests
 * unicode characters right before `${` and `$${`
 * unterminated ${
 * functions not allowed except in context
+* unexpected trailing characters in $eval
 
 Improvements
 * avoid unnecessary allocation in checking operator properties

@@ -1,22 +1,20 @@
 #![allow(unused_variables)]
-use crate::interpreter::Interpreter;
+use crate::interpreter::{self, Context};
+use crate::util::is_truthy;
 use anyhow::{bail, Result};
-use lazy_static::lazy_static;
 use serde_json::{map::Map, Value};
-use std::collections::HashMap;
 use std::fmt::Write;
-
-lazy_static! {
-    static ref INTERPRETER: Interpreter = Interpreter::new();
-}
 
 // shorthand for a JSON object
 type Object = Map<String, Value>;
 
 /// Render the given JSON-e template with the given context.
 pub fn render(template: &Value, context: &Value) -> Result<Value> {
+    // TODO: builtins should be a lazy-static Context that is a parent to this one
+    let context = Context::from_value(context, None)?;
+
     // Unwrap the Option from _render, replacing None with Null
-    match _render(template, context) {
+    match _render(template, &context) {
         Ok(Some(v)) => Ok(v),
         Ok(None) => Ok(Value::Null),
         Err(e) => Err(e),
@@ -27,7 +25,7 @@ pub fn render(template: &Value, context: &Value) -> Result<Value> {
 /// marker.  For example, `{$if: false, then: 10}` returns a deletion marker.  Deletion markers
 /// in arrays and objects are omitted.  The parent `render` function converts deletion markers
 /// at the top level into a JSON `null`.
-fn _render(template: &Value, context: &Value) -> Result<Option<Value>> {
+fn _render(template: &Value, context: &Context) -> Result<Option<Value>> {
     Ok(Some(match template {
         Value::Number(_) | Value::Bool(_) | Value::Null => template.clone(),
         Value::String(s) => Value::from(interpolate(s, context)?),
@@ -60,7 +58,7 @@ fn _render(template: &Value, context: &Value) -> Result<Option<Value>> {
 }
 
 /// Perform string interpolation on the given string.
-fn interpolate(mut source: &str, context: &Value) -> Result<String> {
+fn interpolate(mut source: &str, context: &Context) -> Result<String> {
     let mut result = String::new();
 
     // TODO: lots of this could be get_unchecked, if the compiler isn't figuring that out..
@@ -70,7 +68,7 @@ fn interpolate(mut source: &str, context: &Value) -> Result<String> {
             // If this is an un-escaped `${`, interpolate..
             if let Some(s) = source.get(offset..offset + 2) {
                 if s == "${" {
-                    // TODO: need a way to parse a single expression and return the end offset
+                    // TODO: use interpreter::parse_partial
                     let mut expr = source.get(offset + 2..).unwrap();
                     if let Some(end) = expr.find('}') {
                         result.push_str(source.get(..offset).unwrap());
@@ -116,21 +114,9 @@ fn interpolate(mut source: &str, context: &Value) -> Result<String> {
 }
 
 /// Evaluate the given expression and return the resulting Value
-fn evaluate(expression: &str, context: &Value) -> Result<Value> {
-    // convert the context into a HashMap (TODO: this is wasteful, and Map is keyed by Strings so
-    // not terrible to use directly)
-    let mut hmcontext: HashMap<String, Value> = HashMap::new();
-
-    if let Value::Object(o) = context {
-        for (k, v) in o.iter() {
-            hmcontext.insert(k.into(), v.clone());
-        }
-    } else {
-        panic!("Context is not an Object");
-    }
-
-    // TODO: take context by reference
-    Ok(INTERPRETER.parse(expression, hmcontext)?)
+fn evaluate(expression: &str, context: &Context) -> Result<Value> {
+    let parsed = interpreter::parse_all(expression)?;
+    interpreter::evaluate(&parsed, context)
 }
 
 /// The given object may be an operator: it has the given key that starts with `$`.  If so,
@@ -140,7 +126,7 @@ fn maybe_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Option<Value>>> {
     match operator {
         "$eval" => Ok(Some(eval_operator(operator, value, object, context)?)),
@@ -162,18 +148,6 @@ fn maybe_operator(
 
         // if the operator isn't recognized, just treat this as a normal object
         _ => Ok(None),
-    }
-}
-
-/// Determine if the given value meets the JSON-e definition of "truthy"
-fn is_truthy(value: &Value) -> bool {
-    match value {
-        Value::Number(n) => n.as_f64() != Some(0f64),
-        Value::Bool(b) => *b,
-        Value::Null => false,
-        Value::String(s) => s.len() > 0,
-        Value::Array(a) => !a.is_empty(),
-        Value::Object(o) => !o.is_empty(),
     }
 }
 
@@ -217,7 +191,7 @@ fn eval_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     check_operator_properties(operator, object, |_| false)?;
     let expr = value
@@ -230,7 +204,7 @@ fn flatten_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -239,7 +213,7 @@ fn flatten_deep_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -248,7 +222,7 @@ fn from_now_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -257,7 +231,7 @@ fn if_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     check_operator_properties(operator, object, |prop| prop == "then" || prop == "else")?;
 
@@ -281,7 +255,7 @@ fn json_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     check_operator_properties(operator, object, |_| false)?;
     match _render(value, context)? {
@@ -294,7 +268,7 @@ fn let_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -303,7 +277,7 @@ fn map_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -312,7 +286,7 @@ fn match_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -321,7 +295,7 @@ fn switch_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -330,7 +304,7 @@ fn merge_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -339,7 +313,7 @@ fn merge_deep_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -348,7 +322,7 @@ fn reverse_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -357,7 +331,7 @@ fn sort_operator(
     operator: &str,
     value: &Value,
     object: &Object,
-    context: &Value,
+    context: &Context,
 ) -> Result<Option<Value>> {
     todo!()
 }
@@ -501,9 +475,10 @@ mod tests {
         use super::super::interpolate;
         use serde_json::json;
 
+        use crate::interpreter::Context;
         #[test]
         fn plain_string() {
-            let context = json!({});
+            let context = Context::new();
             assert_eq!(
                 interpolate("a string", &context).unwrap(),
                 String::from("a string")
@@ -512,7 +487,7 @@ mod tests {
 
         #[test]
         fn interpolation_in_middle() {
-            let context = json!({});
+            let context = Context::new();
             assert_eq!(
                 interpolate("a${13}b", &context).unwrap(),
                 String::from("a13b")
