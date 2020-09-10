@@ -14,6 +14,8 @@ Tests
 * unterminated ${
 * functions not allowed except in context
 * unexpected trailing characters in $eval
+* arithemtic with decimal and integer values
+* some tests labeled "TypeError" that aren't..
 
 Improvements
 * avoid unnecessary allocation in checking operator properties

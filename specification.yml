@@ -2320,6 +2320,7 @@ result: "no difference"
 ################################################################################
 ---
 section: expression language - arithmetic
+rust: true
 ---
 title: 'addition'
 context: {a: 1, b: 2}
@@ -2335,6 +2336,7 @@ title: 'division (1)'
 context: {a: 3, b: 2}
 template: {$eval: 'a / b'}
 result: 1.5
+rust: false
 ---
 title: 'division (2)'
 context: {a: 3.0, b: 2.0}
@@ -2345,6 +2347,7 @@ title: 'division (3)'
 context: {a: 3, b: 2}
 template: {$eval: 'b / a'}
 result: 0.6666666666666666
+rust: false
 ---
 title: 'division (4)'
 context: {a: 3.0, b: 2.0}
@@ -3356,6 +3359,7 @@ error: 'InterpreterError: unary + expects number'
 ################################################################################
 ---
 section: expression language - logic
+rust: true
 ---
 title: 'logical not (1)'
 context: {tt: true, ff: false}
@@ -3486,6 +3490,7 @@ title: 'function not'
 context: {}
 template: {$eval: "!min"}
 result: false
+rust: false
 ---
 title: 'string and string'
 context: {a: 'abc', b: 'abc'}
@@ -4544,6 +4549,7 @@ result: true
 ################################################################################
 ---
 section: expression language - comparisons
+rust: true
 ---
 title: 'equality (1)'
 context: {a: 1, b: 1}
@@ -5137,21 +5143,25 @@ title: equality of functions
 context: {}
 template: {$eval: 'min == min'}
 result: true
+rust: false
 ---
 title: inequality of functions
 context: {}
 template: {$eval: 'min == max'}
 result: false
+rust: false
 ---
 title: equality of function and string
 context: {}
 template: {$eval: 'min == "min"'}
 result: false
+rust: false
 ---
 title: equality of function and number
 context: {}
 template: {$eval: 'min == 13'}
 result: false
+rust: false
 ################################################################################
 ---
 section: expression language - compound literals

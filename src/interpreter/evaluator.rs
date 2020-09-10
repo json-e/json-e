@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 use super::context::Context;
 use super::node::Node;
-use crate::util::is_truthy;
+use crate::util::{is_equal, is_truthy};
 use anyhow::Result;
 use serde_json::{Number, Value};
 use std::convert::TryFrom;
@@ -83,7 +83,15 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
             |a, b| a.powf(b),
         ))),
         (_, "**", _) => Err(interpreter_error!("This operator expects numbers")),
-        (Value::Number(ref l), "*", Value::Number(ref r)) => todo!(),
+
+        (Value::Number(ref l), "*", Value::Number(ref r)) => Ok(Value::Number(number_op(
+            l,
+            r,
+            i64::checked_mul,
+            u64::checked_mul,
+            |a, b| a / b,
+        ))),
+        (_, "*", _) => Err(interpreter_error!("This operator expects numbers")),
 
         (Value::Number(ref l), "/", Value::Number(ref r)) => Ok(Value::Number(number_op(
             l,
@@ -94,7 +102,9 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
         ))),
         (_, "/", _) => Err(interpreter_error!("This operator expects numbers")),
 
-        (Value::String(ref l), "+", Value::String(ref r)) => todo!(),
+        (Value::String(ref l), "+", Value::String(ref r)) => {
+            Ok(Value::String(format!("{}{}", l, r)))
+        }
         (Value::Number(ref l), "+", Value::Number(ref r)) => Ok(Value::Number(number_op(
             l,
             r,
@@ -115,33 +125,74 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
         ))),
         (_, "-", _) => Err(interpreter_error!("This operator expects numbers")),
 
-        (_, "<", _) => Err(interpreter_error!("todo")),
-        (_, ">", _) => Err(interpreter_error!("todo")),
-        (_, "<=", _) => Err(interpreter_error!("todo")),
-        (_, ">=", _) => Err(interpreter_error!("todo")),
-        (_, "==", _) => Err(interpreter_error!("todo")),
-        (_, "!=", _) => Err(interpreter_error!("todo")),
-        (_, "in", _) => Err(interpreter_error!("todo")),
-        (_, "&&", _) => Err(interpreter_error!("todo")),
-        (_, "||", _) => Err(interpreter_error!("todo")),
+        (l, "<", r) => comparison_op(
+            &l,
+            &r,
+            |a, b| a < b,
+            |a, b| a < b,
+            |a, b| a < b,
+            |a, b| a < b,
+        ),
+        (l, ">", r) => comparison_op(
+            &l,
+            &r,
+            |a, b| a > b,
+            |a, b| a > b,
+            |a, b| a > b,
+            |a, b| a > b,
+        ),
+        (l, "<=", r) => comparison_op(
+            &l,
+            &r,
+            |a, b| a <= b,
+            |a, b| a <= b,
+            |a, b| a <= b,
+            |a, b| a <= b,
+        ),
+        (l, ">=", r) => comparison_op(
+            &l,
+            &r,
+            |a, b| a >= b,
+            |a, b| a >= b,
+            |a, b| a >= b,
+            |a, b| a >= b,
+        ),
+
+        // For equality, use object equality *except* casting numbers to f64 to allow comparison
+        // of integers in different representations.
+        (l, "==", r) => Ok(Value::Bool(is_equal(&l, &r))),
+        (l, "!=", r) => Ok(Value::Bool(!is_equal(&l, &r))),
+
+        (Value::String(ref l), "in", Value::String(ref r)) => Ok(Value::Bool(l.find(r).is_some())),
+        (ref l, "in", Value::Array(ref r)) => Ok(Value::Bool(r.iter().any(|x| is_equal(l, x)))),
+        (Value::String(ref l), "in", Value::Object(ref r)) => Ok(Value::Bool(r.contains_key(l))),
+
+        // We have already handled the left operand of the logical operators above, so these
+        // consider only the right.
+        (_, "&&", r) => Ok(Value::Bool(is_truthy(&r))),
+        (_, "||", r) => Ok(Value::Bool(is_truthy(&r))),
 
         (_, _, _) => unreachable!(),
     }
 }
 
 fn index(context: &Context, v: &Node, i: &Node) -> Result<Value> {
+    // TODO
     Ok(Value::Null)
 }
 
 fn slice(context: &Context, v: &Node, a: Option<&Node>, b: Option<&Node>) -> Result<Value> {
+    // TODO
     Ok(Value::Null)
 }
 
 fn dot(context: &Context, v: &Node, p: &str) -> Result<Value> {
+    // TODO
     Ok(Value::Null)
 }
 
 fn func(context: &Context, f: &Node, args: &[Node]) -> Result<Value> {
+    // TODO
     Ok(Value::Null)
 }
 
@@ -171,6 +222,42 @@ where
 
     // TODO: panic (and unwrap above)
     panic!("cannot perform binary numeric operation")
+}
+
+fn comparison_op<STR, I64, U64, F64>(
+    a: &Value,
+    b: &Value,
+    op_str: STR,
+    op_i64: I64,
+    op_u64: U64,
+    op_f64: F64,
+) -> Result<Value>
+where
+    STR: Fn(&str, &str) -> bool,
+    I64: Fn(i64, i64) -> bool,
+    U64: Fn(u64, u64) -> bool,
+    F64: Fn(f64, f64) -> bool,
+{
+    match (a, b) {
+        (Value::String(ref a), Value::String(ref b)) => Ok(Value::Bool(op_str(a, b))),
+        (Value::Number(ref a), Value::Number(ref b)) => {
+            if let (Some(a), Some(b)) = (a.as_i64(), b.as_i64()) {
+                return Ok(Value::Bool(op_i64(a, b)));
+            }
+
+            if let (Some(a), Some(b)) = (a.as_u64(), b.as_u64()) {
+                return Ok(Value::Bool(op_u64(a, b)));
+            }
+
+            if let (Some(a), Some(b)) = (a.as_f64(), b.as_f64()) {
+                return Ok(Value::Bool(op_f64(a, b)));
+            }
+
+            // TODO: panic (and unwrap above)
+            panic!("cannot perform binary numeric operation")
+        }
+        _ => Err(interpreter_error!("Expected numbers or strings")),
+    }
 }
 
 #[cfg(test)]
