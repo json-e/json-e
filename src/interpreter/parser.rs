@@ -76,18 +76,26 @@ fn ident(input: &str) -> IResult<&str, Node<'_>> {
 }
 
 /// Parse a string (single- or double-quoted, with no escaping)
-fn string(input: &str) -> IResult<&str, Node<'_>> {
-    fn node(input: &str) -> Result<Node, ()> {
-        Ok(Node::String(&input[1..input.len() - 1]))
+fn string_str(input: &str) -> IResult<&str, &str> {
+    fn strip_quotes(s: &str) -> Result<&str, ()> {
+        Ok(&s[1..s.len() - 1])
     }
-
     map_res(
         ws(recognize(alt((
             delimited(char('"'), is_not("\""), char('"')),
             delimited(char('\''), is_not("'"), char('\'')),
         )))),
-        node,
+        strip_quotes,
     )(input)
+}
+
+/// Parse a string as a Node
+fn string(input: &str) -> IResult<&str, Node<'_>> {
+    fn node(input: &str) -> Result<Node, ()> {
+        Ok(Node::String(input))
+    }
+
+    map_res(string_str, node)(input)
 }
 
 /// Parse any atomic value
@@ -129,9 +137,44 @@ fn parens(input: &str) -> IResult<&str, Node<'_>> {
     ws(delimited(char('('), expression, char(')')))(input)
 }
 
-/// A single value (an atom or parenthesized value)
+/// An array literal
+fn array_literal(input: &str) -> IResult<&str, Node<'_>> {
+    fn node<'a>(input: Vec<Node<'a>>) -> Result<Node<'a>, ()> {
+        Ok(Node::Array(input))
+    }
+    map_res(
+        ws(delimited(
+            char('['),
+            separated_list(ws(tag(",")), expression),
+            char(']'),
+        )),
+        node,
+    )(input)
+}
+
+/// An object literal, allowing either strings or identifiers as keys
+fn object_literal(input: &str) -> IResult<&str, Node<'_>> {
+    fn node<'a>(mut input: Vec<(&'a str, &'a str, Node<'a>)>) -> Result<Node<'a>, ()> {
+        Ok(Node::Object(
+            input.drain(..).map(|(k, _, v)| (k, v)).collect(),
+        ))
+    }
+    map_res(
+        ws(delimited(
+            char('{'),
+            separated_list(
+                ws(tag(",")),
+                tuple((ws(alt((string_str, ident_str))), tag(":"), ws(expression))),
+            ),
+            char('}'),
+        )),
+        node,
+    )(input)
+}
+
+/// A single value (an atom, parenthesized value, or compound literal
 fn value(input: &str) -> IResult<&str, Node<'_>> {
-    alt((atom, parens))(input)
+    alt((atom, parens, array_literal, object_literal))(input)
 }
 
 /// A unary expression

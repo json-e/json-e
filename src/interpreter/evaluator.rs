@@ -4,9 +4,8 @@ use super::context::Context;
 use super::node::Node;
 use crate::util::{is_equal, is_truthy};
 use anyhow::Result;
-use serde_json::{Number, Value};
-use std::convert::TryFrom;
-use std::str::FromStr;
+use serde_json::{map::Map, Number, Value};
+use std::{convert::TryFrom, str::FromStr};
 
 pub(crate) fn evaluate(node: &Node, context: &Context) -> Result<Value> {
     match *node {
@@ -21,6 +20,20 @@ pub(crate) fn evaluate(node: &Node, context: &Context) -> Result<Value> {
         Node::Literal("null") => Ok(Value::Null),
         // TODO: ok, literals should be enum variants..
         Node::Literal(_) => unreachable!(),
+        Node::Array(ref items) => Ok(Value::Array(
+            items
+                .iter()
+                .map(|i| evaluate(i, context))
+                .collect::<Result<Vec<Value>>>()?,
+        )),
+        Node::Object(ref items) => {
+            let mut map = Map::new();
+            for (k, v) in items.iter() {
+                let v = evaluate(v, context)?;
+                map.insert((*k).to_owned(), v);
+            }
+            Ok(Value::Object(map))
+        }
         Node::Un(ref op, ref v) => un(context, op, v.as_ref()),
         Node::Op(ref l, ref o, ref r) => op(context, l.as_ref(), o, r.as_ref()),
         Node::Index(ref v, ref i) => index(context, v.as_ref(), i.as_ref()),

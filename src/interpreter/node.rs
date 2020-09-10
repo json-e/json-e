@@ -14,6 +14,12 @@ pub(crate) enum Node<'a> {
     /// JSON literal (null, true, false)
     Literal(&'a str),
 
+    /// Array Literal
+    Array(Vec<Node<'a>>),
+
+    /// Object Literal
+    Object(Vec<(&'a str, Node<'a>)>),
+
     /// Unary operation
     Un(&'a str, Box<Node<'a>>),
 

@@ -5165,6 +5165,7 @@ rust: false
 ################################################################################
 ---
 section: expression language - compound literals
+rust: true
 ---
 title: 'parse list (1)'
 context: {}
@@ -5175,11 +5176,13 @@ title: 'parse list (2)'
 context: {}
 template: {$eval: '[1,2,3,4][0]'}
 result: 1
+rust: false
 ---
 title: 'parse list (3)'
 context: {}
 template: {$eval: '[1,2,3,4][0:-1]'}
 result: [1,2,3]
+rust: false
 ---
 title: 'parse list (4)'
 context: {}
@@ -5225,21 +5228,25 @@ title: 'parse object (8)'
 context: {key: 1}
 template: {$eval: '{a: key, b: min(key + 1, 1)}'}
 result: {a: 1, b: 1}
+rust: false
 ---
 title: 'parse object (9)'
 context: {key: 1}
 template: {$eval: '{"a": key, b: min(key + 1, 1)}'}
 result: {a: 1, b: 1}
+rust: false
 ---
 title: 'parse object (10)'
 context: {key: 1}
 template: {$eval: '{a: key, "b": min(key + 1, 1)}'}
 result: {a: 1, b: 1}
+rust: false
 ---
 title: 'parse object (11)'
 context: {key: 1}
 template: {$eval: '{"a": key, "b": min(key + 1, 1)}'}
 result: {a: 1, b: 1}
+rust: false
 ---
 title: 'parse object (12)'
 context: {key: 1}
