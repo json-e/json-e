@@ -15,11 +15,9 @@ pub(crate) fn evaluate(node: &Node, context: &Context) -> Result<Value> {
             Some(v) => Ok(v.clone()),
             None => Err(interpreter_error!("unknown context value {}", i)),
         },
-        Node::Literal("true") => Ok(Value::Bool(true)),
-        Node::Literal("false") => Ok(Value::Bool(false)),
-        Node::Literal("null") => Ok(Value::Null),
-        // TODO: ok, literals should be enum variants..
-        Node::Literal(_) => unreachable!(),
+        Node::True => Ok(Value::Bool(true)),
+        Node::False => Ok(Value::Bool(false)),
+        Node::Null => Ok(Value::Null),
         Node::Array(ref items) => Ok(Value::Array(
             items
                 .iter()
@@ -280,16 +278,10 @@ mod test {
 
     #[test]
     fn test_literals() {
+        assert_eq!(evaluate(&Node::Null, &Context::new()).unwrap(), json!(null));
+        assert_eq!(evaluate(&Node::True, &Context::new()).unwrap(), json!(true));
         assert_eq!(
-            evaluate(&Node::Literal("null"), &Context::new()).unwrap(),
-            json!(null)
-        );
-        assert_eq!(
-            evaluate(&Node::Literal("true"), &Context::new()).unwrap(),
-            json!(true)
-        );
-        assert_eq!(
-            evaluate(&Node::Literal("false"), &Context::new()).unwrap(),
+            evaluate(&Node::False, &Context::new()).unwrap(),
             json!(false)
         );
     }
@@ -399,7 +391,7 @@ mod test {
     fn test_unary_bang() {
         let c = Context::new();
         assert_eq!(
-            evaluate(&Node::Un("!", Box::new(Node::Literal("false"))), &c).unwrap(),
+            evaluate(&Node::Un("!", Box::new(Node::False)), &c).unwrap(),
             json!(true),
         );
     }

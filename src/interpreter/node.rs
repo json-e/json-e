@@ -11,8 +11,14 @@ pub(crate) enum Node<'a> {
     /// Literal identifier
     Ident(&'a str),
 
-    /// JSON literal (null, true, false)
-    Literal(&'a str),
+    /// Literal null
+    Null,
+
+    /// Literal true
+    True,
+
+    /// Literal false
+    False,
 
     /// Array Literal
     Array(Vec<Node<'a>>),

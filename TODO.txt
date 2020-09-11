@@ -4,7 +4,7 @@ Immediate next-steps
   * parse a single expression and return offset
   * [WIP] replace pratt parser with whatever other implementations use now
     * [DONE] missed stuff: array, object literals
-    * Node::Literal -> Node::True, Node::False, Node::Null
+    * [DONE] Node::Literal -> Node::True, Node::False, Node::Null
 * finish implementing operators
 * use an Option-like MaybeValue, or just a custom enum
 * is_equal needs to recurse.. maybe just build our own JSON type??

@@ -44,7 +44,12 @@ fn number(input: &str) -> IResult<&str, Node<'_>> {
 /// Parse a atomic literal JSON value (true, false, null)
 fn literal(input: &str) -> IResult<&str, Node<'_>> {
     fn node(input: &str) -> Result<Node, ()> {
-        Ok(Node::Literal(input))
+        Ok(match input {
+            "true" => Node::True,
+            "false" => Node::False,
+            "null" => Node::Null,
+            _ => unreachable!(),
+        })
     }
 
     map_res(
@@ -342,22 +347,22 @@ mod test {
 
     #[test]
     fn test_literal_true() {
-        assert_eq!(literal("true"), Ok(("", Node::Literal("true"))));
+        assert_eq!(literal("true"), Ok(("", Node::True)));
     }
 
     #[test]
     fn test_literal_true_as_atom() {
-        assert_eq!(atom("true"), Ok(("", Node::Literal("true"))));
+        assert_eq!(atom("true"), Ok(("", Node::True)));
     }
 
     #[test]
     fn test_literal_false_as_atom() {
-        assert_eq!(atom("false"), Ok(("", Node::Literal("false"))));
+        assert_eq!(atom("false"), Ok(("", Node::False)));
     }
 
     #[test]
     fn test_literal_null_as_atom() {
-        assert_eq!(atom("null"), Ok(("", Node::Literal("null"))));
+        assert_eq!(atom("null"), Ok(("", Node::Null)));
     }
 
     #[test]
@@ -491,16 +496,12 @@ mod test {
                 "",
                 Node::Op(
                     Box::new(Node::Op(
-                        Box::new(Node::Literal("true")),
+                        Box::new(Node::True),
                         "||",
-                        Box::new(Node::Op(
-                            Box::new(Node::Literal("false")),
-                            "||",
-                            Box::new(Node::Literal("true"))
-                        ))
+                        Box::new(Node::Op(Box::new(Node::False), "||", Box::new(Node::True)))
                     )),
                     "||",
-                    Box::new(Node::Literal("false")),
+                    Box::new(Node::False),
                 )
             ))
         );
