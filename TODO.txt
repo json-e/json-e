@@ -1,8 +1,8 @@
 Immediate next-steps
 
 * finish interpreter
-  * parse a single expression and return offset
-  * [WIP] replace pratt parser with whatever other implementations use now
+  * [DONE] parse a single expression and return offset
+  * [DONE] replace pratt parser with whatever other implementations use now
     * [DONE] missed stuff: array, object literals
     * [DONE] Node::Literal -> Node::True, Node::False, Node::Null
 * finish implementing operators

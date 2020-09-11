@@ -59,35 +59,38 @@ fn _render(template: &Value, context: &Context) -> Result<Option<Value>> {
 
 /// Perform string interpolation on the given string.
 fn interpolate(mut source: &str, context: &Context) -> Result<String> {
-    let mut result = String::new();
+    // shortcut the common no-interpolation case
+    if source.find('$') == None {
+        return Ok(source.into());
+    }
 
-    // TODO: lots of this could be get_unchecked, if the compiler isn't figuring that out..
+    let mut result = String::new();
 
     while source.len() > 0 {
         if let Some(offset) = source.find('$') {
             // If this is an un-escaped `${`, interpolate..
             if let Some(s) = source.get(offset..offset + 2) {
                 if s == "${" {
-                    // TODO: use interpreter::parse_partial
-                    let mut expr = source.get(offset + 2..).unwrap();
-                    if let Some(end) = expr.find('}') {
-                        result.push_str(source.get(..offset).unwrap());
-                        source = expr.get(end + 1..).unwrap();
-                        expr = expr.get(..end).unwrap();
-
-                        let eval_result = evaluate(expr, context)?;
-                        match eval_result {
-                            Value::Number(n) => write!(&mut result, "{}", n)?,
-                            Value::Bool(true) => result.push_str("true"),
-                            Value::Bool(false) => result.push_str("false"),
-                            // null interpolates to an empty string
-                            Value::Null => {}
-                            Value::String(s) => result.push_str(&s),
-                            _ => bail!("interpolation of '{}' produced an array or object", expr),
-                        }
-
-                        continue;
+                    result.push_str(source.get(..offset).unwrap());
+                    let expr = source.get(offset + 2..).unwrap();
+                    let (parsed, remainder) = interpreter::parse_partial(expr)?;
+                    if remainder.get(0..1) != Some("}") {
+                        bail!("unterminated ${..} expression");
                     }
+                    let eval_result = interpreter::evaluate(&parsed, context)?;
+
+                    match eval_result {
+                        Value::Number(n) => write!(&mut result, "{}", n)?,
+                        Value::Bool(true) => result.push_str("true"),
+                        Value::Bool(false) => result.push_str("false"),
+                        // null interpolates to an empty string
+                        Value::Null => {}
+                        Value::String(s) => result.push_str(&s),
+                        _ => bail!("interpolation of '{}' produced an array or object", expr),
+                    }
+
+                    source = &remainder[1..];
+                    continue;
                 }
             }
 
@@ -473,7 +476,6 @@ mod tests {
 
     mod interpolate {
         use super::super::interpolate;
-        use serde_json::json;
 
         use crate::interpreter::Context;
         #[test]
@@ -492,6 +494,36 @@ mod tests {
                 interpolate("a${13}b", &context).unwrap(),
                 String::from("a13b")
             );
+        }
+
+        #[test]
+        fn escaped_interpolation() {
+            let context = Context::new();
+            assert_eq!(
+                interpolate("a$${13}b", &context).unwrap(),
+                String::from("a${13}b")
+            );
+        }
+
+        #[test]
+        fn double_escaped_interpolation() {
+            let context = Context::new();
+            assert_eq!(
+                interpolate("a$$${13}b", &context).unwrap(),
+                String::from("a$${13}b")
+            );
+        }
+
+        #[test]
+        fn multibyte_unicode_interpolation_escape() {
+            let context = Context::new();
+            assert_eq!(interpolate("a$☃", &context).unwrap(), String::from("a$☃"));
+        }
+
+        #[test]
+        fn unterminated_interpolation() {
+            let context = Context::new();
+            assert!(interpolate("a${13+14", &context).is_err());
         }
     }
 }

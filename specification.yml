@@ -96,7 +96,6 @@ context: {name: 'foo', value: 'bar'}
 template: {"tc_${name}": "${value}"}
 result: {"tc_foo": "bar"}
 ---
-rust: false
 title: string interpolation with unbalanced }
 context:  {}
 template: {message: 'tricky ${"}}}}"}'}
@@ -662,7 +661,12 @@ title:    $json
 context:  {key: {key2: [1,2,true,{},[]]}}
 template: {$json: {$eval: 'key.key2'}}
 result:   '[1,2,true,{},[]]'
+################################################################################
 ---
+section: string interpolation
+rust: true
+---
+rust: false
 title: string interpolation
 context: {key: {key2: 'world', key3: 1}}
 template: {message: 'hello ${key.key2}', 'k-${key.key3}': true}
