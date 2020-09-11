@@ -1,22 +1,26 @@
 #![allow(unused_variables)]
 use crate::interpreter::{self, Context};
 use crate::util::is_truthy;
+use crate::value::Value;
 use anyhow::{bail, Result};
-use serde_json::{map::Map, Value};
+use serde_json::Value as SerdeValue;
+use std::collections::BTreeMap;
+use std::convert::TryInto;
 use std::fmt::Write;
 
-// shorthand for a JSON object
-type Object = Map<String, Value>;
+// shorthand for object values
+type Object = BTreeMap<String, Value>;
 
 /// Render the given JSON-e template with the given context.
-pub fn render(template: &Value, context: &Value) -> Result<Value> {
+pub fn render(template: &SerdeValue, context: &SerdeValue) -> Result<SerdeValue> {
+    let template: Value = template.into();
     // TODO: builtins should be a lazy-static Context that is a parent to this one
     let context = Context::from_value(context, None)?;
 
     // Unwrap the Option from _render, replacing None with Null
-    match _render(template, &context) {
-        Ok(Some(v)) => Ok(v),
-        Ok(None) => Ok(Value::Null),
+    match _render(&template, &context) {
+        Ok(Some(v)) => Ok(v.try_into()?),
+        Ok(None) => Ok(SerdeValue::Null),
         Err(e) => Err(e),
     }
 }
@@ -27,8 +31,8 @@ pub fn render(template: &Value, context: &Value) -> Result<Value> {
 /// at the top level into a JSON `null`.
 fn _render(template: &Value, context: &Context) -> Result<Option<Value>> {
     Ok(Some(match template {
-        Value::Number(_) | Value::Bool(_) | Value::Null => template.clone(),
-        Value::String(s) => Value::from(interpolate(s, context)?),
+        Value::Number(_) | Value::Bool(_) | Value::Null => (*template).clone(),
+        Value::String(s) => Value::String(interpolate(s, context)?),
         Value::Array(elements) => Value::Array(
             elements
                 .into_iter()
@@ -46,7 +50,7 @@ fn _render(template: &Value, context: &Context) -> Result<Option<Value>> {
             }
 
             // apparently not, so recursively render the content
-            let mut result = Map::new();
+            let mut result = Object::new();
             for (k, v) in o.iter() {
                 if let Some(v) = _render(v, context)? {
                     result.insert(interpolate(k, context)?, v);
@@ -78,6 +82,9 @@ fn interpolate(mut source: &str, context: &Context) -> Result<String> {
                         bail!("unterminated ${..} expression");
                     }
                     let eval_result = interpreter::evaluate(&parsed, context)?;
+
+                    // XXX temporary
+                    let eval_result: Value = eval_result.into();
 
                     match eval_result {
                         Value::Number(n) => write!(&mut result, "{}", n)?,
@@ -119,7 +126,7 @@ fn interpolate(mut source: &str, context: &Context) -> Result<String> {
 /// Evaluate the given expression and return the resulting Value
 fn evaluate(expression: &str, context: &Context) -> Result<Value> {
     let parsed = interpreter::parse_all(expression)?;
-    interpreter::evaluate(&parsed, context)
+    interpreter::evaluate(&parsed, context).map(|v| v.into())
 }
 
 /// The given object may be an operator: it has the given key that starts with `$`.  If so,
@@ -197,10 +204,11 @@ fn eval_operator(
     context: &Context,
 ) -> Result<Option<Value>> {
     check_operator_properties(operator, object, |_| false)?;
-    let expr = value
-        .as_str()
-        .ok_or_else(|| template_error!("$eval must be given a string expression"))?;
-    Ok(Some(evaluate(expr, context)?))
+    if let Value::String(expr) = value {
+        Ok(Some(evaluate(expr, context)?))
+    } else {
+        Err(template_error!("$eval must be given a string expression"))
+    }
 }
 
 fn flatten_operator(
@@ -243,7 +251,7 @@ fn if_operator(
         _ => bail!("$if can evaluate string expressions only"),
     };
 
-    let prop = if is_truthy(&eval_result) {
+    let prop = if is_truthy(&eval_result.into()) {
         "then"
     } else {
         "else"
@@ -262,7 +270,11 @@ fn json_operator(
 ) -> Result<Option<Value>> {
     check_operator_properties(operator, object, |_| false)?;
     match _render(value, context)? {
-        Some(v) => Ok(Some(Value::from(serde_json::to_string(&v)?))),
+        Some(v) => Ok(Some({
+            // Convert to a Serde Value and let it do the JSON-ificiation.
+            let v: SerdeValue = v.try_into()?;
+            Value::String(serde_json::to_string(&v)?)
+        })),
         None => Ok(None),
     }
 }
@@ -341,8 +353,8 @@ fn sort_operator(
 
 #[cfg(test)]
 mod tests {
-    use super::is_truthy;
     use crate::render;
+    use crate::util::is_truthy;
     use serde_json::json;
 
     #[test]
@@ -394,45 +406,12 @@ mod tests {
         assert_eq!(template, render(&template, &context).unwrap())
     }
 
-    #[test]
-    fn test_is_truthy() {
-        let tests = vec![
-            (json!(null), false),
-            (json!([]), false),
-            (json!([1]), true),
-            (json!({}), false),
-            (json!({"x": false}), true),
-            (json!(""), false),
-            (json!("short string"), true),
-            (
-                json!("very very very very very very very very long (enough) string"),
-                true,
-            ),
-            (json!(0), false),
-            (json!(0.0), false),
-            (json!(-0.0), false),
-            (json!(-1.0), true),
-            (json!(false), false),
-            (json!(true), true),
-        ];
-
-        for (value, expected) in tests {
-            assert_eq!(
-                is_truthy(&value),
-                expected,
-                "{:?} should be {}",
-                value,
-                expected
-            );
-        }
-    }
-
     mod check_operator_properties {
         use super::super::{check_operator_properties, Object};
-        use serde_json::{map::Map, Value};
+        use crate::value::Value;
 
         fn map(mut keys: Vec<&str>) -> Object {
-            let mut map = Map::new();
+            let mut map = Object::new();
             for key in keys.drain(..) {
                 map.insert(key.into(), Value::Null);
             }

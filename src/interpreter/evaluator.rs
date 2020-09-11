@@ -2,10 +2,21 @@
 #![allow(dead_code)]
 use super::context::Context;
 use super::node::Node;
-use crate::util::{is_equal, is_truthy};
+use crate::util::{is_equal as is_equal_val, is_truthy as is_truthy_val};
 use anyhow::Result;
 use serde_json::{map::Map, Number, Value};
-use std::{convert::TryFrom, str::FromStr};
+use std::{
+    convert::{TryFrom, TryInto},
+    str::FromStr,
+};
+
+fn is_truthy(value: &Value) -> bool {
+    is_truthy_val(&value.try_into().unwrap())
+}
+
+fn is_equal(a: &Value, b: &Value) -> bool {
+    is_equal_val(&a.try_into().unwrap(), &b.try_into().unwrap())
+}
 
 pub(crate) fn evaluate(node: &Node, context: &Context) -> Result<Value> {
     match *node {

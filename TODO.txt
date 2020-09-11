@@ -7,7 +7,8 @@ Immediate next-steps
     * [DONE] Node::Literal -> Node::True, Node::False, Node::Null
 * finish implementing operators
 * use an Option-like MaybeValue, or just a custom enum
-* is_equal needs to recurse.. maybe just build our own JSON type??
+* [WIP] is_equal needs to recurse.. maybe just build our own JSON type??
+* move is_equal and is_truthy into Value (and stringify?)
 
 Tests
 * unicode characters containing `$` and even `${`? (not possible?)
@@ -17,6 +18,7 @@ Tests
 * unexpected trailing characters in $eval
 * arithemtic with decimal and integer values
 * some tests labeled "TypeError" that aren't..
+* division by zero
 
 Improvements
 * avoid unnecessary allocation in checking operator properties
