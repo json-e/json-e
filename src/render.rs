@@ -17,26 +17,32 @@ pub fn render(template: &SerdeValue, context: &SerdeValue) -> Result<SerdeValue>
     // TODO: builtins should be a lazy-static Context that is a parent to this one
     let context = Context::from_value(context, None)?;
 
-    // Unwrap the Option from _render, replacing None with Null
     match _render(&template, &context) {
-        Ok(Some(v)) => Ok(v.try_into()?),
-        Ok(None) => Ok(SerdeValue::Null),
+        // note that this will convert DeletionMarker into Null
+        Ok(v) => Ok(v.try_into()?),
         Err(e) => Err(e),
     }
 }
 
-/// Inner, recursive render function.  This returns an Option, where None is treated as a deletion
-/// marker.  For example, `{$if: false, then: 10}` returns a deletion marker.  Deletion markers
-/// in arrays and objects are omitted.  The parent `render` function converts deletion markers
-/// at the top level into a JSON `null`.
-fn _render(template: &Value, context: &Context) -> Result<Option<Value>> {
-    Ok(Some(match template {
+/// Inner, recursive render function.
+fn _render(template: &Value, context: &Context) -> Result<Value> {
+    /// render a value, shaping the result such that it can be used with
+    /// `.filter_map(..).colect::<Result<_>>`.
+    fn render_or_deletion_marker(v: &Value, context: &Context) -> Option<Result<Value>> {
+        match _render(v, context) {
+            Ok(Value::DeletionMarker) => None,
+            Ok(rendered) => Some(Ok(rendered)),
+            Err(e) => Some(Err(e)),
+        }
+    }
+
+    Ok(match template {
         Value::Number(_) | Value::Bool(_) | Value::Null => (*template).clone(),
         Value::String(s) => Value::String(interpolate(s, context)?),
         Value::Array(elements) => Value::Array(
             elements
                 .into_iter()
-                .filter_map(|e| _render(e, context).transpose())
+                .filter_map(|e| render_or_deletion_marker(e, context))
                 .collect::<Result<Vec<Value>>>()?,
         ),
         Value::Object(o) => {
@@ -52,13 +58,18 @@ fn _render(template: &Value, context: &Context) -> Result<Option<Value>> {
             // apparently not, so recursively render the content
             let mut result = Object::new();
             for (k, v) in o.iter() {
-                if let Some(v) = _render(v, context)? {
-                    result.insert(interpolate(k, context)?, v);
-                }
+                match _render(v, context)? {
+                    Value::DeletionMarker => {}
+                    v => {
+                        result.insert(interpolate(k, context)?, v);
+                    }
+                };
             }
             Value::Object(result)
         }
-    }))
+        // `template` has been converted from JSON and cannot contain None
+        Value::DeletionMarker => unreachable!(),
+    })
 }
 
 /// Perform string interpolation on the given string.
@@ -131,13 +142,13 @@ fn evaluate(expression: &str, context: &Context) -> Result<Value> {
 
 /// The given object may be an operator: it has the given key that starts with `$`.  If so,
 /// this function evaluates the operator and return Ok(Some(result)) or an error in
-/// evaluation.  Otherwise, it returns Ok(None) indicatig that this is a "normal" object.
+/// evaluation.  Otherwise, it returns Ok(None) indicating that this is a "normal" object.
 fn maybe_operator(
     operator: &str,
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Option<Value>>> {
+) -> Result<Option<Value>> {
     match operator {
         "$eval" => Ok(Some(eval_operator(operator, value, object, context)?)),
         "$flatten" => Ok(Some(flatten_operator(operator, value, object, context)?)),
@@ -202,10 +213,10 @@ fn eval_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     check_operator_properties(operator, object, |_| false)?;
     if let Value::String(expr) = value {
-        Ok(Some(evaluate(expr, context)?))
+        Ok(evaluate(expr, context)?)
     } else {
         Err(template_error!("$eval must be given a string expression"))
     }
@@ -216,7 +227,7 @@ fn flatten_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -225,7 +236,7 @@ fn flatten_deep_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -234,16 +245,11 @@ fn from_now_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
-fn if_operator(
-    operator: &str,
-    value: &Value,
-    object: &Object,
-    context: &Context,
-) -> Result<Option<Value>> {
+fn if_operator(operator: &str, value: &Value, object: &Object, context: &Context) -> Result<Value> {
     check_operator_properties(operator, object, |prop| prop == "then" || prop == "else")?;
 
     let eval_result = match value {
@@ -257,7 +263,7 @@ fn if_operator(
         "else"
     };
     match object.get(prop) {
-        None => Ok(None),
+        None => Ok(Value::DeletionMarker),
         Some(val) => Ok(_render(val, context)?),
     }
 }
@@ -267,16 +273,12 @@ fn json_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     check_operator_properties(operator, object, |_| false)?;
-    match _render(value, context)? {
-        Some(v) => Ok(Some({
-            // Convert to a Serde Value and let it do the JSON-ificiation.
-            let v: SerdeValue = v.try_into()?;
-            Value::String(serde_json::to_string(&v)?)
-        })),
-        None => Ok(None),
-    }
+    let v = _render(value, context)?;
+    // Convert to a Serde Value and let it do the JSON-ificiation.
+    let v: SerdeValue = v.try_into()?;
+    Ok(Value::String(serde_json::to_string(&v)?))
 }
 
 fn let_operator(
@@ -284,7 +286,7 @@ fn let_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -293,7 +295,7 @@ fn map_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -302,7 +304,7 @@ fn match_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -311,7 +313,7 @@ fn switch_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -320,7 +322,7 @@ fn merge_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -329,7 +331,7 @@ fn merge_deep_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -338,7 +340,7 @@ fn reverse_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -347,7 +349,7 @@ fn sort_operator(
     value: &Value,
     object: &Object,
     context: &Context,
-) -> Result<Option<Value>> {
+) -> Result<Value> {
     todo!()
 }
 
@@ -404,6 +406,23 @@ mod tests {
         let template = json!({"a":1, "b":2});
         let context = json!({});
         assert_eq!(template, render(&template, &context).unwrap())
+    }
+
+    #[test]
+    fn render_array_drops_deletion_markers() {
+        let template = json!([1, {"$if": "false", "then": 1}, 3]);
+        let context = json!({});
+        assert_eq!(render(&template, &context).unwrap(), json!([1, 3]))
+    }
+
+    #[test]
+    fn render_obj_drops_deletion_markers() {
+        let template = json!({"v": {"$if": "false", "then": 1}, "k": "sleutel"});
+        let context = json!({});
+        assert_eq!(
+            render(&template, &context).unwrap(),
+            json!({"k": "sleutel"})
+        )
     }
 
     mod check_operator_properties {

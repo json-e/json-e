@@ -9,6 +9,7 @@ pub(crate) fn is_truthy(value: &Value) -> bool {
         Value::String(s) => s.len() > 0,
         Value::Array(a) => !a.is_empty(),
         Value::Object(o) => !o.is_empty(),
+        Value::DeletionMarker => false,
     }
 }
 

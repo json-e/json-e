@@ -16,6 +16,10 @@ pub(crate) enum Value {
     Bool(bool),
     Object(BTreeMap<String, Value>),
     Array(Vec<Value>),
+
+    // lack of a value (for an $if without then, for example); this is
+    // converted to `null` in JSON.
+    DeletionMarker,
 }
 
 /// Utility function to turn an f64 into a serde Number, using the simplest form.
@@ -75,6 +79,7 @@ impl TryFrom<&Value> for SerdeValue {
                     .map(|v| SerdeValue::try_from(v))
                     .collect::<Result<Vec<SerdeValue>>>()?,
             ),
+            Value::DeletionMarker => SerdeValue::Null,
         })
     }
 }
