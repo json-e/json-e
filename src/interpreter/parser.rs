@@ -212,52 +212,64 @@ fn function_expr(input: &str) -> IResult<&str, Node<'_>> {
     ))(input)
 }
 
-/// An index expression (`a[b]` or `a.b`)
+/// An index expression (`x[i]`, `x[a..b]` or `x.p`).  These are left-associative at equal
+/// precedence.
 fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
-    fn index_node<'a>(input: (Node<'a>, &'a str, Node<'a>, &'a str)) -> Result<Node<'a>, ()> {
-        Ok(Node::Index(Box::new(input.0), Box::new(input.2)))
+    // An index operation without its left-hand side.  The `fold_multi0` closure attaches
+    // these to their LHS's and creates Nodes.
+    enum IndexOp<'a> {
+        Index(Box<Node<'a>>),
+        Slice(Option<Box<Node<'a>>>, Option<Box<Node<'a>>>),
+        Dot(&'a str),
+    };
+
+    fn index_op<'a>(input: (&'a str, Node<'a>, &'a str)) -> Result<IndexOp<'a>, ()> {
+        Ok(IndexOp::Index(Box::new(input.1)))
     }
 
     fn slice_node<'a>(
         input: (
-            Node<'a>,
             &'a str,
             Option<Node<'a>>,
             &'a str,
             Option<Node<'a>>,
             &'a str,
         ),
-    ) -> Result<Node<'a>, ()> {
-        Ok(Node::Slice(
-            Box::new(input.0),
-            input.2.map(Box::new),
-            input.4.map(Box::new),
-        ))
+    ) -> Result<IndexOp<'a>> {
+        Ok(IndexOp::Slice(input.1.map(Box::new), input.3.map(Box::new)))
     }
 
-    fn dot_node<'a>(input: (Node<'a>, &'a str, &'a str)) -> Result<Node<'a>, ()> {
-        Ok(Node::Dot(Box::new(input.0), input.2))
+    fn dot_node<'a>(input: (&'a str, &'a str)) -> Result<IndexOp<'a>> {
+        Ok(IndexOp::Dot(input.1))
     }
 
-    alt((
-        map_res(
-            tuple((function_expr, tag("["), expression, tag("]"))),
-            index_node,
-        ),
-        map_res(
-            tuple((
-                function_expr,
-                tag("["),
-                opt(expression),
-                tag(":"),
-                opt(expression),
-                tag("]"),
-            )),
-            slice_node,
-        ),
-        map_res(tuple((function_expr, tag("."), ident_str)), dot_node),
-        function_expr,
-    ))(input)
+    let (i, init) = function_expr(input)?;
+
+    fold_many0(
+        ws(alt((
+            map_res(tuple((tag("["), expression, tag("]"))), index_op),
+            map_res(
+                tuple((
+                    tag("["),
+                    opt(expression),
+                    tag(":"),
+                    opt(expression),
+                    tag("]"),
+                )),
+                slice_node,
+            ),
+            map_res(tuple((tag("."), ident_str)), dot_node),
+        ))),
+        init,
+        |acc: Node, index_op: IndexOp| {
+            let acc = Box::new(acc);
+            match index_op {
+                IndexOp::Index(i) => Node::Index(acc, i),
+                IndexOp::Slice(a, b) => Node::Slice(acc, a, b),
+                IndexOp::Dot(p) => Node::Dot(acc, p),
+            }
+        },
+    )(i)
 }
 
 /// Exponentiation is right-associative

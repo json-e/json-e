@@ -1,6 +1,7 @@
 Immediate next-steps
 
 * finish interpreter
+  * finish evaluator
   * [DONE] parse a single expression and return offset
   * [DONE] replace pratt parser with whatever other implementations use now
     * [DONE] missed stuff: array, object literals

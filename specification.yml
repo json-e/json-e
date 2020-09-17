@@ -3868,6 +3868,7 @@ result: true
 ################################################################################
 ---
 section: expression language - string operations
+rust: true
 ---
 title: 'string concatenation (1)'
 context: {a: 3, b: 2}
@@ -3919,36 +3920,43 @@ context: {}
 template: {$eval: '"12345"[2.5]'}
 error: 'InterpreterError: should only use integers to access arrays or strings'
 ---
+rust: false
 title: 'string slicing (1)'
 context: {key: '12345'}
 template: {$eval: 'key[1:-1]'}
 result: '234'
 ---
+rust: false
 title: 'string slicing (2)'
 context: {key: '12345'}
 template: {$eval: 'key[-2:]'}
 result: '45'
 ---
+rust: false
 title: 'string slicing (noninteger first index)'
 context: {key: '12345'}
 template: {$eval: 'key[1.5:3]'}
 error: 'InterpreterError: cannot perform interval access with non-integers'
 ---
+rust: false
 title: 'string slicing (noninteger second index)'
 context: {key: '12345'}
 template: {$eval: 'key[1:3.5]'}
 error: 'InterpreterError: cannot perform interval access with non-integers'
 ---
+rust: false
 title: 'string slicing (noninteger indexes)'
 context: {key: '12345'}
 template: {$eval: 'key[1.5:3.5]'}
 error: 'InterpreterError: cannot perform interval access with non-integers'
 ---
+rust: false
 title: 'string slicing type error (1)'
 context: {key: '12345'}
 template: {$eval: 'key["a":]'}
 error: 'InterpreterError: cannot perform interval access with non-integers'
 ---
+rust: false
 title: 'string slicing type error (2)'
 context: {key: '12345'}
 template: {$eval: 'key[:"a"]'}
@@ -3976,6 +3984,7 @@ error: 'SyntaxError: Found {, expected identifier'
 ################################################################################
 ---
 section: expression language - property access
+rust: true
 ---
 title: 'property with numeric value'
 context: {key: 1}
@@ -4011,6 +4020,11 @@ title: 'missing property by name'
 context: {key: {a: 1}}
 template: {$eval: 'key["b"]'}
 result: null
+---
+title: 'single property access with object value'
+context: {key: {key2: 3}}
+template: {$eval: 'key.key2'}
+result: 3
 ---
 title: 'nested property access with object value'
 context: {key: {key2: {key3: {a: 1}}}}
@@ -4076,6 +4090,7 @@ error: 'SyntaxError: Found {, expected identifier'
 ################################################################################
 ---
 section: expression language - array access
+rust: true
 ---
 title: 'numeric'
 context: {key: [1,2,3,4,5]}

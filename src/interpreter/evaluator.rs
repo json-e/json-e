@@ -134,8 +134,62 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
 }
 
 fn index(context: &Context, v: &Node, i: &Node) -> Result<Value> {
-    // TODO
-    Ok(Value::Null)
+    match (evaluate(v, context)?, evaluate(i, context)?) {
+        (Value::Array(ref a), Value::Number(mut n)) => {
+            if n < 0.0 {
+                n = a.len() as f64 + n
+            }
+            let i = n as usize;
+            if i as f64 != n {
+                Err(interpreter_error!(
+                    "should only use integers to access arrays or strings"
+                ))
+            } else {
+                if let Some(v) = a.get(i) {
+                    Ok(v.clone())
+                } else {
+                    Err(interpreter_error!("index out of bounds"))
+                }
+            }
+        }
+        (Value::Array(_), _) => Err(interpreter_error!(
+            "should only use integers to access arrays or strings"
+        )),
+
+        (Value::String(ref s), Value::Number(mut n)) => {
+            if n < 0.0 {
+                n = s.len() as f64 + n
+            }
+            let i = n as usize;
+            if i as f64 != n {
+                Err(interpreter_error!(
+                    "should only use integers to access arrays or strings"
+                ))
+            } else {
+                // TODO: this assumes a single-byte character
+                if let Some(c) = s.get(i..i + 1) {
+                    Ok(Value::String(c.into()))
+                } else {
+                    Err(interpreter_error!("index out of bounds"))
+                }
+            }
+        }
+        (Value::String(_), _) => Err(interpreter_error!(
+            "should only use integers to access arrays or strings"
+        )),
+
+        (Value::Object(ref o), Value::String(ref s)) => {
+            if let Some(v) = o.get(s) {
+                Ok(v.clone())
+            } else {
+                Ok(Value::Null)
+            }
+        }
+        (Value::Object(_), _) => Err(interpreter_error!("object keys must be strings")),
+        _ => Err(interpreter_error!(
+            "indexing operator expects an object, string, or array"
+        )),
+    }
 }
 
 fn slice(context: &Context, v: &Node, a: Option<&Node>, b: Option<&Node>) -> Result<Value> {
@@ -144,8 +198,16 @@ fn slice(context: &Context, v: &Node, a: Option<&Node>, b: Option<&Node>) -> Res
 }
 
 fn dot(context: &Context, v: &Node, p: &str) -> Result<Value> {
-    // TODO
-    Ok(Value::Null)
+    match evaluate(v, context)? {
+        Value::Object(ref o) => {
+            if let Some(v) = o.get(p) {
+                Ok(v.clone())
+            } else {
+                Err(interpreter_error!("object has no property {}", p))
+            }
+        }
+        _ => Err(interpreter_error!("dot operator expects an object")),
+    }
 }
 
 fn func(context: &Context, f: &Node, args: &[Node]) -> Result<Value> {
