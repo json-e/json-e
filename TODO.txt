@@ -6,7 +6,7 @@ Immediate next-steps
     * [DONE] missed stuff: array, object literals
     * [DONE] Node::Literal -> Node::True, Node::False, Node::Null
 * finish implementing operators
-* use an Option-like MaybeValue, or just a custom enum
+* [DONE] use an Option-like MaybeValue, or just a custom enum
 * [WIP] is_equal needs to recurse.. maybe just build our own JSON type??
 * move is_equal and is_truthy into Value (and stringify?)
 

@@ -3,6 +3,9 @@ use serde_json::{Map, Number, Value as SerdeValue};
 use std::collections::BTreeMap;
 use std::convert::TryFrom;
 
+// shorthand for object values
+pub(crate) type Object = BTreeMap<String, Value>;
+
 /// Internal representation of a JSON value.  This has a few advantages:
 ///  - can contain functions as first-class objects
 ///  - can represent a deletion marker
@@ -14,7 +17,7 @@ pub(crate) enum Value {
     String(String),
     Number(f64),
     Bool(bool),
-    Object(BTreeMap<String, Value>),
+    Object(Object),
     Array(Vec<Value>),
 
     // lack of a value (for an $if without then, for example); this is

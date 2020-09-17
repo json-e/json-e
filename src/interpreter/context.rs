@@ -1,8 +1,9 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 
+use crate::value::Value;
 use anyhow::{anyhow, Result};
-use serde_json::Value;
+use serde_json::Value as SerdeValue;
 use std::collections::HashMap;
 
 pub(crate) struct Context<'a> {
@@ -29,7 +30,17 @@ impl<'a> Context<'a> {
         }
     }
 
-    /// Create a context from a JSON value, which must be an object.
+    /// Create a context from a Serde JSON value, which must be an object.
+    pub(crate) fn from_serde_value(
+        value: &'_ SerdeValue,
+        parent: Option<&'a Context>,
+    ) -> Result<Context<'a>> {
+        // TODO: this could be more efficient by converting only the values and not cloning
+        let value: Value = value.into();
+        Context::from_value(&value, parent)
+    }
+
+    /// Create a context from a json-e Value, which must be an object
     pub(crate) fn from_value(value: &'_ Value, parent: Option<&'a Context>) -> Result<Context<'a>> {
         let mut c = Context {
             content: HashMap::new(),
@@ -67,7 +78,6 @@ impl<'a> Context<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use serde_json::json;
 
     #[test]
     fn test_get_not_found() {
@@ -78,20 +88,20 @@ mod test {
     #[test]
     fn test_get_found() {
         let mut c = Context::new();
-        c.insert("abc", json!(null));
-        assert_eq!(c.get("abc"), Some(&json!(null)));
+        c.insert("abc", Value::Null);
+        assert_eq!(c.get("abc"), Some(&Value::Null))
     }
 
     #[test]
     fn test_get_parent() {
         let mut c1 = Context::new();
-        c1.insert("abc", json!(null));
-        c1.insert("def", json!(true));
+        c1.insert("abc", Value::Null);
+        c1.insert("def", Value::Bool(true));
         let mut c2 = c1.child();
-        c2.insert("def", json!(false));
-        c2.insert("ghi", json!("hi"));
-        assert_eq!(c2.get("abc"), Some(&json!(null)));
-        assert_eq!(c2.get("def"), Some(&json!(false)));
-        assert_eq!(c2.get("ghi"), Some(&json!("hi")));
+        c2.insert("def", Value::Bool(false));
+        c2.insert("ghi", Value::String("hi".into()));
+        assert_eq!(c2.get("abc"), Some(&Value::Null));
+        assert_eq!(c2.get("def"), Some(&Value::Bool(false)));
+        assert_eq!(c2.get("ghi"), Some(&Value::String("hi".into())));
     }
 }

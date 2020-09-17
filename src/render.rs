@@ -1,21 +1,17 @@
 #![allow(unused_variables)]
 use crate::interpreter::{self, Context};
 use crate::util::is_truthy;
-use crate::value::Value;
+use crate::value::{Object, Value};
 use anyhow::{bail, Result};
 use serde_json::Value as SerdeValue;
-use std::collections::BTreeMap;
 use std::convert::TryInto;
 use std::fmt::Write;
-
-// shorthand for object values
-type Object = BTreeMap<String, Value>;
 
 /// Render the given JSON-e template with the given context.
 pub fn render(template: &SerdeValue, context: &SerdeValue) -> Result<SerdeValue> {
     let template: Value = template.into();
     // TODO: builtins should be a lazy-static Context that is a parent to this one
-    let context = Context::from_value(context, None)?;
+    let context = Context::from_serde_value(context, None)?;
 
     match _render(&template, &context) {
         // note that this will convert DeletionMarker into Null
@@ -356,7 +352,6 @@ fn sort_operator(
 #[cfg(test)]
 mod tests {
     use crate::render;
-    use crate::util::is_truthy;
     use serde_json::json;
 
     #[test]

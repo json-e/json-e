@@ -2,25 +2,13 @@
 #![allow(dead_code)]
 use super::context::Context;
 use super::node::Node;
-use crate::util::{is_equal as is_equal_val, is_truthy as is_truthy_val};
+use crate::util::{is_equal, is_truthy};
+use crate::value::{Object, Value};
 use anyhow::Result;
-use serde_json::{map::Map, Number, Value};
-use std::{
-    convert::{TryFrom, TryInto},
-    str::FromStr,
-};
-
-fn is_truthy(value: &Value) -> bool {
-    is_truthy_val(&value.try_into().unwrap())
-}
-
-fn is_equal(a: &Value, b: &Value) -> bool {
-    is_equal_val(&a.try_into().unwrap(), &b.try_into().unwrap())
-}
 
 pub(crate) fn evaluate(node: &Node, context: &Context) -> Result<Value> {
     match *node {
-        Node::Number(n) => Ok(Value::Number(serde_json::Number::from_str(n)?)),
+        Node::Number(n) => Ok(Value::Number(n.parse()?)),
         Node::String(s) => Ok(Value::String(s.to_owned())),
         Node::Ident(i) => match context.get(i) {
             Some(v) => Ok(v.clone()),
@@ -36,7 +24,7 @@ pub(crate) fn evaluate(node: &Node, context: &Context) -> Result<Value> {
                 .collect::<Result<Vec<Value>>>()?,
         )),
         Node::Object(ref items) => {
-            let mut map = Map::new();
+            let mut map = Object::new();
             for (k, v) in items.iter() {
                 let v = evaluate(v, context)?;
                 map.insert((*k).to_owned(), v);
@@ -65,13 +53,7 @@ fn option_ref<'a>(opt: &'a Option<Box<Node<'a>>>) -> Option<&'a Node<'a>> {
 fn un(context: &Context, op: &str, v: &Node) -> Result<Value> {
     let v = evaluate(v, context)?;
     match (op, v) {
-        ("-", Value::Number(ref n)) => Ok(Value::Number(number_op(
-            n,
-            n,
-            |a, _| a.checked_neg(),
-            |_, _| None,
-            |a, _| -a,
-        ))),
+        ("-", Value::Number(ref n)) => Ok(Value::Number(-*n)),
         ("-", _) => Err(interpreter_error!("This operator expects a number")),
 
         ("+", v @ Value::Number(_)) => Ok(v),
@@ -97,97 +79,50 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
     let r = evaluate(r, context)?;
 
     match (l, o, r) {
-        (Value::Number(ref l), "**", Value::Number(ref r)) => Ok(Value::Number(number_op(
-            l,
-            r,
-            |a, b| u32::try_from(b).ok().and_then(|b| a.checked_pow(b)),
-            |a, b| u32::try_from(b).ok().and_then(|b| a.checked_pow(b)),
-            |a, b| a.powf(b),
-        ))),
+        (Value::Number(ref l), "**", Value::Number(ref r)) => Ok(Value::Number(l.powf(*r))),
         (_, "**", _) => Err(interpreter_error!("This operator expects numbers")),
 
-        (Value::Number(ref l), "*", Value::Number(ref r)) => Ok(Value::Number(number_op(
-            l,
-            r,
-            i64::checked_mul,
-            u64::checked_mul,
-            |a, b| a / b,
-        ))),
+        (Value::Number(ref l), "*", Value::Number(ref r)) => Ok(Value::Number(*l * *r)),
         (_, "*", _) => Err(interpreter_error!("This operator expects numbers")),
 
-        (Value::Number(ref l), "/", Value::Number(ref r)) => Ok(Value::Number(number_op(
-            l,
-            r,
-            i64::checked_div,
-            u64::checked_div,
-            |a, b| a / b,
-        ))),
+        // TODO: div by zero
+        (Value::Number(ref l), "/", Value::Number(ref r)) => Ok(Value::Number(*l / *r)),
         (_, "/", _) => Err(interpreter_error!("This operator expects numbers")),
 
         (Value::String(ref l), "+", Value::String(ref r)) => {
             Ok(Value::String(format!("{}{}", l, r)))
         }
-        (Value::Number(ref l), "+", Value::Number(ref r)) => Ok(Value::Number(number_op(
-            l,
-            r,
-            i64::checked_add,
-            u64::checked_add,
-            |a, b| a + b,
-        ))),
+        (Value::Number(ref l), "+", Value::Number(ref r)) => Ok(Value::Number(*l + *r)),
         (_, "+", _) => Err(interpreter_error!(
             "This operator expects numbers or strings"
         )),
 
-        (Value::Number(ref l), "-", Value::Number(ref r)) => Ok(Value::Number(number_op(
-            l,
-            r,
-            i64::checked_sub,
-            u64::checked_sub,
-            |a, b| a - b,
-        ))),
+        (Value::Number(ref l), "-", Value::Number(ref r)) => Ok(Value::Number(*l - *r)),
         (_, "-", _) => Err(interpreter_error!("This operator expects numbers")),
 
-        (l, "<", r) => comparison_op(
-            &l,
-            &r,
-            |a, b| a < b,
-            |a, b| a < b,
-            |a, b| a < b,
-            |a, b| a < b,
-        ),
-        (l, ">", r) => comparison_op(
-            &l,
-            &r,
-            |a, b| a > b,
-            |a, b| a > b,
-            |a, b| a > b,
-            |a, b| a > b,
-        ),
-        (l, "<=", r) => comparison_op(
-            &l,
-            &r,
-            |a, b| a <= b,
-            |a, b| a <= b,
-            |a, b| a <= b,
-            |a, b| a <= b,
-        ),
-        (l, ">=", r) => comparison_op(
-            &l,
-            &r,
-            |a, b| a >= b,
-            |a, b| a >= b,
-            |a, b| a >= b,
-            |a, b| a >= b,
-        ),
+        (Value::String(ref a), "<", Value::String(ref b)) => Ok(Value::Bool(a < b)),
+        (Value::Number(a), "<", Value::Number(b)) => Ok(Value::Bool(a < b)),
+        (_, "<", _) => Err(interpreter_error!("Expected numbers or strings")),
 
-        // For equality, use object equality *except* casting numbers to f64 to allow comparison
-        // of integers in different representations.
+        (Value::String(ref a), ">", Value::String(ref b)) => Ok(Value::Bool(a > b)),
+        (Value::Number(a), ">", Value::Number(b)) => Ok(Value::Bool(a > b)),
+        (_, ">", _) => Err(interpreter_error!("Expected numbers or strings")),
+
+        (Value::String(ref a), "<=", Value::String(ref b)) => Ok(Value::Bool(a <= b)),
+        (Value::Number(a), "<=", Value::Number(b)) => Ok(Value::Bool(a <= b)),
+        (_, "<=", _) => Err(interpreter_error!("Expected numbers or strings")),
+
+        (Value::String(ref a), ">=", Value::String(ref b)) => Ok(Value::Bool(a >= b)),
+        (Value::Number(a), ">=", Value::Number(b)) => Ok(Value::Bool(a >= b)),
+        (_, ">=", _) => Err(interpreter_error!("Expected numbers or strings")),
+
         (l, "==", r) => Ok(Value::Bool(is_equal(&l, &r))),
         (l, "!=", r) => Ok(Value::Bool(!is_equal(&l, &r))),
 
         (Value::String(ref l), "in", Value::String(ref r)) => Ok(Value::Bool(l.find(r).is_some())),
         (ref l, "in", Value::Array(ref r)) => Ok(Value::Bool(r.iter().any(|x| is_equal(l, x)))),
         (Value::String(ref l), "in", Value::Object(ref r)) => Ok(Value::Bool(r.contains_key(l))),
+        (_, "in", _) => Err(interpreter_error!("Expected proper args for in")),
 
         // We have already handled the left operand of the logical operators above, so these
         // consider only the right.
@@ -218,82 +153,20 @@ fn func(context: &Context, f: &Node, args: &[Node]) -> Result<Value> {
     Ok(Value::Null)
 }
 
-// utilities for doing arithmetic on serde_json::Number
-
-fn number_op<I64, U64, F64>(a: &Number, b: &Number, op_i64: I64, op_u64: U64, op_f64: F64) -> Number
-where
-    I64: Fn(i64, i64) -> Option<i64>,
-    U64: Fn(u64, u64) -> Option<u64>,
-    F64: Fn(f64, f64) -> f64,
-{
-    if let (Some(a), Some(b)) = (a.as_i64(), b.as_i64()) {
-        if let Some(r) = op_i64(a, b) {
-            return r.into();
-        }
-    }
-
-    if let (Some(a), Some(b)) = (a.as_u64(), b.as_u64()) {
-        if let Some(r) = op_u64(a, b) {
-            return r.into();
-        }
-    }
-
-    if let (Some(a), Some(b)) = (a.as_f64(), b.as_f64()) {
-        return Number::from_f64(op_f64(a, b)).unwrap();
-    }
-
-    // TODO: panic (and unwrap above)
-    panic!("cannot perform binary numeric operation")
-}
-
-fn comparison_op<STR, I64, U64, F64>(
-    a: &Value,
-    b: &Value,
-    op_str: STR,
-    op_i64: I64,
-    op_u64: U64,
-    op_f64: F64,
-) -> Result<Value>
-where
-    STR: Fn(&str, &str) -> bool,
-    I64: Fn(i64, i64) -> bool,
-    U64: Fn(u64, u64) -> bool,
-    F64: Fn(f64, f64) -> bool,
-{
-    match (a, b) {
-        (Value::String(ref a), Value::String(ref b)) => Ok(Value::Bool(op_str(a, b))),
-        (Value::Number(ref a), Value::Number(ref b)) => {
-            if let (Some(a), Some(b)) = (a.as_i64(), b.as_i64()) {
-                return Ok(Value::Bool(op_i64(a, b)));
-            }
-
-            if let (Some(a), Some(b)) = (a.as_u64(), b.as_u64()) {
-                return Ok(Value::Bool(op_u64(a, b)));
-            }
-
-            if let (Some(a), Some(b)) = (a.as_f64(), b.as_f64()) {
-                return Ok(Value::Bool(op_f64(a, b)));
-            }
-
-            // TODO: panic (and unwrap above)
-            panic!("cannot perform binary numeric operation")
-        }
-        _ => Err(interpreter_error!("Expected numbers or strings")),
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
-    use serde_json::{from_str, json};
 
     #[test]
     fn test_literals() {
-        assert_eq!(evaluate(&Node::Null, &Context::new()).unwrap(), json!(null));
-        assert_eq!(evaluate(&Node::True, &Context::new()).unwrap(), json!(true));
+        assert_eq!(evaluate(&Node::Null, &Context::new()).unwrap(), Value::Null);
+        assert_eq!(
+            evaluate(&Node::True, &Context::new()).unwrap(),
+            Value::Bool(true)
+        );
         assert_eq!(
             evaluate(&Node::False, &Context::new()).unwrap(),
-            json!(false)
+            Value::Bool(false)
         );
     }
 
@@ -301,11 +174,11 @@ mod test {
     fn test_number() {
         assert_eq!(
             evaluate(&Node::Number("13"), &Context::new()).unwrap(),
-            json!(13)
+            Value::Number(13.0),
         );
         assert_eq!(
             evaluate(&Node::Number("13.5"), &Context::new()).unwrap(),
-            json!(13.5)
+            Value::Number(13.5),
         );
     }
 
@@ -313,15 +186,18 @@ mod test {
     fn test_string() {
         assert_eq!(
             evaluate(&Node::String("abc"), &Context::new()).unwrap(),
-            json!("abc")
+            Value::String("abc".into()),
         );
     }
 
     #[test]
     fn test_ident() {
         let mut c = Context::new();
-        c.insert("a", json!(29));
-        assert_eq!(evaluate(&Node::Ident("a"), &c).unwrap(), json!(29));
+        c.insert("a", Value::Number(29.0));
+        assert_eq!(
+            evaluate(&Node::Ident("a"), &c).unwrap(),
+            Value::Number(29.0)
+        );
     }
 
     #[test]
@@ -335,7 +211,7 @@ mod test {
         let c = Context::new();
         assert_eq!(
             evaluate(&Node::Un("-", Box::new(Node::Number("-10"))), &c).unwrap(),
-            json!(10)
+            Value::Number(10.0),
         );
     }
 
@@ -349,7 +225,7 @@ mod test {
                 &c
             )
             .unwrap(),
-            from_str::<Value>("-9223372036854775809").unwrap(),
+            Value::Number("-9223372036854775809".parse().unwrap()),
         );
     }
 
@@ -363,7 +239,7 @@ mod test {
                 &c
             )
             .unwrap(),
-            json!(-29.25),
+            Value::Number(-29.25),
         );
     }
 
@@ -385,7 +261,7 @@ mod test {
         let c = Context::new();
         assert_eq!(
             evaluate(&Node::Un("+", Box::new(Node::Number("29.25"))), &c).unwrap(),
-            json!(29.25),
+            Value::Number(29.25),
         );
     }
 
@@ -403,7 +279,7 @@ mod test {
         let c = Context::new();
         assert_eq!(
             evaluate(&Node::Un("!", Box::new(Node::False)), &c).unwrap(),
-            json!(true),
+            Value::Bool(true),
         );
     }
 }

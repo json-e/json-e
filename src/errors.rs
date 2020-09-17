@@ -1,3 +1,5 @@
+#![allow(unused_macros)]
+
 use thiserror::Error;
 
 /// Construct a new syntax error, as an anyhow::Error
