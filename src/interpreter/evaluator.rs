@@ -2,7 +2,6 @@
 #![allow(dead_code)]
 use super::context::Context;
 use super::node::Node;
-use crate::util::{is_equal, is_truthy};
 use crate::value::{Object, Value};
 use anyhow::Result;
 
@@ -59,7 +58,7 @@ fn un(context: &Context, op: &str, v: &Node) -> Result<Value> {
         ("+", v @ Value::Number(_)) => Ok(v),
         ("+", _) => Err(interpreter_error!("This operator expects a number")),
 
-        ("!", v) => Ok(Value::Bool(!is_truthy(&v))),
+        ("!", v) => Ok(Value::Bool(!bool::from(v))),
 
         _ => unreachable!(),
     }
@@ -69,9 +68,9 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
     let l = evaluate(l, context)?;
 
     // perform the short-circuiting operations first
-    if o == "||" && is_truthy(&l) {
+    if o == "||" && bool::from(&l) {
         return Ok(Value::Bool(true));
-    } else if o == "&&" && !is_truthy(&l) {
+    } else if o == "&&" && !bool::from(&l) {
         return Ok(Value::Bool(false));
     }
 
@@ -116,18 +115,18 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
         (Value::Number(a), ">=", Value::Number(b)) => Ok(Value::Bool(a >= b)),
         (_, ">=", _) => Err(interpreter_error!("Expected numbers or strings")),
 
-        (l, "==", r) => Ok(Value::Bool(is_equal(&l, &r))),
-        (l, "!=", r) => Ok(Value::Bool(!is_equal(&l, &r))),
+        (l, "==", r) => Ok(Value::Bool(l == r)),
+        (l, "!=", r) => Ok(Value::Bool(l != r)),
 
         (Value::String(ref l), "in", Value::String(ref r)) => Ok(Value::Bool(l.find(r).is_some())),
-        (ref l, "in", Value::Array(ref r)) => Ok(Value::Bool(r.iter().any(|x| is_equal(l, x)))),
+        (ref l, "in", Value::Array(ref r)) => Ok(Value::Bool(r.iter().any(|x| l == x))),
         (Value::String(ref l), "in", Value::Object(ref r)) => Ok(Value::Bool(r.contains_key(l))),
         (_, "in", _) => Err(interpreter_error!("Expected proper args for in")),
 
         // We have already handled the left operand of the logical operators above, so these
         // consider only the right.
-        (_, "&&", r) => Ok(Value::Bool(is_truthy(&r))),
-        (_, "||", r) => Ok(Value::Bool(is_truthy(&r))),
+        (_, "&&", r) => Ok(Value::Bool(r.into())),
+        (_, "||", r) => Ok(Value::Bool(r.into())),
 
         (_, _, _) => unreachable!(),
     }

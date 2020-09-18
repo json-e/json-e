@@ -1,6 +1,5 @@
 #![allow(unused_variables)]
 use crate::interpreter::{self, Context};
-use crate::util::is_truthy;
 use crate::value::{Object, Value};
 use anyhow::{bail, Result};
 use serde_json::Value as SerdeValue;
@@ -253,11 +252,7 @@ fn if_operator(operator: &str, value: &Value, object: &Object, context: &Context
         _ => bail!("$if can evaluate string expressions only"),
     };
 
-    let prop = if is_truthy(&eval_result.into()) {
-        "then"
-    } else {
-        "else"
-    };
+    let prop = if eval_result.into() { "then" } else { "else" };
     match object.get(prop) {
         None => Ok(Value::DeletionMarker),
         Some(val) => Ok(_render(val, context)?),
@@ -272,9 +267,7 @@ fn json_operator(
 ) -> Result<Value> {
     check_operator_properties(operator, object, |_| false)?;
     let v = _render(value, context)?;
-    // Convert to a Serde Value and let it do the JSON-ificiation.
-    let v: SerdeValue = v.try_into()?;
-    Ok(Value::String(serde_json::to_string(&v)?))
+    Ok(Value::String(v.to_json()?))
 }
 
 fn let_operator(

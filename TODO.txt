@@ -8,8 +8,8 @@ Immediate next-steps
     * [DONE] Node::Literal -> Node::True, Node::False, Node::Null
 * finish implementing operators
 * [DONE] use an Option-like MaybeValue, or just a custom enum
-* [WIP] is_equal needs to recurse.. maybe just build our own JSON type??
-* move is_equal and is_truthy into Value (and stringify?)
+* [DONE] is_equal needs to recurse.. maybe just build our own JSON type??
+* [DONE] move is_equal and is_truthy into Value (and stringify?)
 
 Tests
 * unicode characters containing `$` and even `${`? (not possible?)

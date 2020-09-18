@@ -1,7 +1,7 @@
 use anyhow::{Error, Result};
 use serde_json::{Map, Number, Value as SerdeValue};
 use std::collections::BTreeMap;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 
 // shorthand for object values
 pub(crate) type Object = BTreeMap<String, Value>;
@@ -25,6 +25,14 @@ pub(crate) enum Value {
     DeletionMarker,
 }
 
+impl Value {
+    /// Serialize this value to a JSON string.
+    pub(crate) fn to_json(&self) -> Result<String> {
+        let v: SerdeValue = self.try_into()?;
+        Ok(serde_json::to_string(&v)?)
+    }
+}
+
 /// Utility function to turn an f64 into a serde Number, using the simplest form.
 /// This conservatively assumes values outside (-u32::MAX..u32::MAX) are best
 /// represented as floats
@@ -38,6 +46,26 @@ fn f64_to_serde_number(value: f64) -> Number {
     }
     // the failure conditions here are NaN and Infinity, which we do not see
     Number::from_f64(value).unwrap()
+}
+
+impl From<&Value> for bool {
+    fn from(value: &Value) -> bool {
+        match value {
+            Value::Number(n) => *n != 0.0,
+            Value::Bool(b) => *b,
+            Value::Null => false,
+            Value::String(s) => s.len() > 0,
+            Value::Array(a) => !a.is_empty(),
+            Value::Object(o) => !o.is_empty(),
+            Value::DeletionMarker => false,
+        }
+    }
+}
+
+impl From<Value> for bool {
+    fn from(value: Value) -> bool {
+        (&value).into()
+    }
 }
 
 impl From<&SerdeValue> for Value {
@@ -139,5 +167,46 @@ mod test {
 
         let converted: SerdeValue = (&jsone_value).try_into().unwrap();
         assert_eq!(converted, serde_value);
+    }
+
+    #[test]
+    fn convert_ref() {
+        let serde_value = json!(true);
+        let converted: Value = (&serde_value).into();
+        assert_eq!(converted, Value::Bool(true));
+    }
+
+    #[test]
+    fn convert_value() {
+        let serde_value = json!(true);
+        let converted: Value = serde_value.into();
+        assert_eq!(converted, Value::Bool(true));
+    }
+
+    #[test]
+    fn test_is_truthy() {
+        let obj = vec![("x".to_string(), Null)].drain(..).collect();
+        let long = "very very very very very very very very very very long string".to_string();
+        let tests = vec![
+            (Null, false),
+            (Array(vec![]), false),
+            (Array(vec![Number(1.0)]), true),
+            (Object(super::Object::new()), false),
+            (Object(obj), true),
+            (String("".to_string()), false),
+            (String("short string".to_string()), true),
+            (String(long), true),
+            (Number(0.0), false),
+            (Number(1.0), true),
+            (Number(-1.0), true),
+            (Bool(false), false),
+            (Bool(true), true),
+            (DeletionMarker, false),
+        ];
+
+        for (value, expected) in tests {
+            let got: bool = (&value).into();
+            assert_eq!(got, expected, "{:?} should be {}", value, expected);
+        }
     }
 }
