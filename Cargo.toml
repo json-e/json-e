@@ -5,8 +5,6 @@ authors = ["owlishDeveloper <bugzeeeeee@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-fancy-regex = "0.2.0"
-regex = "1.2"
 anyhow = "1.0.32"
 serde_json = "1.0.57"
 thiserror = "1.0"
