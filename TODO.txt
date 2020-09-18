@@ -20,6 +20,9 @@ Tests
 * arithemtic with decimal and integer values
 * some tests labeled "TypeError" that aren't..
 * division by zero
+* $let without in
+* $let with empty string key
+
 
 Improvements
 * avoid unnecessary allocation in checking operator properties

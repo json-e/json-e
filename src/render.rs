@@ -223,7 +223,22 @@ fn flatten_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |_| false)?;
+    if let Value::Array(ref mut items) = _render(value, context)? {
+        let mut resitems = Vec::new();
+        for mut item in items.drain(..) {
+            if let Value::Array(ref mut subitems) = item {
+                for subitem in subitems.drain(..) {
+                    resitems.push(subitem);
+                }
+            } else {
+                resitems.push(item);
+            }
+        }
+        Ok(Value::Array(resitems))
+    } else {
+        Err(template_error!("$flatten value must evaluate to an array"))
+    }
 }
 
 fn flatten_deep_operator(
@@ -232,7 +247,25 @@ fn flatten_deep_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |_| false)?;
+
+    fn flatten_deep(mut value: Value, accumulator: &mut Vec<Value>) {
+        if let Value::Array(ref mut items) = value {
+            for item in items.drain(..) {
+                flatten_deep(item, accumulator);
+            }
+        } else {
+            accumulator.push(value);
+        }
+    }
+
+    if let value @ Value::Array(_) = _render(value, context)? {
+        let mut resitems = Vec::new();
+        flatten_deep(value, &mut resitems);
+        Ok(Value::Array(resitems))
+    } else {
+        Err(template_error!("$flatten value must evaluate to an array"))
+    }
 }
 
 fn from_now_operator(
@@ -276,7 +309,34 @@ fn let_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |p| p == "in")?;
+
+    if let Value::Object(_) = value {
+    } else {
+        return Err(template_error!("$let value must be an object"));
+    }
+
+    let value = _render(value, context)?;
+
+    if let Value::Object(o) = value {
+        let mut child_context = context.child();
+        for (k, v) in o.iter() {
+            if !is_identifier(k) {
+                return Err(template_error!(
+                    "top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/"
+                ));
+            }
+            child_context.insert(k, v.clone());
+        }
+
+        if let Some(in_tpl) = object.get("in") {
+            Ok(_render(in_tpl, &child_context)?)
+        } else {
+            Err(template_error!("$let operator requires an `in` clause"))
+        }
+    } else {
+        Err(template_error!("$let value must be an object"))
+    }
 }
 
 fn map_operator(
@@ -342,8 +402,30 @@ fn sort_operator(
     todo!()
 }
 
+/// Recognize identifier strings for $let
+fn is_identifier(identifier: &str) -> bool {
+    let mut chars = identifier.chars();
+
+    if let Some(c) = chars.next() {
+        if !c.is_ascii_alphabetic() {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    for c in chars {
+        if !c.is_ascii_alphanumeric() && c != '_' {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 #[cfg(test)]
 mod tests {
+    use super::is_identifier;
     use crate::render;
     use serde_json::json;
 
@@ -511,5 +593,18 @@ mod tests {
             let context = Context::new();
             assert!(interpolate("a${13+14", &context).is_err());
         }
+    }
+
+    #[test]
+    fn test_is_identifier() {
+        assert!(!is_identifier(""));
+        assert!(!is_identifier("1"));
+        assert!(!is_identifier("2b"));
+        assert!(!is_identifier("-"));
+        assert!(is_identifier("a"));
+        assert!(is_identifier("abc"));
+        assert!(is_identifier("abc123"));
+        assert!(is_identifier("abc_123"));
+        assert!(!is_identifier("abc-123"));
     }
 }
