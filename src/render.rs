@@ -311,8 +311,7 @@ fn let_operator(
 ) -> Result<Value> {
     check_operator_properties(operator, object, |p| p == "in")?;
 
-    if let Value::Object(_) = value {
-    } else {
+    if !value.is_object() {
         return Err(template_error!("$let value must be an object"));
     }
 
@@ -399,7 +398,70 @@ fn sort_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |p| p.starts_with("by("))?;
+
+    if let Value::Array(arr) = _render(value, context)? {
+        // short-circuit a zero-length array, so we can later assume at least one item
+        if arr.len() == 0 {
+            return Ok(Value::Array(arr));
+        }
+
+        if object.len() == 1 {
+            return sort_operator_without_by(operator, arr, object, context);
+        }
+        todo!()
+    } else {
+        Err(template_error!(
+            "$sorted values to be sorted must have the same type"
+        ))
+    }
+}
+
+fn sort_operator_without_by(
+    operator: &str,
+    mut arr: Vec<Value>,
+    object: &Object,
+    context: &Context,
+) -> Result<Value> {
+    let make_err = || {
+        Err(template_error!(
+            "$sorted values to be sorted must have the same type"
+        ))
+    };
+    match arr[0] {
+        Value::String(_) => {
+            for i in &arr {
+                if !i.is_string() {
+                    return make_err();
+                }
+            }
+
+            arr.sort_by(|a, b| {
+                // unwraps are ok because we checked the types above
+                let a = a.as_str().unwrap();
+                let b = b.as_str().unwrap();
+                a.cmp(b)
+            });
+            Ok(Value::Array(arr))
+        }
+        Value::Number(_) => {
+            for i in &arr {
+                if !i.is_number() {
+                    return make_err();
+                }
+            }
+
+            arr.sort_by(|a, b| {
+                // unwraps are ok because we checked the types above
+                let a = a.as_f64().unwrap();
+                let b = b.as_f64().unwrap();
+                // unwrap is ok because we do not deal with NaN
+                a.partial_cmp(b).unwrap()
+            });
+            Ok(Value::Array(arr))
+        }
+        _ => make_err(),
+    }
 }
 
 /// Recognize identifier strings for $let

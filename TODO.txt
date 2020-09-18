@@ -22,7 +22,10 @@ Tests
 * division by zero
 * $let without in
 * $let with empty string key
+* $sort of very large integers
 
+Misc
+* README note that sort sorts by string by default
 
 Improvements
 * avoid unnecessary allocation in checking operator properties

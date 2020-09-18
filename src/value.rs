@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use anyhow::{Error, Result};
 use serde_json::{Map, Number, Value as SerdeValue};
 use std::collections::BTreeMap;
@@ -30,6 +31,64 @@ impl Value {
     pub(crate) fn to_json(&self) -> Result<String> {
         let v: SerdeValue = self.try_into()?;
         Ok(serde_json::to_string(&v)?)
+    }
+
+    pub(crate) fn is_null(&self) -> bool {
+        match self {
+            Value::Null => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_string(&self) -> bool {
+        match self {
+            Value::String(_) => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_number(&self) -> bool {
+        match self {
+            Value::Number(_) => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_bool(&self) -> bool {
+        match self {
+            Value::Bool(_) => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_object(&self) -> bool {
+        match self {
+            Value::Object(_) => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_array(&self) -> bool {
+        match self {
+            Value::Array(_) => true,
+            _ => false,
+        }
+    }
+
+    /// A reference to the string, if this is a String variant
+    pub(crate) fn as_str(&self) -> Option<&str> {
+        match self {
+            Value::String(s) => Some(s.as_ref()),
+            _ => None,
+        }
+    }
+
+    /// The numeric value, if this is a Number variant
+    pub(crate) fn as_f64(&self) -> Option<&f64> {
+        match self {
+            Value::Number(n) => Some(n),
+            _ => None,
+        }
     }
 }
 
