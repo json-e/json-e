@@ -165,8 +165,7 @@ fn index(context: &Context, v: &Node, i: &Node) -> Result<Value> {
                     "should only use integers to access arrays or strings"
                 ))
             } else {
-                // TODO: this assumes a single-byte character
-                if let Some(c) = s.get(i..i + 1) {
+                if let Some(Some(c)) = s.get(i..).map(|substr| substr.chars().next()) {
                     Ok(Value::String(c.into()))
                 } else {
                     Err(interpreter_error!("index out of bounds"))
