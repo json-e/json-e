@@ -23,6 +23,7 @@ Tests
 * $let without in
 * $let with empty string key
 * $sort of very large integers
+* index and slice multibyte utf8
 
 Misc
 * README note that sort sorts by string by default

@@ -49,6 +49,22 @@ fn option_ref<'a>(opt: &'a Option<Box<Node<'a>>>) -> Option<&'a Node<'a>> {
     }
 }
 
+/// Convert numbers that can be represented as an i64 into an i64.  This is used
+/// for indexing and slicing.
+fn number_to_i64(v: &Value) -> Option<i64> {
+    match v {
+        Value::Number(n) => {
+            let i = *n as i64;
+            if i as f64 == *n {
+                Some(i)
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
+}
+
 fn un(context: &Context, op: &str, v: &Node) -> Result<Value> {
     let v = evaluate(v, context)?;
     match (op, v) {
@@ -134,47 +150,35 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
 
 fn index(context: &Context, v: &Node, i: &Node) -> Result<Value> {
     match (evaluate(v, context)?, evaluate(i, context)?) {
-        (Value::Array(ref a), Value::Number(mut n)) => {
-            if n < 0.0 {
-                n = a.len() as f64 + n
+        (Value::Array(ref a), ref n) => {
+            let mut i = number_to_i64(n).ok_or(interpreter_error!(
+                "should only use integers to access arrays or strings"
+            ))?;
+            if i < 0 {
+                i = a.len() as i64 + i
             }
-            let i = n as usize;
-            if i as f64 != n {
-                Err(interpreter_error!(
-                    "should only use integers to access arrays or strings"
-                ))
+            if let Some(v) = a.get(i as usize) {
+                Ok(v.clone())
             } else {
-                if let Some(v) = a.get(i) {
-                    Ok(v.clone())
-                } else {
-                    Err(interpreter_error!("index out of bounds"))
-                }
+                Err(interpreter_error!("index out of bounds"))
             }
         }
-        (Value::Array(_), _) => Err(interpreter_error!(
-            "should only use integers to access arrays or strings"
-        )),
 
-        (Value::String(ref s), Value::Number(mut n)) => {
-            if n < 0.0 {
-                n = s.len() as f64 + n
+        (Value::String(ref s), ref n) => {
+            let mut i = number_to_i64(n).ok_or(interpreter_error!(
+                "should only use integers to access arrays or strings"
+            ))?;
+            if i < 0 {
+                i = s.len() as i64 + i
             }
-            let i = n as usize;
-            if i as f64 != n {
-                Err(interpreter_error!(
-                    "should only use integers to access arrays or strings"
-                ))
+            if let Some(Some(c)) = s.get(i as usize..).map(|substr| substr.chars().next()) {
+                Ok(Value::String(c.into()))
             } else {
-                if let Some(Some(c)) = s.get(i..).map(|substr| substr.chars().next()) {
-                    Ok(Value::String(c.into()))
-                } else {
-                    Err(interpreter_error!("index out of bounds"))
-                }
+                Err(interpreter_error!(
+                    "index out of bounds or not on utf8 boundary"
+                ))
             }
         }
-        (Value::String(_), _) => Err(interpreter_error!(
-            "should only use integers to access arrays or strings"
-        )),
 
         (Value::Object(ref o), Value::String(ref s)) => {
             if let Some(v) = o.get(s) {
@@ -191,8 +195,70 @@ fn index(context: &Context, v: &Node, i: &Node) -> Result<Value> {
 }
 
 fn slice(context: &Context, v: &Node, a: Option<&Node>, b: Option<&Node>) -> Result<Value> {
-    // TODO
-    Ok(Value::Null)
+    let mut v = evaluate(v, context)?;
+    let len = match v {
+        Value::String(ref s) => s.len(),
+        Value::Array(ref v) => v.len(),
+        _ => Err(interpreter_error!("can only slice strings and arrays"))?,
+    };
+
+    /// Handle wrapping and limiting in accordance with JSON-e rules
+    fn wrap(mut x: i64, len: usize) -> usize {
+        if x < 0 {
+            x = x + len as i64;
+        }
+        if x < 0 {
+            return 0;
+        }
+        if x > len as i64 {
+            return len;
+        }
+        x as usize
+    }
+
+    let a = a
+        .map(|x| evaluate(x, context))
+        .transpose()?
+        .map(|x| number_to_i64(&x).ok_or(interpreter_error!("slice indices must be integers")))
+        .transpose()?
+        .map(|x| wrap(x, len))
+        .unwrap_or(0);
+    let b = b
+        .map(|x| evaluate(x, context))
+        .transpose()?
+        .map(|x| number_to_i64(&x).ok_or(interpreter_error!("slice indices must be integers")))
+        .transpose()?
+        .map(|x| wrap(x, len))
+        .unwrap_or(len);
+
+    println!("v:{:?} a:{} b:{}", v, a, b);
+    let r = Ok(match v {
+        Value::String(ref s) => {
+            if a < b {
+                Value::String(
+                    s.get(a..b)
+                        .ok_or_else(|| {
+                            interpreter_error!("invalid string slice indices {}:{}", a, b)
+                        })?
+                        .into(),
+                )
+            } else {
+                Value::String(String::new())
+            }
+        }
+
+        Value::Array(ref mut v) => {
+            if a < b {
+                Value::Array(v.drain(a..b).collect())
+            } else {
+                Value::Array(Vec::new())
+            }
+        }
+
+        _ => unreachable!(),
+    });
+    println!("r: {:?}", r);
+    r
 }
 
 fn dot(context: &Context, v: &Node, p: &str) -> Result<Value> {
