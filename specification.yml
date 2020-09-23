@@ -1606,106 +1606,127 @@ context: {key: null}
 template: {$eval: 'floor(key)'}
 error: 'BuiltinError: invalid arguments to builtin: floor'
 ---
+rust: true
 title: abs (1)
 context: {key: -1.1}
 template: {$eval: 'abs(key)'}
 result: 1.1
 ---
+rust: true
 title: abs (2)
 context: {}
 template: {$eval: 'abs(-1.1)'}
 result: 1.1
 ---
+rust: true
 title: abs (3)
 context: {key: -1}
 template: {$eval: 'abs(key)'}
 result: 1
 ---
+rust: false # really about Serde::Value not implementing eq as expected
 title: abs (4)
 context: {key: -1}
 template: {$eval: 'abs(key)'}
 result: 1.0
 ---
+rust: true
 title: abs (5)
 context: {key: -1.0}
 template: {$eval: 'abs(key)'}
 result: 1
 ---
+rust: false # really about Serde::Value not implementing eq as expected
 title: abs (6)
 context: {key: -1.0}
 template: {$eval: 'abs(key)'}
 result: 1.0
 ---
+rust: true
 title: abs (7)
 context: {}
 template: {$eval: 'abs(-1)'}
 result: 1
 ---
+rust: false # really about Serde::Value not implementing eq as expected
 title: abs (8)
 context: {}
 template: {$eval: 'abs(-1)'}
 result: 1.0
 ---
+rust: true
 title: abs (9)
 context: {}
 template: {$eval: 'abs(-1.0)'}
 result: 1
 ---
+rust: false # really about Serde::Value not implementing eq as expected
 title: abs (10)
 context: {}
 template: {$eval: 'abs(-1.0)'}
 result: 1.0
 ---
+rust: true
 title: abs (11)
 context: {key: 1.1}
 template: {$eval: 'abs(key)'}
 result: 1.1
 ---
+rust: true
 title: abs (12)
 context: {}
 template: {$eval: 'abs(1.1)'}
 result: 1.1
 ---
+rust: true
 title: abs (13)
 context: {key: 1}
 template: {$eval: 'abs(key)'}
 result: 1
 ---
+rust: false # really about Serde::Value not implementing eq as expected
 title: abs (14)
 context: {key: 1}
 template: {$eval: 'abs(key)'}
 result: 1.0
 ---
+rust: true
 title: abs (15)
 context: {key: 1.0}
 template: {$eval: 'abs(key)'}
 result: 1
 ---
+rust: false # really about Serde::Value not implementing eq as expected
 title: abs (16)
 context: {key: 1.0}
 template: {$eval: 'abs(key)'}
 result: 1.0
 ---
+rust: true
 title: abs (17)
 context: {}
 template: {$eval: 'abs(1)'}
 result: 1
 ---
+rust: false # really about Serde::Value not implementing eq as expected
 title: abs (18)
 context: {}
 template: {$eval: 'abs(1)'}
 result: 1.0
 ---
+rust: true
 title: abs (19)
 context: {}
 template: {$eval: 'abs(1.0)'}
 result: 1
 ---
+rust: false # really about Serde::Value not implementing eq as expected
 title: abs (20)
 context: {}
 template: {$eval: 'abs(1.0)'}
 result: 1.0
 ---
+rust: true
 title: abs - TypeError
 context: {}
 template: {$eval: 'abs({})'}

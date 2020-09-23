@@ -3,9 +3,33 @@ use anyhow::{Error, Result};
 use serde_json::{Map, Number, Value as SerdeValue};
 use std::collections::BTreeMap;
 use std::convert::{TryFrom, TryInto};
+use std::fmt;
 
-// shorthand for object values
+/// shorthand for object values
 pub(crate) type Object = BTreeMap<String, Value>;
+
+/// A custom function (built-in or user-provided)
+#[derive(Clone)]
+pub(crate) struct Function(pub(crate) fn(&[Value]) -> Result<Value>);
+
+impl fmt::Debug for Function {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Function(..)")
+    }
+}
+
+impl PartialEq for Function {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 as *const () == other.0 as *const ()
+    }
+}
+
+impl Function {
+    // TODO: pub(crate) constructor, take name for Debug
+    pub(crate) fn call(&self, args: &[Value]) -> Result<Value> {
+        self.0(args)
+    }
+}
 
 /// Internal representation of a JSON value.  This has a few advantages:
 ///  - can contain functions as first-class objects
@@ -24,6 +48,9 @@ pub(crate) enum Value {
     // lack of a value (for an $if without then, for example); this is
     // converted to `null` in JSON.
     DeletionMarker,
+
+    // A built-in or user-provided function
+    Function(Function),
 }
 
 impl Value {
@@ -117,6 +144,7 @@ impl From<&Value> for bool {
             Value::Array(a) => !a.is_empty(),
             Value::Object(o) => !o.is_empty(),
             Value::DeletionMarker => false,
+            Value::Function(_) => true,
         }
     }
 }
@@ -170,6 +198,9 @@ impl TryFrom<&Value> for SerdeValue {
                     .collect::<Result<Vec<SerdeValue>>>()?,
             ),
             Value::DeletionMarker => SerdeValue::Null,
+            Value::Function(_) => {
+                Err(template_error!("cannot represent JSON-e functions as JSON"))?
+            }
         })
     }
 }

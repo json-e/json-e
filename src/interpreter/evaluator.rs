@@ -275,8 +275,17 @@ fn dot(context: &Context, v: &Node, p: &str) -> Result<Value> {
 }
 
 fn func(context: &Context, f: &Node, args: &[Node]) -> Result<Value> {
-    // TODO
-    Ok(Value::Null)
+    let f = evaluate(f, context)?;
+    let args = args
+        .iter()
+        .map(|x| evaluate(x, context))
+        .collect::<Result<Vec<_>>>()?;
+    match f {
+        Value::Function(ref f) => Ok(f.call(&args)?),
+        _ => Err(interpreter_error!(
+            "function invocation requires a function"
+        )),
+    }
 }
 
 #[cfg(test)]

@@ -1,16 +1,30 @@
 #![allow(unused_variables)]
 use crate::interpreter::{self, Context};
-use crate::value::{Object, Value};
+use crate::value::{Function, Object, Value};
 use anyhow::{bail, Result};
 use serde_json::Value as SerdeValue;
 use std::convert::TryInto;
 use std::fmt::Write;
 
+fn abs_builtin(args: &[Value]) -> Result<Value> {
+    if args.len() != 1 {
+        return Err(interpreter_error!("abs expects one argument"));
+    }
+
+    if let Some(arg) = args[0].as_f64() {
+        return Ok(Value::Number(arg.abs()));
+    } else {
+        return Err(interpreter_error!("abs expects a numeric argument"));
+    }
+}
+
 /// Render the given JSON-e template with the given context.
 pub fn render(template: &SerdeValue, context: &SerdeValue) -> Result<SerdeValue> {
     let template: Value = template.into();
     // TODO: builtins should be a lazy-static Context that is a parent to this one
-    let context = Context::from_serde_value(context, None)?;
+    let mut builtins = Context::new();
+    builtins.insert("abs", Value::Function(Function(abs_builtin)));
+    let context = Context::from_serde_value(context, Some(&builtins))?;
 
     match _render(&template, &context) {
         // note that this will convert DeletionMarker into Null
@@ -62,8 +76,9 @@ fn _render(template: &Value, context: &Context) -> Result<Value> {
             }
             Value::Object(result)
         }
-        // `template` has been converted from JSON and cannot contain None
-        Value::DeletionMarker => unreachable!(),
+
+        // `template` has been converted from JSON and cannot contain DeletionMarker or Function
+        Value::DeletionMarker | Value::Function(_) => unreachable!(),
     })
 }
 
