@@ -257,7 +257,7 @@ structure.
 ```yaml
 template: {$json: [a, b, {$eval: 'a+b'}, 4]}
 context:  {a: 1, b: 2}
-result:   '["a", "b", 3, 4]'
+result:   '["a","b",3,4]'
 ```
 
 ### `$if` - `then` - `else`
@@ -321,7 +321,7 @@ example:
 ```yaml
 template: {$fromNow: '2 days 1 hour'}
 context:  {}
-result:   '2017-01-19T16:27:20.974Z'
+result:   '2017-01-21T17:27:20.974Z'
 ```
 
 ```yaml
@@ -436,11 +436,12 @@ result: ["ten"]
 ```
 
 ```yaml
-template: {$match: {"x == 10 || x == 20": "tens", "x == 10": "ten"}}
+# $sort the otherwise arbitrarily ordered results
+template: {$sort: {$match: {"x == 10 || x == 20": "tens", "x == 10": "ten"}}}
 context: {x: 10}
-one possible result: ["tens", "ten"]
-another possible result: ["ten", "tens"]
+result: ["ten", "tens"]
 ```
+
 ```yaml
 template: {$match: {"x < 10": "tens"}}
 context: {x: 10}
@@ -484,7 +485,7 @@ result: {a: 1}
 ```
 
 ```yaml
-template: [1, b: {$switch: {"x == 1": 2, "x == 10": 3}}]
+template: [1, {$switch: {"x == 2": 2, "x == 10": 3}}]
 context: {x: 2}
 result: [1, 2]
 ```
@@ -712,7 +713,7 @@ does not have `prop`, while `obj['prop']` will evaluate to `null`.
 template: {$eval: 'v.a + v["b"]'}
 context: {v: {a: 'apple', b: 'bananna', c: 'carrot'}}
 result: 'applebananna'
-````
+```
 
 ### Indexing and Slicing
 
@@ -783,9 +784,9 @@ template:
   - {$eval: 'fromNow("1 minute", "2017-01-19T16:27:20.974Z")'}
 context: {}
 result:
-  - '2017-01-19T16:27:20.974Z',
-  - '2017-01-19T16:28:20.974Z',
-  - '2017-01-19T16:28:20.974Z',
+  - '2017-01-19T16:27:20.974Z'
+  - '2017-01-19T16:28:20.974Z'
+  - '2017-01-19T16:28:20.974Z'
 ```
 
 #### Math
@@ -840,14 +841,12 @@ result:
 
 ```yaml
 template:
-  # Joins arrays of strings and numbers (including mixed types) into a string using a separator, 
-  # which can also be either string or number.
   - {$eval: 'join(["carpe", "diem"], " ")'}
   - {$eval: 'join([1, 3], 2)'}
 context: {}
 result:
   - carpe diem
-  - "123"
+  - '123'
 ```
 
 #### Context
@@ -887,8 +886,8 @@ result:
  - array
  - object
  - function
- - null 
- - ''    # .. which interpolates to an empty string
+ - 'null'
+ - 'null'    # .. which interpolates to an empty string
 ```
 
 #### Length
