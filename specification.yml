@@ -295,6 +295,7 @@ error:    'TemplateError: $if has undefined properties: bing foo'
 ################################################################################
 ---
 section:  escape operators
+rust: true
 ---
 title:    escape $eval
 context:  {}

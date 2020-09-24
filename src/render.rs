@@ -43,7 +43,8 @@ fn _render(template: &Value, context: &Context) -> Result<Value> {
         Value::Object(o) => {
             // first, see if this is a operator invocation
             for (k, v) in o.iter() {
-                if k.chars().next() == Some('$') {
+                let mut chars = k.chars();
+                if chars.next() == Some('$') && chars.next() != Some('$') {
                     if let Some(rendered) = maybe_operator(k, v, o, context)? {
                         return Ok(rendered);
                     }
@@ -53,6 +54,8 @@ fn _render(template: &Value, context: &Context) -> Result<Value> {
             // apparently not, so recursively render the content
             let mut result = Object::new();
             for (k, v) in o.iter() {
+                // un-escape escaped operators
+                let k = if k.starts_with("$$") { &k[1..] } else { &k[..] };
                 match _render(v, context)? {
                     Value::DeletionMarker => {}
                     v => {
@@ -160,8 +163,10 @@ fn maybe_operator(
         "$reverse" => Ok(Some(reverse_operator(operator, value, object, context)?)),
         "$sort" => Ok(Some(sort_operator(operator, value, object, context)?)),
 
-        // if the operator isn't recognized, just treat this as a normal object
-        _ => Ok(None),
+        // if the operator isn't recognized, then it should be escaped
+        _ => Err(template_error!(
+            "$<identifier> is reserved; use $$<identifier>"
+        )),
     }
 }
 

@@ -24,6 +24,7 @@ Tests
 * $let with empty string key
 * $sort of very large integers
 * index and slice multibyte utf8
+* {$$foo, $$bar}
 
 Misc
 * README note that sort sorts by string by default
