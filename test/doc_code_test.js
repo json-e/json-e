@@ -16,6 +16,7 @@ suite("docs code examples", () => {
   const yamlCodeBlocksRegex = /(```yaml)([a-z]*\n[\s\S]*?\n)(```)/gm;
   let matches;
   const foundSpecs = [];
+  
   while ((matches = yamlCodeBlocksRegex.exec(readme)) !== null) {
     // This is necessary to avoid infinite loops with zero-width matches
     if (matches.index === yamlCodeBlocksRegex.lastIndex) {
@@ -33,7 +34,7 @@ suite("docs code examples", () => {
 
   specs
     .filter((spec) => spec && spec.template)
-    .forEach((spec, i) => {
+    .forEach((spec) => {
       test(JSON.stringify(spec.template), () => {
         let result;
         try {
