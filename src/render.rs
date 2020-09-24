@@ -90,9 +90,6 @@ fn interpolate(mut source: &str, context: &Context) -> Result<String> {
                     }
                     let eval_result = interpreter::evaluate(&parsed, context)?;
 
-                    // XXX temporary
-                    let eval_result: Value = eval_result.into();
-
                     match eval_result {
                         Value::Number(n) => write!(&mut result, "{}", n)?,
                         Value::Bool(true) => result.push_str("true"),
