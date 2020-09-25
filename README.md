@@ -436,8 +436,9 @@ result: ["ten"]
 ```
 
 ```yaml
-# $sort the otherwise arbitrarily ordered results
-template: {$sort: {$match: {"x == 10 || x == 20": "tens", "x == 10": "ten"}}}
+template:
+  # $sort the otherwise arbitrarily ordered results
+  $sort: {$match: {"x == 10 || x == 20": "tens", "x == 10": "ten"}}
 context: {x: 10}
 result: ["ten", "tens"]
 ```
