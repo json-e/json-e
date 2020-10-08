@@ -33,19 +33,9 @@ pub(crate) fn evaluate(node: &Node, context: &Context) -> Result<Value> {
         Node::Un(ref op, ref v) => un(context, op, v.as_ref()),
         Node::Op(ref l, ref o, ref r) => op(context, l.as_ref(), o, r.as_ref()),
         Node::Index(ref v, ref i) => index(context, v.as_ref(), i.as_ref()),
-        Node::Slice(ref v, ref a, ref b) => {
-            slice(context, v.as_ref(), option_ref(a), option_ref(b))
-        }
+        Node::Slice(ref v, ref a, ref b) => slice(context, v.as_ref(), a.as_deref(), b.as_deref()),
         Node::Dot(ref v, ref p) => dot(context, v.as_ref(), p),
         Node::Func(ref f, ref args) => func(context, f.as_ref(), &args[..]),
-    }
-}
-
-// TODO: there's probably some way to do this with Option..
-fn option_ref<'a>(opt: &'a Option<Box<Node<'a>>>) -> Option<&'a Node<'a>> {
-    match opt {
-        Some(b) => Some(b.as_ref()),
-        None => None,
     }
 }
 
