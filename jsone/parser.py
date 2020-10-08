@@ -13,7 +13,7 @@ class SyntaxError(TemplateError):
     @classmethod
     def unexpected(cls, got, exp):
         exp = ', '.join(sorted(exp))
-        return cls('Found {}, expected {}'.format(got.value, exp))
+        return cls('Found: {} token, expected one of: {}'.format(got.value, exp))
 
 
 class Parser(object):
