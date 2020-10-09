@@ -1,9 +1,11 @@
 #![allow(unused_variables)]
 use crate::builtins::BUILTINS;
+use crate::fromnow::{from_now, now};
 use crate::interpreter::{self, Context};
 use crate::value::{Object, Value};
 use anyhow::{bail, Result};
 use serde_json::Value as SerdeValue;
+use std::borrow::Cow;
 use std::convert::TryInto;
 use std::fmt::Write;
 
@@ -11,6 +13,10 @@ use std::fmt::Write;
 pub fn render(template: &SerdeValue, context: &SerdeValue) -> Result<SerdeValue> {
     let template: Value = template.into();
     let context = Context::from_serde_value(context, Some(&BUILTINS))?;
+
+    // set "now" in context to a single current time for the duration of the render
+    let mut context = context.child();
+    context.insert("now", Value::String(now()));
 
     match _render(&template, &context) {
         // note that this will convert DeletionMarker into Null
@@ -277,7 +283,32 @@ fn from_now_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |prop| prop == "from")?;
+    let reference: Cow<str>;
+
+    // if "from" is specified, use that as the reference time
+    if let Some(val) = object.get("from") {
+        match _render(val, context)? {
+            Value::String(ref s) => {
+                reference = Cow::Owned(s.to_string());
+            }
+            _ => {
+                return Err(template_error!("$fromNow expects a string"));
+            }
+        };
+    } else {
+        // otherwise, use `now` from context, which must exist
+        match context.get("now") {
+            None => unreachable!(), // this is set in render()
+            Some(Value::String(ref s)) => reference = Cow::Borrowed(s),
+            _ => return Err(template_error!("context value `now` must be a string")),
+        };
+    }
+
+    match _render(value, context)? {
+        Value::String(s) => Ok(Value::String(from_now(&s, reference.as_ref())?)),
+        _ => Err(template_error!("$fromNow expects a string")),
+    }
 }
 
 fn if_operator(operator: &str, value: &Value, object: &Object, context: &Context) -> Result<Value> {
@@ -285,7 +316,7 @@ fn if_operator(operator: &str, value: &Value, object: &Object, context: &Context
 
     let eval_result = match value {
         Value::String(s) => evaluate(&s, context)?,
-        _ => bail!("$if can evaluate string expressions only"),
+        _ => return Err(template_error!("$if can evaluate string expressions only")),
     };
 
     let prop = if eval_result.into() { "then" } else { "else" };

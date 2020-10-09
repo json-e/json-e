@@ -29,7 +29,7 @@ fn main() {
     let mut test_file = File::create(&test_path).unwrap();
 
     writeln!(test_file, "use serde_json::Value;").unwrap();
-    writeln!(test_file, "use json_e::render;").unwrap();
+    writeln!(test_file, "use json_e::{{render, use_test_now}};").unwrap();
 
     let mut section = String::from("unknown");
     let mut should_test_section = false;
@@ -133,6 +133,7 @@ fn write_test(
         r##"
 #[test]
 fn {test_name}() {{
+    use_test_now();
     println!("{{}} - {{}}", {section:?}, {title:?});
     let context: Value = serde_json::from_str(r#"{context}"#).unwrap();
     let template: Value = serde_json::from_str(r#"{template}"#).unwrap();

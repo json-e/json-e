@@ -25,6 +25,7 @@ Tests
 * $sort of very large integers
 * index and slice multibyte utf8
 * {$$foo, $$bar}
+* more fromNow: case, whitespace, ordering, abbreviations, years, months
 
 Misc
 * README note that sort sorts by string by default

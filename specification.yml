@@ -23,7 +23,6 @@ context:  {}
 template: {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 result:   {key: [1,2,{key2: 'val', key3: 1}, true], f: false}
 ---
-rust: false
 title:    fromNow
 context:  {}
 template: {$fromNow: ''}
@@ -487,6 +486,7 @@ error: 'TemplateError: $flattenDeep has undefined properties: foo'
 ################################################################################
 ---
 section:  $fromNow
+rust: true
 ---
 title:    $fromNow 1 hour
 context:  {}
@@ -588,6 +588,7 @@ context:  {}
 template: {$fromNow: 13}
 error:    'TemplateError: $fromNow expects a string'
 ---
+rust: false
 title:    $fromNow with eval
 context:  {ttl: 24}
 template: {$fromNow: {$eval: 'str(ttl) + " hours"'}}
