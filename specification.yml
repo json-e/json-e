@@ -588,7 +588,6 @@ context:  {}
 template: {$fromNow: 13}
 error:    'TemplateError: $fromNow expects a string'
 ---
-rust: false
 title:    $fromNow with eval
 context:  {ttl: 24}
 template: {$fromNow: {$eval: 'str(ttl) + " hours"'}}

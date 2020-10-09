@@ -200,12 +200,12 @@ fn function_expr(input: &str) -> IResult<&str, Node<'_>> {
     }
     alt((
         map_res(
-            tuple((
+            ws(tuple((
                 unary_expr,
                 tag("("),
                 separated_list(ws(tag(",")), expression),
                 tag(")"),
-            )),
+            ))),
             node,
         ),
         unary_expr,
@@ -576,6 +576,37 @@ mod test {
     #[test]
     fn test_parse_all() {
         assert_eq!(parse_all("abcd").unwrap(), Node::Ident("abcd"));
+    }
+
+    #[test]
+    fn test_exp_high_followed_by_low_prec() {
+        assert_eq!(
+            parse_all("9 * 10 + 11").unwrap(),
+            Node::Op(
+                Box::new(Node::Op(
+                    Box::new(Node::Number("9")),
+                    "*",
+                    Box::new(Node::Number("10")),
+                )),
+                "+",
+                Box::new(Node::Number("11"))
+            )
+        );
+    }
+
+    #[test]
+    fn test_parse_function_call_in_operator() {
+        assert_eq!(
+            parse_all("x(10) + 11").unwrap(),
+            Node::Op(
+                Box::new(Node::Func(
+                    Box::new(Node::Ident("x")),
+                    vec![Node::Number("10")]
+                )),
+                "+",
+                Box::new(Node::Number("11"))
+            )
+        );
     }
 
     #[test]
