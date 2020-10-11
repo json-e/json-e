@@ -1,5 +1,6 @@
 #![allow(unused_variables)]
 use crate::builtins::BUILTINS;
+use crate::each::parse_each;
 use crate::fromnow::{from_now, now};
 use crate::interpreter::{self, Context};
 use crate::value::{Object, Value};
@@ -378,7 +379,60 @@ fn map_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |p| parse_each(p).is_some())?;
+    if object.len() != 2 {
+        return Err(template_error!("$map must have exactly two properties"));
+    }
+
+    // Unwraps here are safe because the presence of the `each(..)` is checked above.
+    let each_prop = object.keys().filter(|k| k != &"$map").next().unwrap();
+
+    let (value_var, index_var) = parse_each(each_prop)
+        .ok_or_else(|| template_error!("$map requires each(identifier[,identifier]) syntax"))?;
+
+    let each_tpl = object.get(each_prop).unwrap();
+
+    let mut value = _render(value, context)?;
+
+    match value {
+        // TODO
+        /*
+        Value::Object(ref o) => {
+            // TODO: allow index var too
+            let mapped = o
+                .iter()
+                .map(|(k, v)| {
+                    let mut subcontext = context.child();
+                    subcontext.insert(value_var, v);
+                    _render(each_tpl, &subcontext)
+                })
+                .collect::<Result<Object>>()?;
+            Ok(Value::Object(mapped))
+        }
+        */
+        Value::Array(ref mut a) => {
+            let mapped = a
+                .drain(..)
+                .enumerate()
+                .map(|(i, v)| {
+                    let mut subcontext = context.child();
+                    subcontext.insert(value_var, v);
+                    if let Some(index_var) = index_var {
+                        subcontext.insert(index_var, Value::Number(i as f64));
+                    }
+                    _render(each_tpl, &subcontext)
+                })
+                .filter(|v| match v {
+                    Ok(Value::DeletionMarker) => false,
+                    _ => true,
+                })
+                .collect::<Result<Vec<_>>>()?;
+            Ok(Value::Array(mapped))
+        }
+        _ => Err(template_error!(
+            "$map value must evaluate to an array or object"
+        )),
+    }
 }
 
 fn match_operator(

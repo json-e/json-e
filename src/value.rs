@@ -102,6 +102,13 @@ impl Value {
         }
     }
 
+    pub(crate) fn is_deletion_marker(&self) -> bool {
+        match self {
+            Value::DeletionMarker => true,
+            _ => false,
+        }
+    }
+
     /// A reference to the string, if this is a String variant
     pub(crate) fn as_str(&self) -> Option<&str> {
         match self {

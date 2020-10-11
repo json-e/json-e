@@ -28,7 +28,6 @@ context:  {}
 template: {$fromNow: ''}
 result:   '2017-01-19T16:27:20.974Z'
 ---
-rust: false
 title:    fromNow 2 days 3 hours
 context:  {}
 template: {$fromNow: '2 days 3 hours'}
@@ -831,6 +830,7 @@ result: '1 HOUR'
 ---
 section:  $map
 ---
+rust: true
 title:    simple map
 context:  {a: 1}
 template:
@@ -838,6 +838,7 @@ template:
   each(x): {$eval: 'x + a'}
 result:   [3, 5, 7]
 ---
+rust: true
 title:    map to objects
 context:  {a: 1}
 template:
@@ -850,6 +851,7 @@ result:
  - {asText: '5', integer: 5}
  - {asText: '7', integer: 7}
 ---
+rust: true
 title:    complex identifier
 context:  {a: 1}
 template:
@@ -857,6 +859,7 @@ template:
   each(my_identifier97): {$eval: 'my_identifier97 + a'}
 result:   [3, 5, 7]
 ---
+rust: true
 title:    must wrap expressions with $eval
 context:  {a: 1}
 template:
@@ -864,6 +867,7 @@ template:
   each(my_identifier97): 'my_identifier97 + a'
 result:   ['my_identifier97 + a', 'my_identifier97 + a', 'my_identifier97 + a']
 ---
+rust: true
 title:    can take from objects
 context:  {a: 1}
 template:
@@ -871,6 +875,7 @@ template:
   each(y): {$eval: 'y.k'}
 result:   [1, 2, 3]
 ---
+rust: true
 title:    value is rendered
 context:  {a: 1}
 template:
@@ -878,6 +883,7 @@ template:
   each(y): {$eval: 'y.k'}
 result:   [1, 2, 3]
 ---
+rust: true
 title:    can make objects too
 context:  {a: 1}
 template:
@@ -893,6 +899,7 @@ result:
   - k: 4
     v: 'before=3'
 ---
+rust: true
 title:    respects delete-marker from $if
 context:  {a: 1}
 template:
@@ -923,6 +930,7 @@ template:
   each(y): {'${y.key}': {$eval: 'y.val'}, '${y.key}x': {$eval: 'y.val + 1'}}
 result: {a: 1, b: 2, c: 3, ax: 2, bx: 3, cx: 4}
 ---
+rust: true
 title:    $map array index variable
 context: {}
 template:
@@ -930,6 +938,7 @@ template:
   each(y,i): '${y}-${i}'
 result: ['a-0','b-1','c-2']
 ---
+rust: true
 title:    $map no args
 context:  {}
 template:
@@ -937,6 +946,7 @@ template:
   each(): {$eval: 'y.k'}
 error: 'TemplateError: $map has undefined properties: each()'
 ---
+rust: true
 title:    $map too many args
 context:  {}
 template:
@@ -944,6 +954,7 @@ template:
   each(k,v,i): {$eval: 'y.k'}
 error: 'TemplateError: $map has undefined properties: each(k,v,i)'
 ---
+rust: true
 title:    $map requires an array, not string
 context:  {}
 template:
@@ -951,6 +962,7 @@ template:
   each(y): {$eval: 'y.k'}
 error: 'TemplateError: $map value must evaluate to an array or object'
 ---
+rust: true
 title:    $map requires an array, not number
 context:  {}
 template:
@@ -958,6 +970,7 @@ template:
   each(y): {$eval: 'y.k'}
 error: 'TemplateError: $map value must evaluate to an array or object'
 ---
+rust: true
 title:    $map requires an array, not null
 context:  {}
 template:
@@ -965,6 +978,7 @@ template:
   each(y): {$eval: 'y.k'}
 error: 'TemplateError: $map value must evaluate to an array or object'
 ---
+rust: true
 title:    map with undefined properties
 context:  {a: 1}
 template:
@@ -973,6 +987,7 @@ template:
   foo: 'bar'
 error: 'TemplateError: $map has undefined properties: foo'
 ---
+rust: true
 title:    $map as object and each(identifier) as array
 context:  {}
 template:
