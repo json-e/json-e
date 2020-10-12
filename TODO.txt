@@ -28,6 +28,7 @@ Tests
 * more fromNow: case, whitespace, ordering, abbreviations, years, months
 
 Misc
+* docs for $map omg
 * README note that sort sorts by string by default
 
 Improvements

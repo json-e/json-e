@@ -172,7 +172,8 @@ fn maybe_operator(
 
         // if the operator isn't recognized, then it should be escaped
         _ => Err(template_error!(
-            "$<identifier> is reserved; use $$<identifier>"
+            "$<identifier> is reserved; use $$<identifier> ({})",
+            operator
         )),
     }
 }
@@ -395,21 +396,38 @@ fn map_operator(
     let mut value = _render(value, context)?;
 
     match value {
-        // TODO
-        /*
         Value::Object(ref o) => {
-            // TODO: allow index var too
-            let mapped = o
-                .iter()
-                .map(|(k, v)| {
-                    let mut subcontext = context.child();
-                    subcontext.insert(value_var, v);
-                    _render(each_tpl, &subcontext)
-                })
-                .collect::<Result<Object>>()?;
-            Ok(Value::Object(mapped))
+            let mut result = Object::new();
+
+            for (k, v) in o.iter() {
+                let mut subcontext = context.child();
+
+                if let Some(index_var) = index_var {
+                    // if each has two arguments, it gets (val, key)
+                    subcontext.insert(index_var, Value::String(k.to_string()));
+                    subcontext.insert(value_var, v.clone());
+                } else {
+                    // otherwise, it gets ({val: val, key: key})
+                    let mut arg = Object::new();
+                    arg.insert("key".to_string(), Value::String(k.to_string()));
+                    arg.insert("val".to_string(), v.clone());
+                    subcontext.insert(value_var, Value::Object(arg));
+                }
+
+                let rendered = _render(each_tpl, &subcontext)?;
+
+                if let Value::Object(r) = rendered {
+                    for (rk, rv) in r {
+                        result.insert(rk, rv);
+                    }
+                } else {
+                    return Err(template_error!(
+                        "$map on objects expects each(..) to evaluate to an object"
+                    ));
+                }
+            }
+            Ok(Value::Object(result))
         }
-        */
         Value::Array(ref mut a) => {
             let mapped = a
                 .drain(..)
