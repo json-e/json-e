@@ -32,6 +32,11 @@ context:  {}
 template: {$fromNow: '2 days 3 hours'}
 result:   '2017-01-21T19:27:20.974Z'
 ---
+title:    $eval without context
+context:  {}
+template: {$eval: '1 + 2'}
+result:   3
+---
 title:    $eval
 context:  {key: ['value', 1, 2, true, {}]}
 template: {$eval: 'key'}
@@ -648,6 +653,9 @@ title:    $json
 context:  {key: {key2: [1,2,true,{},[]]}}
 template: {$json: {$eval: 'key.key2'}}
 result:   '[1,2,true,{},[]]'
+################################################################################
+---
+section: string interpolation
 ---
 title: string interpolation
 context: {key: {key2: 'world', key3: 1}}
@@ -2121,7 +2129,7 @@ section:  expression language - basics
 title:    missing right square bracket
 context:  {bar: "mystring"}
 template: {foo: '${bar[2:}'}
-error:   "SyntaxError at template.foo: Found }, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+error:   "SyntaxError at template.foo: Found: } token, expected one of: !, (, +, -, [, false, identifier, null, number, string, true, {"
 ---
 title:    decimal literal
 context:  {}
@@ -2131,7 +2139,7 @@ result:   10.5
 title:    hex literal
 context:  {}
 template: {$eval: '0xff'}
-error:    'SyntaxError: Found xff, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
+error:    'SyntaxError: Found: xff token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
 ---
 title:    string literal with single quote
 context:  {}
@@ -2146,12 +2154,12 @@ result: 'three!'
 title:    string literal escape with backslash (not supported)
 context:  {}
 template: {$eval: '"backslash\\"maybe"'}
-error:    'SyntaxError: Found maybe, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
+error:    'SyntaxError: Found: maybe token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
 ---
 title:    string literal escape with doubling (not supported)
 context:  {}
 template: {$eval: '"doubled""maybe"'}
-error:    'SyntaxError: Found "maybe", expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
+error:    'SyntaxError: Found: "maybe" token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
 ---
 title:    boolean literals
 context:  {}
@@ -3948,7 +3956,7 @@ error: 'InterpreterError: infix: . expects objects'
 title: 'non-identifier after dot'
 context: {key: {}}
 template: {$eval: 'key.{'}
-error: 'SyntaxError: Found {, expected identifier'
+error: 'SyntaxError: Found: { token, expected one of: identifier'
 ################################################################################
 ---
 section: expression language - property access
@@ -3987,6 +3995,11 @@ title: 'missing property by name'
 context: {key: {a: 1}}
 template: {$eval: 'key["b"]'}
 result: null
+---
+title: 'single property access with object value'
+context: {key: {key2: 3}}
+template: {$eval: 'key.key2'}
+result: 3
 ---
 title: 'nested property access with object value'
 context: {key: {key2: {key3: {a: 1}}}}
@@ -4048,7 +4061,7 @@ error: 'InterpreterError: infix: . expects objects'
 title: 'non-identifier after dot'
 context: {key: {}}
 template: {$eval: 'key.{'}
-error: 'SyntaxError: Found {, expected identifier'
+error: 'SyntaxError: Found: { token, expected one of: identifier'
 ################################################################################
 ---
 section: expression language - array access
@@ -5357,7 +5370,7 @@ error: 'TemplateError at template.foo[1]["123"][0]: $eval must be given a string
 title: 'object with missing value '
 context: {}
 template: {$eval: '{a: 1, "b": }'}
-error:   "SyntaxError: Found }, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+error:   "SyntaxError: Found: } token, expected one of: !, (, +, -, [, false, identifier, null, number, string, true, {"
 ---
 title: 'object missing key and value after comma'
 context: {}
@@ -5367,17 +5380,17 @@ error:   "SyntaxError: Unexpected end of input"
 title: 'list with missing first value'
 context: {}
 template: {$eval: '[,2,3]'}
-error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+error:   "SyntaxError: Found: , token, expected one of: !, (, +, -, [, false, identifier, null, number, string, true, {"
 ---
 title: 'list with missing value'
 context: {}
 template: {$eval: '[1,,3]'}
-error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+error:   "SyntaxError: Found: , token, expected one of: !, (, +, -, [, false, identifier, null, number, string, true, {"
 ---
 title: 'empty brackets in property access'
 context: {a: "0123456789"}
 template: {$eval: 'a[]'}
-error:   "SyntaxError: Found ], expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+error:   "SyntaxError: Found: ] token, expected one of: !, (, +, -, [, false, identifier, null, number, string, true, {"
 ---
 title: 'function call with missing closing bracket'
 context: {}
@@ -5387,7 +5400,7 @@ error:   "SyntaxError: Unexpected end of input"
 title: 'function call with missing argument in brackets'
 context: {}
 template: {$eval: 'max(, 0)'}
-error:   "SyntaxError: Found ,, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
+error:   "SyntaxError: Found: , token, expected one of: !, (, +, -, [, false, identifier, null, number, string, true, {"
 ################################################################################
 ---
 section: Regression tests

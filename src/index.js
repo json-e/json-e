@@ -14,7 +14,7 @@ var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError} = require('./error');
 
 let syntaxRuleError = (token) => {
-    return new SyntaxError(`Found ${token.value}, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||`);
+    return new SyntaxError(`Found: ${token.value} token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||`);
 };
 
 function checkUndefinedProperties(template, allowed) {

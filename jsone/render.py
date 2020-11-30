@@ -17,7 +17,7 @@ class SyntaxError(TemplateError):
 
     @classmethod
     def unexpected(cls, got):
-        return cls('Found {}, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in,'
+        return cls('Found: {} token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in,'
                    ' ||'.format(got.value))
 
 
