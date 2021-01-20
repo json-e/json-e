@@ -26,6 +26,7 @@ Tests
 * index and slice multibyte utf8
 * {$$foo, $$bar}
 * more fromNow: case, whitespace, ordering, abbreviations, years, months
+* stringify float, deletion marker, function; update docs that str([..]) not allowed
 
 Misc
 * docs for $map omg

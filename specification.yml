@@ -1861,86 +1861,103 @@ context: {}
 template: {$eval: 'len(1)'}
 error: 'BuiltinError: invalid arguments to builtin: len'
 ---
+rust: true
 title: str (1)
 context: {key: 1}
 template: {$eval: 'str(key)'}
 result: '1'
 ---
+rust: true
 title: str (2)
 context: {}
 template: {$eval: 'str(1)'}
 result: '1'
 ---
+rust: true
 title: str (3)
 context: {key: 'hello'}
 template: {$eval: 'str(key)'}
 result: 'hello'
 ---
+rust: true
 title: str (4)
 context: {}
 template: {$eval: 'str("hello")'}
 result: 'hello'
 ---
+rust: true
 title: str (3)
 context: {key: 'hello'}
 template: {$eval: 'str(key)'}
 result: 'hello'
 ---
+rust: true
 title: str (4)
 context: {}
 template: {$eval: 'str("hello")'}
 result: 'hello'
 ---
+rust: true
 title: str (5)
 context: {key: true}
 template: {$eval: 'str(key)'}
 result: 'true'
 ---
+rust: true
 title: str (6)
 context: {}
 template: {$eval: 'str(true)'}
 result: 'true'
 ---
+rust: true
 title: str (key) with null
 context: {x: null}
 template: {$eval: 'str(x)'}
 result: 'null'
 ---
+rust: true
 title: str (7)
 context: {key: false}
 template: {$eval: 'str(key)'}
 result: 'false'
 ---
+rust: true
 title: str (8)
 context: {}
 template: {$eval: 'str(false)'}
 result: 'false'
 ---
+rust: true
 title: str (9)
 context: {val: 24}
 template: {$eval: 'str(val)'}
 result: '24'
 ---
+rust: true
 title: str (unicode)
 context: {val: "let's make a ☃"}
 template: {$eval: 'str(val)'}
 result: "let's make a ☃"
 ---
+rust: true
 title: str({})
 context: {}
 template: {$eval: 'str({})'}
 error: 'BuiltinError: invalid arguments to builtin: str'
 ---
+rust: true
 title: str({a:10})
 context: {}
 template: {$eval: 'str({a:10})'}
 error: 'BuiltinError: invalid arguments to builtin: str'
 ---
+rust: true
 title: str([1, 2, 3])
 context: {}
 template: {$eval: 'str([1, 2, 3])'}
 error: 'BuiltinError: invalid arguments to builtin: str'
 ---
+rust: true
 title: str(key) with array
 context: {key: [1, 2, 3]}
 template: {$eval: 'str(key)'}

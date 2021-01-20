@@ -124,6 +124,19 @@ impl Value {
             _ => None,
         }
     }
+
+    /// The JSON-e-defined stringification of this value
+    pub(crate) fn stringify(&self) -> Result<String> {
+        Ok(match self {
+            Value::Null => "null".to_owned(),
+            Value::String(s) => s.clone(),
+            Value::Number(n) => format!("{}", n),
+            Value::Bool(b) if *b => "true".to_owned(),
+            Value::Bool(b) if !*b => "false".to_owned(),
+            // typically callers will ensure this does not occur
+            _ => Err(template_error!("cannot stringify value"))?,
+        })
+    }
 }
 
 /// Utility function to turn an f64 into a serde Number, using the simplest form.

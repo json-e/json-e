@@ -28,10 +28,15 @@ fn str_builtin(args: &[Value]) -> Result<Value> {
     if args.len() != 1 {
         return Err(interpreter_error!("str expects one argument"));
     }
+    let v = &args[0];
 
-    match args[0] {
-        Value::Number(n) if n == 24.0 => Ok(Value::String("24".to_string())),
-        // TODO: implement stringify
-        _ => todo!(),
-    }
+    match v {
+        Value::Null => Ok(()),
+        Value::String(_) => Ok(()),
+        Value::Number(_) => Ok(()),
+        Value::Bool(_) => Ok(()),
+        _ => Err(interpreter_error!("invalid arguments to builtin: str")),
+    }?;
+
+    args[0].stringify().map(|s| Value::String(s))
 }
