@@ -14,5 +14,4 @@ chrono = "0.4.19"
 
 [build-dependencies]
 yaml-rust = "0.4"
-# TODO: replace with serde_json
-json = "0.12.4"
+serde_json = "1.0.57"

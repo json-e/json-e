@@ -1,10 +1,11 @@
-use json::{number::Number, parse, JsonValue};
+use serde_json::{to_string, Number, Value};
 use std::collections::HashSet;
 use std::env;
 use std::fs::read_to_string;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use std::str::FromStr;
 use yaml_rust::{yaml::Hash, Yaml, YamlLoader};
 
 fn get_should(h: &Hash) -> Option<bool> {
@@ -80,21 +81,20 @@ fn main() {
     }
 }
 
-/// Convert the given Yaml value to a JsonValue
-fn to_json(y: &Yaml) -> JsonValue {
+/// Convert the given Yaml value to a serde_json::Value
+fn to_json(y: &Yaml) -> Value {
     match y {
-        &Yaml::Real(ref v) => parse(v).unwrap(),
-        &Yaml::Integer(v) if v < 0 => JsonValue::Number(Number::from_parts(false, -v as u64, 0)),
-        &Yaml::Integer(v) => JsonValue::Number(Number::from_parts(true, v as u64, 0)),
-        &Yaml::String(ref v) => JsonValue::String(v.into()),
-        &Yaml::Boolean(ref v) => JsonValue::Boolean(*v),
-        &Yaml::Array(ref v) => JsonValue::Array(v.iter().map(|y| to_json(y)).collect()),
-        &Yaml::Hash(ref v) => JsonValue::Object(
+        &Yaml::Real(ref v) => Value::Number(Number::from_str(v).unwrap()),
+        &Yaml::Integer(v) => Value::Number(v.into()),
+        &Yaml::String(ref v) => Value::String(v.into()),
+        &Yaml::Boolean(ref v) => Value::Bool(*v),
+        &Yaml::Array(ref v) => Value::Array(v.iter().map(|y| to_json(y)).collect()),
+        &Yaml::Hash(ref v) => Value::Object(
             v.iter()
                 .map(|(k, v)| (k.as_str().unwrap().to_string(), to_json(v)))
                 .collect(),
         ),
-        &Yaml::Null => JsonValue::Null,
+        &Yaml::Null => Value::Null,
         &Yaml::Alias(_) => todo!(),
         &Yaml::BadValue => todo!(),
     }
@@ -102,7 +102,7 @@ fn to_json(y: &Yaml) -> JsonValue {
 
 /// Convert the given Yaml value to a JSON string
 fn to_json_str(y: &Yaml) -> String {
-    to_json(y).dump()
+    to_string(&to_json(y)).unwrap()
 }
 
 fn write_test(
