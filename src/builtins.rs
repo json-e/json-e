@@ -8,6 +8,7 @@ lazy_static! {
         let mut builtins = Context::new();
         builtins.insert("abs", Value::Function(Function(abs_builtin)));
         builtins.insert("str", Value::Function(Function(str_builtin)));
+        builtins.insert("len", Value::Function(Function(len_builtin)));
         builtins
     };
 }
@@ -31,12 +32,22 @@ fn str_builtin(args: &[Value]) -> Result<Value> {
     let v = &args[0];
 
     match v {
-        Value::Null => Ok(()),
-        Value::String(_) => Ok(()),
-        Value::Number(_) => Ok(()),
-        Value::Bool(_) => Ok(()),
+        Value::Null | Value::String(_) | Value::Number(_) | Value::Bool(_) => {
+            v.stringify().map(|s| Value::String(s))
+        }
         _ => Err(interpreter_error!("invalid arguments to builtin: str")),
-    }?;
+    }
+}
 
-    args[0].stringify().map(|s| Value::String(s))
+fn len_builtin(args: &[Value]) -> Result<Value> {
+    if args.len() != 1 {
+        return Err(interpreter_error!("len expects one argument"));
+    }
+    let v = &args[0];
+
+    match v {
+        Value::String(s) => Ok(Value::Number(s.chars().count() as f64)),
+        Value::Array(a) => Ok(Value::Number(a.len() as f64)),
+        _ => Err(interpreter_error!("invalid arguments to builtin: len")),
+    }
 }

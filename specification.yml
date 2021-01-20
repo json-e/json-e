@@ -1816,46 +1816,55 @@ context: {}
 template: {$eval: 'uppercase(1)'}
 error: 'BuiltinError: invalid arguments to builtin: uppercase'
 ---
+rust: true
 title: len (1)
 context: {key: [1,2,3]}
 template: {$eval: 'len(key)'}
 result: 3
 ---
+rust: true
 title: len (2)
 context: {key: [1,2,3]}
 template: {$eval: 'len([1, 2, 3])'}
 result: 3
 ---
+rust: true
 title: len (3)
 context: {key: 'abc'}
 template: {$eval: 'len(key)'}
 result: 3
 ---
+rust: true
 title: len of grinning face unicode character
 context: {key: "\U0001F601"}
 template: {$eval: 'len(key)'}
 result: 1
 ---
+rust: true
 title: len (4)
 context: {key: [1,2,3]}
 template: {$eval: 'len("abc")'}
 result: 3
 ---
+rust: true
 title: TypeError len (1)
 context: {key: {}}
 template: {$eval: 'len(key)'}
 error: 'BuiltinError: invalid arguments to builtin: len'
 ---
+rust: true
 title: TypeError len (2)
 context: {}
 template: {$eval: 'len({})'}
 error: 'BuiltinError: invalid arguments to builtin: len'
 ---
+rust: true
 title: TypeError len (3)
 context: {key: 1}
 template: {$eval: 'len(key)'}
 error: 'BuiltinError: invalid arguments to builtin: len'
 ---
+rust: true
 title: TypeError len (4)
 context: {}
 template: {$eval: 'len(1)'}
