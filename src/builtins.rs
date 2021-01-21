@@ -30,16 +30,55 @@ lazy_static! {
     };
 }
 
-fn abs_builtin(args: &[Value]) -> Result<Value> {
-    if args.len() != 1 {
-        return Err(interpreter_error!("abs expects one argument"));
-    }
+// utility functions
 
-    if let Some(arg) = args[0].as_f64() {
-        return Ok(Value::Number(arg.abs()));
-    } else {
-        return Err(interpreter_error!("abs expects a numeric argument"));
+fn array_arithmetic<F: Fn(f64, f64) -> f64>(args: &[Value], f: F) -> Result<Value> {
+    let mut res = None;
+    for arg in args {
+        let arg = *arg
+            .as_f64()
+            .ok_or_else(|| interpreter_error!("invalid arguments to builtin: min"))?;
+        if let Some(r) = res {
+            res = Some(f(arg, r));
+        } else {
+            res = Some(arg);
+        }
     }
+    if let Some(r) = res {
+        Ok(Value::Number(r))
+    } else {
+        Err(interpreter_error!("invalid arguments to builtin: min"))
+    }
+}
+
+fn unary_arithmetic<F: Fn(f64) -> f64>(args: &[Value], op: F) -> Result<Value> {
+    if args.len() != 1 {
+        return Err(interpreter_error!("expected one argument"));
+    }
+    let v = &args[0];
+
+    match v {
+        Value::Number(n) => Ok(Value::Number(op(*n))),
+        _ => Err(interpreter_error!("invalid arguments to builtin")),
+    }
+}
+
+fn unary_string<F: Fn(&str) -> String>(args: &[Value], op: F) -> Result<Value> {
+    if args.len() != 1 {
+        return Err(interpreter_error!("expected one argument"));
+    }
+    let v = &args[0];
+
+    match v {
+        Value::String(s) => Ok(Value::String(op(s.as_ref()))),
+        _ => Err(interpreter_error!("invalid arguments to builtin")),
+    }
+}
+
+// builtin implementations
+
+fn abs_builtin(args: &[Value]) -> Result<Value> {
+    unary_arithmetic(args, f64::abs)
 }
 
 fn str_builtin(args: &[Value]) -> Result<Value> {
@@ -69,59 +108,50 @@ fn len_builtin(args: &[Value]) -> Result<Value> {
     }
 }
 
-fn minmax<F: Fn(f64, f64) -> f64>(args: &[Value], f: F) -> Result<Value> {
-    let mut res = None;
-    for arg in args {
-        let arg = *arg
-            .as_f64()
-            .ok_or_else(|| interpreter_error!("invalid arguments to builtin: min"))?;
-        if let Some(r) = res {
-            res = Some(f(arg, r));
-        } else {
-            res = Some(arg);
-        }
-    }
-    if let Some(r) = res {
-        Ok(Value::Number(r))
-    } else {
-        Err(interpreter_error!("invalid arguments to builtin: min"))
-    }
+fn min_builtin(args: &[Value]) -> Result<Value> {
+    array_arithmetic(args, |a, b| if a < b { a } else { b })
 }
 
-fn min_builtin(args: &[Value]) -> Result<Value> {
-    minmax(args, |a, b| if a < b { a } else { b })
-}
 fn max_builtin(args: &[Value]) -> Result<Value> {
-    minmax(args, |a, b| if a < b { b } else { a })
+    array_arithmetic(args, |a, b| if a < b { b } else { a })
 }
 
 fn sqrt_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    unary_arithmetic(args, f64::sqrt)
 }
+
 fn ceil_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    unary_arithmetic(args, f64::ceil)
 }
+
 fn floor_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    unary_arithmetic(args, f64::floor)
 }
+
 fn lowercase_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    unary_string(args, str::to_lowercase)
 }
+
 fn uppercase_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    unary_string(args, str::to_uppercase)
 }
+
 fn number_builtin(args: &[Value]) -> Result<Value> {
     todo!()
 }
+
 fn strip_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    unary_string(args, |s| str::trim(s).to_owned())
 }
+
 fn rstrip_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    unary_string(args, |s| str::trim_end(s).to_owned())
 }
+
 fn lstrip_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    unary_string(args, |s| str::trim_start(s).to_owned())
 }
+
 fn join_builtin(args: &[Value]) -> Result<Value> {
     todo!()
 }

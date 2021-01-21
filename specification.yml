@@ -1511,116 +1511,139 @@ context: {}
 template: {$eval: 'max()'}
 error: 'BuiltinError: invalid arguments to builtin: max: expected at least 1 arguments'
 ---
+rust: true
 title: sqrt (1)
 context: {key: 4}
 template: {$eval: 'sqrt(key)'}
 result: 2
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: sqrt (2)
 context: {key: 4}
 template: {$eval: 'sqrt(key)'}
 result: 2.0
 ---
+rust: true
 title: sqrt (3)
 context: {}
 template: {$eval: 'sqrt(9)'}
 result: 3
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: sqrt (3)
 context: {}
 template: {$eval: 'sqrt(9)'}
 result: 3.0
 ---
+rust: true
 title: sqrt - TypeError
 context: {}
 template: {$eval: 'sqrt("nine")'}
 error: 'BuiltinError: invalid arguments to builtin: sqrt'
 ---
+rust: true
 title: ceil (1)
 context: {key: 1.1}
 template: {$eval: 'ceil(key)'}
 result: 2
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: ceil (2)
 context: {key: 1.1}
 template: {$eval: 'ceil(key)'}
 result: 2.0
 ---
+rust: true
 title: ceil (3)
 context: {}
 template: {$eval: 'ceil(2.003)'}
 result: 3
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: ceil (4)
 context: {}
 template: {$eval: 'ceil(2.003)'}
 result: 3.0
 ---
+rust: true
 title: ceil (5)
 context: {key: 1}
 template: {$eval: 'ceil(key)'}
 result: 1
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: ceil (6)
 context: {key: 1}
 template: {$eval: 'ceil(key)'}
 result: 1.0
 ---
+rust: true
 title: ceil (7)
 context: {key: 1.0}
 template: {$eval: 'ceil(key)'}
 result: 1
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: ceil (8)
 context: {key: 1.0}
 template: {$eval: 'ceil(key)'}
 result: 1.0
 ---
+rust: true
 title: ceil - TypeError
 context: {}
 template: {$eval: 'ceil(true)'}
 error: 'BuiltinError: invalid arguments to builtin: ceil'
 ---
+rust: true
 title: floor (1)
 context: {key: 1.1}
 template: {$eval: 'floor(key)'}
 result: 1
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: floor (2)
 context: {key: 1.1}
 template: {$eval: 'floor(key)'}
 result: 1.0
 ---
+rust: true
 title: floor (3)
 context: {}
 template: {$eval: 'floor(2.003)'}
 result: 2
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: floor (4)
 context: {}
 template: {$eval: 'floor(2.003)'}
 result: 2.0
 ---
+rust: true
 title: floor (5)
 context: {key: 1}
 template: {$eval: 'floor(key)'}
 result: 1
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: floor (6)
 context: {key: 1}
 template: {$eval: 'floor(key)'}
 result: 1.0
 ---
+rust: true
 title: floor (7)
 context: {key: 1.0}
 template: {$eval: 'floor(key)'}
 result: 1
 ---
+rust: false # serde_json::Value differentiates 2 and 2.0
 title: floor (8)
 context: {key: 1.0}
 template: {$eval: 'floor(key)'}
 result: 1.0
 ---
+rust: true
 title: floor - TypeError
 context: {key: null}
 template: {$eval: 'floor(key)'}
@@ -1752,81 +1775,97 @@ context: {}
 template: {$eval: 'abs({})'}
 error: 'BuiltinError: invalid arguments to builtin: abs'
 ---
+rust: true
 title: lowercase (1)
 context: {key: 'HEllo'}
 template: {$eval: 'lowercase(key)'}
 result: 'hello'
 ---
+rust: true
 title: lowercase (2)
 context: {}
 template: {$eval: 'lowercase("HEllo")'}
 result: 'hello'
 ---
+rust: true
 title: TypeError lowercase (1)
 context: {key: {}}
 template: {$eval: 'lowercase(key)'}
 error: 'BuiltinError: invalid arguments to builtin: lowercase'
 ---
+rust: true
 title: TypeError lowercase (2)
 context: {}
 template: {$eval: 'lowercase({})'}
 error: 'BuiltinError: invalid arguments to builtin: lowercase'
 ---
+rust: true
 title: TypeError lowercase (3)
 context: {key: []}
 template: {$eval: 'lowercase(key)'}
 error: 'BuiltinError: invalid arguments to builtin: lowercase'
 ---
+rust: true
 title: TypeError lowercase (4)
 context: {}
 template: {$eval: 'lowercase([])'}
 error: 'BuiltinError: invalid arguments to builtin: lowercase'
 ---
+rust: true
 title: TypeError lowercase (5)
 context: {key: 1}
 template: {$eval: 'lowercase(key)'}
 error: 'BuiltinError: invalid arguments to builtin: lowercase'
 ---
+rust: true
 title: TypeError lowercase (6)
 context: {}
 template: {$eval: 'lowercase(1)'}
 error: 'BuiltinError: invalid arguments to builtin: lowercase'
 ---
+rust: true
 title: uppercase (1)
 context: {key: 'HEllo'}
 template: {$eval: 'uppercase(key)'}
 result: 'HELLO'
 ---
+rust: true
 title: uppercase (2)
 context: {}
 template: {$eval: 'uppercase("HEllo")'}
 result: 'HELLO'
 ---
+rust: true
 title: TypeError uppercase (1)
 context: {key: {}}
 template: {$eval: 'uppercase(key)'}
 error: 'BuiltinError: invalid arguments to builtin: uppercase'
 ---
 title: TypeError uppercase (2)
+rust: true
 context: {}
 template: {$eval: 'uppercase({})'}
 error: 'BuiltinError: invalid arguments to builtin: uppercase'
 ---
+rust: true
 title: TypeError uppercase (3)
 context: {key: []}
 template: {$eval: 'uppercase(key)'}
 error: 'BuiltinError: invalid arguments to builtin: uppercase'
 ---
+rust: true
 title: TypeError uppercase (4)
 context: {}
 template: {$eval: 'uppercase([])'}
 error: 'BuiltinError: invalid arguments to builtin: uppercase'
 ---
+rust: true
 title: TypeError uppercase (5)
 context: {key: 1}
 template: {$eval: 'uppercase(key)'}
 error: 'BuiltinError: invalid arguments to builtin: uppercase'
 ---
+rust: true
 title: TypeError uppercase (6)
 context: {}
 template: {$eval: 'uppercase(1)'}
@@ -2013,31 +2052,37 @@ context:  {round: "0"}
 template: {foo: {$eval: number(round)}}
 result:   {foo: 0}
 ---
+rust: true
 title: strip space
 context: {}
 template: {$eval: "strip('  abc   ')"}
 result: 'abc'
 ---
+rust: true
 title: strip mixed whitspace
 context: {}
 template: {$eval: "strip(' \f\n\r\t\vabc \f\n\r\t\v')"}
 result: 'abc'
 ---
+rust: true
 title: rstrip space
 context: {}
 template: {$eval: "rstrip('  abc   ')"}
 result: '  abc'
 ---
+rust: true
 title: rstrip mixed whitspace
 context: {}
 template: {$eval: "rstrip(' \f\n\r\t\vabc \f\n\r\t\v')"}
 result: " \f\n\r\t\vabc"
 ---
+rust: true
 title: lstrip space
 context: {}
 template: {$eval: "lstrip('  abc   ')"}
 result: 'abc   '
 ---
+rust: true
 title: lstrip mixed whitspace
 context: {}
 template: {$eval: "lstrip(' \f\n\r\t\vabc \f\n\r\t\v')"}
