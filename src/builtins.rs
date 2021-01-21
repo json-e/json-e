@@ -69,12 +69,32 @@ fn len_builtin(args: &[Value]) -> Result<Value> {
     }
 }
 
+fn minmax<F: Fn(f64, f64) -> f64>(args: &[Value], f: F) -> Result<Value> {
+    let mut res = None;
+    for arg in args {
+        let arg = *arg
+            .as_f64()
+            .ok_or_else(|| interpreter_error!("invalid arguments to builtin: min"))?;
+        if let Some(r) = res {
+            res = Some(f(arg, r));
+        } else {
+            res = Some(arg);
+        }
+    }
+    if let Some(r) = res {
+        Ok(Value::Number(r))
+    } else {
+        Err(interpreter_error!("invalid arguments to builtin: min"))
+    }
+}
+
 fn min_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    minmax(args, |a, b| if a < b { a } else { b })
 }
 fn max_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    minmax(args, |a, b| if a < b { b } else { a })
 }
+
 fn sqrt_builtin(args: &[Value]) -> Result<Value> {
     todo!()
 }

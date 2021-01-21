@@ -118,6 +118,7 @@ impl Value {
     }
 
     /// The numeric value, if this is a Number variant
+    // TODO: &f64???
     pub(crate) fn as_f64(&self) -> Option<&f64> {
         match self {
             Value::Number(n) => Some(n),
