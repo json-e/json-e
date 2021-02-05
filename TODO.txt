@@ -36,6 +36,8 @@ Tests
 Misc
 * docs for $map omg
 * README note that sort sorts by string by default
+* document that the number builtin only takes strings in Go (the most restrictive
+  of the implementations), achieve consistency across implementations
 
 Improvements
 * avoid unnecessary allocation in checking operator properties

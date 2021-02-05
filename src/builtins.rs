@@ -137,7 +137,27 @@ fn uppercase_builtin(args: &[Value]) -> Result<Value> {
 }
 
 fn number_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    if args.len() != 1 {
+        return Err(interpreter_error!("number expects one argument"));
+    }
+    let v = &args[0];
+    let num: f64 = match v {
+        Value::Null => 0.0,
+        Value::String(s) => match s.parse() {
+            Ok(num) => num,
+            Err(_) => return Err(interpreter_error!("string can't be converted to number")),
+        },
+        Value::Number(num) => *num,
+        Value::Bool(b) => {
+            if *b {
+                1.0
+            } else {
+                0.0
+            }
+        }
+        _ => return Err(interpreter_error!("invalid arguments to builtin: number")),
+    };
+    Ok(Value::Number(num))
 }
 
 fn strip_builtin(args: &[Value]) -> Result<Value> {
