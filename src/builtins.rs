@@ -176,7 +176,7 @@ fn join_builtin(args: &[Value]) -> Result<Value> {
     if args.len() != 2 {
         return Err(interpreter_error!("join expects two arguments"));
     }
-    let arr = &args[0];
+    let v = &args[0];
     let sep = &args[1];
 
     let sep = match sep.stringify() {
@@ -184,7 +184,7 @@ fn join_builtin(args: &[Value]) -> Result<Value> {
         Err(_) => return Err(interpreter_error!("invalid separator for split")),
     };
 
-    match arr {
+    match v {
         Value::Array(v) => {
             let strings: Result<Vec<String>> = v.into_iter().map(|val| val.stringify()).collect();
             match strings {
@@ -204,7 +204,7 @@ fn split_builtin(args: &[Value]) -> Result<Value> {
     if args.len() != 2 {
         return Err(interpreter_error!("split expects two arguments"));
     }
-    let input_string = &args[0];
+    let v = &args[0];
     let sep = &args[1];
 
     let sep = match sep.stringify() {
@@ -212,7 +212,7 @@ fn split_builtin(args: &[Value]) -> Result<Value> {
         Err(_) => return Err(interpreter_error!("invalid separator for split")),
     };
 
-    match input_string {
+    match v {
         Value::String(s) => {
             if s.is_empty() {
                 return Ok(Value::Array(vec![Value::String("".to_string())]));
@@ -229,12 +229,32 @@ fn split_builtin(args: &[Value]) -> Result<Value> {
         )),
     }
 }
+
 fn from_now_builtin(args: &[Value]) -> Result<Value> {
     todo!()
 }
+
 fn typeof_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    if args.len() != 1 {
+        return Err(interpreter_error!("typeof expects one argument"));
+    }
+
+    let v = &args[0];
+
+    let type_ = match v {
+        Value::String(_) => "string",
+        Value::Number(_) => "number",
+        Value::Bool(_) => "boolean",
+        Value::Array(_) => "array",
+        Value::Object(_) => "object",
+        Value::Null => "null",
+        Value::Function(_) => "function",
+        _ => return Err(interpreter_error!("Not yet")),
+    };
+
+    Ok(Value::String(type_.to_string()))
 }
+
 fn defined_builtin(args: &[Value]) -> Result<Value> {
     todo!()
 }

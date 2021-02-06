@@ -2203,61 +2203,73 @@ context:  {}
 template: {$eval: fromNow(13)}
 error: 'BuiltinError: invalid arguments to builtin: fromNow'
 ---
+rust: true
 title:    typeof str
 context:  {}
 template: {$eval: typeof('abc')}
 result: string
 ---
+rust: true
 title:    typeof number (int)
 context:  {}
 template: {$eval: typeof(4)}
 result: number
 ---
+rust: true
 title:    typeof number (float)
 context:  {}
 template: {$eval: typeof(4.0)}
 result: number
 ---
+rust: true
 title:    typeof boolean (true)
 context:  {}
 template: {$eval: typeof(true)}
 result: boolean
 ---
+rust: true
 title:    typeof boolean (false)
 context:  {}
 template: {$eval: typeof(false)}
 result: boolean
 ---
+rust: true
 title:    typeof array (empty)
 context:  {}
 template: {$eval: 'typeof([])'}
 result: array
 ---
+rust: true
 title:    typeof array
 context:  {}
 template: {$eval: 'typeof([1, 2, 3])'}
 result: array
 ---
+rust: true
 title:    typeof object
 context:  {}
 template: {$eval: 'typeof({})'}
 result: object
 ---
+rust: true
 title:    typeof null
 context:  {x: null}
 template: {$eval: 'typeof(x)'}
 result: 'null'
 ---
+rust: true
 title:    typeof null, interpolated
 context:  {x: null}
 template: "${typeof(x)}"
 result: 'null'
 ---
+rust: true
 title:    typeof null in if
 context:  {}
 template: {$if: 'typeof(null) == "null"', then: 'foo', else: 'bar'}
 result: foo
 ---
+rust: true
 title:    typeof function
 context:  {}
 template: {$eval: 'typeof(typeof)'}
