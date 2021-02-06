@@ -9,7 +9,7 @@ use super::Node;
 use anyhow::{anyhow, Result};
 use nom::{
     branch::alt,
-    bytes::complete::{is_not, tag},
+    bytes::complete::{tag, take_till},
     character::complete::{alpha1, alphanumeric1, char, digit1, multispace0},
     combinator::{complete, map_res, not, opt, recognize},
     error::ParseError,
@@ -87,8 +87,8 @@ fn string_str(input: &str) -> IResult<&str, &str> {
     }
     map_res(
         ws(recognize(alt((
-            delimited(char('"'), is_not("\""), char('"')),
-            delimited(char('\''), is_not("'"), char('\'')),
+            delimited(char('"'), take_till(|c| c == '"'), char('"')),
+            delimited(char('\''), take_till(|c| c == '\''), char('\'')),
         )))),
         strip_quotes,
     )(input)
@@ -410,6 +410,16 @@ mod test {
     #[test]
     fn test_string_double_quote() {
         assert_eq!(string("\"a' bcd\" "), Ok(("", Node::String("a' bcd"))));
+    }
+
+    #[test]
+    fn test_empty_string_single_quote() {
+        assert_eq!(string("''"), Ok(("", Node::String(""))));
+    }
+
+    #[test]
+    fn test_empty_string_double_quote() {
+        assert_eq!(string("\"\""), Ok(("", Node::String(""))));
     }
 
     #[test]

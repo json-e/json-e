@@ -173,10 +173,61 @@ fn lstrip_builtin(args: &[Value]) -> Result<Value> {
 }
 
 fn join_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    if args.len() != 2 {
+        return Err(interpreter_error!("join expects two arguments"));
+    }
+    let arr = &args[0];
+    let sep = &args[1];
+
+    let sep = match sep.stringify() {
+        Ok(s) => s,
+        Err(_) => return Err(interpreter_error!("invalid separator for split")),
+    };
+
+    match arr {
+        Value::Array(v) => {
+            let strings: Result<Vec<String>> = v.into_iter().map(|val| val.stringify()).collect();
+            match strings {
+                Ok(s) => Ok(Value::String(s.join(&sep))),
+                Err(_) => Err(interpreter_error!(
+                    "BuiltinError: invalid arguments to builtin: join"
+                )),
+            }
+        }
+        _ => Err(interpreter_error!(
+            "BuiltinError: invalid arguments to builtin: join"
+        )),
+    }
 }
+
 fn split_builtin(args: &[Value]) -> Result<Value> {
-    todo!()
+    if args.len() != 2 {
+        return Err(interpreter_error!("split expects two arguments"));
+    }
+    let input_string = &args[0];
+    let sep = &args[1];
+
+    let sep = match sep.stringify() {
+        Ok(s) => s,
+        Err(_) => return Err(interpreter_error!("invalid separator for split")),
+    };
+
+    match input_string {
+        Value::String(s) => {
+            if s.is_empty() {
+                return Ok(Value::Array(vec![Value::String("".to_string())]));
+            };
+            let strings = s
+                .split(&sep)
+                .filter(|v| !v.is_empty())
+                .map(|v| Value::String(v.to_string()))
+                .collect();
+            Ok(Value::Array(strings))
+        }
+        _ => Err(interpreter_error!(
+            "BuiltinError: invalid arguments to builtin: split"
+        )),
+    }
 }
 fn from_now_builtin(args: &[Value]) -> Result<Value> {
     todo!()
