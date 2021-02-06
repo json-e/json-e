@@ -5,12 +5,17 @@ use std::collections::BTreeMap;
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 
+use crate::interpreter::Context;
+
 /// shorthand for object values
 pub(crate) type Object = BTreeMap<String, Value>;
 
 /// A custom function (built-in or user-provided)
 #[derive(Clone)]
-pub(crate) struct Function(pub(crate) fn(&[Value]) -> Result<Value>);
+pub(crate) enum Function {
+    F(fn(&[Value]) -> Result<Value>),
+    WithContext(fn(&Context, &[Value]) -> Result<Value>),
+}
 
 impl fmt::Debug for Function {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -20,14 +25,35 @@ impl fmt::Debug for Function {
 
 impl PartialEq for Function {
     fn eq(&self, other: &Self) -> bool {
-        self.0 as *const () == other.0 as *const ()
+        match self {
+            Function::F(f1) => match other {
+                Function::F(f2) => *f1 as *const () == *f2 as *const (),
+                _ => false,
+            },
+            Function::WithContext(f1) => match other {
+                Function::WithContext(f2) => *f1 as *const () == *f2 as *const (),
+                _ => false,
+            },
+        }
     }
 }
 
 impl Function {
     // TODO: pub(crate) constructor, take name for Debug
-    pub(crate) fn call(&self, args: &[Value]) -> Result<Value> {
-        self.0(args)
+    // A constructor for a function without context
+    pub(crate) fn new(f: fn(&[Value]) -> Result<Value>) -> Function {
+        Function::F(f)
+    }
+
+    pub(crate) fn with_context(f: fn(&Context, &[Value]) -> Result<Value>) -> Function {
+        Function::WithContext(f)
+    }
+
+    pub(crate) fn call(&self, context: &Context, args: &[Value]) -> Result<Value> {
+        match self {
+            Function::F(f) => f(args),
+            Function::WithContext(f) => f(context, args),
+        }
     }
 }
 

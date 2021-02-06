@@ -789,19 +789,19 @@ template: {$let: {$eval: "true"}, in: "uhoh"}
 context:  {}
 error:    'TemplateError: $let value must be an object'
 ---
-rust: false
+rust: true
 title:    fromNow with redefined `now`
 context:  {}
 template: {$let: {now: '2017-01-01T01:00:00.123Z'}, in: {$eval: "fromNow('1 day')"}}
 result:   '2017-01-02T01:00:00.123Z'
 ---
-rust: false
+rust: true
 title: defined with empty variable from a let expression
 context: {}
 template: {$let: {var: 10}, in: {$if: "defined('var')", then: 't', else: 'f'}}
 result: t
 ---
-rust: false
+rust: true
 title: $let with nested redefinitions of builtins
 context: {}
 template:
@@ -814,7 +814,7 @@ template:
       else: "${lowercase('f')}"
 result: T
 ---
-rust: false
+rust: true
 title: $let with nested redefinitions of builtins
 context: {}
 template:
@@ -2183,21 +2183,25 @@ context: {}
 template: {$eval: "join(false)"}
 error: "BuiltinError: invalid arguments to builtin: join"
 ---
+rust: true
 title:    fromNow
 context:  {}
 template: {$eval: fromNow("")}
 result:   '2017-01-19T16:27:20.974Z'
 ---
+rust: true
 title:    fromNow - 2 days 3 hours
 context:  {}
 template: {$eval: fromNow("2 days 3 hours")}
 result:   '2017-01-21T19:27:20.974Z'
 ---
+rust: true
 title:    fromNow with reference
 context:  {}
 template: {$eval: "fromNow('1 day', '2017-01-01T01:00:00.123Z')"}
 result:   '2017-01-02T01:00:00.123Z'
 ---
+rust: true
 title:    fromNow - TypeError
 context:  {}
 template: {$eval: fromNow(13)}
@@ -2285,11 +2289,13 @@ context: {min: 'hello world!'}
 template: {$eval: 'min'}
 result: 'hello world!'
 ---
+rust: true
 title: 'defined without context variable'
 context: {}
 template: {$if: "defined('var')", then: 't', else: 'f'}
 result: f
 ---
+rust: true
 title: 'defined with empty string as context variable'
 context: {var: ""}
 template: {$if: "defined('var')", then: 't', else: 'f'}

@@ -271,7 +271,7 @@ fn func(context: &Context, f: &Node, args: &[Node]) -> Result<Value> {
         .map(|x| evaluate(x, context))
         .collect::<Result<Vec<_>>>()?;
     match f {
-        Value::Function(ref f) => Ok(f.call(&args)?),
+        Value::Function(ref f) => Ok(f.call(&context, &args)?),
         _ => Err(interpreter_error!(
             "function invocation requires a function"
         )),
