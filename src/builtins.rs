@@ -249,7 +249,11 @@ fn typeof_builtin(args: &[Value]) -> Result<Value> {
         Value::Object(_) => "object",
         Value::Null => "null",
         Value::Function(_) => "function",
-        _ => return Err(interpreter_error!("Not yet")),
+        _ => {
+            return Err(interpreter_error!(
+                "BuiltinError: invalid arguments to builtin: split"
+            ))
+        }
     };
 
     Ok(Value::String(type_.to_string()))
