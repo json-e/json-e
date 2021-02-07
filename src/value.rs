@@ -25,15 +25,12 @@ impl fmt::Debug for Function {
 
 impl PartialEq for Function {
     fn eq(&self, other: &Self) -> bool {
-        match self {
-            Function::F(f1) => match other {
-                Function::F(f2) => *f1 as *const () == *f2 as *const (),
-                _ => false,
-            },
-            Function::WithContext(f1) => match other {
-                Function::WithContext(f2) => *f1 as *const () == *f2 as *const (),
-                _ => false,
-            },
+        match (self, other) {
+            (Function::F(f1), Function::F(f2)) => *f1 as *const () == *f2 as *const (),
+            (Function::WithContext(f1), Function::WithContext(f2)) => {
+                *f1 as *const () == *f2 as *const ()
+            }
+            _ => false,
         }
     }
 }
