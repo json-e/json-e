@@ -495,7 +495,12 @@ fn reverse_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |_| false)?;
+    if let Value::Array(items) = _render(value, context)? {
+        Ok(Value::Array(items.into_iter().rev().collect()))
+    } else {
+        Err(template_error!("reverse value must evaluate to an array"))
+    }
 }
 
 fn sort_operator(

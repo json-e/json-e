@@ -748,7 +748,7 @@ context:  {}
 template: {$let: {ts: 100, foo: 200}, in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
 result:   [300, -100, 20000]
 ---
-rust: false
+rust: true
 title:    checking $let and $reverse operator integrity
 context:  {}
 template: {$let: {x: [1, 2, 3]}, in: [$reverse: {$eval: "x"}]}
@@ -789,19 +789,16 @@ template: {$let: {$eval: "true"}, in: "uhoh"}
 context:  {}
 error:    'TemplateError: $let value must be an object'
 ---
-rust: true
 title:    fromNow with redefined `now`
 context:  {}
 template: {$let: {now: '2017-01-01T01:00:00.123Z'}, in: {$eval: "fromNow('1 day')"}}
 result:   '2017-01-02T01:00:00.123Z'
 ---
-rust: true
 title: defined with empty variable from a let expression
 context: {}
 template: {$let: {var: 10}, in: {$if: "defined('var')", then: 't', else: 'f'}}
 result: t
 ---
-rust: true
 title: $let with nested redefinitions of builtins
 context: {}
 template:
@@ -814,7 +811,6 @@ template:
       else: "${lowercase('f')}"
 result: T
 ---
-rust: true
 title: $let with nested redefinitions of builtins
 context: {}
 template:
@@ -1322,6 +1318,7 @@ error: 'TemplateError: $sort has undefined properties: foo'
 ################################################################################
 ---
 section:  $reverse
+rust: true
 ---
 title:    simple reverse
 context:  {}
