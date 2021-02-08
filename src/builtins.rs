@@ -1,5 +1,5 @@
 #![allow(unused_variables)]
-use crate::fromnow::{from_now, now};
+use crate::fromnow::{from_now};
 use crate::interpreter::Context;
 use crate::value::{Function, Value};
 use anyhow::Result;
@@ -261,8 +261,8 @@ fn from_now_builtin(context: &Context, args: &[Value]) -> Result<Value> {
         }
     } else {
         match context.get("now") {
+            None => unreachable!(), // this is set in render()
             Some(Value::String(s)) => s.to_owned(),
-            None => now(),
             _ => return Err(interpreter_error!("context value `now` must be a string")),
         }
     };
