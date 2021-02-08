@@ -459,7 +459,22 @@ fn match_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |_| false)?;
+    if let Value::Object(obj) = _render(value, context)? {
+        let mut result = Vec::new();
+        for (ref cond, val) in obj {
+            if let Ok(v) = evaluate(cond, context) {
+                if v.into() {
+                    result.push(val);
+                }
+            } else {
+                return Err(template_error!("parsing error in $match condition"));
+            }
+        }
+        Ok(Value::Array(result))
+    } else {
+        Err(template_error!("$match can evaluate objects only"))
+    }
 }
 
 fn switch_operator(
@@ -499,7 +514,7 @@ fn reverse_operator(
     if let Value::Array(items) = _render(value, context)? {
         Ok(Value::Array(items.into_iter().rev().collect()))
     } else {
-        Err(template_error!("reverse value must evaluate to an array"))
+        Err(template_error!("$reverse value must evaluate to an array"))
     }
 }
 
