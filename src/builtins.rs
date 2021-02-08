@@ -1,5 +1,5 @@
 #![allow(unused_variables)]
-use crate::fromnow::{from_now};
+use crate::fromnow::from_now;
 use crate::interpreter::Context;
 use crate::value::{Function, Value};
 use anyhow::Result;
@@ -245,7 +245,7 @@ fn split_builtin(args: &[Value]) -> Result<Value> {
 
 fn from_now_builtin(context: &Context, args: &[Value]) -> Result<Value> {
     if args.len() != 1 && args.len() != 2 {
-        return Err(interpreter_error!("typeof expects one or two arguments"));
+        return Err(interpreter_error!("from_now expects one or two arguments"));
     }
 
     let v = &args[0];
