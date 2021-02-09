@@ -474,6 +474,7 @@ fn switch_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
+    check_operator_properties(operator, object, |_| false)?;
     if let Value::Object(obj) = _render(value, context)? {
         if let Ok(Value::Array(mut matches)) = get_matching_conditions(obj, context) {
             if matches.len() == 0 {
@@ -513,7 +514,24 @@ fn merge_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |_| false)?;
+    if let Value::Array(items) = _render(value, context)? {
+        let mut new_obj = std::collections::BTreeMap::new();
+        for item in items {
+            if let Value::Object(mut obj) = item {
+                new_obj.append(&mut obj);
+            } else {
+                return Err(template_error!(
+                    "$merge value must evaluate to an array of objects"
+                ));
+            }
+        }
+        Ok(Value::Object(new_obj))
+    } else {
+        Err(template_error!(
+            "$merge value must evaluate to an array of objects"
+        ))
+    }
 }
 
 fn merge_deep_operator(
