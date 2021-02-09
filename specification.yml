@@ -982,50 +982,43 @@ error: 'TemplateError: $map on objects expects each(x) to evaluate to an object'
 ################################################################################
 ---
 section: $match operator
----
 rust: true
+---
 title:    $match, 2 matches, ordered by lexcial sorting of property names
 context:  {cond: 3}
 template: {$match: {'cond == 3': 2, 'cond == 5': 3, 'cond < 5 && cond > 0': 4, 'true': 17}}
 result:   [4, 2, 17]
 ---
-rust: true
 title:    $match, no matches
 context:  {cond: 3}
 template: {$match: {'cond > 5': 2, 'cond == 5': 3, 'cond == 4 || cond < 1': 4}}
 result:   []
 ---
-rust: true
 title:    $match, 1 match in array
 context:  {cond: 3}
 template: [0, $match: {'cond == 3': 2, 'cond == 5': 3}]
 result:   [0, [2]]
 ---
-rust: true
 title:    $match, 0 matches in array
 context:  {cond: 3}
 template: [0, $match: {'cond > 3': 2, 'cond == 5': 3}]
 result:   [0, []]
 ---
-rust: true
 title:    $match, 1 match in object
 context:  {cond: 3}
 template: {key: 0, banana: {$match: {'cond == 3': 2, 'cond == 5': 3}}}
 result:   {key: 0, banana: [2]}
 ---
-rust: true
 title:    $match, 0 matches in object
 context:  {cond: 3}
 template: {key: 0, banana: {$match: {'cond > 3': 2, 'cond == 5': 3}}}
 result:   {key: 0, banana: []}
 ---
-rust: true
 title:    $match, is not an object
 context:  {cond: 3}
 template: {$match: [{'cond < 5 && cond > 0': 2}]}
 error:    'TemplateError: $match can evaluate objects only'
 ---
-rust: true
 title:    $match, value that also needs evaluation
 context:  {cond: 3, ifcond: false}
 template: {$match: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
@@ -1033,6 +1026,7 @@ result:   ["f"]
 ################################################################################
 ---
 section: $switch operator
+rust: true
 ---
 title:    $switch, 1 match
 context:  {cond: 3}

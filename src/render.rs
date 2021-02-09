@@ -461,17 +461,8 @@ fn match_operator(
 ) -> Result<Value> {
     check_operator_properties(operator, object, |_| false)?;
     if let Value::Object(obj) = _render(value, context)? {
-        let mut result = Vec::new();
-        for (ref cond, val) in obj {
-            if let Ok(v) = evaluate(cond, context) {
-                if v.into() {
-                    result.push(val);
-                }
-            } else {
-                return Err(template_error!("parsing error in $match condition"));
-            }
-        }
-        Ok(Value::Array(result))
+        get_matching_conditions(obj, context)
+            .or(Err(template_error!("parsing error in $match condition")))
     } else {
         Err(template_error!("$match can evaluate objects only"))
     }
@@ -483,7 +474,37 @@ fn switch_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    if let Value::Object(obj) = _render(value, context)? {
+        if let Ok(Value::Array(mut matches)) = get_matching_conditions(obj, context) {
+            if matches.len() == 0 {
+                Ok(Value::DeletionMarker)
+            } else if matches.len() > 1 {
+                Err(template_error!(
+                    "$switch can only have one truthy condition"
+                ))
+            } else {
+                Ok(matches.remove(0))
+            }
+        } else {
+            Err(template_error!("parsing error in $switch condition"))
+        }
+    } else {
+        Err(template_error!("$switch can evaluate objects only"))
+    }
+}
+
+fn get_matching_conditions(object: Object, context: &Context) -> Result<Value> {
+    let mut result = Vec::new();
+    for (ref cond, val) in object {
+        if let Ok(v) = evaluate(cond, context) {
+            if v.into() {
+                result.push(val);
+            }
+        } else {
+            return Err(template_error!("parsing error in condition"));
+        }
+    }
+    Ok(Value::Array(result))
 }
 
 fn merge_operator(
