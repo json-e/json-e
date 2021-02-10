@@ -540,7 +540,47 @@ fn merge_deep_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    todo!()
+    check_operator_properties(operator, object, |_| false)?;
+    if let Value::Array(items) = _render(value, context)? {
+        let mut new_obj = Value::Object(std::collections::BTreeMap::new());
+        for item in items {
+            if let Value::Object(_) = item {
+                new_obj = _merge_deep_two(&new_obj, &item);
+            } else {
+                return Err(template_error!(
+                    "$mergeDeep value must evaluate to an array of objects"
+                ));
+            }
+        }
+        Ok(new_obj)
+    } else {
+        Err(template_error!(
+            "$mergeDeep value must evaluate to an array of objects"
+        ))
+    }
+}
+
+fn _merge_deep_two(a: &Value, b: &Value) -> Value {
+    match (a, b) {
+        (Value::Array(a), Value::Array(b)) => {
+            let mut a = a.clone();
+            a.append(&mut b.clone());
+            Value::Array(a)
+        }
+        (Value::Object(a), Value::Object(b)) => {
+            let mut a = a.clone();
+            let b = b.clone();
+            for (k, mut v) in b {
+                if a.contains_key(&k) {
+                    a.insert(k.to_string(), _merge_deep_two(a.get(&k).unwrap(), &mut v));
+                } else {
+                    a.insert(k.to_string(), v);
+                }
+            }
+            Value::Object(a)
+        }
+        _ => b.clone(),
+    }
 }
 
 fn reverse_operator(

@@ -1114,6 +1114,7 @@ error: 'TemplateError: $merge has undefined properties: bing foo'
 ################################################################################
 ---
 section:  $mergeDeep
+rust: true
 ---
 title:    simple non-deep mergeDeep matches merge
 context:  {}
