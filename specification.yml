@@ -15,7 +15,6 @@
 #   1) Time at test time is expected to be '2017-01-19T16:27:20.974Z'
 ################################################################################
 ---
-rust: true
 section:  Initial Minimal Subset
 ---
 title:    Identity
@@ -58,7 +57,6 @@ context:  {key: 'world', num: 1}
 template: {message: 'hello ${key}', 'k-${num}': true}
 result:   {message: 'hello world', 'k-1': true}
 ---
-rust: false # interpolation isn't smart enough yet
 title:    string interpolation with object evaluation
 context:  {key: 'world', num: 1}
 template: {message: 'hello ${{a: "world"}.a}', 'k-${{a: 1}.a + {a: 0}.a}': true}
@@ -132,7 +130,6 @@ panic: true
 ################################################################################
 ---
 section:  $if operator
-rust: true
 ---
 title:    $if-then-else, true
 context:  {cond: true}
@@ -274,7 +271,6 @@ context: {cond: {a: 2}, key: 'world'}
 template: {$if: 'cond', then: "t", else: "f"}
 result: t
 ---
-rust: true
 title: $if->then->else, function
 context: {}
 template: {$if: 'min', then: "t", else: "f"}
@@ -292,7 +288,6 @@ error:    'TemplateError: $if has undefined properties: bing foo'
 ################################################################################
 ---
 section:  escape operators
-rust: true
 ---
 title:    escape $eval
 context:  {}
@@ -366,7 +361,6 @@ result:   {$nothing: 1}
 ################################################################################
 ---
 section:  $flatten
-rust: true
 ---
 title:    simple flatten
 context:  {}
@@ -425,7 +419,6 @@ error: 'TemplateError: $flatten has undefined properties: foo'
 ################################################################################
 ---
 section:  $flattenDeep
-rust: true
 ---
 title:    simple flattenDeep
 context:  {}
@@ -484,7 +477,6 @@ error: 'TemplateError: $flattenDeep has undefined properties: foo'
 ################################################################################
 ---
 section:  $fromNow
-rust: true
 ---
 title:    $fromNow 1 hour
 context:  {}
@@ -608,7 +600,6 @@ error: 'TemplateError: $fromNow has undefined properties: foo'
 ################################################################################
 ---
 section:  $json
-rust: true
 ---
 title:    wrap expressions with $eval
 context:  {a: 1, b: 2}
@@ -652,7 +643,6 @@ result: 'null'
 ################################################################################
 ---
 section: accessing nested objects => context
-rust: true
 ---
 title: $eval
 context:  {key: {key2: ['value', 1, 2, true, {}]}}
@@ -666,9 +656,7 @@ result:   '[1,2,true,{},[]]'
 ################################################################################
 ---
 section: string interpolation
-rust: true
 ---
-rust: false
 title: string interpolation
 context: {key: {key2: 'world', key3: 1}}
 template: {message: 'hello ${key.key2}', 'k-${key.key3}': true}
@@ -686,7 +674,6 @@ result:   {message: '${somevalue}'}
 ################################################################################
 ---
 section: $let
-rust: true
 ---
 title:    simple let
 template: {$let: {ts: 100, foo: 200,}, in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
@@ -748,7 +735,6 @@ context:  {}
 template: {$let: {ts: 100, foo: 200}, in: [{$eval: "ts+foo"}, {$eval: "ts-foo"}, {$eval: "ts*foo"}]}
 result:   [300, -100, 20000]
 ---
-rust: true
 title:    checking $let and $reverse operator integrity
 context:  {}
 template: {$let: {x: [1, 2, 3]}, in: [$reverse: {$eval: "x"}]}
@@ -825,7 +811,6 @@ result: '1 HOUR'
 ################################################################################
 ---
 section:  $map
-rust: true
 ---
 title:    simple map
 context:  {a: 1}
@@ -978,7 +963,6 @@ error: 'TemplateError: $map on objects expects each(x) to evaluate to an object'
 ################################################################################
 ---
 section: $match operator
-rust: true
 ---
 title:    $match, 2 matches, ordered by lexcial sorting of property names
 context:  {cond: 3}
@@ -1022,7 +1006,6 @@ result:   ["f"]
 ################################################################################
 ---
 section: $switch operator
-rust: true
 ---
 title:    $switch, 1 match
 context:  {cond: 3}
@@ -1071,7 +1054,6 @@ result:   "f"
 ################################################################################
 ---
 section:  $merge
-rust: true
 ---
 title:    simple merge
 context:  {}
@@ -1110,7 +1092,6 @@ error: 'TemplateError: $merge has undefined properties: bing foo'
 ################################################################################
 ---
 section:  $mergeDeep
-rust: true
 ---
 title:    simple non-deep mergeDeep matches merge
 context:  {}
@@ -1179,7 +1160,6 @@ error: 'TemplateError: $mergeDeep has undefined properties: bing foo'
 ################################################################################
 ---
 section:  $sort
-rust: true
 ---
 title:    simple sort
 context:  {}
@@ -1311,7 +1291,6 @@ error: 'TemplateError: $sort has undefined properties: foo'
 ################################################################################
 ---
 section:  $reverse
-rust: true
 ---
 title:    simple reverse
 context:  {}
@@ -1364,7 +1343,6 @@ context: {}
 error: 'TemplateError: $reverse has undefined properties: bing foo'
 ################################################################################
 ---
-rust: true
 section: $eval
 ---
 title: $eval of $eval
@@ -1404,7 +1382,6 @@ error: 'TemplateError: $eval must be given a string expression'
 ################################################################################
 ---
 section: builtins
-rust: true
 ---
 title: min (1)
 context: {key1: 1, key2: 2}
@@ -2058,7 +2035,6 @@ result: t
 ################################################################################
 ---
 section:  expression language - basics
-rust: true
 ---
 title:    missing right square bracket
 context:  {bar: "mystring"}
@@ -2247,7 +2223,6 @@ result: "no difference"
 ################################################################################
 ---
 section: expression language - arithmetic
-rust: true
 ---
 title: 'addition'
 context: {a: 1, b: 2}
@@ -2263,7 +2238,6 @@ title: 'division (1)'
 context: {a: 3, b: 2}
 template: {$eval: 'a / b'}
 result: 1.5
-rust: false
 ---
 title: 'division (2)'
 context: {a: 3.0, b: 2.0}
@@ -2274,7 +2248,6 @@ title: 'division (3)'
 context: {a: 3, b: 2}
 template: {$eval: 'b / a'}
 result: 0.6666666666666666
-rust: false
 ---
 title: 'division (4)'
 context: {a: 3.0, b: 2.0}
@@ -3286,7 +3259,6 @@ error: 'InterpreterError: unary + expects number'
 ################################################################################
 ---
 section: expression language - logic
-rust: true
 ---
 title: 'logical not (1)'
 context: {tt: true, ff: false}
@@ -3417,7 +3389,6 @@ title: 'function not'
 context: {}
 template: {$eval: "!min"}
 result: false
-rust: false
 ---
 title: 'string and string'
 context: {a: 'abc', b: 'abc'}
@@ -3791,7 +3762,6 @@ result: true
 ################################################################################
 ---
 section: expression language - string operations
-rust: true
 ---
 title: 'string concatenation (1)'
 context: {a: 3, b: 2}
@@ -3900,7 +3870,6 @@ error: 'SyntaxError: Found {, expected identifier'
 ################################################################################
 ---
 section: expression language - property access
-rust: true
 ---
 title: 'property with numeric value'
 context: {key: 1}
@@ -4006,7 +3975,6 @@ error: 'SyntaxError: Found {, expected identifier'
 ################################################################################
 ---
 section: expression language - array access
-rust: true
 ---
 title: 'numeric'
 context: {key: [1,2,3,4,5]}
@@ -4110,7 +4078,6 @@ error: 'InterpreterError: infix: . expects objects'
 ################################################################################
 ---
 section: expression language - array slicing
-rust: true
 ---
 title: 'array slicing (full slice)'
 context: {key: [1,2,3,4,5]}
@@ -4142,7 +4109,6 @@ context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[2.5: 3.5]'}
 error: true
 ---
-rust: false
 title: 'array slicing (floor)'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[:floor(len(key)/2)]'}
@@ -4206,85 +4172,71 @@ error: true
 ---
 section: expression language - function calls
 ---
-rust: true
 title: 'function call (1)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(a, b)'}
 result: 2
 ---
-rust: true
 title: 'function call (2)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(3, b)'}
 result: 2
 ---
-rust: true
 title: 'function call (3)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(a, 2)'}
 result: 2
 ---
-rust: true
 title: 'function call (4)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(3, 2)'}
 result: 2
 ---
-rust: true
 title: 'function call (5)'
 context: {a: 3, b: 2}
 template: {$eval: 'max(a, b)'}
 result: 3
 ---
-rust: true
 title: 'function call (6)'
 context: {a: 3, b: 2}
 template: {$eval: 'max(3, b)'}
 result: 3
 ---
-rust: true
 title: 'function call (7)'
 context: {a: 3, b: 2}
 template: {$eval: 'max(a, 2)'}
 result: 3
 ---
-rust: true
 title: 'function call (8)'
 context: {a: 3, b: 2}
 template: {$eval: 'max(3, 2)'}
 result: 3
 ---
-rust: true
 title: 'function call (9)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(a, b) + max(a, b)'}
 result: 5
 ---
-rust: true
 title: 'function call (10)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(3, b) + max(3, b)'}
 result: 5
 ---
-rust: true
 title: 'function call (11)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(a, 2) + max(a, 2)'}
 result: 5
 ---
-rust: true
 title: 'function call (12)'
 context: {a: 3, b: 2}
 template: {$eval: 'min(3, 2) + max(3, 2)'}
 result: 5
 ---
-rust: true
 title: 'function call (13)'
 context: {}
 template: {$let: {functions: [{$eval: min}, {$eval: max}]}, in: {$eval: 'functions[1](2, 3)'}}
 result: 3
 ---
-rust: true
 title: 'function call (14)'
 context: {}
 template: {$eval: '[max,min][1](5, 1)'}
@@ -4307,7 +4259,6 @@ result: 20
 ################################################################################
 ---
 section: expression language - in operator
-rust: true
 ---
 title: 'in operator on string, success (1)'
 context: {}
@@ -4501,7 +4452,6 @@ result: true
 ################################################################################
 ---
 section: expression language - comparisons
-rust: true
 ---
 title: 'equality (1)'
 context: {a: 1, b: 1}
@@ -5095,29 +5045,24 @@ title: equality of functions
 context: {}
 template: {$eval: 'min == min'}
 result: true
-rust: false
 ---
 title: inequality of functions
 context: {}
 template: {$eval: 'min == max'}
 result: false
-rust: false
 ---
 title: equality of function and string
 context: {}
 template: {$eval: 'min == "min"'}
 result: false
-rust: false
 ---
 title: equality of function and number
 context: {}
 template: {$eval: 'min == 13'}
 result: false
-rust: false
 ################################################################################
 ---
 section: expression language - compound literals
-rust: true
 ---
 title: 'parse list (1)'
 context: {}
@@ -5128,13 +5073,11 @@ title: 'parse list (2)'
 context: {}
 template: {$eval: '[1,2,3,4][0]'}
 result: 1
-rust: false
 ---
 title: 'parse list (3)'
 context: {}
 template: {$eval: '[1,2,3,4][0:-1]'}
 result: [1,2,3]
-rust: false
 ---
 title: 'parse list (4)'
 context: {}
@@ -5180,25 +5123,21 @@ title: 'parse object (8)'
 context: {key: 1}
 template: {$eval: '{a: key, b: min(key + 1, 1)}'}
 result: {a: 1, b: 1}
-rust: false
 ---
 title: 'parse object (9)'
 context: {key: 1}
 template: {$eval: '{"a": key, b: min(key + 1, 1)}'}
 result: {a: 1, b: 1}
-rust: false
 ---
 title: 'parse object (10)'
 context: {key: 1}
 template: {$eval: '{a: key, "b": min(key + 1, 1)}'}
 result: {a: 1, b: 1}
-rust: false
 ---
 title: 'parse object (11)'
 context: {key: 1}
 template: {$eval: '{"a": key, "b": min(key + 1, 1)}'}
 result: {a: 1, b: 1}
-rust: false
 ---
 title: 'parse object (12)'
 context: {key: 1}

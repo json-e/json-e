@@ -6,16 +6,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::str::FromStr;
-use yaml_rust::{yaml::Hash, Yaml, YamlLoader};
-
-fn get_should(h: &Hash) -> Option<bool> {
-    let rust_key: Yaml = Yaml::String("rust".into());
-    if let Some(v) = h.get(&rust_key) {
-        v.as_bool()
-    } else {
-        None
-    }
-}
+use yaml_rust::{Yaml, YamlLoader};
 
 fn main() {
     // request to be re-run whenever specification.yml changes
@@ -26,14 +17,12 @@ fn main() {
 
     let out_dir = env::var("OUT_DIR").unwrap();
     let test_path = Path::new(&out_dir).join("test_spec.rs");
-    println!("cargo:warning=Updating {:?}", test_path);
     let mut test_file = File::create(&test_path).unwrap();
 
     writeln!(test_file, "use serde_json::Value;").unwrap();
     writeln!(test_file, "use json_e::{{render, use_test_now}};").unwrap();
 
     let mut section = String::from("unknown");
-    let mut should_test_section = false;
 
     let section_key = Yaml::String("section".into());
     let title_key = Yaml::String("title".into());
@@ -49,7 +38,6 @@ fn main() {
             // update the section name if this is a new section
             if let Some(v) = h.get(&section_key) {
                 section = String::from(v.as_str().unwrap());
-                should_test_section = get_should(h).unwrap_or(false);
                 continue;
             }
 
@@ -58,12 +46,6 @@ fn main() {
             let template = h.get(&template_key).unwrap();
             let result = h.get(&result_key);
             let error = h.get(&error_key);
-            let should_test = get_should(h).unwrap_or(should_test_section);
-
-            // for the moment, only run tests that have `rust: true` in them
-            if !should_test {
-                continue;
-            }
 
             write_test(
                 &mut test_file,
