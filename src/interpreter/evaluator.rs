@@ -124,7 +124,7 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
         (l, "==", r) => Ok(Value::Bool(l == r)),
         (l, "!=", r) => Ok(Value::Bool(l != r)),
 
-        (Value::String(ref l), "in", Value::String(ref r)) => Ok(Value::Bool(l.find(r).is_some())),
+        (Value::String(ref l), "in", Value::String(ref r)) => Ok(Value::Bool(r.find(l).is_some())),
         (ref l, "in", Value::Array(ref r)) => Ok(Value::Bool(r.iter().any(|x| l == x))),
         (Value::String(ref l), "in", Value::Object(ref r)) => Ok(Value::Bool(r.contains_key(l))),
         (_, "in", _) => Err(interpreter_error!("Expected proper args for in")),

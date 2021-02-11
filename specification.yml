@@ -4311,6 +4311,7 @@ result: 20
 ################################################################################
 ---
 section: expression language - in operator
+rust: true
 ---
 title: 'in operator on string, success (1)'
 context: {}
