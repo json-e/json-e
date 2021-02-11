@@ -2,7 +2,7 @@
 use crate::builtins::BUILTINS;
 use crate::fromnow::{from_now, now};
 use crate::interpreter::{self, Context};
-use crate::op_props::{parse_by, parse_each, parse_ident};
+use crate::op_props::{parse_by, parse_each};
 use crate::value::{Object, Value};
 use anyhow::{bail, Result};
 use serde_json::Value as SerdeValue;
@@ -14,11 +14,6 @@ use std::fmt::Write;
 pub fn render(template: &SerdeValue, context: &SerdeValue) -> Result<SerdeValue> {
     let template: Value = template.into();
     let context = Context::from_serde_value(context, Some(&BUILTINS))?;
-
-    // validate context's top-level keys
-    if context.keys().any(|k| parse_ident(k).is_none()) {
-        return Err(template_error!("top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]"));
-    }
 
     // set "now" in context to a single current time for the duration of the render
     let mut context = context.child();
@@ -548,12 +543,35 @@ fn merge_deep_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
+    fn merge_deep(a: &Value, b: &Value) -> Value {
+        match (a, b) {
+            (Value::Array(a), Value::Array(b)) => {
+                let mut a = a.clone();
+                a.append(&mut b.clone());
+                Value::Array(a)
+            }
+            (Value::Object(a), Value::Object(b)) => {
+                let mut a = a.clone();
+                let b = b.clone();
+                for (k, mut v) in b {
+                    if a.contains_key(&k) {
+                        a.insert(k.to_string(), merge_deep(a.get(&k).unwrap(), &mut v));
+                    } else {
+                        a.insert(k.to_string(), v);
+                    }
+                }
+                Value::Object(a)
+            }
+            _ => b.clone(),
+        }
+    }
+
     check_operator_properties(operator, object, |_| false)?;
     if let Value::Array(items) = _render(value, context)? {
         let mut new_obj = Value::Object(std::collections::BTreeMap::new());
         for item in items {
             if let Value::Object(_) = item {
-                new_obj = _merge_deep_two(&new_obj, &item);
+                new_obj = merge_deep(&new_obj, &item);
             } else {
                 return Err(template_error!(
                     "$mergeDeep value must evaluate to an array of objects"
@@ -565,29 +583,6 @@ fn merge_deep_operator(
         Err(template_error!(
             "$mergeDeep value must evaluate to an array of objects"
         ))
-    }
-}
-
-fn _merge_deep_two(a: &Value, b: &Value) -> Value {
-    match (a, b) {
-        (Value::Array(a), Value::Array(b)) => {
-            let mut a = a.clone();
-            a.append(&mut b.clone());
-            Value::Array(a)
-        }
-        (Value::Object(a), Value::Object(b)) => {
-            let mut a = a.clone();
-            let b = b.clone();
-            for (k, mut v) in b {
-                if a.contains_key(&k) {
-                    a.insert(k.to_string(), _merge_deep_two(a.get(&k).unwrap(), &mut v));
-                } else {
-                    a.insert(k.to_string(), v);
-                }
-            }
-            Value::Object(a)
-        }
-        _ => b.clone(),
     }
 }
 
@@ -739,7 +734,7 @@ fn sort_operator_without_by(
 }
 
 /// Recognize identifier strings for $let
-fn is_identifier(identifier: &str) -> bool {
+pub(crate) fn is_identifier(identifier: &str) -> bool {
     let mut chars = identifier.chars();
 
     if let Some(c) = chars.next() {

@@ -1,11 +1,11 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 
+use crate::render::is_identifier;
 use crate::value::Value;
 use anyhow::{anyhow, Result};
 use serde_json::Value as SerdeValue;
 use std::collections::HashMap;
-use std::collections::hash_map::Keys;
 
 pub(crate) struct Context<'a> {
     content: HashMap<String, Value>,
@@ -49,6 +49,11 @@ impl<'a> Context<'a> {
         };
 
         if let Value::Object(o) = value {
+            if o.keys().any(|k| !is_identifier(k)) {
+                return Err(template_error!(
+                    "top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]"
+                ));
+            }
             for (k, v) in o.iter() {
                 c.insert(k, v.clone());
             }
@@ -73,10 +78,6 @@ impl<'a> Context<'a> {
                 None => None,
             },
         }
-    }
-
-    pub(crate) fn keys(&self) -> Keys<'_, String, Value> {
-        self.content.keys()
     }
 }
 

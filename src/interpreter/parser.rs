@@ -272,7 +272,6 @@ fn function_expr(input: &str) -> IResult<&str, Node<'_>> {
     ))(input)
 }
 
-
 /// Exponentiation is right-associative
 fn exp_expr(input: &str) -> IResult<&str, Node<'_>> {
     fn node<'a>(input: (Node<'a>, &'a str, Node<'a>)) -> Result<Node<'a>, ()> {
