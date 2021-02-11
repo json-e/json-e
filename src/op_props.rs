@@ -16,6 +16,14 @@ fn ident(input: &str) -> IResult<&str, &str> {
     ))(input)
 }
 
+// TODO Find a better home for this function?
+pub(crate) fn parse_ident(input: &str) -> Option<&str> {
+    match ident(input) {
+        Ok(("", r)) => Some(r),
+        _ => None,
+    }
+}
+
 fn each(input: &str) -> IResult<&str, (&str, Option<&str>)> {
     fn to_result<'a>(
         input: (&str, &'a str, Option<(&str, &'a str)>, &str),

@@ -2,7 +2,7 @@
 use crate::builtins::BUILTINS;
 use crate::fromnow::{from_now, now};
 use crate::interpreter::{self, Context};
-use crate::op_props::{parse_by, parse_each};
+use crate::op_props::{parse_by, parse_each, parse_ident};
 use crate::value::{Object, Value};
 use anyhow::{bail, Result};
 use serde_json::Value as SerdeValue;
@@ -14,6 +14,11 @@ use std::fmt::Write;
 pub fn render(template: &SerdeValue, context: &SerdeValue) -> Result<SerdeValue> {
     let template: Value = template.into();
     let context = Context::from_serde_value(context, Some(&BUILTINS))?;
+
+    // validate context's top-level keys
+    if context.keys().any(|k| parse_ident(k).is_none()) {
+        return Err(template_error!("top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]"));
+    }
 
     // set "now" in context to a single current time for the duration of the render
     let mut context = context.child();
@@ -640,7 +645,7 @@ fn sort_operator(
             return Err(interpreter_error!("invalid expression in $sorted by"));
         };
 
-        let mut subcontext = context.clone();
+        let mut subcontext = context.child();
 
         // We precompute everything, eval_pairs is a pair with the value after
         // evaluating the by expression and the original value, so that we can sort
