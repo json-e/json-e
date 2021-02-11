@@ -50,7 +50,10 @@ fn _render(template: &Value, context: &Context) -> Result<Value> {
         Value::Object(o) => {
             // first, see if this is a operator invocation
             for (k, v) in o.iter() {
-                let mut chars = k.chars();
+                // apply interpolation to key
+                // this allows keys that start with an interpolation to work
+                let interpolated = interpolate(&k, context)?;
+                let mut chars = interpolated.chars();
                 if chars.next() == Some('$') && chars.next() != Some('$') {
                     if let Some(rendered) = maybe_operator(k, v, o, context)? {
                         return Ok(rendered);

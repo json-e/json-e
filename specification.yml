@@ -899,7 +899,6 @@ template:
     then: {$eval: 'y.k'}
 result: [1, 3]
 ---
-rust: false   # because this uses object keys starting with $
 title:    $map works on object
 context:  {}
 template:
@@ -907,7 +906,6 @@ template:
   each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
 result: {ax: 2, bx: 3, cx: 4}
 ---
-rust: false   # because this uses object keys starting with $
 title:    $map each(value,key) on object
 context:  {}
 template:
@@ -915,7 +913,6 @@ template:
   each(v,k): {'${k}x': {$eval: 'v + 1'}}
 result: {ax: 2, bx: 3, cx: 4}
 ---
-rust: false   # because this uses object keys starting with $
 title:    $map can add new keys to object
 context:  {}
 template:
