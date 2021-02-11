@@ -4279,13 +4279,13 @@ context: {a: 3, b: 2}
 template: {$eval: 'min(3, 2) + max(3, 2)'}
 result: 5
 ---
-rust: false  # parsing issue here..
+rust: true
 title: 'function call (13)'
 context: {}
 template: {$let: {functions: [{$eval: min}, {$eval: max}]}, in: {$eval: 'functions[1](2, 3)'}}
 result: 3
 ---
-rust: false  # parsing issue here..
+rust: true
 title: 'function call (14)'
 context: {}
 template: {$eval: '[max,min][1](5, 1)'}

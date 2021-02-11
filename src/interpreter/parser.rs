@@ -193,25 +193,6 @@ fn unary_expr(input: &str) -> IResult<&str, Node<'_>> {
     ))(input)
 }
 
-/// A function-invocation expression
-fn function_expr(input: &str) -> IResult<&str, Node<'_>> {
-    fn node<'a>(input: (Node<'a>, &'a str, Vec<Node<'a>>, &'a str)) -> Result<Node<'a>, ()> {
-        Ok(Node::Func(Box::new(input.0), input.2))
-    }
-    alt((
-        map_res(
-            ws(tuple((
-                unary_expr,
-                tag("("),
-                separated_list(ws(tag(",")), expression),
-                tag(")"),
-            ))),
-            node,
-        ),
-        unary_expr,
-    ))(input)
-}
-
 /// An index expression (`x[i]`, `x[a..b]` or `x.p`).  These are left-associative at equal
 /// precedence.
 fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
@@ -243,7 +224,7 @@ fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
         Ok(IndexOp::Dot(input.1))
     }
 
-    let (i, init) = function_expr(input)?;
+    let (i, init) = unary_expr(input)?;
 
     fold_many0(
         ws(alt((
@@ -272,6 +253,26 @@ fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
     )(i)
 }
 
+/// A function-invocation expression
+fn function_expr(input: &str) -> IResult<&str, Node<'_>> {
+    fn node<'a>(input: (Node<'a>, &'a str, Vec<Node<'a>>, &'a str)) -> Result<Node<'a>, ()> {
+        Ok(Node::Func(Box::new(input.0), input.2))
+    }
+    alt((
+        map_res(
+            ws(tuple((
+                index_expr,
+                tag("("),
+                separated_list(ws(tag(",")), expression),
+                tag(")"),
+            ))),
+            node,
+        ),
+        index_expr,
+    ))(input)
+}
+
+
 /// Exponentiation is right-associative
 fn exp_expr(input: &str) -> IResult<&str, Node<'_>> {
     fn node<'a>(input: (Node<'a>, &'a str, Node<'a>)) -> Result<Node<'a>, ()> {
@@ -279,8 +280,8 @@ fn exp_expr(input: &str) -> IResult<&str, Node<'_>> {
     }
 
     alt((
-        map_res(tuple((index_expr, tag("**"), exp_expr)), node),
-        index_expr,
+        map_res(tuple((function_expr, tag("**"), exp_expr)), node),
+        function_expr,
     ))(input)
 }
 
