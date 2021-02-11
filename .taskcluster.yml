@@ -113,6 +113,17 @@ tasks:
               go get -v -d -t ./... &&
               go test -v -race ./... &&
               golangci-lint run
+        - image: 'rust:latest'
+          name: rust tests
+          command:
+            - /bin/bash
+            - '-c'
+            - >-
+              git clone ${repo.git_url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              cargo test
     in:
       $let:
         tests:
