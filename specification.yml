@@ -2039,7 +2039,7 @@ section:  expression language - basics
 title:    missing right square bracket
 context:  {bar: "mystring"}
 template: {foo: '${bar[2:}'}
-error:   "SyntaxError at template.foo: Found: } token, expected one of: !, (, +, -, [, false, identifier, null, number, string, true, {"
+error:   "SyntaxError at template.foo: Found }, expected !, (, +, -, [, false, identifier, null, number, string, true, {"
 ---
 title:    decimal literal
 context:  {}
@@ -2049,7 +2049,7 @@ result:   10.5
 title:    hex literal
 context:  {}
 template: {$eval: '0xff'}
-error:    'SyntaxError: Found: xff token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
+error:    'SyntaxError: Found xff, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
 ---
 title:    string literal with single quote
 context:  {}
@@ -2064,12 +2064,12 @@ result: 'three!'
 title:    string literal escape with backslash (not supported)
 context:  {}
 template: {$eval: '"backslash\\"maybe"'}
-error:    'SyntaxError: Found: maybe token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
+error:    'SyntaxError: Found maybe, expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
 ---
 title:    string literal escape with doubling (not supported)
 context:  {}
 template: {$eval: '"doubled""maybe"'}
-error:    'SyntaxError: Found: "maybe" token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
+error:    'SyntaxError: Found "maybe", expected !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||'
 ---
 title:    boolean literals
 context:  {}
