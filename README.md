@@ -150,6 +150,12 @@ func main() {
 }
 ```
 
+## Rust
+
+The Rust crate exposes a `render` function which takes the template and context as `serde_json` `Value` objects, and returns an object of the same type.
+
+See [docs.rs](https://docs.rs/json-e) for the full API docs.
+
 ## Third-Party Integrations
 
 ### rjsone
