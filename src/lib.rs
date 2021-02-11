@@ -1,9 +1,9 @@
 #[macro_use]
 mod errors;
 mod builtins;
-mod each;
 mod fromnow;
 mod interpreter;
+mod op_props;
 mod render;
 mod value;
 

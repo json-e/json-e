@@ -6,6 +6,7 @@ use anyhow::{anyhow, Result};
 use serde_json::Value as SerdeValue;
 use std::collections::HashMap;
 
+#[derive(Clone)]
 pub(crate) struct Context<'a> {
     content: HashMap<String, Value>,
     parent: Option<&'a Context<'a>>,

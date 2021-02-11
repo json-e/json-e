@@ -1210,7 +1210,6 @@ context:  {array: [3, 4, 1, 2]}
 template: {$sort: {$eval: 'array'}}
 result:   [1, 2, 3, 4]
 ---
-rust: false
 title:    sort by, returning number
 context:  {}
 template:
@@ -1218,7 +1217,6 @@ template:
   by(x): 'x.a'
 result:   [{a: 3}, {a: 10, b: []}, {a: 20}]
 ---
-rust: false
 title:    sort by, returning string
 context:  {}
 template:
@@ -1226,14 +1224,12 @@ template:
   by(x): 'x.s'
 result: [{s: 'add'}, {s: 'adderall'}, {s: 'android'}]
 ---
-rust: false
 title:    cannot sort objects without by
 context:  {}
 template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
 error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
-rust: false
 title:    by cannot return objects
 context:  {}
 template:
@@ -1247,7 +1243,6 @@ template:
   $sort: [[1,2,3], [4,5], [], [8,9,10]]
 error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
-rust: false
 title:    by cannot return arrays
 context:  {}
 template:
@@ -1260,7 +1255,6 @@ context:  {}
 template: {$sort: [null, null]}
 error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
-rust: false
 title:    cannot sort nulls, even with by
 context:  {}
 template: {$sort: [null, null], 'by(x)': 'x'}
@@ -1271,7 +1265,6 @@ context:  {}
 template: {$sort: [false, true]}
 error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
-rust: false
 title:    cannot sort booleans, even with by
 context:  {}
 template: {$sort: [false, true], 'by(x)': 'x'}
@@ -1282,7 +1275,6 @@ context:  {}
 template: {$sort: [1, 'a']}
 error: 'TemplateError: $sorted values to be sorted must have the same type'
 ---
-rust: false
 title:    cannot sort numbers and strings together even with by
 context:  {}
 template: {$sort: [1, 'a'], 'by(x)': 'x'}

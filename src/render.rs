@@ -1,8 +1,8 @@
 #![allow(unused_variables)]
 use crate::builtins::BUILTINS;
-use crate::each::parse_each;
 use crate::fromnow::{from_now, now};
 use crate::interpreter::{self, Context};
+use crate::op_props::{parse_by, parse_each};
 use crate::value::{Object, Value};
 use anyhow::{bail, Result};
 use serde_json::Value as SerdeValue;
@@ -603,7 +603,13 @@ fn sort_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    check_operator_properties(operator, object, |p| p.starts_with("by("))?;
+    check_operator_properties(operator, object, |p| parse_by(p).is_some())?;
+
+    let make_err = || {
+        Err(template_error!(
+            "$sorted values to be sorted must have the same type"
+        ))
+    };
 
     if let Value::Array(arr) = _render(value, context)? {
         // short-circuit a zero-length array, so we can later assume at least one item
@@ -614,11 +620,66 @@ fn sort_operator(
         if object.len() == 1 {
             return sort_operator_without_by(operator, arr, object, context);
         }
-        todo!()
+
+        // sort by
+        // Unwraps here are safe because the presence of the `by(..)` is checked above.
+        let by_props: Vec<_> = object.keys().filter(|k| k != &"$sort").collect();
+        if by_props.len() > 1 {
+            return Err(template_error!("only one by(..) is allowed"));
+        }
+
+        let by_var = parse_by(by_props[0])
+            .ok_or_else(|| template_error!("$sort requires by(identifier) syntax"))?;
+
+        let by_expr = if let Value::String(expr) = object.get(by_props[0]).unwrap() {
+            expr
+        } else {
+            return Err(interpreter_error!("invalid expression in $sorted by"));
+        };
+
+        let mut subcontext = context.clone();
+
+        // We precompute everything, eval_pairs is a pair with the value after
+        // evaluating the by expression and the original value, so that we can sort
+        // on the first and only take the second when building the final result.
+        // This could be optimized by exiting early if there is an invalid combination of
+        // types.
+        let mut eval_pairs: Vec<(Value, Value)> = arr
+            .iter()
+            .map(|item| {
+                subcontext.insert(by_var, item.clone());
+                (evaluate(by_expr, &subcontext).unwrap(), item.clone())
+            })
+            .collect();
+
+        if eval_pairs.iter().all(|(e, _v)| e.is_string()) {
+            // sort strings
+            eval_pairs.sort_by(|a, b| {
+                // unwraps are ok because we checked the types above
+                let a = a.0.as_str().unwrap();
+                let b = b.0.as_str().unwrap();
+                a.cmp(b)
+            });
+        } else if eval_pairs.iter().all(|(e, _v)| e.is_number()) {
+            // sort numbers
+            eval_pairs.sort_by(|a, b| {
+                // unwraps are ok because we checked the types above
+                let a = a.0.as_f64().unwrap();
+                let b = b.0.as_f64().unwrap();
+                // unwrap is ok because we do not deal with NaN
+                a.partial_cmp(b).unwrap()
+            });
+        } else {
+            // either a mix of types or unsortable values
+            return make_err();
+        }
+        let result = eval_pairs
+            .into_iter()
+            .map(|(_evaluation, item)| item)
+            .collect();
+        return Ok(Value::Array(result));
     } else {
-        Err(template_error!(
-            "$sorted values to be sorted must have the same type"
-        ))
+        make_err()
     }
 }
 

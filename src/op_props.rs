@@ -36,6 +36,21 @@ pub(crate) fn parse_each(input: &str) -> Option<(&str, Option<&str>)> {
     }
 }
 
+fn by(input: &str) -> IResult<&str, &str> {
+    fn to_result<'a>(input: (&str, &'a str, &str)) -> Result<&'a str> {
+        Ok(input.1)
+    }
+    map_res(tuple((tag("by("), ident, tag(")"))), to_result)(input)
+}
+
+/// Parse the by(..) property of sort, or return None if no match
+pub(crate) fn parse_by(input: &str) -> Option<&str> {
+    match by(input) {
+        Ok(("", r)) => Some(r),
+        _ => None,
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -68,5 +83,20 @@ mod test {
     #[test]
     fn three_vars() {
         assert_eq!(parse_each("each(x,y,z)"), None);
+    }
+
+    #[test]
+    fn by_ok() {
+        assert_eq!(parse_by("by(x)"), Some("x"));
+    }
+
+    #[test]
+    fn not_by() {
+        assert_eq!(parse_by("by(b)a"), None);
+    }
+
+    #[test]
+    fn by_many() {
+        assert_eq!(parse_by("by(x,y)"), None);
     }
 }
