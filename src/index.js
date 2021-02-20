@@ -11,7 +11,7 @@ var {
    isTruthy
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
-var {JSONTemplateError, TemplateError} = require('./error');
+var {JSONTemplateError, TemplateError, SyntaxError} = require('./error');
 
 let syntaxRuleError = (token) => {
     return new SyntaxError(`Found: ${token.value} token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||`);
