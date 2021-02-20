@@ -25,4 +25,9 @@ suite('misc', function() {
   test('now builtin returns a string', function() {
     assume(typeof jsone({$eval: 'now'}, {})).eql(typeof 'string');
   });
+
+  test('syntax error has correct type', function() {
+    let jsoneSyntaxError = require('../src/error').SyntaxError;
+    assume(() => jsone({$eval: 'this is not valid'}, {})).throws(jsoneSyntaxError);
+  });
 });
