@@ -30,16 +30,4 @@ suite('misc', function() {
     let jsoneSyntaxError = require('../src/error').SyntaxError;
     assume(() => jsone({$eval: 'this is not valid'}, {})).throws(jsoneSyntaxError);
   });
-
-  test('isJSON works', function() {
-    let isJSON = require('../src/type-utils').isJSON;
-    assume(isJSON('a')).eql(true);
-    assume(isJSON(1)).eql(true);
-    assume(isJSON(null)).eql(true);
-    assume(isJSON([])).eql(true);
-    assume(isJSON({})).eql(true);
-    assume(isJSON(['a', 1, null, [true, [], {}], {x: { y: ['z']}}])).eql(true);
-    assume(isJSON(() => {})).eql(false);
-    assume(isJSON(['a', 1, null, [true, [], {}], {x: { y: [Symbol('z')]}}])).eql(false);
-  });
 });
