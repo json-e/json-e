@@ -2,7 +2,7 @@ var {BuiltinError} = require('./error');
 var fromNow = require('./from-now');
 var {
   isString, isNumber, isBool,
-  isArray, isObject, isJSON,
+  isArray, isObject,
   isNull, isFunction,
 } = require('./type-utils');
 
@@ -12,7 +12,6 @@ let types = {
   boolean: isBool,
   array: isArray,
   object: isObject,
-  json: isJSON,
   null: isNull,
   function: isFunction,
 };
