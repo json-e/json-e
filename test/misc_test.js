@@ -30,4 +30,9 @@ suite('misc', function() {
     let jsoneSyntaxError = require('../src/error').SyntaxError;
     assume(() => jsone({$eval: 'this is not valid'}, {})).throws(jsoneSyntaxError);
   });
+
+  test('isJSON works', function() {
+    let isJSON = require('../src/type-utils').isJSON;
+    assume(isJSON({})).eql(true);
+  });
 });
