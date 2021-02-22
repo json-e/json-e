@@ -17,7 +17,7 @@ let utils = {
     }
 
     let result = true;
-    if (utils.isobject(expr)) {
+    if (utils.isObject(expr)) {
       for (let key of Object.keys(expr)) {
         if (expr.hasOwnProperty(key)) {
           result = result && utils.isJSON(expr[key]);
