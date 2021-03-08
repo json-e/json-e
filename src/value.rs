@@ -12,45 +12,30 @@ pub(crate) type Object = BTreeMap<String, Value>;
 
 /// A custom function (built-in or user-provided)
 #[derive(Clone)]
-pub(crate) enum Function {
-    F(fn(&[Value]) -> Result<Value>),
-    WithContext(fn(&Context, &[Value]) -> Result<Value>),
+pub(crate) struct Function {
+    name: &'static str,
+    f: fn(&Context, &[Value]) -> Result<Value>,
 }
 
 impl fmt::Debug for Function {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Function(..)")
+        write!(f, "Function({}, ..)", self.name)
     }
 }
 
 impl PartialEq for Function {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Function::F(f1), Function::F(f2)) => *f1 as *const () == *f2 as *const (),
-            (Function::WithContext(f1), Function::WithContext(f2)) => {
-                *f1 as *const () == *f2 as *const ()
-            }
-            _ => false,
-        }
+        self.f as *const () == other.f as *const () && self.name == other.name
     }
 }
 
 impl Function {
-    // TODO: pub(crate) constructor, take name for Debug
-    // A constructor for a function without context
-    pub(crate) fn new(f: fn(&[Value]) -> Result<Value>) -> Function {
-        Function::F(f)
-    }
-
-    pub(crate) fn with_context(f: fn(&Context, &[Value]) -> Result<Value>) -> Function {
-        Function::WithContext(f)
+    pub(crate) fn new(name: &'static str, f: fn(&Context, &[Value]) -> Result<Value>) -> Function {
+        Function { name, f }
     }
 
     pub(crate) fn call(&self, context: &Context, args: &[Value]) -> Result<Value> {
-        match self {
-            Function::F(f) => f(args),
-            Function::WithContext(f) => f(context, args),
-        }
+        (self.f)(context, args)
     }
 }
 

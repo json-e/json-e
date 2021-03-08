@@ -1,4 +1,3 @@
-#![allow(unused_variables)]
 use crate::fromnow::from_now;
 use crate::interpreter::Context;
 use crate::value::{Function, Value};
@@ -8,36 +7,57 @@ use lazy_static::lazy_static;
 lazy_static! {
     pub(crate) static ref BUILTINS: Context<'static> = {
         let mut builtins = Context::new();
-        builtins.insert("abs", Value::Function(Function::new(abs_builtin)));
-        builtins.insert("str", Value::Function(Function::new(str_builtin)));
-        builtins.insert("len", Value::Function(Function::new(len_builtin)));
-        builtins.insert("min", Value::Function(Function::new(min_builtin)));
-        builtins.insert("max", Value::Function(Function::new(max_builtin)));
-        builtins.insert("sqrt", Value::Function(Function::new(sqrt_builtin)));
-        builtins.insert("ceil", Value::Function(Function::new(ceil_builtin)));
-        builtins.insert("floor", Value::Function(Function::new(floor_builtin)));
+        builtins.insert("abs", Value::Function(Function::new("abs", abs_builtin)));
+        builtins.insert("str", Value::Function(Function::new("str", str_builtin)));
+        builtins.insert("len", Value::Function(Function::new("len", len_builtin)));
+        builtins.insert("min", Value::Function(Function::new("min", min_builtin)));
+        builtins.insert("max", Value::Function(Function::new("max", max_builtin)));
+        builtins.insert("sqrt", Value::Function(Function::new("sqrt", sqrt_builtin)));
+        builtins.insert("ceil", Value::Function(Function::new("ceil", ceil_builtin)));
+        builtins.insert(
+            "floor",
+            Value::Function(Function::new("floor", floor_builtin)),
+        );
         builtins.insert(
             "lowercase",
-            Value::Function(Function::new(lowercase_builtin)),
+            Value::Function(Function::new("lowercase", lowercase_builtin)),
         );
         builtins.insert(
             "uppercase",
-            Value::Function(Function::new(uppercase_builtin)),
+            Value::Function(Function::new("uppercase", uppercase_builtin)),
         );
-        builtins.insert("number", Value::Function(Function::new(number_builtin)));
-        builtins.insert("strip", Value::Function(Function::new(strip_builtin)));
-        builtins.insert("rstrip", Value::Function(Function::new(rstrip_builtin)));
-        builtins.insert("lstrip", Value::Function(Function::new(lstrip_builtin)));
-        builtins.insert("join", Value::Function(Function::new(join_builtin)));
-        builtins.insert("split", Value::Function(Function::new(split_builtin)));
+        builtins.insert(
+            "number",
+            Value::Function(Function::new("number", number_builtin)),
+        );
+        builtins.insert(
+            "strip",
+            Value::Function(Function::new("strip", strip_builtin)),
+        );
+        builtins.insert(
+            "rstrip",
+            Value::Function(Function::new("rstrip", rstrip_builtin)),
+        );
+        builtins.insert(
+            "lstrip",
+            Value::Function(Function::new("lstrip", lstrip_builtin)),
+        );
+        builtins.insert("join", Value::Function(Function::new("join", join_builtin)));
+        builtins.insert(
+            "split",
+            Value::Function(Function::new("split", split_builtin)),
+        );
         builtins.insert(
             "fromNow",
-            Value::Function(Function::with_context(from_now_builtin)),
+            Value::Function(Function::new("fromNow", from_now_builtin)),
         );
-        builtins.insert("typeof", Value::Function(Function::new(typeof_builtin)));
+        builtins.insert(
+            "typeof",
+            Value::Function(Function::new("typeof", typeof_builtin)),
+        );
         builtins.insert(
             "defined",
-            Value::Function(Function::with_context(defined_builtin)),
+            Value::Function(Function::new("defined", defined_builtin)),
         );
         builtins
     };
@@ -90,11 +110,11 @@ fn unary_string<F: Fn(&str) -> String>(args: &[Value], op: F) -> Result<Value> {
 
 // builtin implementations
 
-fn abs_builtin(args: &[Value]) -> Result<Value> {
+fn abs_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_arithmetic(args, f64::abs)
 }
 
-fn str_builtin(args: &[Value]) -> Result<Value> {
+fn str_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     if args.len() != 1 {
         return Err(interpreter_error!("str expects one argument"));
     }
@@ -108,7 +128,7 @@ fn str_builtin(args: &[Value]) -> Result<Value> {
     }
 }
 
-fn len_builtin(args: &[Value]) -> Result<Value> {
+fn len_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     if args.len() != 1 {
         return Err(interpreter_error!("len expects one argument"));
     }
@@ -121,35 +141,35 @@ fn len_builtin(args: &[Value]) -> Result<Value> {
     }
 }
 
-fn min_builtin(args: &[Value]) -> Result<Value> {
+fn min_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     array_arithmetic(args, |a, b| if a < b { a } else { b })
 }
 
-fn max_builtin(args: &[Value]) -> Result<Value> {
+fn max_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     array_arithmetic(args, |a, b| if a < b { b } else { a })
 }
 
-fn sqrt_builtin(args: &[Value]) -> Result<Value> {
+fn sqrt_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_arithmetic(args, f64::sqrt)
 }
 
-fn ceil_builtin(args: &[Value]) -> Result<Value> {
+fn ceil_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_arithmetic(args, f64::ceil)
 }
 
-fn floor_builtin(args: &[Value]) -> Result<Value> {
+fn floor_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_arithmetic(args, f64::floor)
 }
 
-fn lowercase_builtin(args: &[Value]) -> Result<Value> {
+fn lowercase_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_string(args, str::to_lowercase)
 }
 
-fn uppercase_builtin(args: &[Value]) -> Result<Value> {
+fn uppercase_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_string(args, str::to_uppercase)
 }
 
-fn number_builtin(args: &[Value]) -> Result<Value> {
+fn number_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     if args.len() != 1 {
         return Err(interpreter_error!("number expects one argument"));
     }
@@ -173,19 +193,19 @@ fn number_builtin(args: &[Value]) -> Result<Value> {
     Ok(Value::Number(num))
 }
 
-fn strip_builtin(args: &[Value]) -> Result<Value> {
+fn strip_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_string(args, |s| str::trim(s).to_owned())
 }
 
-fn rstrip_builtin(args: &[Value]) -> Result<Value> {
+fn rstrip_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_string(args, |s| str::trim_end(s).to_owned())
 }
 
-fn lstrip_builtin(args: &[Value]) -> Result<Value> {
+fn lstrip_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_string(args, |s| str::trim_start(s).to_owned())
 }
 
-fn join_builtin(args: &[Value]) -> Result<Value> {
+fn join_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     if args.len() != 2 {
         return Err(interpreter_error!("join expects two arguments"));
     }
@@ -213,7 +233,7 @@ fn join_builtin(args: &[Value]) -> Result<Value> {
     }
 }
 
-fn split_builtin(args: &[Value]) -> Result<Value> {
+fn split_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     if args.len() != 2 {
         return Err(interpreter_error!("split expects two arguments"));
     }
@@ -275,7 +295,7 @@ fn from_now_builtin(context: &Context, args: &[Value]) -> Result<Value> {
     }
 }
 
-fn typeof_builtin(args: &[Value]) -> Result<Value> {
+fn typeof_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     if args.len() != 1 {
         return Err(interpreter_error!("typeof expects one argument"));
     }
