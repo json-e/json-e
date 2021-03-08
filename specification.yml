@@ -1469,19 +1469,9 @@ template: {$eval: 'sqrt(key)'}
 result: 2
 ---
 title: sqrt (2)
-context: {key: 4}
-template: {$eval: 'sqrt(key)'}
-result: 2.0
----
-title: sqrt (3)
 context: {}
 template: {$eval: 'sqrt(9)'}
 result: 3
----
-title: sqrt (3)
-context: {}
-template: {$eval: 'sqrt(9)'}
-result: 3.0
 ---
 title: sqrt - TypeError
 context: {}
@@ -1494,39 +1484,19 @@ template: {$eval: 'ceil(key)'}
 result: 2
 ---
 title: ceil (2)
-context: {key: 1.1}
-template: {$eval: 'ceil(key)'}
-result: 2.0
----
-title: ceil (3)
 context: {}
 template: {$eval: 'ceil(2.003)'}
 result: 3
 ---
+title: ceil (3)
+context: {key: 1}
+template: {$eval: 'ceil(key)'}
+result: 1
+---
 title: ceil (4)
-context: {}
-template: {$eval: 'ceil(2.003)'}
-result: 3.0
----
-title: ceil (5)
-context: {key: 1}
-template: {$eval: 'ceil(key)'}
-result: 1
----
-title: ceil (6)
-context: {key: 1}
-template: {$eval: 'ceil(key)'}
-result: 1.0
----
-title: ceil (7)
 context: {key: 1.0}
 template: {$eval: 'ceil(key)'}
 result: 1
----
-title: ceil (8)
-context: {key: 1.0}
-template: {$eval: 'ceil(key)'}
-result: 1.0
 ---
 title: ceil - TypeError
 context: {}
@@ -1539,39 +1509,19 @@ template: {$eval: 'floor(key)'}
 result: 1
 ---
 title: floor (2)
-context: {key: 1.1}
-template: {$eval: 'floor(key)'}
-result: 1.0
----
-title: floor (3)
 context: {}
 template: {$eval: 'floor(2.003)'}
 result: 2
 ---
+title: floor (3)
+context: {key: 1}
+template: {$eval: 'floor(key)'}
+result: 1
+---
 title: floor (4)
-context: {}
-template: {$eval: 'floor(2.003)'}
-result: 2.0
----
-title: floor (5)
-context: {key: 1}
-template: {$eval: 'floor(key)'}
-result: 1
----
-title: floor (6)
-context: {key: 1}
-template: {$eval: 'floor(key)'}
-result: 1.0
----
-title: floor (7)
 context: {key: 1.0}
 template: {$eval: 'floor(key)'}
 result: 1
----
-title: floor (8)
-context: {key: 1.0}
-template: {$eval: 'floor(key)'}
-result: 1.0
 ---
 title: floor - TypeError
 context: {key: null}
@@ -1594,89 +1544,49 @@ template: {$eval: 'abs(key)'}
 result: 1
 ---
 title: abs (4)
-context: {key: -1}
-template: {$eval: 'abs(key)'}
-result: 1.0
----
-title: abs (5)
 context: {key: -1.0}
 template: {$eval: 'abs(key)'}
+result: 1
+---
+title: abs (5)
+context: {}
+template: {$eval: 'abs(-1)'}
 result: 1
 ---
 title: abs (6)
-context: {key: -1.0}
-template: {$eval: 'abs(key)'}
-result: 1.0
+context: {}
+template: {$eval: 'abs(-1.0)'}
+result: 1
 ---
 title: abs (7)
-context: {}
-template: {$eval: 'abs(-1)'}
-result: 1
----
-title: abs (8)
-context: {}
-template: {$eval: 'abs(-1)'}
-result: 1.0
----
-title: abs (9)
-context: {}
-template: {$eval: 'abs(-1.0)'}
-result: 1
----
-title: abs (10)
-context: {}
-template: {$eval: 'abs(-1.0)'}
-result: 1.0
----
-title: abs (11)
 context: {key: 1.1}
 template: {$eval: 'abs(key)'}
 result: 1.1
 ---
-title: abs (12)
+title: abs (8)
 context: {}
 template: {$eval: 'abs(1.1)'}
 result: 1.1
 ---
-title: abs (13)
+title: abs (9)
 context: {key: 1}
 template: {$eval: 'abs(key)'}
 result: 1
 ---
-title: abs (14)
-context: {key: 1}
-template: {$eval: 'abs(key)'}
-result: 1.0
----
-title: abs (15)
+title: abs (10)
 context: {key: 1.0}
 template: {$eval: 'abs(key)'}
 result: 1
 ---
-title: abs (16)
-context: {key: 1.0}
-template: {$eval: 'abs(key)'}
-result: 1.0
----
-title: abs (17)
+title: abs (11)
 context: {}
 template: {$eval: 'abs(1)'}
 result: 1
 ---
-title: abs (18)
-context: {}
-template: {$eval: 'abs(1)'}
-result: 1.0
----
-title: abs (19)
+title: abs (12)
 context: {}
 template: {$eval: 'abs(1.0)'}
 result: 1
----
-title: abs (20)
-context: {}
-template: {$eval: 'abs(1.0)'}
-result: 1.0
 ---
 title: abs - TypeError
 context: {}
