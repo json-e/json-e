@@ -31,13 +31,10 @@ To run the tests use `yarn test`
 
 ## Python
 
-The Python implementation is located in `./jsone`.
+The Python implementation is located in `./py`.
 
-For Python, activate a virtualenv and run `pip install -e .`.
-
-To run the Python tests only, use `python setup.py test`.
-
-Note that JSON-e supports both Python 2 and Python 3.
+To test this implementation, install and run `tox`, which will test on all supported Python versions.
+If you have fewer Python versions installed, that's OK -- when you make a PR it will run for all versions.
 
 ## Go
 

@@ -75,6 +75,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd py/ &&
               pip install tox &&
               tox -e py27
         - image: 'python:3.6'
@@ -88,6 +89,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd py/ &&
               pip install tox &&
               tox -e py36
         - image: 'python:3.7'
@@ -101,6 +103,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd py/ &&
               pip install tox &&
               tox -e py37
         - image: 'golangci/golangci-lint'
