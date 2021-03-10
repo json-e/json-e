@@ -24,12 +24,10 @@ you to make changes in all implementations.
 
 ## JavaScript
 
-The JavaScript implementation is located in `./src`
+The JavaScript implementation is located in `./js`
 
-You should run `npm install` to install the required packages for JSON-e's
-execution and development.
-
-To run the tests use `npm test`
+You should run `yarn install` to install the required packages for JSON-e's execution and development.
+To run the tests use `yarn test`
 
 ## Python
 

@@ -7,7 +7,7 @@ const assert = require("assert");
 const tk = require("timekeeper");
 const jsone = require("../src");
 
-const readme = fs.readFileSync(path.join(__dirname, "../README.md"), {
+const readme = fs.readFileSync(path.join(__dirname, "../../README.md"), {
   encoding: "utf8",
 });
 const TEST_DATE = new Date("2017-01-19T16:27:20.974Z");
