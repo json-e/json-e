@@ -55,6 +55,11 @@ To run the Go test run
 GOPATH=$(pwd) go test -v -race ./...
 ```
 
+## Rust
+
+The Rust implementation is in `rs/`.
+Within that directory, you will find a `Cargo.toml` and the usual Rust development tools apply: `cargo test`, `cargo build`, and so on.
+
 # Demo development
 
 The demo website is a [Neutrino](https://neutrino.js.org/) app hosted in

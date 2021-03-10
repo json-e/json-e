@@ -123,6 +123,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd rs/ &&
               cargo test
     in:
       $let:
