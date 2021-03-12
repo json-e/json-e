@@ -3,7 +3,7 @@ import { hot } from 'react-hot-loader';
 import './App.css';
 import { Heading, Text } from 'rebass';
 import rawReadme from '../../README.md';
-import packageinfo from '../../package.json';
+import packageinfo from '../../js/package.json';
 import readmeTree from './readme';
 import Section from './Section';
 import SidebarMenu from './SidebarMenu';
