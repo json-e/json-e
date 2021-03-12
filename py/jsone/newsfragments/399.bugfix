@@ -1,1 +1,0 @@
-JS implementation now throws instances of the correct SyntaxError type

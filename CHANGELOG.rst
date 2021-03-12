@@ -1,3 +1,20 @@
+Jsone 4.4.0 (2021-03-12)
+========================
+
+Features
+--------
+
+- JSON-e is now also available as a Rust crate! (#289)
+- Each implementation language is now in its own subdirectory.  This change should not affect users of the library. (#401)
+
+
+Bugfixes
+--------
+
+- Syntax errors regarding unexpected identifiers are now phrased more clearly (Python and JS implementations only) (#383)
+- JS implementation now throws instances of the correct SyntaxError type (#399)
+
+
 Jsone 4.3.0 (2020-08-27)
 ========================
 
