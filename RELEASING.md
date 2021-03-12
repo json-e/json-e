@@ -19,5 +19,4 @@
   * `cargo publish --allow-dirty`
   * `rm specification.yml` - ..and remove the temporary file.  DO NOT CHECK IT IN!
 * Nothing to do for Go
-* To deploy the web-site:
-  * `deploy.sh`
+* Demo/docs site is deployed on every push
