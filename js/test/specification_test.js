@@ -7,7 +7,7 @@ var tk = require('timekeeper');
 var assume = require('assume');
 var jsone = require('../src/');
 
-const SPEC_FILE = path.join(__dirname, '../specification.yml');
+const SPEC_FILE = path.join(__dirname, '../../specification.yml');
 const TEST_DATE = new Date('2017-01-19T16:27:20.974Z');
 
 suite('json-e', () => {

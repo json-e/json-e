@@ -57,5 +57,5 @@ env
 #
 #already existing elements are commented out
 
-/target
-**/*.rs.bk
+rs/target
+rs/**/*.rs.bk

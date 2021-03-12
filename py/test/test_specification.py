@@ -8,7 +8,7 @@ from nose.tools import eq_
 
 def test():
     def spec_test(name, spec):
-        "Make a test function for a case from specification.yml"
+        "Make a test function for a case from ../specification.yml"
         def test(*args):
             exc, res = None, None
             try:
@@ -29,7 +29,7 @@ def test():
                     '{!r} != {!r}'.format(res, spec['result'])
         return test
 
-    with open(os.path.join(os.path.dirname(__file__), '../specification.yml')) as f:
+    with open(os.path.join(os.path.dirname(__file__), '../../specification.yml')) as f:
         with freeze_time('2017-01-19T16:27:20.974Z'):
             for spec in yaml.load_all(f, Loader=yaml.FullLoader):
                 if 'section' in spec:

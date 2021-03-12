@@ -9,10 +9,10 @@ use std::str::FromStr;
 use yaml_rust::{Yaml, YamlLoader};
 
 fn main() {
-    // request to be re-run whenever specification.yml changes
-    println!("cargo:rerun-if-changed=specification.yml");
+    // request to be re-run whenever ../specification.yml changes
+    println!("cargo:rerun-if-changed=../specification.yml");
 
-    let spec = read_to_string("specification.yml").unwrap();
+    let spec = read_to_string("../specification.yml").unwrap();
     let spec = YamlLoader::load_from_str(&spec).unwrap();
 
     let out_dir = env::var("OUT_DIR").unwrap();

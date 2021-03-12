@@ -33,6 +33,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd js &&
               yarn &&
               yarn test
         - image: node:10
@@ -46,6 +47,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd js &&
               yarn &&
               yarn test
         - image: 'node:10'
@@ -59,6 +61,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd js &&
               yarn &&
               bash package-test.sh
         - image: 'python:2.7'
@@ -72,6 +75,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd py/ &&
               pip install tox &&
               tox -e py27
         - image: 'python:3.6'
@@ -85,6 +89,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd py/ &&
               pip install tox &&
               tox -e py36
         - image: 'python:3.7'
@@ -98,6 +103,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd py/ &&
               pip install tox &&
               tox -e py37
         - image: 'golangci/golangci-lint'
@@ -123,6 +129,7 @@ tasks:
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
+              cd rs/ &&
               cargo test
     in:
       $let:
@@ -178,8 +185,10 @@ tasks:
                       cd repo &&
                       git config advice.detachedHead false &&
                       git checkout ${repo.ref} &&
+                      cd demo &&
                       yarn &&
-                      yarn build-demo &&
+                      yarn build &&
+                      cd .. &&
                       ./deploy.sh
                 metadata:
                   name: demo site build and deploy

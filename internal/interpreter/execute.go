@@ -1,8 +1,9 @@
 package interpreter
 
 import (
-	p "github.com/taskcluster/json-e/interpreter/parser"
 	"strings"
+
+	p "github.com/taskcluster/json-e/internal/interpreter/parser"
 )
 
 var tokenizer = *p.NewTokenizer(`\s+`, strings.Split(
