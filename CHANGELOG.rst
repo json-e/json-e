@@ -1,3 +1,11 @@
+Jsone 4.4.1 (2021-03-12)
+========================
+
+No significant changes.
+
+This version updates the release mechanics to include descriptions for each package.
+
+
 Jsone 4.4.0 (2021-03-12)
 ========================
 
