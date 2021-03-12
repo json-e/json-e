@@ -15,6 +15,6 @@
   * `npm publish` in `js/`
 * Release to crates.io:
   * `cargo publish` in `rs/`
-* Go doesn't believe in versions, so there's notihng to do for a Go release!
+* Nothing to do for Go
 * To deploy the web-site:
   * `deploy.sh`

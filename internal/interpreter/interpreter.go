@@ -2,11 +2,12 @@ package interpreter
 
 import (
 	"fmt"
-	"github.com/taskcluster/json-e/interpreter/parser"
 	"math"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/taskcluster/json-e/internal/interpreter/parser"
 )
 
 type NewInterpreter struct {

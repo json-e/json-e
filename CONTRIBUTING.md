@@ -38,17 +38,8 @@ If you have fewer Python versions installed, that's OK -- when you make a PR it 
 
 ## Go
 
-The Go implementation is located in `./jsone.go` and `./interpreter`.
-
-Install dependencies:
-```
-GOPATH=$(pwd) go get -t ./...
-```
-
-To run the Go test run
-```
-GOPATH=$(pwd) go test -v -race ./...
-```
+The Go implementation is located in `internal/`, with a small stub in `jsone.go` in the root directory.
+This follows the usual GoModules form, so running `go test ./...` in the root dir will run the tests.
 
 ## Rust
 
