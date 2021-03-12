@@ -3,7 +3,7 @@ import jsyaml from 'js-yaml';
 import { Heading } from 'rebass';
 import CodeMirror from '@skidding/react-codemirror';
 import CopyToClipboard from 'react-copy-to-clipboard';
-import jsone from '../..';
+import jsone from '../../..';
 
 const codeMirrorOptions = {
   mode: 'yaml',

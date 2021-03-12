@@ -86,7 +86,7 @@ Note: Type definitions are included with this package, so there's no need of sep
 As 'json-e' is a CommonJS module, the package must be imported like this [(more..)](https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require) for type definitions to work properly:
 
 ```typescript
-import jsone = require('json-e');
+const jsone = require('json-e');
 
 var template = {a: {$eval: "foo.bar"}};
 var context = {foo: {bar: "zoo"}};
