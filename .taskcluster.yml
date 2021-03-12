@@ -185,10 +185,11 @@ tasks:
                       cd repo &&
                       git config advice.detachedHead false &&
                       git checkout ${repo.ref} &&
-                      cd demo &&
-                      yarn &&
-                      yarn build &&
-                      cd .. &&
+                      ( cd js &&
+                        yarn ) &&
+                      ( cd demo &&
+                        yarn &&
+                        yarn build ) &&
                       ./deploy.sh
                 metadata:
                   name: demo site build and deploy
