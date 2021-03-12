@@ -1,4 +1,4 @@
 [tool.towncrier]
     package = "jsone"
-    package_dir = "."
+    package_dir = "py"
     filename = "CHANGELOG.rst"
