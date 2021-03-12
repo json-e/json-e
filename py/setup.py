@@ -9,7 +9,7 @@ description='A data-structure parameterization system written for embedding cont
 long_description = '''\
 {description}.
 
-See https://taskcluster.github.io/json-e/ for usage information.
+See https://json-e.js.org for usage information.
 '''.format(description=description)
 
 setup(name='json-e',
@@ -17,7 +17,7 @@ setup(name='json-e',
     description=description,
     long_description=long_description,
     author='Dustin J. Mitchell',
-    url='https://taskcluster.github.io/json-e/',
+    url='https://json-e.js.org',
     author_email='dustin@mozilla.com',
     packages=['jsone'],
     license='MPL2',

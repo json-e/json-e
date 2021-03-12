@@ -6,7 +6,7 @@ edition = "2018"
 license = "MPL-2.0"
 repository = "https://github.com/taskcluster/json-e"
 documentation = "https://docs.rs/json-e/"
-homepage = "https://docs.rs/json-e/"
+homepage = "https://json-e.js.org"
 description = "A data-structure parameterization system for embedding context in JSON objects"
 
 [dependencies]
