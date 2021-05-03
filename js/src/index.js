@@ -475,6 +475,9 @@ let parseUntilTerminator = (source, terminator, context) => {
 };
 
 module.exports = (template, context = {}) => {
+  if (typeof context !== 'object') {
+    throw new TemplateError('context must be an object');
+  }
   let test = Object.keys(context).every(v => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v));
   if (!test) {
     throw new TemplateError('top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');

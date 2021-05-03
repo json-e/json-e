@@ -8,6 +8,10 @@ suite('misc', function() {
     assume(jsone({$eval: 'my_builtin(3, 4)'}, {my_builtin})).eql(5);
   });
 
+  test('non-object context is not allowed', function() {
+    assume(() => jsone({}, "I am not an object")).throws(/must be an object/);
+  });
+
   test('time doesn\'t change mid-evaluation (operator)', function() {
     let template = [...Array(1000).keys()].map(() => ({$fromNow: ''}));
     let result = new Set(jsone(template, {}));
