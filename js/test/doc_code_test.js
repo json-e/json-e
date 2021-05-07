@@ -29,8 +29,8 @@ suite("docs code examples", () => {
 
   const specs = yaml.loadAll(foundSpecs.join("---\n"));
 
-  before(() => tk.freeze(TEST_DATE));
-  after(() => tk.reset());
+  suiteSetup(() => tk.freeze(TEST_DATE));
+  suiteTeardown(() => tk.reset());
 
   specs
     .filter((spec) => spec && spec.template)

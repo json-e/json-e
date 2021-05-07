@@ -1,4 +1,0 @@
---ui tdd
---timeout 5s
---reporter spec
---compilers js:source-map-support/register
