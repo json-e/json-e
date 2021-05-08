@@ -22,8 +22,8 @@ tasks:
   in:
     $let:
       environments:
-        - image: node:6
-          name: node:6 tests
+        - image: node:15
+          name: node:15 tests
           command:
             - /bin/bash
             - '--login'
@@ -50,7 +50,7 @@ tasks:
               cd js &&
               yarn &&
               yarn test
-        - image: 'node:10'
+        - image: 'node:15'
           name: node import test
           command:
             - /bin/bash

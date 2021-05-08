@@ -23,8 +23,8 @@ suite('json-e', () => {
     }
   });
 
-  before(() => tk.freeze(TEST_DATE));
-  after(() => tk.reset());
+  suiteSetup(() => tk.freeze(TEST_DATE));
+  suiteTeardown(() => tk.reset());
 
   _.forEach(spec, (C, s) => suite(s, function() {
     C.forEach(c => {
