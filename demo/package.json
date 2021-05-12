@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@skidding/react-codemirror": "^1.0.2",
-    "codemirror": "^5.57.0",
+    "codemirror": "^5.58.2",
     "dedent-js": "^1.0.1",
     "js-yaml": "^3.14.0",
     "lodash": "^4.17.20",
