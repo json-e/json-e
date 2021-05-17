@@ -8,7 +8,7 @@ var stringify = require('json-stable-stringify-without-jsonify');
 var {
   isString, isNumber, isBool,
   isArray, isObject,
-   isTruthy
+  isTruthy, isFunction,
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError, SyntaxError} = require('./error');
@@ -138,7 +138,11 @@ operators.$if = (template, context) => {
 operators.$json = (template, context) => {
   checkUndefinedProperties(template, ['\\$json']);
 
-  return stringify(render(template['$json'], context));
+  const rendered = render(template['$json'], context);
+  if (containsFunctions(rendered)) {
+    throw new TemplateError('evaluated template contained uncalled functions');
+  }
+  return stringify(rendered);
 };
 
 operators.$let = (template, context) => {
@@ -474,6 +478,23 @@ let parseUntilTerminator = (source, terminator, context) => {
     return {result, offset: next.start + 2};
 };
 
+let containsFunctions = (rendered) => {
+  if (isFunction(rendered)) {
+    return true;
+  } else if (Array.isArray(rendered)) {
+    return rendered.some(containsFunctions);
+  } else if (typeof rendered === 'object' && rendered !== null) {
+    for (const key of Object.keys(rendered)) {
+      if (containsFunctions(rendered[key])) {
+        return true;
+      }
+    }
+    return false;
+  } else {
+    return false;
+  }
+};
+
 module.exports = (template, context = {}) => {
   if (typeof context !== 'object') {
     throw new TemplateError('context must be an object');
@@ -486,6 +507,10 @@ module.exports = (template, context = {}) => {
   let result = render(template, context);
   if (result === deleteMarker) {
     return null;
+  }
+
+  if (containsFunctions(result)) {
+    throw new TemplateError('evaluated template contained uncalled functions');
   }
 
   return result;

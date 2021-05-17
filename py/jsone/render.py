@@ -8,6 +8,7 @@ from .six import viewitems
 from .parser import Parser, Tokenizer
 from .interpreter import Interpreter
 import functools
+from inspect import isfunction, isbuiltin
 
 operators = {}
 IDENTIFIER_RE = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*$')
@@ -186,6 +187,8 @@ def ifConstruct(template, context):
 def jsonConstruct(template, context):
     checkUndefinedProperties(template, [r'\$json'])
     value = renderValue(template['$json'], context)
+    if containsFunctions(value):
+        raise TemplateError('evaluated template contained uncalled functions')
     return json.dumps(value, separators=(',', ':'), sort_keys=True, ensure_ascii=False)
 
 
@@ -374,6 +377,23 @@ def sort(template, context):
 
     # unzip the schwartzian transform
     return list(e[1] for e in sorted(to_sort))
+
+
+def containsFunctions(rendered):
+    if hasattr(rendered, '__call__'):
+        return True
+    elif isinstance(rendered, list):
+        for e in rendered:
+            if containsFunctions(e):
+                return True
+        return False
+    elif isinstance(rendered, dict):
+        for k, v in viewitems(rendered):
+            if containsFunctions(v):
+                return True
+        return False
+    else:
+        return False
 
 
 def renderValue(template, context):

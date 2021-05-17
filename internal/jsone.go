@@ -42,6 +42,13 @@ func Render(template interface{}, context map[string]interface{}) (interface{}, 
 		result = nil
 	}
 
+	if containsFunctions(result) {
+		return nil, TemplateError{
+			Message: "evaluated template contained uncalled functions",
+			Template: template,
+		}
+	}
+
 	// return result
 	return result, nil
 }
@@ -1038,6 +1045,27 @@ func init() {
 }
 
 var reservedIdentifiers = regexp.MustCompile(`^\$[a-zA-Z][a-zA-Z0-9]*$`)
+
+func containsFunctions(rendered interface{}) bool {
+	switch v := rendered.(type) {
+	case []interface{}:
+		for _, val := range v {
+			if containsFunctions(val) {
+				return true
+			}
+		}
+		return false
+	case map[string]interface{}:
+		for _, val := range v {
+			if containsFunctions(val) {
+				return true
+			}
+		}
+		return false
+	default:
+		return i.IsWrappedFunction(rendered)
+	}
+}
 
 func render(template interface{}, context map[string]interface{}) (interface{}, error) {
 	if template == nil {
