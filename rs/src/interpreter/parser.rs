@@ -202,7 +202,7 @@ fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
         Index(Box<Node<'a>>),
         Slice(Option<Box<Node<'a>>>, Option<Box<Node<'a>>>),
         Dot(&'a str),
-    };
+    }
 
     fn index_op<'a>(input: (&'a str, Node<'a>, &'a str)) -> Result<IndexOp<'a>, ()> {
         Ok(IndexOp::Index(Box::new(input.1)))
