@@ -1,7 +1,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import re
-from .render import renderValue
+from .render import renderValue, containsFunctions
 from .shared import JSONTemplateError, DeleteMarker, TemplateError, fromNow
 from . import builtins
 
@@ -20,4 +20,6 @@ def render(template, context):
     rv = renderValue(template, full_context)
     if rv is DeleteMarker:
         return None
+    if containsFunctions(rv):
+        raise TemplateError('evaluated template contained uncalled functions')
     return rv

@@ -5311,6 +5311,41 @@ title: 'function call with missing argument in brackets'
 context: {}
 template: {$eval: 'max(, 0)'}
 error:   "SyntaxError: Found: , token, expected one of: !, (, +, -, [, false, identifier, null, number, string, true, {"
+---
+title: 'uncalled function'
+context: {}
+template: {$eval: 'fromNow'}
+error:   "TemplateError: evaluated template contained uncalled functions"
+---
+title: 'list expression with uncalled functions'
+context: {}
+template: {$eval: '[min, max]'}
+error:   "TemplateError: evaluated template contained uncalled functions"
+---
+title: 'list with uncalled function inside'
+context: {}
+template: [{$eval: 'min'}]
+error:   "TemplateError: evaluated template contained uncalled functions"
+---
+title: 'object containing uncalled function'
+context: {}
+template: {maximum: {$eval: 'max'}}
+error:   "TemplateError: evaluated template contained uncalled functions"
+---
+title: 'deep data structure with uncalled functions'
+context: {}
+template: [{minimum: {$eval: 'min'}}, {maximum: {$eval: 'max'}}]
+error:   "TemplateError: evaluated template contained uncalled functions"
+---
+title: '$json with an uncalled function'
+context: {}
+template: {$json: {$eval: 'lowercase'}}
+error:   "TemplateError: evaluated template contained uncalled functions"
+---
+title: '$json with deep uncalled functions'
+context: {}
+template: {$json: [{minimum: {$eval: 'min'}}, {maximum: {$eval: 'max'}}]}
+error:   "TemplateError: evaluated template contained uncalled functions"
 ################################################################################
 ---
 section: Regression tests
