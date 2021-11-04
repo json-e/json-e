@@ -99,7 +99,9 @@ fn interpolate(mut source: &str, context: &Context) -> Result<String> {
                     let expr = source.get(offset + 2..).unwrap();
                     let (parsed, remainder) = interpreter::parse_partial(expr)?;
                     if remainder.get(0..1) != Some("}") {
-                        bail!("unterminated ${..} expression");
+                        // Hide '{' in this error message from the formatting machinery in bail macro
+                        let msg = "unterminated ${..} expression";
+                        bail!(msg);
                     }
                     let eval_result = interpreter::evaluate(&parsed, context)?;
 
