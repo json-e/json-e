@@ -1,5 +1,0 @@
----
-# In tests we know we are only node
-env:
-  mocha: true
-  node: true

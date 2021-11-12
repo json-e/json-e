@@ -1,1 +1,0 @@
-All implementations now enforce that context is an object.  This was always the intent, but the JS and Python implementations' validation was not particularly thorough.

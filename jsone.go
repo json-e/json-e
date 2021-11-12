@@ -1,5 +1,5 @@
 package jsone
 
-import impl "github.com/taskcluster/json-e/internal"
+import newlocation "github.com/json-e/json-e"
 
-var Render = impl.Render
+var Render = newlocation.Render
