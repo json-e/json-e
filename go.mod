@@ -1,4 +1,4 @@
-module github.com/taskcluster/json-e
+module github.com/json-e/json-e
 
 go 1.14
 
