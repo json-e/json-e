@@ -1,4 +1,4 @@
-module github.com/json-e/json-e
+module github.com/json-e/json-e/v4
 
 go 1.14
 

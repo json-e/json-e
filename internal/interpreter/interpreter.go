@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/json-e/json-e/internal/interpreter/parser"
+	"github.com/json-e/json-e/v4/internal/interpreter/parser"
 )
 
 type NewInterpreter struct {
