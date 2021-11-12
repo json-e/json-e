@@ -23,7 +23,7 @@ finish in finite time.
 ## Changes
 
 See
-[CHANGELOG.rst](https://github.com/taskcluster/json-e/blob/main/CHANGELOG.rst)
+[CHANGELOG.rst](https://github.com/json-e/json-e/blob/main/CHANGELOG.rst)
 for the changes in each version of this library.
 
 # Interface
@@ -122,12 +122,12 @@ print(jsone.render(template, context))  # -> 3
 
 ## Go (golang)
 
-The [golang package for json-e](https://godoc.org/github.com/taskcluster/json-e) exposes a `Render` function:
+The [golang package for json-e](https://pkg.go.dev/github.com/json-e/json-e) exposes a `Render` function:
 
 ```golang
 import (
   "fmt"
-  "github.com/taskcluster/json-e"
+  "github.com/json-e/json-e"
 )
 
 // Template must be given using types:
