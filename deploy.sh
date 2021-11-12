@@ -13,7 +13,7 @@ fi
 
 SHA=`git rev-parse --short HEAD`
 GITHUB_PROJECT=$(echo $GITHUB_BASE_REPO_URL | sed 's/^https:\/\/github.com\///' | sed 's/.git$//')
-SECRETS_URL="$TASKCLUSTER_PROXY_URL/api/secrets/v1/secret/project/json-e/json-e-deploy"
+SECRETS_URL="$TASKCLUSTER_PROXY_URL/api/secrets/v1/secret/project/taskcluster/json-e-deploy"
 
 echo "Using project: $GITHUB_PROJECT"
 echo "Using secrets: $SECRETS_URL"

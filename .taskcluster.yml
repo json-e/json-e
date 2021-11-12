@@ -164,7 +164,7 @@ tasks:
                 created: {$fromNow: ''}
                 deadline: {$fromNow: '60 minutes'}
                 scopes:
-                  - secrets:get:project/json-e/json-e-deploy
+                  - secrets:get:project/taskcluster/json-e-deploy
                 routes:
                   - notify.email.taskcluster-notifications@mozilla.com.on-failed
                   - notify.email.taskcluster-notifications@mozilla.com.on-exception
