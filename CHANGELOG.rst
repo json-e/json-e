@@ -1,3 +1,19 @@
+Jsone  (2021-11-17)
+===================
+
+Features
+--------
+
+- The JSON-e GitHub repository has been moved to https://github.com/json-e/json-e. (#430)
+
+
+Bugfixes
+--------
+
+- Emit an error on uncalled functions in all implementations. (#158)
+- All implementations now enforce that context is an object.  This was always the intent, but the JS and Python implementations' validation was not particularly thorough. (#408)
+
+
 Jsone 4.4.1 (2021-03-12)
 ========================
 
