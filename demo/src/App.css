@@ -23,6 +23,11 @@ html, body, #root {
   padding: 2em;
 }
 
+.sidebar .heading {
+  display: flex;
+  gap: 1em;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
