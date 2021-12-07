@@ -8,6 +8,7 @@ import readmeTree from './readme';
 import Section from './Section';
 import SidebarMenu from './SidebarMenu';
 import Playground from './Playground';
+import logo from './logo-white.png';
 
 const readme = readmeTree(rawReadme);
 
@@ -43,13 +44,18 @@ class App extends React.Component {
       <div className="wrap">
         <div className="main">
           <aside className="sidebar">
-            <Heading f={3}>
-              JSON-e v
-              {packageinfo.version}
-            </Heading>
-            <Text>
-              A data-structure parameterization system for embedding context in JSON objects
-            </Text>
+            <div className="heading">
+              <img src={logo} alt="Logo" />
+              <div>
+                <Heading f={2}>
+                  JSON-e v
+                  {packageinfo.version}
+                </Heading>
+                <Text>
+                  A data-structure parameterization system for embedding context in JSON objects
+                </Text>
+              </div>
+            </div>
             <hr />
             <ul>
               {tabs.map(
