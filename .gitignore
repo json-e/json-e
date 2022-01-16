@@ -40,7 +40,6 @@ jspm_packages
 *.pyc
 .eggs
 json_e.egg-info
-docs/*
 build/
 dist/
 .hypothesis/
@@ -59,3 +58,4 @@ env
 
 rs/target
 rs/**/*.rs.bk
+book

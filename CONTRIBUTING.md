@@ -46,13 +46,9 @@ This follows the usual GoModules form, so running `go test ./...` in the root di
 The Rust implementation is in `rs/`.
 Within that directory, you will find a `Cargo.toml` and the usual Rust development tools apply: `cargo test`, `cargo build`, and so on.
 
-# Demo development
+# Documentation
 
-The demo website is a [Neutrino](https://neutrino.js.org/) app hosted in
-`demo/`.  Follow the usual Neutrino development process (`yarn install && yarn
-start`) there.
-
-The resulting application embeds and enriches the README file.
+The documentation uses [mdBook](https://rust-lang.github.io/mdBook/), with source files in `docs/`.
 
 # Changelog
 

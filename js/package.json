@@ -6,9 +6,7 @@
   "types": "./src/index.d.ts",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "test": "yarn lint && mocha test/*_test.js",
-    "build-demo": "cd demo && yarn && yarn build",
-    "start-demo": "cd demo && yarn && yarn start"
+    "test": "yarn lint && mocha test/*_test.js"
   },
   "files": [
     "src"

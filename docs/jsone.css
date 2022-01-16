@@ -1,0 +1,33 @@
+.json-e-triple {
+  border-left: solid 4px #0c7;
+  margin-top: 1em;
+}
+
+.json-e-triple div {
+  width: calc(100% - 1em);
+  margin: 0.5em;
+}
+
+.json-e-triple h4 {
+  margin: 5px 5px 0px 5px;
+}
+
+.json-e-triple div pre {
+  margin: 0px;
+}
+
+code.json-e {
+  width: 100%;
+}
+
+.json-e-triple textarea {
+  width: calc(100% - 1em);
+  padding: 0.5em;
+  
+  border: 0;
+  background: var(--theme-hover);
+  color: var(--fg);
+
+  font-family: "Source Code Pro", Consolas, "Ubuntu Mono", Menlo, "DejaVu Sans Mono", monospace, monospace !important;
+  font-size: 0.875em;
+}
