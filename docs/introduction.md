@@ -18,12 +18,3 @@ JSON-e is also designed to be safe for use on untrusted data. It never uses
 also disallows unbounded iteration, so any JSON-e rendering operation will
 finish in finite time.
 
-## Full Documentation
-
-See [json-e.js.org](https://json-e.js.org).
-
-## Changes
-
-See
-[CHANGELOG.rst](https://github.com/json-e/json-e/blob/main/CHANGELOG.rst)
-for the changes in each version of this library.
