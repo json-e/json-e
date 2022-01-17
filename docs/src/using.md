@@ -128,7 +128,7 @@ func main() {
 
 The Rust crate exposes a `render` function which takes the template and context as `serde_json` `Value` objects, and returns an object of the same type.
 
-```rust
+```rust,ignore
 use serde_json::json;
 
 fn main() {

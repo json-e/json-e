@@ -2,7 +2,7 @@
 authors = ["JSON-e Developers"]
 language = "en"
 multilingual = false
-src = "docs"
+src = "docs/src"
 title = "JSON-e"
 
 [output.html]

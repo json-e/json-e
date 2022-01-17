@@ -19,4 +19,8 @@
   * `cargo publish --allow-dirty`
   * `rm specification.yml` - ..and remove the temporary file.  DO NOT CHECK IT IN!
 * Nothing to do for Go
-* Demo/docs site is deployed on every push
+* Documentation:
+  * Ensure you have `mdbook` installed (https://rust-lang.github.io/mdBook/guide/installation.html).
+  * Ensure you have a node environment set up.
+  * Ensure you have SSH access to push to the json-e/json-e repository.
+  * Run `./deploy.sh`
