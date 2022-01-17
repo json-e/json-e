@@ -40,8 +40,16 @@ code.json-e {
 }
 
 /* color the sidebar "JSON-e green" */
-.sidebar {
+@media (prefers-color-scheme: light) {
+  .sidebar {
     background: #0c7;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .sidebar {
+    background-color: #00331e;
+  }
 }
 
 /* move the scrollbox down 128px to make room for the logo */
