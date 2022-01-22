@@ -51,12 +51,12 @@ Within that directory, you will find a `Cargo.toml` and the usual Rust developme
 The documentation uses [mdBook](https://rust-lang.github.io/mdBook/), with source files in `docs/`.
 For the most part, it's fine to modify documentation without running `mdbook`, following the examples elsewhere in the file.
 
-To run `mdbook build` or `mdbook server`, you will need to build the JS dependencies of the playground application:
+To use the playground, you will need to roll up the browser-compatible version of JSON-e:
 
 ```
-cd docs/deps
+cd js
 yarn
-./node_modules/.bin/webpack-cli --mode production
+yarn rollup
 ```
 
 # Changelog

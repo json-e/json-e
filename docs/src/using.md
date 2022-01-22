@@ -4,11 +4,17 @@ JSON-e is intended for cross-platform usage, and has native implementations in s
 
 ## JavaScript
 
-The JS module is installed with either of
+The JS module is installed into a Node project with
 
 ```shell
 npm install --save json-e
 yarn add json-e
+```
+
+or used from a CDN with
+
+```
+<script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/json-e"></script>
 ```
 
 The module exposes following interface:

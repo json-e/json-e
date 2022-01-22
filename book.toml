@@ -7,7 +7,7 @@ title = "JSON-e"
 
 [output.html]
 theme = "docs/theme"
-additional-js = ["docs/deps/dist/main.js", "docs/jsone.js"]
+additional-js = ["docs/jsone.js", "js/dist/index.js"]
 additional-css = ["docs/jsone.css"]
 git-repository-url = "https://github.com/json-e/json-e"
 edit-url-template = "https://github.com/json-e/json-e/edit/main/{path}"

@@ -6,11 +6,11 @@ TARGET_BRANCH="gh-pages"
 BUILD_DIR="book"
 SHA=`git rev-parse --short HEAD`
 
-echo === rebuilding deps
+echo === rebuilding dist
 (
-    cd docs/deps
+    cd js
     yarn
-    ./node_modules/.bin/webpack-cli --mode production
+    yarn rollup
 )
 
 echo === building book
