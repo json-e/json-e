@@ -39,20 +39,17 @@ code.json-e {
     margin-right: auto;
 }
 
-/* color the sidebar "JSON-e green" */
-@media (prefers-color-scheme: light) {
-  .sidebar {
-    background: #0c7;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .sidebar {
-    background-color: #00331e;
-  }
-}
-
 /* move the scrollbox down 128px to make room for the logo */
 .sidebar .sidebar-scrollbox {
     top: calc(128px + 1em);
+}
+
+/* in the 'light' theme, color the sidebar the JSON-e green */
+.light {
+    --sidebar-bg: #0c7;
+}
+
+/* and give it a nice stripe in other themes */
+.sidebar {
+	border-right: 3px #0c7 solid;
 }
