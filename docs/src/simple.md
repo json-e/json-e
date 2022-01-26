@@ -20,7 +20,7 @@ result:   {message: 'hello world', 'k=1': true}
 ```
 
 The bit inside the `${..}` is an [expression](./expressions.html), and must evaluate to something
-that interpolates obviously into a string (so, a string, number, boolean,).
+that interpolates obviously into a string (a string, number, or boolean).
 If it is null, then the expression interpolates into an empty string.
 
 Values interpolate as their JSON literal values:
@@ -39,4 +39,10 @@ context: {name: 'foo', value: 'bar'}
 result: {"tc_foo": "bar"}
 ```
 
-The string `${` can be escaped as `$${`.
+The string `${` can be escaped as `$${`:
+
+```yaml,json-e
+template: {"literal:$${name}": "literal"}
+context: {name: 'foo'}
+result: {"literal:$${name}": "literal"}
+```
