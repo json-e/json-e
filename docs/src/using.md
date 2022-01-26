@@ -11,12 +11,6 @@ npm install --save json-e
 yarn add json-e
 ```
 
-or used from a CDN with
-
-```
-<script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/json-e"></script>
-```
-
 The module exposes following interface:
 
 ```javascript
@@ -45,11 +39,17 @@ in the context, which must guard against such behavior.
 
 ### Browser
 
-JSON-e is distributed as a CommonJS package is not designed to be included
-directly in a browser with `<script>`. Instead, it must be incorporated using a
-tool that understands CommonJS such as Webpack.  See
-[Neutrino](https://neutrino.js.org/) for an easy, configuration-free way to
-build such applications.
+JSON-e has a single-file, browser-compatible implementation in `dist/index.js` in the NPM release.
+This file can be used directly in a browser to add JSON-e functionality.
+
+JSON-e can be used from a CDN with
+
+```
+<script
+  type="text/javascript"
+  src="https://cdn.jsdelivr.net/npm/json-e">
+</script>
+```
 
 ## TypeScript
 
