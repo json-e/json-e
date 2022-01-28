@@ -44,7 +44,7 @@ This file can be used directly in a browser to add JSON-e functionality.
 
 JSON-e can be used from a CDN with
 
-```
+```html
 <script
   type="text/javascript"
   src="https://cdn.jsdelivr.net/npm/json-e">
