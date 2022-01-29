@@ -1,0 +1,55 @@
+.json-e-triple {
+  border-left: solid 4px #0c7;
+  margin-top: 1em;
+}
+
+.json-e-triple div {
+  width: calc(100% - 1em);
+  margin: 0.5em;
+}
+
+.json-e-triple h4 {
+  margin: 5px 5px 0px 5px;
+}
+
+.json-e-triple div pre {
+  margin: 0px;
+}
+
+code.json-e {
+  width: 100%;
+}
+
+.json-e-triple textarea {
+  width: calc(100% - 1em);
+  padding: 0.5em;
+  
+  border: 0;
+  background: var(--theme-hover);
+  color: var(--fg);
+
+  font-family: "Source Code Pro", Consolas, "Ubuntu Mono", Menlo, "DejaVu Sans Mono", monospace, monospace !important;
+  font-size: 0.875em;
+}
+
+.json-e-logo img {
+    display: block;
+    margin-top: 1em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* move the scrollbox down 128px to make room for the logo */
+.sidebar .sidebar-scrollbox {
+    top: calc(128px + 1em);
+}
+
+/* in the 'light' theme, color the sidebar the JSON-e green */
+.light {
+    --sidebar-bg: #0c7;
+}
+
+/* and give it a nice stripe in other themes */
+.sidebar {
+	border-right: 3px #0c7 solid;
+}

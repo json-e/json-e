@@ -1,0 +1,15 @@
+[book]
+authors = ["JSON-e Developers"]
+language = "en"
+multilingual = false
+src = "docs/src"
+title = "JSON-e"
+
+[output.html]
+theme = "docs/theme"
+additional-js = ["docs/jsone.js", "js/dist/index.js"]
+additional-css = ["docs/jsone.css"]
+git-repository-url = "https://github.com/json-e/json-e"
+edit-url-template = "https://github.com/json-e/json-e/edit/main/{path}"
+site-url = "https://json-e.js.org"
+cname = "json-e.js.org"
