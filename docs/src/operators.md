@@ -339,6 +339,8 @@ The `$sort` operator sorts the given array. It takes a `by(var)` property which
 should evaluate to a comparable value for each element. The `by(var)` property
 defaults to the identity function.
 
+The values sorted must all be of the same type, and either a number or a string.
+
 ```yaml,json-e
 template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
