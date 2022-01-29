@@ -1828,6 +1828,31 @@ context:  {round: "0"}
 template: {foo: {$eval: number(round)}}
 result:   {foo: 0}
 ---
+title:    giving a number to number fails
+context:  {round: 0}
+template: {foo: {$eval: number(round)}}
+error: true
+---
+title:    giving a bool to number fails
+context:  {round: false}
+template: {foo: {$eval: number(round)}}
+error: true
+---
+title:    giving null to number fails
+context:  {round: null}
+template: {foo: {$eval: number(round)}}
+error: true
+---
+title:    giving an array to number fails
+context:  {round: [1]}
+template: {foo: {$eval: number(round)}}
+error: true
+---
+title:    giving an object to number fails
+context:  {round: {one: 1}}
+template: {foo: {$eval: number(round)}}
+error: true
+---
 title: strip space
 context: {}
 template: {$eval: "strip('  abc   ')"}

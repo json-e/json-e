@@ -54,7 +54,7 @@ template:
   - {$eval: 'uppercase("Fools!")'}
   # convert string, number, boolean, or array to string
   - {$eval: 'str(130)'}
-  # convert a string to a number
+  # convert a string to a number (string is required)
   - {$eval: 'number("310")'}
   # strip whitespace from left, right, or both ends of a string
   - {$eval: 'lstrip("  room  ")'}
