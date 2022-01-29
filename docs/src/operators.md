@@ -173,7 +173,9 @@ result:   3
 The `$map` operator evaluates an expression for each value of the given array or object,
 constructing the result as an array or object of the evaluated values.
 
-When given an array, map always returns an array.
+### Over Arrays
+
+When given an array, $map always returns an array.
 
 ```yaml,json-e
 template:
@@ -183,6 +185,8 @@ context:  {a: 1}
 result:   [3, 5, 7]
 ```
 
+The `each` function can define two variables, in which case the second is the 0-based index of the element.
+
 ```yaml,json-e
 template:
   $map: [2, 4, 6]
@@ -190,29 +194,28 @@ template:
 context:  {a: 1}
 result:   [3, 6, 9]
 ```
-The array or object is the value of the `$map` property, and the expression to evaluate
-is given by `each(var[,key|index])` where `var` is the name of the variable containing each
-element and `key|index` is either the object key or array index of the value. In the case of 
-iterating over an object and no `key|index` var name is given, `var` will be an object with 
-two keys: `key` and `val`. These keys correspond to a key in the object and its corresponding value.
 
-When $map is given an object, the expression defined by `each(var)` must evaluate to an
-object for each key/value pair (`key` and `val`). The objects constructed by each 'each(var)'
-can then be merged internally to give the resulting object with later keys overwriting 
-the previous ones. Otherwise the expression becomes invalid for the $map operator.
+### Over Objects
 
-```yaml,json-e
-template:
-  $map: {a: 1, b: 2, c: 3}
-  each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
-context:  {}
-result: {ax: 2, bx: 3, cx: 4}
-```
+When given an object, $map always returns an object.
+The `each` function defines variables for the value and key, in that order.
+It must evaluate to an object for each item.
+These objects are then merged, with later keys overwriting earlier keys, to produce the final object.
 
 ```yaml,json-e
 template:
   $map: {a: 1, b: 2, c: 3}
   each(v,k): {'${k}x': {$eval: 'v + 1'}}
+context:  {}
+result: {ax: 2, bx: 3, cx: 4}
+```
+
+If `each` is defined to take only one variable, then that variable is an object with properties `key` and `val`.
+
+```yaml,json-e
+template:
+  $map: {a: 1, b: 2, c: 3}
+  each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 ```
