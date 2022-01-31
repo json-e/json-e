@@ -175,7 +175,7 @@ constructing the result as an array or object of the evaluated values.
 
 ### Over Arrays
 
-When given an array, $map always returns an array.
+When given an array, `$map` always returns an array.
 
 ```yaml,json-e
 template:
@@ -197,7 +197,7 @@ result:   [3, 6, 9]
 
 ### Over Objects
 
-When given an object, $map always returns an object.
+When given an object, `$map` always returns an object.
 The `each` function defines variables for the value and key, in that order.
 It must evaluate to an object for each item.
 These objects are then merged, with later keys overwriting earlier keys, to produce the final object.
