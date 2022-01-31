@@ -174,9 +174,6 @@ finish in finite time.</p>
 <pre><code class="language-shell">npm install --save json-e
 yarn add json-e
 </code></pre>
-<p>or used from a CDN with</p>
-<pre><code>&lt;script async type=&quot;text/javascript&quot; src=&quot;https://cdn.jsdelivr.net/npm/json-e&quot;&gt;&lt;/script&gt;
-</code></pre>
 <p>The module exposes following interface:</p>
 <pre><code class="language-javascript">import jsone from 'json-e';
 
@@ -196,11 +193,14 @@ operations should be handled before rendering the template.</p>
 <p><em>NOTE</em>: If the template is untrusted, it can pass arbitrary data to functions
 in the context, which must guard against such behavior.</p>
 <h3 id="browser"><a class="header" href="#browser">Browser</a></h3>
-<p>JSON-e is distributed as a CommonJS package is not designed to be included
-directly in a browser with <code>&lt;script&gt;</code>. Instead, it must be incorporated using a
-tool that understands CommonJS such as Webpack.  See
-<a href="https://neutrino.js.org/">Neutrino</a> for an easy, configuration-free way to
-build such applications.</p>
+<p>JSON-e has a single-file, browser-compatible implementation in <code>dist/index.js</code> in the NPM release.
+This file can be used directly in a browser to add JSON-e functionality.</p>
+<p>JSON-e can be used from a CDN with</p>
+<pre><code class="language-html">&lt;script
+  type=&quot;text/javascript&quot;
+  src=&quot;https://cdn.jsdelivr.net/npm/json-e&quot;&gt;
+&lt;/script&gt;
+</code></pre>
 <h2 id="typescript"><a class="header" href="#typescript">TypeScript</a></h2>
 <p>The JS module is installed with either of</p>
 <pre><code class="language-shell">npm install --save json-e
@@ -298,7 +298,7 @@ context:  {key: 'world', num: 1}
 result:   {message: 'hello world', 'k=1': true}
 </code></pre>
 <p>The bit inside the <code>${..}</code> is an <a href="./expressions.html">expression</a>, and must evaluate to something
-that interpolates obviously into a string (so, a string, number, boolean,).
+that interpolates obviously into a string (a string, number, or boolean).
 If it is null, then the expression interpolates into an empty string.</p>
 <p>Values interpolate as their JSON literal values:</p>
 <pre><code class="language-yaml json-e">template: [&quot;number: ${num}&quot;, &quot;booleans: ${t} ${f}&quot;, &quot;null: ${nil}&quot;]
@@ -310,7 +310,11 @@ result: [&quot;number: 3&quot;, &quot;booleans: true false&quot;, &quot;null: &q
 context: {name: 'foo', value: 'bar'}
 result: {&quot;tc_foo&quot;: &quot;bar&quot;}
 </code></pre>
-<p>The string <code>${</code> can be escaped as <code>$${</code>.</p>
+<p>The string <code>${</code> can be escaped as <code>$${</code>:</p>
+<pre><code class="language-yaml json-e">template: {&quot;literal:$${name}&quot;: &quot;literal&quot;}
+context: {name: 'foo'}
+result: {&quot;literal:$${name}&quot;: &quot;literal&quot;}
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="operators"><a class="header" href="#operators">Operators</a></h1>
 <p>JSON-e defines a bunch of operators. Each is represented as an object with a
 property beginning with <code>$</code>. This object can be buried deeply within the
@@ -430,37 +434,36 @@ result:   3
 <h2 id="map"><a class="header" href="#map"><code>$map</code></a></h2>
 <p>The <code>$map</code> operator evaluates an expression for each value of the given array or object,
 constructing the result as an array or object of the evaluated values.</p>
-<p>When given an array, map always returns an array.</p>
+<h3 id="over-arrays"><a class="header" href="#over-arrays">Over Arrays</a></h3>
+<p>When given an array, <code>$map</code> always returns an array.</p>
 <pre><code class="language-yaml json-e">template:
   $map: [2, 4, 6]
   each(x): {$eval: 'x + a'}
 context:  {a: 1}
 result:   [3, 5, 7]
 </code></pre>
+<p>The <code>each</code> function can define two variables, in which case the second is the 0-based index of the element.</p>
 <pre><code class="language-yaml json-e">template:
   $map: [2, 4, 6]
   each(x,i): {$eval: 'x + a + i'}
 context:  {a: 1}
 result:   [3, 6, 9]
 </code></pre>
-<p>The array or object is the value of the <code>$map</code> property, and the expression to evaluate
-is given by <code>each(var[,key|index])</code> where <code>var</code> is the name of the variable containing each
-element and <code>key|index</code> is either the object key or array index of the value. In the case of 
-iterating over an object and no <code>key|index</code> var name is given, <code>var</code> will be an object with 
-two keys: <code>key</code> and <code>val</code>. These keys correspond to a key in the object and its corresponding value.</p>
-<p>When $map is given an object, the expression defined by <code>each(var)</code> must evaluate to an
-object for each key/value pair (<code>key</code> and <code>val</code>). The objects constructed by each 'each(var)'
-can then be merged internally to give the resulting object with later keys overwriting 
-the previous ones. Otherwise the expression becomes invalid for the $map operator.</p>
-<pre><code class="language-yaml json-e">template:
-  $map: {a: 1, b: 2, c: 3}
-  each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
-context:  {}
-result: {ax: 2, bx: 3, cx: 4}
-</code></pre>
+<h3 id="over-objects"><a class="header" href="#over-objects">Over Objects</a></h3>
+<p>When given an object, <code>$map</code> always returns an object.
+The <code>each</code> function defines variables for the value and key, in that order.
+It must evaluate to an object for each item.
+These objects are then merged, with later keys overwriting earlier keys, to produce the final object.</p>
 <pre><code class="language-yaml json-e">template:
   $map: {a: 1, b: 2, c: 3}
   each(v,k): {'${k}x': {$eval: 'v + 1'}}
+context:  {}
+result: {ax: 2, bx: 3, cx: 4}
+</code></pre>
+<p>If <code>each</code> is defined to take only one variable, then that variable is an object with properties <code>key</code> and <code>val</code>.</p>
+<pre><code class="language-yaml json-e">template:
+  $map: {a: 1, b: 2, c: 3}
+  each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 </code></pre>
@@ -553,6 +556,7 @@ result:
 <p>The <code>$sort</code> operator sorts the given array. It takes a <code>by(var)</code> property which
 should evaluate to a comparable value for each element. The <code>by(var)</code> property
 defaults to the identity function.</p>
+<p>The values sorted must all be of the same type, and either a number or a string.</p>
 <pre><code class="language-yaml json-e">template:
   $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
   by(x): 'x.a'
@@ -755,6 +759,8 @@ result:
   - {$eval: 'uppercase(&quot;Fools!&quot;)'}
   # convert string, number, boolean, or array to string
   - {$eval: 'str(130)'}
+  # convert a string to a number (string is required)
+  - {$eval: 'number(&quot;310&quot;)'}
   # strip whitespace from left, right, or both ends of a string
   - {$eval: 'lstrip(&quot;  room  &quot;)'}
   - {$eval: 'rstrip(&quot;  room  &quot;)'}
@@ -765,6 +771,7 @@ result:
   - &quot;fools!&quot;
   - &quot;FOOLS!&quot;
   - &quot;130&quot;
+  - 310
   - &quot;room  &quot;
   - &quot;  room&quot;
   - room

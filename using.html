@@ -161,9 +161,6 @@
 <pre><code class="language-shell">npm install --save json-e
 yarn add json-e
 </code></pre>
-<p>or used from a CDN with</p>
-<pre><code>&lt;script async type=&quot;text/javascript&quot; src=&quot;https://cdn.jsdelivr.net/npm/json-e&quot;&gt;&lt;/script&gt;
-</code></pre>
 <p>The module exposes following interface:</p>
 <pre><code class="language-javascript">import jsone from 'json-e';
 
@@ -183,11 +180,14 @@ operations should be handled before rendering the template.</p>
 <p><em>NOTE</em>: If the template is untrusted, it can pass arbitrary data to functions
 in the context, which must guard against such behavior.</p>
 <h3 id="browser"><a class="header" href="#browser">Browser</a></h3>
-<p>JSON-e is distributed as a CommonJS package is not designed to be included
-directly in a browser with <code>&lt;script&gt;</code>. Instead, it must be incorporated using a
-tool that understands CommonJS such as Webpack.  See
-<a href="https://neutrino.js.org/">Neutrino</a> for an easy, configuration-free way to
-build such applications.</p>
+<p>JSON-e has a single-file, browser-compatible implementation in <code>dist/index.js</code> in the NPM release.
+This file can be used directly in a browser to add JSON-e functionality.</p>
+<p>JSON-e can be used from a CDN with</p>
+<pre><code class="language-html">&lt;script
+  type=&quot;text/javascript&quot;
+  src=&quot;https://cdn.jsdelivr.net/npm/json-e&quot;&gt;
+&lt;/script&gt;
+</code></pre>
 <h2 id="typescript"><a class="header" href="#typescript">TypeScript</a></h2>
 <p>The JS module is installed with either of</p>
 <pre><code class="language-shell">npm install --save json-e

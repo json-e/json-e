@@ -168,7 +168,7 @@ context:  {key: 'world', num: 1}
 result:   {message: 'hello world', 'k=1': true}
 </code></pre>
 <p>The bit inside the <code>${..}</code> is an <a href="./expressions.html">expression</a>, and must evaluate to something
-that interpolates obviously into a string (so, a string, number, boolean,).
+that interpolates obviously into a string (a string, number, or boolean).
 If it is null, then the expression interpolates into an empty string.</p>
 <p>Values interpolate as their JSON literal values:</p>
 <pre><code class="language-yaml json-e">template: [&quot;number: ${num}&quot;, &quot;booleans: ${t} ${f}&quot;, &quot;null: ${nil}&quot;]
@@ -180,7 +180,11 @@ result: [&quot;number: 3&quot;, &quot;booleans: true false&quot;, &quot;null: &q
 context: {name: 'foo', value: 'bar'}
 result: {&quot;tc_foo&quot;: &quot;bar&quot;}
 </code></pre>
-<p>The string <code>${</code> can be escaped as <code>$${</code>.</p>
+<p>The string <code>${</code> can be escaped as <code>$${</code>:</p>
+<pre><code class="language-yaml json-e">template: {&quot;literal:$${name}&quot;: &quot;literal&quot;}
+context: {name: 'foo'}
+result: {&quot;literal:$${name}&quot;: &quot;literal&quot;}
+</code></pre>
 
                     </main>
 

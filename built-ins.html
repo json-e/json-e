@@ -199,6 +199,8 @@ result:
   - {$eval: 'uppercase(&quot;Fools!&quot;)'}
   # convert string, number, boolean, or array to string
   - {$eval: 'str(130)'}
+  # convert a string to a number (string is required)
+  - {$eval: 'number(&quot;310&quot;)'}
   # strip whitespace from left, right, or both ends of a string
   - {$eval: 'lstrip(&quot;  room  &quot;)'}
   - {$eval: 'rstrip(&quot;  room  &quot;)'}
@@ -209,6 +211,7 @@ result:
   - &quot;fools!&quot;
   - &quot;FOOLS!&quot;
   - &quot;130&quot;
+  - 310
   - &quot;room  &quot;
   - &quot;  room&quot;
   - room
