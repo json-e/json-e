@@ -9,8 +9,9 @@
 * Push to release the JS version -- `git push && git push --tags`
 * Release to PyPi:
   * `cd py/`
-  * `python setup.py sdist`
-  * `twine upload dist/json-e-<version>.tar.gz`
+  * (if you haven't already installed it..) `pip install wheel`
+  * `python setup.py sdist bdist_wheel`
+  * `twine upload dist/json-e-<version>.{tar.gz,whl}`
 * Release to npm:
   * `npm publish` in `js/`
 * Release to crates.io:
