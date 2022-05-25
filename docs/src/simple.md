@@ -44,5 +44,5 @@ The string `${` can be escaped as `$${`:
 ```yaml,json-e
 template: {"literal:$${name}": "literal"}
 context: {name: 'foo'}
-result: {"literal:$${name}": "literal"}
+result: {"literal:${name}": "literal"}
 ```
