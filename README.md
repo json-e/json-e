@@ -18,6 +18,24 @@ JSON-e is also designed to be safe for use on untrusted data. It never uses
 also disallows unbounded iteration, so any JSON-e rendering operation will
 finish in finite time.
 
+## Language Definition and Implementations
+
+This repository defines both the JSON-e language and contains several
+implementations of that language.
+
+The language definition is embodied in `./specification.yml` and the
+documentation for the language constructs.
+
+The language and implementations are all versioned together, following semantic
+versioning.  Breaking changes to the language specification are not common, and
+typically result from bugfixes rather than new features.  Generally, you may
+consider the language stable.
+
+Any discrepancy in behavior between the implementations that is not documented
+as undefined behavior is considered a bug.  If fixing that bug can cause
+backward incompatibility in an implementation, then the change may be considered
+breaking and be released with a new major version.
+
 ## Full Documentation
 
 See [json-e.js.org](https://json-e.js.org).
