@@ -23,7 +23,7 @@ finish in finite time.
 This repository defines both the JSON-e language and contains several
 implementations of that language.
 
-The language definition is embodied in `./specification.yml` and the
+The language definition is embodied in [`./specification.yml`](./specification.yml) and the
 documentation for the language constructs.
 
 The language and implementations are all versioned together, following semantic
