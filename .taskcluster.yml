@@ -12,12 +12,10 @@ tasks:
     repo:
       $if: 'tasks_for == "github-push"'
       then:
-        git_url: ${event.repository.url}
         url: ${event.repository.url}
         ref: ${event.after}
       else:
-        git_url: ${event.pull_request.head.repo.git_url}
-        url: ${event.pull_request.head.repo.url}
+        url: ${event.pull_request.head.repo.html_url}
         ref: ${event.pull_request.head.sha}
   in:
     $let:
@@ -29,7 +27,7 @@ tasks:
             - '--login'
             - '-c'
             - >-
-              git clone ${repo.git_url} repo &&
+              git clone ${repo.url} repo &&
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
@@ -43,7 +41,7 @@ tasks:
             - '--login'
             - '-c'
             - >-
-              git clone ${repo.git_url} repo &&
+              git clone ${repo.url} repo &&
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
@@ -57,7 +55,7 @@ tasks:
             - '--login'
             - '-c'
             - >-
-              git clone ${repo.git_url} repo &&
+              git clone ${repo.url} repo &&
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
@@ -71,7 +69,7 @@ tasks:
             - '--login'
             - '-c'
             - >-
-              git clone ${repo.git_url} repo &&
+              git clone ${repo.url} repo &&
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
@@ -85,7 +83,7 @@ tasks:
             - '--login'
             - '-c'
             - >-
-              git clone ${repo.git_url} repo &&
+              git clone ${repo.url} repo &&
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
@@ -99,7 +97,7 @@ tasks:
             - '--login'
             - '-c'
             - >-
-              git clone ${repo.git_url} repo &&
+              git clone ${repo.url} repo &&
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
@@ -112,7 +110,7 @@ tasks:
             - /bin/bash
             - '-c'
             - >-
-              git clone ${repo.git_url} repo &&
+              git clone ${repo.url} repo &&
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
@@ -125,7 +123,7 @@ tasks:
             - /bin/bash
             - '-c'
             - >-
-              git clone ${repo.git_url} repo &&
+              git clone ${repo.url} repo &&
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
@@ -137,7 +135,7 @@ tasks:
             - /bin/bash
             - '-c'
             - >-
-              git clone ${repo.git_url} repo &&
+              git clone ${repo.url} repo &&
               cd repo &&
               git config advice.detachedHead false &&
               git checkout ${repo.ref} &&
