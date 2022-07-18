@@ -30,13 +30,13 @@
     "assume": "^2.0.0",
     "browserify": "^14.5.0",
     "eslint": "^5.12.1",
-    "mocha": "^8.4.0",
+    "mocha": "^9.2.0",
     "rollup": "^2.66.0",
     "source-map-support": "^0.5.0",
     "timekeeper": "^2.0.0"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "renovate": {
     "extends": [
