@@ -34,8 +34,8 @@ tasks:
               cd js &&
               yarn &&
               yarn test
-        - image: node:10
-          name: node:10 tests
+        - image: node:12
+          name: node:12 tests
           command:
             - /bin/bash
             - '--login'
