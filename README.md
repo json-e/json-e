@@ -45,3 +45,12 @@ See [json-e.js.org](https://json-e.js.org).
 See
 [CHANGELOG.rst](https://github.com/json-e/json-e/blob/main/CHANGELOG.rst)
 for the changes in each version of this library.
+
+## In Action
+
+Where is JSON-e used?
+
+ * [AlterSchema](https://alterschema.sourcemeta.com/) specifies upgrades as a set of declarative transformation rules written in JSON Schema itself and JSON-e.
+ * [Taskcluster](https://taskcluster.net/) uses JSON-e extensively to generate task definitions from various JSON-shaped inputs such as GitHub events.
+
+(feel free to submit a PR to add your project here)
