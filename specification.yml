@@ -1,5 +1,5 @@
 ################################################################################
-# ### Specificaiton for json-e
+# ### Specification for json-e
 # This document specifies the json-e template language through a series of
 # test cases on the form: `{title, context, template, result, error, panic}`
 # where `jsone.render(template, context) = result` and title is short name
@@ -1051,7 +1051,17 @@ title:    $switch, value that also needs evaluation
 context:  {cond: 3, ifcond: false}
 template: {$switch: {'cond == 3': {$if: 'ifcond', then: "t", else: "f"}}}
 result:   "f"
-################################################################################
+---
+title:    $switch, fallback to $default
+context:  {cond: 4}
+template: {$switch: {'cond == 3': 1, $default: 'fallback'}}
+result:   "fallback"
+---
+title:    $switch, $default value that also needs evaluation
+context:  {cond: 4, ifcond: false}
+template: {$switch: {'cond == 3': 1, $default: {$if: 'ifcond', then: "t", else: "f"}}}
+result:   "f"
+###############################################################################
 ---
 section:  $merge
 ---
