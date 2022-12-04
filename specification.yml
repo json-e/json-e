@@ -1061,6 +1061,11 @@ title:    $switch, $default value that also needs evaluation
 context:  {cond: 4, ifcond: false}
 template: {$switch: {'cond == 3': 1, $default: {$if: 'ifcond', then: "t", else: "f"}}}
 result:   "f"
+---
+title:    $switch, $default with 1 match in object
+context:  {cond: 3}
+template: {$switch: {'cond == 3': 1, $default: 'fallback'}}
+result:   1
 ###############################################################################
 ---
 section:  $merge
