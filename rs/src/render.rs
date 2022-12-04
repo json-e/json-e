@@ -480,9 +480,21 @@ fn switch_operator(
     context: &Context,
 ) -> Result<Value> {
     check_operator_properties(operator, object, |_| false)?;
-    if let Value::Object(obj) = _render(value, context)? {
+
+    let mut value_without_default = value.clone();
+    if let Value::Object(ref mut o) = value_without_default {
+        o.remove("$default");
+    }
+    
+    if let Value::Object(obj) = _render(&value_without_default, context)? {
         if let Ok(Value::Array(mut matches)) = get_matching_conditions(obj, context) {
-            if matches.len() == 0 {
+            if let Value::Object(ref o) = value {
+                if let Some(default) = o.get("$default") {
+                    let value = _render(default, context)?;
+                    matches.push(value.clone());
+                }
+            }
+            if matches.len() == 0 {   
                 Ok(Value::DeletionMarker)
             } else if matches.len() > 1 {
                 Err(template_error!(
