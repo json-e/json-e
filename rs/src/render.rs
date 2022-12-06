@@ -479,7 +479,7 @@ fn switch_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    check_operator_properties(operator, object, |_| false)?;    
+    check_operator_properties(operator, object, |_| false)?;
     if let Value::Object(obj) = _render(value, context)? {
         if let Ok(Value::Array(mut matches)) = get_matching_conditions(obj, context, true) {
             if let Value::Object(ref o) = value {
