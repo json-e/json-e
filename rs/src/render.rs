@@ -466,7 +466,7 @@ fn match_operator(
 ) -> Result<Value> {
     check_operator_properties(operator, object, |_| false)?;
     if let Value::Object(obj) = _render(value, context)? {
-        get_matching_conditions(obj, context)
+        get_matching_conditions(obj, context, false)
             .or(Err(template_error!("parsing error in $match condition")))
     } else {
         Err(template_error!("$match can evaluate objects only"))
@@ -479,15 +479,9 @@ fn switch_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    check_operator_properties(operator, object, |_| false)?;
-
-    let mut value_without_default = value.clone();
-    if let Value::Object(ref mut o) = value_without_default {
-        o.remove("$default");
-    }
-    
-    if let Value::Object(obj) = _render(&value_without_default, context)? {
-        if let Ok(Value::Array(mut matches)) = get_matching_conditions(obj, context) {
+    check_operator_properties(operator, object, |_| false)?;    
+    if let Value::Object(obj) = _render(value, context)? {
+        if let Ok(Value::Array(mut matches)) = get_matching_conditions(obj, context, true) {
             if let Value::Object(ref o) = value {
                 if let Some(default) = o.get("$default") {
                     let value = _render(default, context)?;
@@ -511,9 +505,12 @@ fn switch_operator(
     }
 }
 
-fn get_matching_conditions(object: Object, context: &Context) -> Result<Value> {
+fn get_matching_conditions(object: Object, context: &Context, ignore_default: bool) -> Result<Value> {
     let mut result = Vec::new();
     for (ref cond, val) in object {
+        if ignore_default && cond == "$default"  {
+            continue;
+        }
         if let Ok(v) = evaluate(cond, context) {
             if v.into() {
                 result.push(val);
