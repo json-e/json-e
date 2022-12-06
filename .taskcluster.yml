@@ -130,7 +130,7 @@ tasks:
               cd rs/ &&
               cargo test
         - image: 'rust:latest'
-          name: rust tests
+          name: mdbook tests
           command:
             - /bin/bash
             - '-c'
