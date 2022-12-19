@@ -244,10 +244,9 @@ class Tokenizer(object):
             offset += mo.end()
 
             # figure out which token matched (note that idx is 0-based)
-            indexes = list(
-                filter(lambda x: x[1] is not None, enumerate(mo.groups())))
+            indexes = [idx for idx, grp in enumerate(mo.groups()) if grp is not None]
             if indexes:
-                idx = indexes[0][0]
+                idx = indexes[0]
                 yield Token(
                     kind=self.tokens[idx],
                     value=mo.group(idx + 1),  # (mo.group is 1-based)
