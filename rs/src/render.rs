@@ -465,9 +465,19 @@ fn match_operator(
     context: &Context,
 ) -> Result<Value> {
     check_operator_properties(operator, object, |_| false)?;
-    if let Value::Object(obj) = _render(value, context)? {
-        get_matching_conditions(obj, context, false)
-            .or(Err(template_error!("parsing error in $match condition")))
+    if let Value::Object(ref obj) = value {
+        let mut res = vec![];
+        for (cond, val) in obj {
+            if let Ok(cond) = evaluate(&cond, context) {
+                if !bool::from(cond) {
+                    continue;
+                }
+                res.push(_render(val, context)?);
+            } else {
+                bail!(template_error!("parsing error in condition"));
+            }
+        }
+        Ok(Value::Array(res))
     } else {
         Err(template_error!("$match can evaluate objects only"))
     }
@@ -479,47 +489,41 @@ fn switch_operator(
     object: &Object,
     context: &Context,
 ) -> Result<Value> {
-    check_operator_properties(operator, object, |_| false)?;
-    if let Value::Object(obj) = _render(value, context)? {
-        if let Ok(Value::Array(mut matches)) = get_matching_conditions(obj, context, true) {
-            if let Value::Object(ref o) = value {
-                if let Some(default) = o.get("$default") {
-                    let value = _render(default, context)?;
-                    matches.push(value.clone());
+    if let Value::Object(ref obj) = value {
+        let mut res = None;
+        let mut unrendered_default = None;
+        for (cond, val) in obj {
+            // if the condition is `$default`, stash it for later
+            if cond == "$default" {
+                unrendered_default = Some(val);
+                continue;
+            }
+            // try to evaluate the condition
+            if let Ok(cond) = evaluate(&cond, context) {
+                if !bool::from(cond) {
+                    continue;
                 }
-            }
-            if matches.len() == 0 {   
-                Ok(Value::DeletionMarker)
-            } else if matches.len() > 1 {
-                Err(template_error!(
-                    "$switch can only have one truthy condition"
-                ))
+                if res.is_some() {
+                    bail!(template_error!(
+                        "$switch can only have one truthy condition"
+                    ))
+                }
+                res = Some(val);
             } else {
-                Ok(matches.remove(0))
+                bail!(template_error!("parsing error in condition"));
             }
+        }
+
+        if let Some(res) = res {
+            _render(res, context)
+        } else if let Some(unrendered_default) = unrendered_default {
+            _render(unrendered_default, context)
         } else {
-            Err(template_error!("parsing error in $switch condition"))
+            Ok(Value::DeletionMarker)
         }
     } else {
         Err(template_error!("$switch can evaluate objects only"))
     }
-}
-
-fn get_matching_conditions(object: Object, context: &Context, ignore_default: bool) -> Result<Value> {
-    let mut result = Vec::new();
-    for (ref cond, val) in object {
-        if ignore_default && cond == "$default"  {
-            continue;
-        }
-        if let Ok(v) = evaluate(cond, context) {
-            if v.into() {
-                result.push(val);
-            }
-        } else {
-            return Err(template_error!("parsing error in condition"));
-        }
-    }
-    Ok(Value::Array(result))
 }
 
 fn merge_operator(
