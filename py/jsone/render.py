@@ -283,11 +283,15 @@ def switch(template, context):
 
     result = []
     for condition in template['$switch']:
-        if parse(condition, context):
+        if not condition == '$default' and parse(condition, context):
             result.append(renderValue(template['$switch'][condition], context))
 
     if len(result) > 1:
         raise TemplateError("$switch can only have one truthy condition")
+
+    if len(result) == 0:
+        if '$default' in template['$switch']:
+            result.append(renderValue(template['$switch']['$default'], context))
 
     return result[0] if len(result) > 0 else DeleteMarker
 

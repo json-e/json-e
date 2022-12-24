@@ -257,10 +257,11 @@ The `$switch` operator behaves like a combination of the `$if` and
 in which every key is a string expression(s), where at most *one* must
 evaluate to `true` and the remaining to `false` based on the context.
 The result will be the value corresponding to the key that were
-evaluated to `true`.
+evaluated to `true` or optionally the fallback `$default` value.
 
-If there are no matches, the result is either null or if used within an
-object or array, omitted from the parent object.
+If there are no matches, and no `$default` fallback is provided, the
+result is either null or if used within an object or array, omitted
+from the parent object.
 
 ```yaml,json-e
 template: {$switch: {"x == 10": "ten", "x == 20": "twenty"}}
@@ -296,6 +297,12 @@ result: [1, 2]
 template: [0, {$switch: {'cond > 3': 2, 'cond == 5': 3}}]
 context:  {cond: 3}
 result:   [0]
+```
+
+```yaml,json-e
+template: [0, {$switch: {'cond > 3': 2, 'cond == 5': 3, $default: 4}}]
+context:  {cond: 1}
+result:   [4]
 ```
 
 ## `$merge`

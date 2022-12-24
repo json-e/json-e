@@ -715,7 +715,9 @@ var operators = map[string]operator{
 
 		conditions := make([]string, 0, len(match))
 		for condition := range match {
-			conditions = append(conditions, condition)
+			if (condition != "$default") {
+				conditions = append(conditions, condition)
+			}
 		}
 
 		result := make([]interface{}, 0, len(match))
@@ -747,6 +749,18 @@ var operators = map[string]operator{
 				Message:  "$switch can only have one truthy condition",
 				Template: template,
 			}
+		}
+
+		if len(result) == 0 && match["$default"] != nil {
+			value := match["$default"]
+			r, err := render(value, context)
+			if err != nil {
+				return nil, TemplateError{
+					Message:  err.Error(),
+					Template: template,
+				}
+			}
+			result = append(result, r)
 		}
 
 		if len(result) == 0 {
