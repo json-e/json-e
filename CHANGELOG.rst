@@ -1,3 +1,12 @@
+Jsone 4.5.0 (2022-12-25)
+========================
+
+Features
+--------
+
+- Added a $default case to the switch operator (#455)
+
+
 Jsone  (2021-11-17)
 ===================
 
