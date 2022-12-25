@@ -183,7 +183,7 @@ result: {&quot;tc_foo&quot;: &quot;bar&quot;}
 <p>The string <code>${</code> can be escaped as <code>$${</code>:</p>
 <pre><code class="language-yaml json-e">template: {&quot;literal:$${name}&quot;: &quot;literal&quot;}
 context: {name: 'foo'}
-result: {&quot;literal:$${name}&quot;: &quot;literal&quot;}
+result: {&quot;literal:${name}&quot;: &quot;literal&quot;}
 </code></pre>
 
                     </main>

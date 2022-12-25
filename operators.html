@@ -334,9 +334,10 @@ result: []
 in which every key is a string expression(s), where at most <em>one</em> must
 evaluate to <code>true</code> and the remaining to <code>false</code> based on the context.
 The result will be the value corresponding to the key that were
-evaluated to <code>true</code>.</p>
-<p>If there are no matches, the result is either null or if used within an
-object or array, omitted from the parent object.</p>
+evaluated to <code>true</code> or optionally the fallback <code>$default</code> value.</p>
+<p>If there are no matches, and no <code>$default</code> fallback is provided, the
+result is either null or if used within an object or array, omitted
+from the parent object.</p>
 <pre><code class="language-yaml json-e">template: {$switch: {&quot;x == 10&quot;: &quot;ten&quot;, &quot;x == 20&quot;: &quot;twenty&quot;}}
 context: {x: 10}
 result: &quot;ten&quot;
@@ -360,6 +361,10 @@ result: [1, 2]
 <pre><code class="language-yaml json-e">template: [0, {$switch: {'cond &gt; 3': 2, 'cond == 5': 3}}]
 context:  {cond: 3}
 result:   [0]
+</code></pre>
+<pre><code class="language-yaml json-e">template: [0, {$switch: {'cond &gt; 3': 2, 'cond == 5': 3, $default: 4}}]
+context:  {cond: 1}
+result:   [4]
 </code></pre>
 <h2 id="merge"><a class="header" href="#merge"><code>$merge</code></a></h2>
 <p>The <code>$merge</code> operator merges an array of objects, returning a single object

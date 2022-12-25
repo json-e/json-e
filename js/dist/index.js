@@ -1357,7 +1357,7 @@
     };
 
     operators.$switch = (template, context) => {
-      checkUndefinedProperties(template, ['\\$switch']);
+      checkUndefinedProperties(template, [ '\\$switch' ]);
 
       if (!isObject(template['$switch'])) {
         throw new TemplateError('$switch can evaluate objects only');
@@ -1366,7 +1366,7 @@
       let result = [];
       const conditions = template['$switch'];
 
-      for (let condition of Object.keys(conditions)) {
+      for (let condition of Object.keys(conditions).filter(k => k !== '$default').sort()) {
         if (isTruthy(parse(condition, context))) {
           result.push(render(conditions[condition], context));
         }
@@ -1374,6 +1374,10 @@
 
       if (result.length > 1) {
         throw new TemplateError('$switch can only have one truthy condition');
+      }
+
+      if (result.length === 0 && conditions[ '$default' ]) {
+        result.push(render(conditions[ '$default' ], context));
       }
 
       return result.length > 0 ? result[0] : deleteMarker;
