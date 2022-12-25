@@ -1,4 +1,19 @@
-Jsone  (2021-11-17)
+Jsone 4.5.0 (2022-12-25)
+========================
+
+Features
+--------
+
+- Added a $default case to the switch operator (#455)
+
+
+Improved Documentation
+----------------------
+
+- Replaced the documentation site with a new, more usable and ineractive version
+
+
+Jsone 4.4.3 (2021-11-17)
 ===================
 
 Features
@@ -6,6 +21,9 @@ Features
 
 - The JSON-e GitHub repository has been moved to https://github.com/json-e/json-e. (#430)
 
+
+Jsone 4.4.2 (2021-11-12)
+===================
 
 Bugfixes
 --------

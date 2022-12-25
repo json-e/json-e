@@ -1,6 +1,6 @@
 [package]
 name = "json-e"
-version = "4.4.3"
+version = "4.5.0"
 authors = ["owlishDeveloper <bugzeeeeee@gmail.com>", "Alex Lopez <alex.lopez.zorzano@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
