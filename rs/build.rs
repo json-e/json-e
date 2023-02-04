@@ -10,12 +10,18 @@ use yaml_rust::{Yaml, YamlLoader};
 
 fn main() {
     // request to be re-run whenever ../specification.yml changes
-    println!("cargo:rerun-if-changed=../specification.yml");
+    let dev_path = std::path::Path::new("../specification.yml");
+    let crate_release_path = std::path::Path::new("specification.yml");
+    let spec_path = if dev_path.exists() {
+        dev_path
+    } else {
+        crate_release_path
+    };
+    println!("cargo:rerun-if-changed={}", spec_path.to_string_lossy());
 
     // read ../specification.yml, falling back to a copy in this directory
     // for builds from a crate
-    let spec = read_to_string("../specification.yml")
-        .unwrap_or_else(|_| read_to_string("./specification.yml").unwrap());
+    let spec = read_to_string(spec_path).unwrap();
     let spec = YamlLoader::load_from_str(&spec).unwrap();
 
     let out_dir = env::var("OUT_DIR").unwrap();
