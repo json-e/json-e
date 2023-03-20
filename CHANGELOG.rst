@@ -1,3 +1,9 @@
+Jsone 4.5.1 (2023-03-20)
+========================
+
+- The Rust crate no longer rebuilds on every invocation. (#460)
+
+
 Jsone 4.5.0 (2022-12-25)
 ========================
 
@@ -7,8 +13,8 @@ Features
 - Added a $default case to the switch operator (#455)
 
 
-Jsone  (2021-11-17)
-===================
+Jsone 4.4.3 (2021-11-17)
+========================
 
 Features
 --------
