@@ -217,7 +217,6 @@ fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
 
     let (i, init) = unary_expr(input)?;
 
-    let mut init = Some(init);
     fold_many0(
         ws(alt((
             map_res(tuple((tag("["), expression, tag("]"))), index_op),
@@ -233,9 +232,9 @@ fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
             ),
             map_res(tuple((tag("."), ident_str)), dot_node),
         ))),
-        // This is a FnMut but is only called once, so `take` it from the Option to avoid cloning
-        // it. See https://github.com/rust-bakery/nom/issues/1656.
-        move || init.take().unwrap(),
+        // This clone is necessary because backtracking may result in this
+        // parser running more than once.
+        move || init.clone(),
         |acc: Node, index_op: IndexOp| {
             let acc = Box::new(acc);
             match index_op {
@@ -285,12 +284,11 @@ macro_rules! binop {
         fn $name(input: &str) -> IResult<&str, Node<'_>> {
             let (i, init) = $higher_prec(input)?;
 
-            let mut init = Some(init);
             fold_many0(
                 pair($ops, $higher_prec),
-                // This is a FnMut but is only called once, so `take` it from the Option to avoid
-                // cloning it. See https://github.com/rust-bakery/nom/issues/1656.
-                move || init.take().unwrap(),
+                // This clone is necessary because backtracking may result in this
+                // parser running more than once.
+                move || init.clone(),
                 |acc: Node, (op, val): (&str, Node)| Node::Op(Box::new(acc), op, Box::new(val)),
             )(i)
         }
