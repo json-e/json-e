@@ -1,3 +1,4 @@
+use crate::whitespace::ws;
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, Utc};
 use nom::{
@@ -5,8 +6,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{digit1, multispace0},
     combinator::{map_res, opt},
-    error::ParseError,
-    sequence::{pair, tuple},
+    sequence::tuple,
     IResult,
 };
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -49,15 +49,6 @@ fn int(input: &str) -> IResult<&str, i64> {
         Ok(input.0.parse().map_err(|_| ())?)
     }
     map_res(tuple((digit1, multispace0)), to_int)(input)
-}
-
-/// chomp trailing whitespace
-// from https://github.com/Geal/nom/blob/master/doc/nom_recipes.md#whitespace
-fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(inner: F) -> impl Fn(&'a str) -> IResult<&'a str, O, E>
-where
-    F: Fn(&'a str) -> IResult<&'a str, O, E>,
-{
-    map_res(pair(inner, multispace0), |input| Ok(input.0) as Result<O>)
 }
 
 fn sign(input: &str) -> IResult<&str, bool> {
