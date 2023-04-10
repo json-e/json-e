@@ -1,3 +1,12 @@
+Jsone 4.5.2 (2023-04-10)
+========================
+
+Bugfixes
+--------
+
+- Fixed a bug that caused some examples in documentation not to be rendered on json-e.js.org (#461)
+
+
 Jsone 4.5.1 (2023-03-20)
 ========================
 
