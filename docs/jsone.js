@@ -134,9 +134,23 @@ const playground_block = (template, context) => {
 const remove_yaml_key = (key, yaml) => {
   const nl = yaml.indexOf('\n');
   if (nl != -1) {
-    const indented = yaml.slice(nl+1).split('\n');
-    const indent = /^ */.exec(indented[0])[0].length;
-    const dedented = indented.map(line => line.slice(indent));
+    const match = RegExp(`(^${key}: *)([\\s\\S]*)`).exec(yaml);
+    const rm_key = match[1];
+    const value = match[2];
+    const lines = value.split('\n');
+
+    let dedented = [];
+    if (lines[0] == "" && lines.length > 0) {
+      // Value started on a new line after the key, so align to the next line.
+      const first_line_indent = /^ */.exec(lines[1])[0].length;
+      for (let i = 1; i < lines.length; i++) {
+        dedented.push(lines[i].slice(first_line_indent));
+      }
+    } else {
+      // Value starts on this line and may continue on the next line
+      dedented = lines
+    }
+
     return dedented.join('\n');
   } else {
     return new RegExp(`^${key}: *(.*)`).exec(yaml)[1];
