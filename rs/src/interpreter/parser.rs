@@ -6,26 +6,17 @@
 #![allow(dead_code)]
 
 use super::Node;
+use crate::whitespace::ws;
 use anyhow::{anyhow, Result};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},
-    character::complete::{alpha1, alphanumeric1, char, digit1, multispace0},
+    character::complete::{alpha1, alphanumeric1, char, digit1},
     combinator::{complete, map_res, not, opt, recognize},
-    error::ParseError,
-    multi::{fold_many0, many0, separated_list},
+    multi::{fold_many0, many0, separated_list0},
     sequence::{delimited, pair, tuple},
     Err, IResult,
 };
-
-/// chomp whitespace at either end of a combinator
-// from https://github.com/Geal/nom/blob/master/doc/nom_recipes.md#whitespace
-fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(inner: F) -> impl Fn(&'a str) -> IResult<&'a str, O, E>
-where
-    F: Fn(&'a str) -> IResult<&'a str, O, E>,
-{
-    delimited(multispace0, inner, multispace0)
-}
 
 // atomic values
 
@@ -150,7 +141,7 @@ fn array_literal(input: &str) -> IResult<&str, Node<'_>> {
     map_res(
         ws(delimited(
             char('['),
-            separated_list(ws(tag(",")), expression),
+            separated_list0(ws(tag(",")), expression),
             char(']'),
         )),
         node,
@@ -167,7 +158,7 @@ fn object_literal(input: &str) -> IResult<&str, Node<'_>> {
     map_res(
         ws(delimited(
             char('{'),
-            separated_list(
+            separated_list0(
                 ws(tag(",")),
                 tuple((ws(alt((string_str, ident_str))), tag(":"), ws(expression))),
             ),
@@ -241,7 +232,9 @@ fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
             ),
             map_res(tuple((tag("."), ident_str)), dot_node),
         ))),
-        init,
+        // This clone is necessary because backtracking may result in this
+        // parser running more than once.
+        move || init.clone(),
         |acc: Node, index_op: IndexOp| {
             let acc = Box::new(acc);
             match index_op {
@@ -263,7 +256,7 @@ fn function_expr(input: &str) -> IResult<&str, Node<'_>> {
             ws(tuple((
                 index_expr,
                 tag("("),
-                separated_list(ws(tag(",")), expression),
+                separated_list0(ws(tag(",")), expression),
                 tag(")"),
             ))),
             node,
@@ -293,7 +286,9 @@ macro_rules! binop {
 
             fold_many0(
                 pair($ops, $higher_prec),
-                init,
+                // This clone is necessary because backtracking may result in this
+                // parser running more than once.
+                move || init.clone(),
                 |acc: Node, (op, val): (&str, Node)| Node::Op(Box::new(acc), op, Box::new(val)),
             )(i)
         }
@@ -323,8 +318,8 @@ pub(crate) fn parse_all(input: &str) -> anyhow::Result<Node> {
         Ok(("", node)) => Ok(node),
         Ok((unused, _)) => Err(anyhow!("Unexpected trailing characters {}", unused)),
         Err(Err::Incomplete(_)) => unreachable!(),
-        Err(Err::Error(e)) => Err(anyhow!("Parse error at {:?}", e.0)),
-        Err(Err::Failure(e)) => Err(anyhow!("Parse error at {:?}", e.0)),
+        Err(Err::Error(e)) => Err(anyhow!("Parse error at {:?}", e.input)),
+        Err(Err::Failure(e)) => Err(anyhow!("Parse error at {:?}", e.input)),
     }
 }
 
@@ -333,8 +328,8 @@ pub(crate) fn parse_partial(input: &str) -> anyhow::Result<(Node, &str)> {
     match complete(expression)(input) {
         Ok((unused, node)) => Ok((node, unused)),
         Err(Err::Incomplete(_)) => unreachable!(),
-        Err(Err::Error(e)) => Err(anyhow!("Parse error at {:?}", e.0)),
-        Err(Err::Failure(e)) => Err(anyhow!("Parse error at {:?}", e.0)),
+        Err(Err::Error(e)) => Err(anyhow!("Parse error at {:?}", e.input)),
+        Err(Err::Failure(e)) => Err(anyhow!("Parse error at {:?}", e.input)),
     }
 }
 
