@@ -155,7 +155,7 @@ fn f64_to_serde_number(value: f64) -> Number {
     if value.fract() == 0.0 {
         if value < 0.0 && value > -(u32::MAX as f64) {
             return (value as i64).into();
-        } else if value < u32::MAX as f64 {
+        } else if value >= 0.0 && value < u32::MAX as f64 {
             return (value as u64).into();
         }
     }
@@ -251,9 +251,15 @@ mod test {
 
     #[test]
     fn conversions() {
+        // These floats are chosen such that they exercise the assumption that
+        // integer values outside (-u32::MAX..u32::MAX) are best represented as
+        // floats.
+        let small_float = (-100_000_000_000_000 as i64) as f64;
+        let big_float = (100_000_000_000_000 as i64) as f64;
+
         let serde_value = json!({
             "the": "quick",
-            "brown": ["fox", 2, 3.5, -5],
+            "brown": ["fox", 2, 3.5, -5, small_float, big_float],
             "over": true,
             "the": false,
             "lazy": 0,
@@ -270,6 +276,8 @@ mod test {
                         Number(2.0),
                         Number(3.5),
                         Number(-5.0),
+                        Number(small_float),
+                        Number(big_float),
                     ]),
                 ),
                 ("over".to_string(), Bool(true)),

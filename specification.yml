@@ -2274,6 +2274,11 @@ context: {a: 3, b: 2}
 template: {$eval: 'a * b * 3'}
 result: 18
 ---
+title: 'multiplication (2)'
+context: {a: 180000000000.0}
+template: {$eval: '(a * -1000)'}
+result: -180000000000000.0
+---
 title: 'division (1)'
 context: {a: 3, b: 2}
 template: {$eval: 'a / b'}
