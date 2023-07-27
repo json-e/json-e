@@ -1,3 +1,13 @@
+Jsone 4.5.3 (2023-07-27)
+========================
+
+Bugfixes
+--------
+
+- Upgraded Rust parser-builder `nom` to major version 7. (#462)
+- Fix Rust JSON conversions for floats of small magnitude (#466)
+
+
 Jsone 4.5.2 (2023-04-10)
 ========================
 
