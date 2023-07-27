@@ -2,7 +2,7 @@ import json
 import os
 from setuptools import setup, find_packages
 
-version = "4.5.2"
+version = "4.5.3"
 
 description='A data-structure parameterization system written for embedding context in JSON objects'
 

@@ -35,7 +35,7 @@ checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 
 [[package]]
 name = "json-e"
-version = "4.5.2"
+version = "4.5.3"
 dependencies = [
  "anyhow",
  "chrono",

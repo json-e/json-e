@@ -1,5 +1,7 @@
 # Making a Release
 
+Install towncrier<20 and twine.
+
 * Run `towncrier --version=$newversion --draft` and check that the output looks OK.  Then run it without `--draft`, deleting the old newsfiles.  Commit.
 * Update the version in:
   * `rs/Cargo.toml` and `rs/Cargo.lock`
