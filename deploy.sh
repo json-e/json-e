@@ -15,6 +15,8 @@ echo === rebuilding dist
 
 echo === building book
 mdbook build
+# copy some files that mdbook does not
+cp img/* $BUILD_DIR
 
 echo === uploading
 (
