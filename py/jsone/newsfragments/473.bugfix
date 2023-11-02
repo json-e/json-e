@@ -1,0 +1,1 @@
+For JavaScript, Variables added in a $let do not persist outside of that $let any more.
