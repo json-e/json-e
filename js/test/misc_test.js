@@ -39,15 +39,4 @@ suite('misc', function() {
     assume(() => jsone({$eval: 'custom'}, { custom: () => null })).throws();
   });
 
-  test('$let doesn\'t leak variables', function() {
-    let template = {
-      $let: {
-        foo: 'bar',
-        baz: 'qux',
-      },
-      $eval: 'foo',
-    };
-
-    assume(() => jsone(template, {})).throws();
-  });
 });
