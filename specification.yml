@@ -808,6 +808,16 @@ template:
       then: "${fromNow('1 hour')}"
       else: "f"
 result: '1 HOUR'
+---
+title: $let doesn't leak variables
+context: {}
+template:
+  - $let: 
+      foo: 'bar'
+      baz: 'qux'
+    in: {$eval: 'foo'}
+  - $eval: 'foo'
+error: 'InterpreterError at template[1]: unknown context value foo'
 ################################################################################
 ---
 section:  $map

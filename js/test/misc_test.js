@@ -38,4 +38,5 @@ suite('misc', function() {
   test('templates can\'t evaluate to an uncalled custom builtin', function() {
     assume(() => jsone({$eval: 'custom'}, { custom: () => null })).throws();
   });
+
 });
