@@ -1,5 +1,11 @@
 # Using JSON-e
 
+An application of JSON-e typically allows the user to specify the template, and
+defines the context with which that template will be rendered as well as how
+the output will be interpreted. For example, an application that allows
+customized responses to chat messages might provide context `{"message": ..,
+"sender": ..}` and expect an object of the form `{"reply": ..}` as a result.
+
 JSON-e is intended for cross-platform usage, and has native implementations in several languages.
 
 ## JavaScript

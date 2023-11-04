@@ -3,8 +3,8 @@
 JSON-e is a data-structure parameterization system for embedding context in
 JSON objects.
 
-The central idea is to treat a data structure as a "template" and transform it,
-using another data structure as context, to produce an output data structure.
+The central idea is to treat a data structure as a "template" and render it,
+using another data structure as "context", to produce an output data structure.
 
 There are countless libraries to do this with strings, such as
 [mustache](https://mustache.github.io/). What makes JSON-e unique is that it
