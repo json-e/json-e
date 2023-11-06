@@ -825,6 +825,16 @@ mod tests {
     }
 
     #[test]
+    fn invalid_context() {
+        let template = json!({});
+        assert!(render(&template, &json!(null)).is_err());
+        assert!(render(&template, &json!(false)).is_err());
+        assert!(render(&template, &json!(3.2)).is_err());
+        assert!(render(&template, &json!("two")).is_err());
+        assert!(render(&template, &json!([{}])).is_err());
+    }
+
+    #[test]
     fn render_array_drops_deletion_markers() {
         let template = json!([1, {"$if": "false", "then": 1}, 3]);
         let context = json!({});
