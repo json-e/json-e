@@ -553,6 +553,21 @@ context:  {}
 template: {$fromNow: '1 week'}
 result:   '2017-01-26T16:27:20.974Z'
 ---
+title:    $fromNow 1 weeks
+context:  {}
+template: {$fromNow: '1 weeks'}
+result:   '2017-01-26T16:27:20.974Z'
+---
+title:    $fromNow 1 wk
+context:  {}
+template: {$fromNow: '1 wk'}
+result:   '2017-01-26T16:27:20.974Z'
+---
+title:    $fromNow 1 w
+context:  {}
+template: {$fromNow: '1 w'}
+result:   '2017-01-26T16:27:20.974Z'
+---
 title:    $fromNow 1 month
 context:  {}
 template: {$fromNow: '1 month'}
