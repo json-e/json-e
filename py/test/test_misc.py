@@ -13,7 +13,11 @@ def test_custom_builtin():
     eq_(render({'$eval': 'my_builtin(3, 4)'}, {'my_builtin': my_builtin}), 5)
 
 def test_non_object_context():
-    assert_raises(JSONTemplateError, lambda: render({}, "abc"))
+    assert_raises(JSONTemplateError, lambda: render({}, None))
+    assert_raises(JSONTemplateError, lambda: render({}, False))
+    assert_raises(JSONTemplateError, lambda: render({}, 3.2))
+    assert_raises(JSONTemplateError, lambda: render({}, "two"))
+    assert_raises(JSONTemplateError, lambda: render({}, [{}]))
 
 def test_same_time_within_evaluation_operator():
     template = [{'$fromNow': ''} for _ in range(1000)]

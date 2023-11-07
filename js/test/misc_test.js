@@ -39,4 +39,11 @@ suite('misc', function() {
     assume(() => jsone({$eval: 'custom'}, { custom: () => null })).throws();
   });
 
+  test('Anything other than an object is not allowed for context', function() {
+    assume(() => jsone({}, null)).throws();
+    assume(() => jsone({}, false)).throws();
+    assume(() => jsone({}, 3.2)).throws();
+    assume(() => jsone({}, "two")).throws();
+    assume(() => jsone({}, [{}])).throws();
+  });
 });
