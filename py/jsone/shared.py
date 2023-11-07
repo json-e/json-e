@@ -37,7 +37,7 @@ class InterpreterError(JSONTemplateError):
 FROMNOW_RE = re.compile(''.join([
     r'^(\s*(?P<years>\d+)\s*y(ears?)?)?',
     r'(\s*(?P<months>\d+)\s*mo(nths?)?)?',
-    r'(\s*(?P<weeks>\d+)\s*w(eeks?)?)?',
+    r'(\s*(?P<weeks>\d+)\s*w(k|eeks?)?)?',
     r'(\s*(?P<days>\d+)\s*d(ays?)?)?',
     r'(\s*(?P<hours>\d+)\s*h(ours?)?)?',
     r'(\s*(?P<minutes>\d+)\s*m(in(utes?)?)?)?\s*',
