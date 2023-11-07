@@ -122,9 +122,7 @@ template: {$fromNow: '1 hour', from: '2017-01-19T16:27:20.974Z'}
 context:  {}
 result:   '2017-01-19T17:27:20.974Z'
 ```
-
-The available units are `day`, `hour`, `minute`, and `second`, for all of which
-a plural is also accepted.  Additionally, various shorthands may be employed:
+The available units, including useful shorthands, are:
 
 ```none
 years,    year,   yr,   y
