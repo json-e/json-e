@@ -44,7 +44,7 @@ func Render(template interface{}, context map[string]interface{}) (interface{}, 
 
 	if containsFunctions(result) {
 		return nil, TemplateError{
-			Message: "evaluated template contained uncalled functions",
+			Message:  "evaluated template contained uncalled functions",
 			Template: template,
 		}
 	}
@@ -91,13 +91,13 @@ func restrictProperties(template map[string]interface{}, allowed ...string) erro
 
 var fromNowPattern = regexp.MustCompile(strings.Join([]string{
 	`^(?:\s*(-|\+))?`,
-	`(?:\s*(\d+)\s*y(?:(?:ears?)|r)?)?`,
-	`(?:\s*(\d+)\s*mo(?:nths?)?)?`,
-	`(?:\s*(\d+)\s*w(?:(?:eeks?)|k)?)?`,
-	`(?:\s*(\d+)\s*d(?:ays?)?)?`,
-	`(?:\s*(\d+)\s*h(?:(?:ours?)|r)?)?`,
-	`(?:\s*(\d+)\s*m(?:in(?:utes?)?)?)?`,
-	`(?:\s*(\d+)\s*s(?:ec(?:onds?)?)?)?`,
+	`(?:\s*(?P<years>\d+)\s*(y|year|years|yr))?`,
+	`(?:\s*(?P<months>\d+)\s*(months|month|mo))?`,
+	`(?:\s*(?P<weeks>\d+)\s*(weeks|week|wk|w))?`,
+	`(?:\s*(?P<days>\d+)\s*(days|day|d))?`,
+	`(?:\s*(?P<hours>\d+)\s*(hours|hour|hr|h))?`,
+	`(?:\s*(?P<minutes>\d+)\s*(minutes|minute|min|m))?`,
+	`(?:\s*(?P<seconds>\d+)\s*(seconds|second|sec|s))?`,
 	`\s*$`,
 }, ""))
 
@@ -117,13 +117,13 @@ func fromNow(s string, reference time.Time) (string, error) {
 	if m[1] == "-" {
 		neg = -1
 	}
-	years, _ := strconv.Atoi(m[2])
-	months, _ := strconv.Atoi(m[3])
-	weeks, _ := strconv.Atoi(m[4])
-	days, _ := strconv.Atoi(m[5])
-	hours, _ := strconv.Atoi(m[6])
-	minutes, _ := strconv.Atoi(m[7])
-	seconds, _ := strconv.Atoi(m[8])
+	years, _ := strconv.Atoi(m[fromNowPattern.SubexpIndex("years")])
+	months, _ := strconv.Atoi(m[fromNowPattern.SubexpIndex("months")])
+	weeks, _ := strconv.Atoi(m[fromNowPattern.SubexpIndex("weeks")])
+	days, _ := strconv.Atoi(m[fromNowPattern.SubexpIndex("days")])
+	hours, _ := strconv.Atoi(m[fromNowPattern.SubexpIndex("hours")])
+	minutes, _ := strconv.Atoi(m[fromNowPattern.SubexpIndex("minutes")])
+	seconds, _ := strconv.Atoi(m[fromNowPattern.SubexpIndex("seconds")])
 
 	// Sum up to days
 	days += 365 * years
@@ -715,7 +715,7 @@ var operators = map[string]operator{
 
 		conditions := make([]string, 0, len(match))
 		for condition := range match {
-			if (condition != "$default") {
+			if condition != "$default" {
 				conditions = append(conditions, condition)
 			}
 		}
