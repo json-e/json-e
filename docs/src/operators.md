@@ -109,7 +109,11 @@ result:   [1, 2, 3]
 The `$fromNow` operator is a shorthand for the built-in function `fromNow`. It
 creates a JSON (ISO 8601) datestamp for a time relative to the current time
 (see the `now` builtin, below) or, if `from` is given, relative to that time.
+
 The offset is specified by a sequence of number/unit pairs in a string.
+Whitespace is ignored, but the units must be given in ordre from largest to
+smallest. To produce a time in the past, prefix the string with `-`. A `+`
+prefix is allowed as a redundant way to specify a time in the future.
 
 ```yaml,json-e
 template: {$fromNow: '2 days 1 hour'}

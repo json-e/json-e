@@ -58,7 +58,7 @@ def fromNow(offset, reference):
     # Parse offset
     m = FROMNOW_RE.match(offset)
     if m is None:
-        raise ValueError("offset string: '%s' does not parse" % offset)
+        raise TemplateError("offset string: '%s' does not parse" % offset)
 
     # In order to calculate years and months we need to calculate how many days
     # to offset the offset by, since timedelta only goes as high as weeks

@@ -643,6 +643,11 @@ context:  {}
 template: {$fromNow: '1 y 2 mo 3 w 4 d 5 h 6 m 7 s'}
 result:   '2018-04-14T21:33:27.974Z'
 ---
+title:    $fromNow multiple units out of order
+context:  {}
+template: {$fromNow: '1s 1 y'}
+error:    true
+---
 title:    $fromNow of non-string
 context:  {}
 template: {$fromNow: 13}
