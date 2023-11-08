@@ -62,8 +62,8 @@ tasks:
               cd js &&
               yarn &&
               bash package-test.sh
-        - image: 'python:2.7'
-          name: python:2.7 tests
+        - image: 'python:3.8'
+          name: python:3.8 tests
           command:
             - /bin/bash
             - '--login'
@@ -75,9 +75,9 @@ tasks:
               git checkout ${repo.ref} &&
               cd py/ &&
               pip install tox &&
-              tox -e py27
-        - image: 'python:3.6'
-          name: python:3.6 tests
+              tox -e py38
+        - image: 'python:3.9'
+          name: python:3.9 tests
           command:
             - /bin/bash
             - '--login'
@@ -89,9 +89,9 @@ tasks:
               git checkout ${repo.ref} &&
               cd py/ &&
               pip install tox &&
-              tox -e py36
-        - image: 'python:3.7'
-          name: python:3.7 tests
+              tox -e py39
+        - image: 'python:3.10'
+          name: python:3.10 tests
           command:
             - /bin/bash
             - '--login'
@@ -103,7 +103,49 @@ tasks:
               git checkout ${repo.ref} &&
               cd py/ &&
               pip install tox &&
-              tox -e py37
+              tox -e py310
+        - image: 'python:3.11'
+          name: python:3.11 tests
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repo.url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              cd py/ &&
+              pip install tox &&
+              tox -e py311
+        - image: 'python:3.12'
+          name: python:3.12 tests
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repo.url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              cd py/ &&
+              pip install tox &&
+              tox -e py312
+        - image: 'python:3.13'
+          name: python:3.13 tests
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repo.url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${repo.ref} &&
+              cd py/ &&
+              pip install tox &&
+              tox -e py313
         - image: 'golangci/golangci-lint'
           name: golang lint and tests
           command:
