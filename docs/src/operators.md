@@ -130,7 +130,7 @@ months,   month,  mo
 weeks,    week,   wk,   w
 days,     day,          d
 hours,    hour,   hr,   h
-minutes,  minute, min   m
+minutes,  minute, min,  m
 seconds,  second, sec,  s
 ```
 
