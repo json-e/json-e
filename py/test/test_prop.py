@@ -5,7 +5,6 @@ import string
 import datetime
 
 from freezegun import freeze_time
-from nose.tools import eq_
 from hypothesis import given, settings
 from hypothesis.strategies import *
 
@@ -86,5 +85,4 @@ if os.environ.get('RUN_PROP_TESTS'):
     @settings(max_examples=1000000, timeout=3600)
     @given(**make_strategies())
     def test_json(when, template, context):
-        eq_(py(when, template, context), js(when, template, context))
-
+        assert py(when, template, context) == js(when, template, context)
