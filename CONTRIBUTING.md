@@ -26,14 +26,15 @@ you to make changes in all implementations.
 
 The JavaScript implementation is located in `./js`
 
-You should run `yarn install` to install the required packages for JSON-e's execution and development.
+Within that directory, run `yarn install` to install the required packages for JSON-e's execution and development.
 To run the tests use `yarn test`
 
 ## Python
 
 The Python implementation is located in `./py`.
 
-To test this implementation, install and run `tox`, which will test on all supported Python versions.
+To test this implementation, install and run `tox` within that directory.
+This will test on all supported Python versions.
 If you have fewer Python versions installed, that's OK -- when you make a PR it will run for all versions.
 
 ## Go

@@ -1,6 +1,6 @@
 # Making a Release
 
-Install towncrier<20 and twine.
+Install towncrier<20, wheel and twine.
 
 * Run `towncrier --version=$newversion --draft` and check that the output looks OK.  Then run it without `--draft`, deleting the old newsfiles.  Commit.
 * Update the version in:
@@ -8,7 +8,6 @@ Install towncrier<20 and twine.
   * `js/package.json`
   * `py/setup.py`
 * commit, and tag with `v$newversion`
-* Push to release the JS version -- `git push && git push --tags`
 * Release to PyPi:
   * `cd py/`
   * (if you haven't already installed it..) `pip install wheel`
@@ -22,6 +21,7 @@ Install towncrier<20 and twine.
   * `cargo publish --allow-dirty`
   * `rm specification.yml` - ..and remove the temporary file.  DO NOT CHECK IT IN!
 * Nothing to do for Go
+* Push -- `git push && git push --tags` (does this work?)
 * Documentation:
   * Ensure you have `mdbook` installed (https://rust-lang.github.io/mdBook/guide/installation.html).
   * Ensure you have a node environment set up.

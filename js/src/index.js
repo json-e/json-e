@@ -500,7 +500,7 @@ let containsFunctions = (rendered) => {
 };
 
 module.exports = (template, context = {}) => {
-  if (typeof context !== 'object') {
+  if (!isObject(context)) {
     throw new TemplateError('context must be an object');
   }
   let test = Object.keys(context).every(v => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v));
