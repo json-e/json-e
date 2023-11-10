@@ -335,6 +335,11 @@ mod test {
     }
 
     #[test]
+    fn test_units_wrong_oder() {
+        assert!(parse_duration("1s 1y").is_none());
+    }
+
+    #[test]
     fn test_all_units_space() {
         assert_eq!(
             parse_duration(" 7 y 6 mo 5 w 4 d 3 h 2 m 1 s "),

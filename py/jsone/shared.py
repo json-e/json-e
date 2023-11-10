@@ -32,17 +32,16 @@ class InterpreterError(JSONTemplateError):
 
 
 # Regular expression matching: X days Y hours Z minutes
-# todo: support hr, wk, yr
 FROMNOW_RE = re.compile(
     "".join(
         [
-            r"^(\s*(?P<years>\d+)\s*y(ears?)?)?",
-            r"(\s*(?P<months>\d+)\s*mo(nths?)?)?",
-            r"(\s*(?P<weeks>\d+)\s*w(k|eeks?)?)?",
-            r"(\s*(?P<days>\d+)\s*d(ays?)?)?",
-            r"(\s*(?P<hours>\d+)\s*h(ours?)?)?",
-            r"(\s*(?P<minutes>\d+)\s*m(in(utes?)?)?)?\s*",
-            r"(\s*(?P<seconds>\d+)\s*s(ec(onds?)?)?)?\s*$",
+            r"^(\s*(?P<years>\d+)\s*(years|year|yr|y))?",
+            r"(\s*(?P<months>\d+)\s*(months|month|mo))?",
+            r"(\s*(?P<weeks>\d+)\s*(weeks|week|wk|w))?",
+            r"(\s*(?P<days>\d+)\s*(days|day|d))?",
+            r"(\s*(?P<hours>\d+)\s*(hours|hour|hr|h))?",
+            r"(\s*(?P<minutes>\d+)\s*(minutes|minute|min|m))?",
+            r"(\s*(?P<seconds>\d+)\s*(seconds|second|sec|s))?\s*$",
         ]
     )
 )
@@ -62,7 +61,7 @@ def fromNow(offset, reference):
     # Parse offset
     m = FROMNOW_RE.match(offset)
     if m is None:
-        raise ValueError("offset string: '%s' does not parse" % offset)
+        raise TemplateError("offset string: '%s' does not parse" % offset)
 
     # In order to calculate years and months we need to calculate how many days
     # to offset the offset by, since timedelta only goes as high as weeks
