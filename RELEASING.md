@@ -1,6 +1,18 @@
 # Making a Release
 
-Install towncrier<20, wheel and twine.
+Install:
+ * Python: towncrier<20, wheel and twine
+ * Node / npm
+ * Rust / cargo
+ * mdbook (https://rust-lang.github.io/mdBook/guide/installation.html).
+
+Run
+
+```
+./release.sh <version>  (without the `v` prefix)
+```
+
+### Old Process:
 
 * Run `towncrier --version=$newversion --draft` and check that the output looks OK.  Then run it without `--draft`, deleting the old newsfiles.  Commit.
 * Update the version in:
