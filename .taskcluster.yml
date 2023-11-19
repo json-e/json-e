@@ -45,7 +45,6 @@ tasks:
           - {env: py39, vers: "3.9"}
           - {env: py310, vers: "3.10"}
           - {env: py311, vers: "3.11"}
-          - {env: py313, vers: "3.13"}
           each(v):
             image: 'python:${v.vers}'
             name: Python ${v.vers} tests
