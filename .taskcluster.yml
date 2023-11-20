@@ -20,134 +20,49 @@ tasks:
   in:
     $let:
       environments:
-        - image: node:15
-          name: node:15 tests
-          command:
-            - /bin/bash
-            - '--login'
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd js &&
-              yarn &&
-              yarn test
-        - image: node:12
-          name: node:12 tests
-          command:
-            - /bin/bash
-            - '--login'
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd js &&
-              yarn &&
-              yarn test
-        - image: 'node:15'
-          name: node import test
-          command:
-            - /bin/bash
-            - '--login'
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd js &&
-              yarn &&
-              bash package-test.sh
-        - image: 'python:3.8'
-          name: python:3.8 tests
-          command:
-            - /bin/bash
-            - '--login'
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd py/ &&
-              pip install tox &&
-              tox -e py38
-        - image: 'python:3.9'
-          name: python:3.9 tests
-          command:
-            - /bin/bash
-            - '--login'
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd py/ &&
-              pip install tox &&
-              tox -e py39
-        - image: 'python:3.10'
-          name: python:3.10 tests
-          command:
-            - /bin/bash
-            - '--login'
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd py/ &&
-              pip install tox &&
-              tox -e py310
-        - image: 'python:3.11'
-          name: python:3.11 tests
-          command:
-            - /bin/bash
-            - '--login'
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd py/ &&
-              pip install tox &&
-              tox -e py311
-        - image: 'python:3.12'
-          name: python:3.12 tests
-          command:
-            - /bin/bash
-            - '--login'
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd py/ &&
-              pip install tox &&
-              tox -e py312
-        - image: 'python:3.13'
-          name: python:3.13 tests
-          command:
-            - /bin/bash
-            - '--login'
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd py/ &&
-              pip install tox &&
-              tox -e py313
+        $flatten:
+        - $map:
+          - {vers: 18}
+          - {vers: 20}
+          - {vers: 21}
+          each(v):
+            image: node:${v.vers}
+            name: Node ${v.vers} tests
+            command:
+              - /bin/bash
+              - '--login'
+              - '-c'
+              - >-
+                git clone ${repo.url} repo &&
+                cd repo &&
+                git config advice.detachedHead false &&
+                git checkout ${repo.ref} &&
+                cd js &&
+                yarn &&
+                yarn test
+        - $map: 
+          - {env: py38, vers: "3.8"}
+          - {env: py39, vers: "3.9"}
+          - {env: py310, vers: "3.10"}
+          - {env: py311, vers: "3.11"}
+          each(v):
+            image: 'python:${v.vers}'
+            name: Python ${v.vers} tests
+            command:
+              - /bin/bash
+              - '--login'
+              - '-c'
+              - >-
+                git clone ${repo.url} repo &&
+                cd repo &&
+                git config advice.detachedHead false &&
+                git checkout ${repo.ref} &&
+                cd py/ &&
+                pip install tox &&
+                tox -e ${v.env}
+        # This image generally tracks the latest Go
         - image: 'golangci/golangci-lint'
-          name: golang lint and tests
+          name: Go tests (and lint)
           command:
             - /bin/bash
             - '-c'
@@ -159,20 +74,29 @@ tasks:
               go get -v -d -t ./... &&
               go test -v -race ./... &&
               golangci-lint run
+        - $map:
+          # This serves as an informal MSRV, just to check that the crate still
+          # compiles with the older Rust version. It is fine to bump this
+          # as-needed, as long as about a years' worth of Rust releases are
+          # still supported.
+          - {vers: "1.60"}
+          - {vers: "latest"}
+          each(v):
+            image: 'rust:${v.vers}'
+            name: Rust ${v.vers} tests
+            command:
+              - /bin/bash
+              - '-c'
+              - >-
+                git clone ${repo.url} repo &&
+                cd repo &&
+                git config advice.detachedHead false &&
+                git checkout ${repo.ref} &&
+                cd rs/ &&
+                cargo test
+        # Always use the latest Rust for the mdbook tests
         - image: 'rust:latest'
-          name: rust tests
-          command:
-            - /bin/bash
-            - '-c'
-            - >-
-              git clone ${repo.url} repo &&
-              cd repo &&
-              git config advice.detachedHead false &&
-              git checkout ${repo.ref} &&
-              cd rs/ &&
-              cargo test
-        - image: 'rust:latest'
-          name: mdbook tests
+          name: MdBook tests
           command:
             - /bin/bash
             - '-c'
