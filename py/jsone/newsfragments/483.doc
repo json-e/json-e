@@ -1,0 +1,2 @@
+All of the time-range abbreviations supported by `fromNow` and `$fromNow` are
+now documented, and all implementations agree on those abbreviations.
