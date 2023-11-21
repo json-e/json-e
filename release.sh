@@ -79,7 +79,7 @@ upload_py() {
 
 push_git() {
     git push upstream main:main
-    git push upstream --follow-gags "v$version"
+    git push upstream --follow-tags "v$version"
 }
 
 # Check stuff
