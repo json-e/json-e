@@ -228,9 +228,11 @@ result:   [1, 2, 3]
 <h2 id="fromnow"><a class="header" href="#fromnow"><code>$fromNow</code></a></h2>
 <p>The <code>$fromNow</code> operator is a shorthand for the built-in function <code>fromNow</code>. It
 creates a JSON (ISO 8601) datestamp for a time relative to the current time
-(see the <code>now</code> builtin, below) or, if <code>from</code> is given, relative to that time.
-The offset is specified by a sequence of number/unit pairs in a string. For
-example:</p>
+(see the <code>now</code> builtin, below) or, if <code>from</code> is given, relative to that time.</p>
+<p>The offset is specified by a sequence of number/unit pairs in a string.
+Whitespace is ignored, but the units must be given in ordre from largest to
+smallest. To produce a time in the past, prefix the string with <code>-</code>. A <code>+</code>
+prefix is allowed as a redundant way to specify a time in the future.</p>
 <pre><code class="language-yaml json-e">template: {$fromNow: '2 days 1 hour'}
 context:  {}
 result:   '2017-01-21T17:27:20.974Z'
@@ -239,8 +241,15 @@ result:   '2017-01-21T17:27:20.974Z'
 context:  {}
 result:   '2017-01-19T17:27:20.974Z'
 </code></pre>
-<p>The available units are <code>day</code>, <code>hour</code>, <code>minute</code>, and <code>second</code>, for all of which a plural
-is also accepted.</p>
+<p>The available units, including useful shorthands, are:</p>
+<pre><code class="language-none">years,    year,   yr,   y
+months,   month,  mo
+weeks,    week,   wk,   w
+days,     day,          d
+hours,    hour,   hr,   h
+minutes,  minute, min,  m
+seconds,  second, sec,  s
+</code></pre>
 <h2 id="let"><a class="header" href="#let"><code>$let</code></a></h2>
 <p>The <code>$let</code> operator evaluates an expression using a context amended with the
 given values. It is analogous to the Haskell <code>where</code> clause.</p>

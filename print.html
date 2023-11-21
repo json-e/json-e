@@ -155,8 +155,8 @@
                         <h1 id="json-e"><a class="header" href="#json-e">JSON-e</a></h1>
 <p>JSON-e is a data-structure parameterization system for embedding context in
 JSON objects.</p>
-<p>The central idea is to treat a data structure as a &quot;template&quot; and transform it,
-using another data structure as context, to produce an output data structure.</p>
+<p>The central idea is to treat a data structure as a &quot;template&quot; and render it,
+using another data structure as &quot;context&quot;, to produce an output data structure.</p>
 <p>There are countless libraries to do this with strings, such as
 <a href="https://mustache.github.io/">mustache</a>. What makes JSON-e unique is that it
 operates on data structures, not on their textual representation. This allows
@@ -168,6 +168,10 @@ including large chunks of contextual data.</p>
 also disallows unbounded iteration, so any JSON-e rendering operation will
 finish in finite time.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="using-json-e"><a class="header" href="#using-json-e">Using JSON-e</a></h1>
+<p>An application of JSON-e typically allows the user to specify the template, and
+defines the context with which that template will be rendered as well as how
+the output will be interpreted. For example, an application that allows
+customized responses to chat messages might provide context <code>{&quot;message&quot;: .., &quot;sender&quot;: ..}</code> and expect an object of the form <code>{&quot;reply&quot;: ..}</code> as a result.</p>
 <p>JSON-e is intended for cross-platform usage, and has native implementations in several languages.</p>
 <h2 id="javascript"><a class="header" href="#javascript">JavaScript</a></h2>
 <p>The JS module is installed into a Node project with</p>
@@ -284,6 +288,24 @@ rjsone (see above) from Bazel build files.</p>
 <p>The examples here are given in YAML for ease of reading.  Of course, the
 rendering operation takes place on the parsed data, so the input format is
 irrelevant to its operation.</p>
+<h2 id="rendering"><a class="header" href="#rendering">Rendering</a></h2>
+<p>A JSON-e template is rendered with a context to produce a result. The template,
+context, and result are all data structures containing strings, numbers,
+true/false, null, objects, and arrays -- the type of data structure you get
+from parsing JSON.</p>
+<p>The context is an object, giving values for variables at the top level of the
+template.</p>
+<h2 id="variables-and-scope"><a class="header" href="#variables-and-scope">Variables and Scope</a></h2>
+<p>Variables are defined in a set of nested scopes. When an
+<a href="./expressions.html">expression</a> references a variable, evaluation looks for a
+variable of that name in all scopes, from innermost to outermost, and uses the
+first that it finds.</p>
+<p>The outermost scope are the <a href="./built-ins.html">built-ins</a>. The context passed to
+the render call is used as the next scope, an thus can override built-in
+variables. Some operators, such as <code>$let</code>, allow the template to define
+additional scopes during rendering.</p>
+<p>Variables can contain functions defined by the caller. While these functions
+can be used during rendering, it is an error for them to appear in the result.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="simple-usage"><a class="header" href="#simple-usage">Simple Usage</a></h1>
 <p>All JSON-e directives involve the <code>$</code> character, so a template without any directives is
 rendered unchanged:</p>
@@ -389,9 +411,11 @@ result:   [1, 2, 3]
 <h2 id="fromnow"><a class="header" href="#fromnow"><code>$fromNow</code></a></h2>
 <p>The <code>$fromNow</code> operator is a shorthand for the built-in function <code>fromNow</code>. It
 creates a JSON (ISO 8601) datestamp for a time relative to the current time
-(see the <code>now</code> builtin, below) or, if <code>from</code> is given, relative to that time.
-The offset is specified by a sequence of number/unit pairs in a string. For
-example:</p>
+(see the <code>now</code> builtin, below) or, if <code>from</code> is given, relative to that time.</p>
+<p>The offset is specified by a sequence of number/unit pairs in a string.
+Whitespace is ignored, but the units must be given in ordre from largest to
+smallest. To produce a time in the past, prefix the string with <code>-</code>. A <code>+</code>
+prefix is allowed as a redundant way to specify a time in the future.</p>
 <pre><code class="language-yaml json-e">template: {$fromNow: '2 days 1 hour'}
 context:  {}
 result:   '2017-01-21T17:27:20.974Z'
@@ -400,8 +424,15 @@ result:   '2017-01-21T17:27:20.974Z'
 context:  {}
 result:   '2017-01-19T17:27:20.974Z'
 </code></pre>
-<p>The available units are <code>day</code>, <code>hour</code>, <code>minute</code>, and <code>second</code>, for all of which a plural
-is also accepted.</p>
+<p>The available units, including useful shorthands, are:</p>
+<pre><code class="language-none">years,    year,   yr,   y
+months,   month,  mo
+weeks,    week,   wk,   w
+days,     day,          d
+hours,    hour,   hr,   h
+minutes,  minute, min,  m
+seconds,  second, sec,  s
+</code></pre>
 <h2 id="let"><a class="header" href="#let"><code>$let</code></a></h2>
 <p>The <code>$let</code> operator evaluates an expression using a context amended with the
 given values. It is analogous to the Haskell <code>where</code> clause.</p>

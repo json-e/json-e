@@ -809,13 +809,13 @@
     // A years B months C days D hours E minutes F seconds
     var timeExp = new RegExp([
       '^(\\s*(-|\\+))?',
-      '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
-      '(\\s*(\\d+)\\s*mo(nths?)?)?',
-      '(\\s*(\\d+)\\s*w((eeks?)|k)?)?',
-      '(\\s*(\\d+)\\s*d(ays?)?)?',
-      '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
-      '(\\s*(\\d+)\\s*m(in(utes?)?)?)?',
-      '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
+      '(\\s*(?<years>\\d+)\\s*(y|year|years|yr))?',
+      '(\\s*(?<months>\\d+)\\s*(months|month|mo))?',
+      '(\\s*(?<weeks>\\d+)\\s*(weeks|week|wk|w))?',
+      '(\\s*(?<days>\\d+)\\s*(days|day|d))?',
+      '(\\s*(?<hours>\\d+)\\s*(hours|hour|hr|h))?',
+      '(\\s*(?<minutes>\\d+)\\s*(minutes|minute|min|m))?',
+      '(\\s*(?<seconds>\\d+)\\s*(seconds|second|sec|s))?',
       '\\s*$',
     ].join(''), 'i');
 
@@ -829,14 +829,15 @@
       // Negate if needed
       var neg = match[2] === '-' ? - 1 : 1;
       // Return parsed values
+      let groups = match.groups;
       return {
-        years:    parseInt(match[4]   || 0, 10) * neg,
-        months:   parseInt(match[8]   || 0, 10) * neg,
-        weeks:    parseInt(match[11]  || 0, 10) * neg,
-        days:     parseInt(match[15]  || 0, 10) * neg,
-        hours:    parseInt(match[18]  || 0, 10) * neg,
-        minutes:  parseInt(match[22]  || 0, 10) * neg,
-        seconds:  parseInt(match[25]  || 0, 10) * neg,
+        years:    parseInt(groups['years']   || 0, 10) * neg,
+        months:   parseInt(groups['months']  || 0, 10) * neg,
+        weeks:    parseInt(groups['weeks']   || 0, 10) * neg,
+        days:     parseInt(groups['days']    || 0, 10) * neg,
+        hours:    parseInt(groups['hours']   || 0, 10) * neg,
+        minutes:  parseInt(groups['minutes'] || 0, 10) * neg,
+        seconds:  parseInt(groups['seconds'] || 0, 10) * neg,
       };
     };
 
@@ -1283,7 +1284,7 @@
         }
       });
 
-      var child_context = Object.assign(context, variables);
+      var child_context = Object.assign({}, context, variables);
 
       if (template.in == undefined) {
         throw new TemplateError('$let operator requires an `in` clause');
@@ -1618,7 +1619,7 @@
     };
 
     var src = (template, context = {}) => {
-      if (typeof context !== 'object') {
+      if (!isObject(context)) {
         throw new TemplateError('context must be an object');
       }
       let test = Object.keys(context).every(v => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v));

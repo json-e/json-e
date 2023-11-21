@@ -159,6 +159,24 @@
 <p>The examples here are given in YAML for ease of reading.  Of course, the
 rendering operation takes place on the parsed data, so the input format is
 irrelevant to its operation.</p>
+<h2 id="rendering"><a class="header" href="#rendering">Rendering</a></h2>
+<p>A JSON-e template is rendered with a context to produce a result. The template,
+context, and result are all data structures containing strings, numbers,
+true/false, null, objects, and arrays -- the type of data structure you get
+from parsing JSON.</p>
+<p>The context is an object, giving values for variables at the top level of the
+template.</p>
+<h2 id="variables-and-scope"><a class="header" href="#variables-and-scope">Variables and Scope</a></h2>
+<p>Variables are defined in a set of nested scopes. When an
+<a href="./expressions.html">expression</a> references a variable, evaluation looks for a
+variable of that name in all scopes, from innermost to outermost, and uses the
+first that it finds.</p>
+<p>The outermost scope are the <a href="./built-ins.html">built-ins</a>. The context passed to
+the render call is used as the next scope, an thus can override built-in
+variables. Some operators, such as <code>$let</code>, allow the template to define
+additional scopes during rendering.</p>
+<p>Variables can contain functions defined by the caller. While these functions
+can be used during rendering, it is an error for them to appear in the result.</p>
 
                     </main>
 
