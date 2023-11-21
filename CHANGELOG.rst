@@ -1,3 +1,21 @@
+Jsone 4.6.0 (2023-11-21)
+========================
+
+Bugfixes
+--------
+
+- For JavaScript, variables added in a `$let` do not persist outside of that `$let` any more. (#473)
+- The context is required to be a JSON object in all implementations. (#481)
+- Python versions older than 3.8 are no longer tested or supported. Notably, Python 2 is no longer supported. (#486)
+
+
+Improved Documentation
+----------------------
+
+- All of the time-range abbreviations supported by `fromNow` and `$fromNow` are
+  now documented, and all implementations agree on those abbreviations. (#483)
+
+
 Jsone 4.5.3 (2023-07-27)
 ========================
 
