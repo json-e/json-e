@@ -1828,42 +1828,32 @@ context: {}
 template: {$eval: 'len(1)'}
 error: 'BuiltinError: invalid arguments to builtin: len'
 ---
-title: str (1)
+title: str of num via context
 context: {key: 1}
 template: {$eval: 'str(key)'}
 result: '1'
 ---
-title: str (2)
+title: str of num
 context: {}
 template: {$eval: 'str(1)'}
 result: '1'
 ---
-title: str (3)
+title: str of string via context
 context: {key: 'hello'}
 template: {$eval: 'str(key)'}
 result: 'hello'
 ---
-title: str (4)
+title: str of string
 context: {}
 template: {$eval: 'str("hello")'}
 result: 'hello'
 ---
-title: str (3)
-context: {key: 'hello'}
-template: {$eval: 'str(key)'}
-result: 'hello'
----
-title: str (4)
-context: {}
-template: {$eval: 'str("hello")'}
-result: 'hello'
----
-title: str (5)
+title: str of bool via context
 context: {key: true}
 template: {$eval: 'str(key)'}
 result: 'true'
 ---
-title: str (6)
+title: str of true
 context: {}
 template: {$eval: 'str(true)'}
 result: 'true'
@@ -1873,37 +1863,42 @@ context: {x: null}
 template: {$eval: 'str(x)'}
 result: 'null'
 ---
-title: str (7)
+title: str of bool via context
 context: {key: false}
 template: {$eval: 'str(key)'}
 result: 'false'
 ---
-title: str (8)
+title: str of false
 context: {}
 template: {$eval: 'str(false)'}
 result: 'false'
 ---
-title: str (9)
-context: {val: 24}
+title: str of floating-point 4.25
+context: {val: 4.25}
 template: {$eval: 'str(val)'}
-result: '24'
+result: '4.25'
 ---
-title: str (unicode)
+title: str of floating-point 4.2
+context: {val: 4.2}
+template: {$eval: 'str(val)'}
+result: '4.2'
+---
+title: str of unicode
 context: {val: "let's make a ☃"}
 template: {$eval: 'str(val)'}
 result: "let's make a ☃"
 ---
-title: str({})
+title: str of empty object
 context: {}
 template: {$eval: 'str({})'}
 error: 'BuiltinError: invalid arguments to builtin: str'
 ---
-title: str({a:10})
+title: str of object
 context: {}
 template: {$eval: 'str({a:10})'}
 error: 'BuiltinError: invalid arguments to builtin: str'
 ---
-title: str([1, 2, 3])
+title: str of array
 context: {}
 template: {$eval: 'str([1, 2, 3])'}
 error: 'BuiltinError: invalid arguments to builtin: str'
