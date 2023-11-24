@@ -704,17 +704,17 @@ result:   '[2,5,10]'
 title:    representation of various unicode codepoints are consistent
 context:  {}
 template: {$json: ["\x10", "Z", "\u0103","\U0001F809"]}
-result:   "[\"\\u0010\",\"Z\",\"\u0103\",\"\U0001F809\"]"
+result:   "[\"\\u0010\",\"Z\",\"\u0103\",\"\\uD83E\\uDC09\"]"
 ---
 title:    sorting pairs by unicode key strings sorts lexically by codepoint
 context:  {}
 template: {$json: {"\u3347\u0050": 1, "\uE1FF\u0100": 2, "\u0055\u0045": 3}}
-result:   "{\"\u0055\u0045\":3,\"\u3347\u0050\":1,\"\uE1FF\u0100\":2}"
+result:   "{\"\u0055\u0045\":3,\"\u3347\u0050\":1,\"\\uE1FF\u0100\":2}"
 ---
 title:    sorting pairs by unicode key strings sorts lexically by codepoint, even with chars above base plane
 context:  {}
 template: {$json: {"\U0001F809\u732b":'hey', "Z\U00010000P": 1, "\U000E1FFF\u0103": 2, "UaE": 3}}
-result:   "{\"UaE\":3,\"Z\U00010000P\":1,\"\U0001F809\u732b\":\"hey\",\"\U000E1FFF\u0103\":2}"
+result:   "{\"UaE\":3,\"Z\\uD800\\uDC00P\":1,\"\\uD83E\\uDC09\u732b\":\"hey\",\"\\uDB47\\uDFFF\u0103\":2}"
 ---
 title:    $json with undefined properties
 context:  {}
