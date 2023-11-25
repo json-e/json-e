@@ -393,7 +393,7 @@ def sort(template, context):
     if not isinstance(value, list):
         raise TemplateError("$sorted values to be sorted must have the same type")
 
-    # handle by(..) if given, applying the schwartzian transform
+    # handle by(..) if given, producing a list of keys to be sorted
     by_keys = [k for k in template if k.startswith("by(")]
     if len(by_keys) == 1:
         by_key = by_keys[0]
@@ -404,26 +404,30 @@ def sort(template, context):
             subcontext = context.copy()
             for e in value:
                 subcontext[by_var] = e
-                yield parse(by_expr, subcontext), e
+                yield parse(by_expr, subcontext)
 
-        to_sort = list(xform())
+        sort_keys = list(xform())
     elif len(by_keys) == 0:
-        to_sort = [(e, e) for e in value]
+        sort_keys = value
     else:
         raise TemplateError("only one by(..) is allowed")
 
-    # check types
+    # check types of the values to be sorted all match
     try:
-        eltype = type(to_sort[0][0])
+        eltype = type(sort_keys[0])
     except IndexError:
         return []
     if eltype in (list, dict, bool, type(None)):
         raise TemplateError("$sorted values to be sorted must have the same type")
-    if not all(isinstance(e[0], eltype) for e in to_sort):
+    if not all(isinstance(e, eltype) for e in sort_keys):
         raise TemplateError("$sorted values to be sorted must have the same type")
 
-    # unzip the schwartzian transform
-    return list(e[1] for e in sorted(to_sort))
+    # If not using `by(..)`, just sort the values.
+    if sort_keys is value:
+        return sorted(value)
+
+    # Otherwise, index into the sort_keys array for each element.
+    return list(pair[1] for pair in sorted(enumerate(value), key=lambda pair: sort_keys[pair[0]]))
 
 
 def containsFunctions(rendered):

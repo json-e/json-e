@@ -1427,6 +1427,13 @@ title:    $sort variable not used (not in context)
 context:  {}
 template: { $sort: [2,1,3], by(x): foo}
 error:    'InterpreterError: unknown context value foo'
+---
+title:    $sort is stable
+template:
+  $sort: ["aa", "dd", "ac", "ba", "ab"]
+  by(x): 'x[0]'
+context:  {}
+result:   ["aa", "ac", "ab", "ba", "dd"]
 
 ################################################################################
 ---
