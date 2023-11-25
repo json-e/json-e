@@ -305,6 +305,15 @@ func (p *Parser) parseList() (node IASTNode, err error) {
 			if err != nil {
 				return nil, err
 			}
+			if node == nil {
+				return nil, SyntaxError{
+					Message:  fmt.Sprintf("Found '%s'", p.CurrentToken.Kind),
+					Source:   p.source,
+					Start:    p.CurrentToken.Start,
+					End:      p.CurrentToken.End,
+					Expected: p.expectedTokens,
+				}
+			}
 			list = append(list, node)
 		}
 	}
