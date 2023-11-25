@@ -1063,12 +1063,12 @@ error: 'TemplateError: $map on objects expects each(x) to evaluate to an object'
 ---
 title:    $map over object, two vars
 context:  {}
-template:	{ $map: {a: 1, b: 2, c: 3}, 'each(v,k)': {'${k}x': {$eval: 'v + 1'}} }
+template: { $map: {a: 1, b: 2, c: 3}, 'each(v,k)': {'${k}x': {$eval: 'v + 1'}} }
 result:   {ax: 2, bx: 3, cx: 4}
 ---
 title:    $map over object, two vars (overwrite)
 context:  {}
-template:	{ $map: {a: 1, b: 2, c: 3}, 'each(v,k)': {'foo': {$eval: 'v + 1'}} }
+template: { $map: {a: 1, b: 2, c: 3}, 'each(v,k)': {'foo': {$eval: 'v + 1'}} }
 result:   {foo: 4}
 ---
 title:    $map over object, one var
