@@ -233,26 +233,20 @@ result: {ax: 2, bx: 3, cx: 4}
 
 ## `$match`
 
-The `$match` operator is not dissimilar to pattern matching operators.
-It gets an object, in which every key is a string expression(s) to
-evaluate to `true` or `false` based on the context. The result will
-be an array of things (all types are supported) that were values
-corresponding to the keys that were evaluated to `true`. The order of
-the things in the array will be arbitrary. If there are no matches,
-the result is an empty array.
-
-```yaml,json-e
-template: {$match: {"x == 10": "ten", "x == 20": "twenty"}}
-context: {x: 10}
-result: ["ten"]
-```
+The `$match` operator is not dissimilar to pattern matching operators.  It gets
+an object, in which every key is a string expression(s) to evaluate to `true`
+or `false` based on the context. Keys are evaluated in lexical order, and the
+result is an array containing values corresponding to keys that evaluated to
+`true`.  If there are no matches, the result is an empty array.
 
 ```yaml,json-e
 template:
-  # $sort the otherwise arbitrarily ordered results
-  $sort: {$match: {"x == 10 || x == 20": "tens", "x == 10": "ten"}}
-context: {x: 10}
-result: ["ten", "tens"]
+  $match: 
+    "c > 10": "cherry"
+    "b > 10": "banana"
+    "a > 10": "apple"
+context: {a: 200, b: 3, c: 19}
+result: ["apple", "cherry"]
 ```
 
 ```yaml,json-e
