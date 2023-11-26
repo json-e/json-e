@@ -48,6 +48,11 @@ not evaluate the value (use `$eval` for that). While this can be useful in some
 cases, it is an unusual case to include a JSON string in a larger data
 structure.
 
+Parsing the result of this operator with any compliant JSON parser will give
+the same results. However, the encoding may differ between implementations of
+JSON-e. For example, numeric representations or string escapes may differ
+between implementations.
+
 ```yaml,json-e
 template: {$json: [a, b, {$eval: 'a+b'}, 4]}
 context:  {a: 1, b: 2}

@@ -716,11 +716,6 @@ context:  {}
 template: {$json: ["ă"]}
 result:   "[\"ă\"]"
 ---
-title:    Unicode supplementary plane character U+1F150 is not escaped
-context:  {}
-template: {$json: ["🅐"]}
-result:   "[\"🅐\"]"
----
 title:    sorting pairs by unicode key strings sorts lexically by codepoint
 context:  {}
 # Note that these `\u` escapes are interpreted into characters by YAML, not by JSON-e
