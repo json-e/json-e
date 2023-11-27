@@ -4232,6 +4232,11 @@ title: 'non-identifier after dot'
 context: {key: {}}
 template: {$eval: 'key.{'}
 error: 'SyntaxError: Found: { token, expected one of: identifier'
+---
+title:    accessor after function call
+context:  {}
+template: {$eval: 'split("left:right", ":")[1]'}
+result:   right
 ################################################################################
 ---
 section: expression language - array access
