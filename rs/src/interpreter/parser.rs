@@ -615,6 +615,14 @@ mod test {
     }
 
     #[test]
+    fn test_parse_no_args_fn() {
+        assert_eq!(
+            parse_all("f()").unwrap(),
+            Node::Func(Box::new(Node::Ident("f")), vec![],)
+        );
+    }
+
+    #[test]
     fn test_parse_all_err() {
         assert!(parse_all("~~~").is_err());
     }
