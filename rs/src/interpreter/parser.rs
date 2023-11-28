@@ -184,22 +184,23 @@ fn unary_expr(input: &str) -> IResult<&str, Node<'_>> {
     ))(input)
 }
 
-/// An index expression (`x[i]`, `x[a..b]` or `x.p`).  These are left-associative at equal
-/// precedence.
-fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
+/// An index expression (`x[i]`, `x[a..b]` or `x.p`) or function call.  These are left-associative
+/// at equal precedence.
+fn index_or_fn_expr(input: &str) -> IResult<&str, Node<'_>> {
     // An index operation without its left-hand side.  The `fold_multi0` closure attaches
     // these to their LHS's and creates Nodes.
-    enum IndexOp<'a> {
+    enum ExprKind<'a> {
         Index(Box<Node<'a>>),
         Slice(Option<Box<Node<'a>>>, Option<Box<Node<'a>>>),
         Dot(&'a str),
+        Func(Vec<Node<'a>>),
     }
 
-    fn index_op<'a>(input: (&'a str, Node<'a>, &'a str)) -> Result<IndexOp<'a>, ()> {
-        Ok(IndexOp::Index(Box::new(input.1)))
+    fn index_expr<'a>(input: (&'a str, Node<'a>, &'a str)) -> Result<ExprKind<'a>, ()> {
+        Ok(ExprKind::Index(Box::new(input.1)))
     }
 
-    fn slice_node<'a>(
+    fn slice_expr<'a>(
         input: (
             &'a str,
             Option<Node<'a>>,
@@ -207,19 +208,26 @@ fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
             Option<Node<'a>>,
             &'a str,
         ),
-    ) -> Result<IndexOp<'a>> {
-        Ok(IndexOp::Slice(input.1.map(Box::new), input.3.map(Box::new)))
+    ) -> Result<ExprKind<'a>> {
+        Ok(ExprKind::Slice(
+            input.1.map(Box::new),
+            input.3.map(Box::new),
+        ))
     }
 
-    fn dot_node<'a>(input: (&'a str, &'a str)) -> Result<IndexOp<'a>> {
-        Ok(IndexOp::Dot(input.1))
+    fn dot_expr<'a>(input: (&'a str, &'a str)) -> Result<ExprKind<'a>> {
+        Ok(ExprKind::Dot(input.1))
+    }
+
+    fn func_expr<'a>(input: (&'a str, Vec<Node<'a>>, &'a str)) -> Result<ExprKind<'a>> {
+        Ok(ExprKind::Func(input.1))
     }
 
     let (i, init) = unary_expr(input)?;
 
     fold_many0(
         ws(alt((
-            map_res(tuple((tag("["), expression, tag("]"))), index_op),
+            map_res(tuple((tag("["), expression, tag("]"))), index_expr),
             map_res(
                 tuple((
                     tag("["),
@@ -228,41 +236,31 @@ fn index_expr(input: &str) -> IResult<&str, Node<'_>> {
                     opt(expression),
                     tag("]"),
                 )),
-                slice_node,
+                slice_expr,
             ),
-            map_res(tuple((tag("."), ident_str)), dot_node),
+            map_res(tuple((tag("."), ident_str)), dot_expr),
+            map_res(
+                ws(tuple((
+                    tag("("),
+                    separated_list0(ws(tag(",")), expression),
+                    tag(")"),
+                ))),
+                func_expr,
+            ),
         ))),
         // This clone is necessary because backtracking may result in this
         // parser running more than once.
         move || init.clone(),
-        |acc: Node, index_op: IndexOp| {
+        |acc: Node, expr_kind: ExprKind| {
             let acc = Box::new(acc);
-            match index_op {
-                IndexOp::Index(i) => Node::Index(acc, i),
-                IndexOp::Slice(a, b) => Node::Slice(acc, a, b),
-                IndexOp::Dot(p) => Node::Dot(acc, p),
+            match expr_kind {
+                ExprKind::Index(i) => Node::Index(acc, i),
+                ExprKind::Slice(a, b) => Node::Slice(acc, a, b),
+                ExprKind::Dot(p) => Node::Dot(acc, p),
+                ExprKind::Func(args) => Node::Func(acc, args),
             }
         },
     )(i)
-}
-
-/// A function-invocation expression
-fn function_expr(input: &str) -> IResult<&str, Node<'_>> {
-    fn node<'a>(input: (Node<'a>, &'a str, Vec<Node<'a>>, &'a str)) -> Result<Node<'a>, ()> {
-        Ok(Node::Func(Box::new(input.0), input.2))
-    }
-    alt((
-        map_res(
-            ws(tuple((
-                index_expr,
-                tag("("),
-                separated_list0(ws(tag(",")), expression),
-                tag(")"),
-            ))),
-            node,
-        ),
-        index_expr,
-    ))(input)
 }
 
 /// Exponentiation is right-associative
@@ -272,8 +270,8 @@ fn exp_expr(input: &str) -> IResult<&str, Node<'_>> {
     }
 
     alt((
-        map_res(tuple((function_expr, tag("**"), exp_expr)), node),
-        function_expr,
+        map_res(tuple((index_or_fn_expr, tag("**"), exp_expr)), node),
+        index_or_fn_expr,
     ))(input)
 }
 
@@ -501,6 +499,40 @@ mod test {
                     Box::new(Node::Un("-", Box::new(Node::Number("1")))),
                     vec![Node::Number("2"), Node::Number("3"),],
                 )
+            ))
+        );
+    }
+
+    #[test]
+    fn test_function_indexed() {
+        assert_eq!(
+            expression("f(2)[0]"),
+            Ok((
+                "",
+                Node::Index(
+                    Box::new(Node::Func(
+                        Box::new(Node::Ident("f")),
+                        vec![Node::Number("2")]
+                    )),
+                    Box::new(Node::Number("0")),
+                ),
+            ))
+        );
+    }
+
+    #[test]
+    fn test_function_dot() {
+        assert_eq!(
+            expression("f(2).result"),
+            Ok((
+                "",
+                Node::Dot(
+                    Box::new(Node::Func(
+                        Box::new(Node::Ident("f")),
+                        vec![Node::Number("2")]
+                    )),
+                    "result",
+                ),
             ))
         );
     }
