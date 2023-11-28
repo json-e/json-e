@@ -14,6 +14,13 @@ def test_custom_builtin():
     assert render({"$eval": "my_builtin(3, 4)"}, {"my_builtin": my_builtin}) == 5
 
 
+def test_no_arg_func():
+    def my_builtin():
+        return 42
+
+    assert render({"$eval": "my_builtin()"}, {"my_builtin": my_builtin}) == 42
+
+
 def test_non_object_context():
     with pytest.raises(JSONTemplateError):
         render({}, None)
