@@ -12,7 +12,7 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},
     character::complete::{alpha1, alphanumeric1, char, digit1},
-    combinator::{complete, map_res, not, opt, recognize},
+    combinator::{map_res, not, opt, recognize},
     multi::{fold_many0, many0, separated_list0},
     sequence::{delimited, pair, tuple},
     Err, IResult,
@@ -314,7 +314,7 @@ fn expression(input: &str) -> IResult<&str, Node<'_>> {
 
 /// Parse an entire string as an expression.  Un-parsed characters are treated as an error.
 pub(crate) fn parse_all(input: &str) -> anyhow::Result<Node> {
-    match complete(expression)(input) {
+    match expression(input) {
         Ok(("", node)) => Ok(node),
         Ok((unused, _)) => Err(anyhow!("Unexpected trailing characters {}", unused)),
         Err(Err::Incomplete(_)) => unreachable!(),
@@ -325,7 +325,7 @@ pub(crate) fn parse_all(input: &str) -> anyhow::Result<Node> {
 
 /// Parse a part of a string as an expression, returning the remainder of the string.
 pub(crate) fn parse_partial(input: &str) -> anyhow::Result<(Node, &str)> {
-    match complete(expression)(input) {
+    match expression(input) {
         Ok((unused, node)) => Ok((node, unused)),
         Err(Err::Incomplete(_)) => unreachable!(),
         Err(Err::Error(e)) => Err(anyhow!("Parse error at {:?}", e.input)),
