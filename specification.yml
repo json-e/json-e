@@ -4031,6 +4031,11 @@ context: {key: 'null'}
 template: {$eval: 'key'}
 result: 'null'
 ---
+title: 'property that is also a function name'
+context: {min: abc}
+template: {$eval: 'min'}
+result: abc
+---
 title: 'missing property'
 context: {key: {a: 1}}
 template: {$eval: 'key.b'}
@@ -4076,6 +4081,81 @@ context: {key: abc, values: {abc: 2, def: 3}}
 template: {$eval: 'values[key]'}
 result: 2
 ---
+title: 'property starting with underscore'
+context: {_key: abc}
+template: {$eval: '_key'}
+result: abc
+---
+title: 'property containing underscore'
+context: {my_key: abc}
+template: {$eval: 'my_key'}
+result: abc
+---
+title: 'property containing hyphen'
+context: {my-key: abc}
+template: {$eval: 'my-key'}
+error: 'TemplateError: top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/'
+---
+title: 'property starting with capital'
+context: {Key: abc}
+template: {$eval: 'Key'}
+result: abc
+---
+title: 'property containing capital'
+context: {kEy: abc}
+template: {$eval: 'kEy'}
+result: abc
+---
+title: 'case sensitivity of keys'
+context: {key: abc}
+template: {$eval: 'Key'}
+error: 'InterpreterError: unknown context value Key'
+---
+title: 'property starting with number'
+context: {'2fast': abc}
+template: {$eval: '2fast'}
+error: 'TemplateError: top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/'
+---
+title: 'property containing number'
+context: {furious5: abc}
+template: {$eval: 'furious5'}
+result: abc
+---
+title: 'nested property starting with underscore'
+context: {key: {_foo: abc}}
+template: {$eval: 'key._foo'}
+result: abc
+---
+title: 'nested property containing underscore'
+context: {key: {foo_bar: abc}}
+template: {$eval: 'key.foo_bar'}
+result: abc
+---
+title: 'nested property containing hyphen'
+context: {key: {my-foo: abc}}
+template: {$eval: 'key.my-foo'}
+error: 'InterpreterError: object has no property "my"'
+---
+title: 'nested property containing hyphen using brackets'
+context: {key: {my-foo: abc}}
+template: {$eval: "key['my-foo']"}
+result: abc
+---
+title: 'nested property starting with capital'
+context: {key: {Foo: abc}}
+template: {$eval: 'key.Foo'}
+result: abc
+---
+title: 'nested property containing capital'
+context: {key: {fOo: abc}}
+template: {$eval: 'key.fOo'}
+result: abc
+---
+title: 'case sensitivity of nested keys'
+context: {key: {foo: abc}}
+template: {$eval: 'key.Foo'}
+error: 'InterpreterError: object has no property "Foo"'
+---
 title: 'property access with number'
 context:
   obj: {'13': 15}
@@ -4104,6 +4184,11 @@ template: {$eval: 'key.valueOf'}
 error: 'InterpreterError: infix: . expects objects'
 ---
 title: 'non-identifier after dot'
+context: {key: {}}
+template: {$eval: 'key.{'}
+error: 'SyntaxError: Found: { token, expected one of: identifier'
+---
+title: 'non-identifier after dot (2)'
 context: {key: {}}
 template: {$eval: 'key.{'}
 error: 'SyntaxError: Found: { token, expected one of: identifier'
