@@ -132,6 +132,14 @@ context: {v: {a: 'apple', b: 'bananna', c: 'carrot'}}
 result: 'applebananna'
 ```
 
+Note that the object can be a literal expression:
+
+```yaml,json-e
+template: {$eval: '{ENOMEM:"Out of memory", ENOCPU:"Out of CPUs"}[msgid]'}
+context: {msgid: ENOMEM}
+result: 'Out of memory'
+```
+
 ## Indexing and Slicing
 
 Strings and arrays can be indexed and sliced using a Python-like indexing
