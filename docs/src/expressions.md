@@ -47,6 +47,11 @@ context: {x: 'quick', z: 'sort'}
 result: ['quick', 'sort', 'quicksort']
 ```
 
+Valid identifiers for context references follow the requirements of many
+programming languages: identifiers may only contain letters, underscores, and
+numbers, but may not start with a number. This does imply that the context
+object may only have keys that meet these requirements.
+
 ## Arithmetic Operations
 
 The usual arithmetic operators are all defined, with typical associativity and
@@ -128,8 +133,8 @@ does not have `prop`, while `obj['prop']` will evaluate to `null`.
 
 ```yaml,json-e
 template: {$eval: 'v.a + v["b"]'}
-context: {v: {a: 'apple', b: 'bananna', c: 'carrot'}}
-result: 'applebananna'
+context: {v: {a: 'apple', b: 'banana', c: 'carrot'}}
+result: 'applebanana'
 ```
 
 Note that the object can be a literal expression:
@@ -139,6 +144,13 @@ template: {$eval: '{ENOMEM:"Out of memory", ENOCPU:"Out of CPUs"}[msgid]'}
 context: {msgid: ENOMEM}
 result: 'Out of memory'
 ```
+
+When using the dot-syntax, e.g. `.prop`, identifiers may only contain letters,
+underscores, and numbers, but may not start with a number (just like for context
+references). While the context object may only have keys that meet these
+requirements, nested objects may have keys in any format. Keys that are not in
+the identifier format must be accessed using the bracket-name syntax, e.g.
+`['my-prop']`.
 
 ## Indexing and Slicing
 
