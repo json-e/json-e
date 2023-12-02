@@ -5,23 +5,30 @@ language. Its data types are limited to JSON types plus function objects.
 
 ## Literals
 
-Literals are similar to those for JSON. Numeric literals only accept integer
-and decimal notation. Strings do not support any kind of escaping. The use of
-`\n` and `\t` in the example below depends on the YAML parser to expand the
-escapes.
+Literals are similar to those for JSON Numeric literals only accept integer and
+decimal notation.
 
 ```yaml,json-e
 template:
   - {$eval: "1.3"}
-  - {$eval: "'abc'"}
-  - {$eval: '"abc"'}
-  - {$eval: "'\n\t'"}
 context: {}
 result:
   - 1.3
+```
+
+Strings do not support any kind of escaping, but can be enclosed in either `"`
+or in `'`. To avoid confusion when writing JSON-e expressions in YAML or JSON
+documents, remember that JSON-e operates on the data structure that results
+_after_ YAML or JSON parsing is complete.
+
+```yaml,json-e
+template:
+  - {$eval: "'abc'"}
+  - {$eval: '"abc"'}
+context: {}
+result:
   - "abc"
   - "abc"
-  - "\n\t"
 ```
 
 Array and object literals also look much like JSON, with bare identifiers
