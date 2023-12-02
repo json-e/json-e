@@ -52,7 +52,8 @@ template:
   # convert string case
   - {$eval: 'lowercase("Fools!")'}
   - {$eval: 'uppercase("Fools!")'}
-  # convert string, number, boolean, or array to string
+  # convert string, number, or boolean to string
+  # (arrays and objects cannot be converted to string)
   - {$eval: 'str(130)'}
   # convert a string to a number (string is required)
   - {$eval: 'number("310")'}

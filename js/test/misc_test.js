@@ -46,4 +46,9 @@ suite('misc', function() {
     assume(() => jsone({}, "two")).throws();
     assume(() => jsone({}, [{}])).throws();
   });
+
+  test('Argument-less functions are OK', function() {
+    let my_builtin = () => 42;
+    assume(jsone({$eval: 'my_builtin()'}, {my_builtin})).eql(42);
+  });
 });

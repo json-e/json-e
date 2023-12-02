@@ -19,7 +19,7 @@ import (
 func Render(template interface{}, context map[string]interface{}) (interface{}, error) {
 	// Validate input
 	if err := i.IsValidContext(context); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// Inherit functions from builtins

@@ -273,7 +273,7 @@ var contextVariablePattern = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
 func IsValidContext(context map[string]interface{}) error {
 	for k, v := range context {
 		if !contextVariablePattern.MatchString(k) {
-			return fmt.Errorf("context variable '%s' doesn't match pattern: %s", k, contextVariablePattern.String())
+			return fmt.Errorf("top level keys of context must follow %s", contextVariablePattern.String())
 		}
 		if err := IsValidData(v); err != nil {
 			return err
