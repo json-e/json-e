@@ -5,6 +5,14 @@ use crate::interpreter::{self, Context};
 use crate::op_props::{parse_by, parse_each};
 use crate::value::{Object, Value};
 use anyhow::{bail, Result};
+use nom::{
+    branch::alt,
+    bytes::complete::tag,
+    character::complete::{alpha1, alphanumeric1},
+    combinator::{all_consuming, recognize},
+    multi::many0,
+    sequence::pair,
+};
 use serde_json::Value as SerdeValue;
 use std::borrow::Cow;
 use std::convert::TryInto;
@@ -750,23 +758,18 @@ fn sort_operator_without_by(
 
 /// Recognize identifier strings for $let
 pub(crate) fn is_identifier(identifier: &str) -> bool {
-    let mut chars = identifier.chars();
+    fn parser(input: &str) -> nom::IResult<&str, &str> {
+        all_consuming(recognize(pair(
+            alt((alpha1, tag("_"))),
+            many0(alt((alphanumeric1, tag("_")))),
+        )))(input)
+    }
 
-    if let Some(c) = chars.next() {
-        if !c.is_ascii_alphabetic() {
-            return false;
-        }
+    if let Ok((remaining, _)) = parser(identifier) {
+        remaining.is_empty()
     } else {
-        return false;
+        false
     }
-
-    for c in chars {
-        if !c.is_ascii_alphanumeric() && c != '_' {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 #[cfg(test)]
