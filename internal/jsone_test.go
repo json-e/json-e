@@ -19,18 +19,10 @@ type testCase struct {
 	Template interface{}            `json:"template"`
 	Result   interface{}            `json:"result"`
 	Error    interface{}            `json:"error"` // bool, string or nil
-	Panic    interface{}            `json:"panic"` // bool, true if panic is expected
 }
 
 func (c *testCase) Test(t *testing.T) {
 	require.Empty(t, c.Section, "sections aren't test cases")
-
-	if c.Panic != nil {
-		require.Panics(t, func() {
-			Render(c.Template, c.Context) // nolint:errcheck
-		})
-		return
-	}
 
 	// Set a fixed 'now', if one isn't specified
 	context := make(map[string]interface{})
