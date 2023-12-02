@@ -180,6 +180,8 @@ class Parser(object):
                     raise SyntaxError.unexpected(self.current_token, expectedTokens)
                 self.take_token(",")
                 node = self.parse()
+                if node is None:
+                    raise SyntaxError.unexpected(self.current_token, expectedTokens)
                 arr.append(node)
 
         self.take_token("]")

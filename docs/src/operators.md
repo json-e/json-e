@@ -370,6 +370,16 @@ context:  {}
 result:   [{a: 1, b: []}, {a: 2}, {a: 3}]
 ```
 
+The sort is stable:
+```yaml,json-e
+template:
+  $sort: ["aa", "dd", "ac", "ba", "ab"]
+  by(x): 'x[0]'
+context:  {}
+# stable: all "a" strings remain in the same order relative to one another.
+result:   ["aa", "ac", "ab", "ba", "dd"]
+```
+
 ## `$reverse`
 
 The `$reverse` operator simply reverses the given array.

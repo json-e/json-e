@@ -674,9 +674,9 @@ fn sort_operator(
             .iter()
             .map(|item| {
                 subcontext.insert(by_var, item.clone());
-                (evaluate(by_expr, &subcontext).unwrap(), item.clone())
+                Ok((evaluate(by_expr, &subcontext)?, item.clone()))
             })
-            .collect();
+            .collect::<Result<_>>()?;
 
         if eval_pairs.iter().all(|(e, _v)| e.is_string()) {
             // sort strings
