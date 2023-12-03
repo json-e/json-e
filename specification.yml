@@ -2470,6 +2470,11 @@ context: {a: 3.0, b: 2.0}
 template: {$eval: 'b / a'}
 result: 0.6666666666666666
 ---
+title: 'division by zero'
+context: {}
+template: {$eval: '1 / 0'}
+error: "InterpreterError: division by zero"
+---
 title: 'division with addition'
 context: {a: 12}
 template: {$eval: 'a / 3 + 4'}
