@@ -4597,6 +4597,11 @@ title: 'dotted function expression'
 context: {}
 template: {$let: {negated: {max: {$eval: min}, min: {$eval: max}}}, in: {$eval: "(negated.min)(10, 20)"}}
 result: 20
+---
+title:    accessor after function call
+context:  {}
+template: {$eval: 'split("left:right", ":")[1]'}
+result:   right
 ################################################################################
 ---
 section: expression language - in operator
