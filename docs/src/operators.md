@@ -234,7 +234,7 @@ result: {ax: 2, bx: 3, cx: 4}
 ## `$match`
 
 The `$match` operator is not dissimilar to pattern matching operators.  It gets
-an object, in which every key is a string expression(s) to evaluate to `true`
+an object, in which every key is a string expression evaluating to `true`
 or `false` based on the context. Keys are evaluated in lexical order, and the
 result is an array containing values corresponding to keys that evaluated to
 `true`.  If there are no matches, the result is an empty array.
