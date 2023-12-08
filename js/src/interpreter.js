@@ -71,6 +71,9 @@ class Interpreter {
                 return left - right;
             case ("/"):
                 testMathOperands("/", left, right);
+                if (right == 0) {
+                    throw new InterpreterError("division by zero");
+                }
                 return left / right;
             case ("*"):
                 testMathOperands("*", left, right);

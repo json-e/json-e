@@ -392,6 +392,11 @@ func mathOp(left, right interface{}, tokenKind string) (interface{}, error) {
 		case "*":
 			return l * r, nil
 		case "/":
+			if r == 0.0 {
+				return nil, parser.SyntaxError{
+					Message: "division by zero",
+				}
+			}
 			return l / r, nil
 		case "**":
 			return math.Pow(r, l), nil

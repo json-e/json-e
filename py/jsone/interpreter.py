@@ -69,6 +69,8 @@ class Interpreter:
             return left - right
         elif node.token.kind == "/":
             test_math_operands("/", left, right)
+            if right == 0:
+                raise InterpreterError("division by zero")
             return operator.truediv(left, right)
         elif node.token.kind == "*":
             test_math_operands("*", left, right)

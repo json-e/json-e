@@ -90,8 +90,14 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
         (Value::Number(ref l), "*", Value::Number(ref r)) => Ok(Value::Number(*l * *r)),
         (_, "*", _) => Err(interpreter_error!("This operator expects numbers")),
 
-        // TODO: div by zero
-        (Value::Number(ref l), "/", Value::Number(ref r)) => Ok(Value::Number(*l / *r)),
+        (Value::Number(ref l), "/", Value::Number(ref r)) => {
+            let q = *l / *r;
+            if !q.is_infinite() {
+                Ok(Value::Number(q))
+            } else {
+                Err(interpreter_error!("division by zero"))
+            }
+        }
         (_, "/", _) => Err(interpreter_error!("This operator expects numbers")),
 
         (Value::String(ref l), "+", Value::String(ref r)) => {
