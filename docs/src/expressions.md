@@ -5,7 +5,7 @@ language. Its data types are limited to JSON types plus function objects.
 
 ## Literals
 
-Literals are similar to those for JSON Numeric literals only accept integer and
+Literals are similar to those for JSON Numeric literals, but only accept integer and
 decimal notation.
 
 ```yaml,json-e
