@@ -20,7 +20,7 @@ finish in finite time.
 
 ## Language Definition and Implementations
 
-This repository defines both the JSON-e language and contains several
+This repository both defines the JSON-e language and contains several
 implementations of that language.
 
 The language definition is embodied in [`./specification.yml`](./specification.yml) and the
@@ -35,6 +35,10 @@ Any discrepancy in behavior between the implementations that is not documented
 as undefined behavior is considered a bug.  If fixing that bug can cause
 backward incompatibility in an implementation, then the change may be considered
 breaking and be released with a new major version.
+
+### Other Implementations
+
+* [json-everything](https://json-everything.net/json-e) provides a implementation in .NET.
 
 ## Full Documentation
 
