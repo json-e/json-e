@@ -471,7 +471,7 @@ let parseUntilTerminator = (source, terminator, context) => {
     if (!next) {
         // string ended without the terminator
         let errorLocation = source.length;
-        throw new SyntaxError(`Found end of string, expected ${terminator}`,
+        throw new SyntaxError("unterminated ${..} expression",
             {start: errorLocation, end: errorLocation});
     } else if (next.kind !== terminator) {
         throw syntaxRuleError(next);
