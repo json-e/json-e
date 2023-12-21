@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/json-e/json-e/v4/internal/interpreter/parser"
 )
@@ -264,6 +265,9 @@ func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{},
 		}
 		if start < 0 {
 			start = len(target) + start
+			if start < 0 {
+				start = 0
+			}
 		}
 		if end < 0 {
 			end = len(target) + end
@@ -289,36 +293,64 @@ func (i NewInterpreter) Visit_ValueAccess(node parser.ValueAccess) (interface{},
 	}
 	// Handle slicing of strings
 	if target, ok := arr.(string); ok {
-		// TODO: Handle utf-8 encoding...
+		runeLen := utf8.RuneCountInString(target)
 		start := int(A)
 		end := int(B)
 		if right == nil {
-			end = len(target)
+			end = runeLen
 		}
 		if start < 0 {
-			start = len(target) + start
+			start = runeLen + start
+			if start < 0 {
+				start = 0
+			}
 		}
 		if end < 0 {
-			end = len(target) + end
+			end = runeLen + end
 			if end < 0 {
 				end = 0
 			}
 		}
-		if end > len(target) {
+		if end > runeLen {
 			end = len(target)
 		}
 		if start > end {
 			start = end
 		}
-		if !node.IsInterval {
-			if start >= len(target) {
-				return nil, parser.SyntaxError{
-					Message: "string index out of bounds",
+		if runeLen == len(target) {
+			// The target contains only 1-byte offsets, so we can
+			// simply slice or index it.
+			if !node.IsInterval {
+				if start >= runeLen {
+					return nil, parser.SyntaxError{
+						Message: "string index out of bounds",
+					}
 				}
+				return string(target[start]), nil
 			}
-			return string(target[start]), nil
+			return target[start:end], nil
 		}
-		return target[start:end], nil
+		// The target contains multi-byte characters, so we must
+		// iterate over it from the beginning.
+		i, c := 0, 0
+		for c < start {
+			var width int
+			_, width = utf8.DecodeRuneInString(target[i:])
+			i += width
+			c++
+		}
+		if !node.IsInterval {
+			r, _ := utf8.DecodeRuneInString(target[i:])
+			return string(r), nil
+		}
+		start_i := i
+		for c < end {
+			_, width := utf8.DecodeRuneInString(target[i:])
+			i += width
+			c++
+		}
+		end_i := i
+		return target[start_i:end_i], nil
 	}
 
 	return nil, parser.SyntaxError{

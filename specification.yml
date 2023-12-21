@@ -4106,6 +4106,11 @@ context: {}
 template: {$eval: '"12345"[-2]'}
 result: '4'
 ---
+title: 'string indexing (unicode)'
+context: {key: "\u2622abc\U0001F601"}
+template: {$eval: '[key[0], key[2], key[-1]]'}
+result: ["\u2622", "b", "\U0001F601"]
+---
 title: 'string indexing (noninteger)'
 context: {}
 template: {$eval: '"12345"[2.5]'}
@@ -4460,7 +4465,7 @@ template: {$eval: 'key.sort'}
 error: 'InterpreterError: infix: . expects objects'
 ################################################################################
 ---
-section: expression language - array slicing
+section: expression language - slicing
 ---
 title: 'array slicing (full slice)'
 context: {key: [1,2,3,4,5]}
@@ -4472,9 +4477,19 @@ context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[0:3]'}
 result: [1,2,3]
 ---
+title: 'array slicing (out of order)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[3:2]'}
+result: []
+---
 title: 'array slicing (negative indices)'
 context: {key: [1,2,3,4,5]}
 template: {$eval: 'key[-5:-1]'}
+result: [1,2,3,4]
+---
+title: 'array slicing (negative indices larger than length)'
+context: {key: [1,2,3,4,5]}
+template: {$eval: 'key[-10:-1]'}
 result: [1,2,3,4]
 ---
 title: 'array slicing (noninteger first index)'
@@ -4551,6 +4566,41 @@ title: 'slicing object'
 context: {key: {x: 10}}
 template: {$eval: 'key[2:]'}
 error: true
+---
+title: 'string slicing - full'
+context: {key: "hello"}
+template: {$eval: 'key[0:6]'}
+result: "hello"
+---
+title: 'string slicing - prefix'
+context: {key: "hello"}
+template: {$eval: 'key[0:3]'}
+result: "hel"
+---
+title: 'string slicing - omitted first index'
+context: {key: "hello"}
+template: {$eval: 'key[:3]'}
+result: "hel"
+---
+title: 'string slicing - omitted second index'
+context: {key: "hello"}
+template: {$eval: 'key[3:]'}
+result: "lo"
+---
+title: 'string slicing - negative index'
+context: {key: "hello"}
+template: {$eval: 'key[-3:]'}
+result: "llo"
+---
+title: 'string slicing - negative greater than length'
+context: {key: "hello"}
+template: {$eval: 'key[-9:]'}
+result: "hello"
+---
+title: 'string slicing - unicode indices'
+context: {key: "\u2622abc\U0001F601"}
+template: {$eval: '[key[0:1], key[1:4], key[-1:]]'}
+result: ["\u2622", "abc", "\U0001F601"]
 ################################################################################
 ---
 section: expression language - function calls
