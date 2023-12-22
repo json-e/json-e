@@ -776,6 +776,11 @@ title: no string interpolation with $$
 context: {somevalue: 13}
 template: {message: '$${somevalue}'}
 result:   {message: '${somevalue}'}
+---
+title: unterminated string interpolation
+context: {}
+template: {message: '${somevalue'}
+error: "SyntaxError at template.message: unterminated ${..} expression"
 ################################################################################
 ---
 section: $let

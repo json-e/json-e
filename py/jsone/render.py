@@ -92,6 +92,8 @@ def parse(source, context):
 def parse_until_terminator(source, context, terminator):
     parser = Parser(source, tokenizer)
     tree = parser.parse()
+    if not parser.current_token:
+        raise SyntaxError("unterminated ${..} expression")
     if parser.current_token.kind != terminator:
         raise SyntaxError.unexpected(parser.current_token)
     interp = Interpreter(context)
