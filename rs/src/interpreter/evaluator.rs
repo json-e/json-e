@@ -165,9 +165,12 @@ fn index(context: &Context, v: &Node, i: &Node) -> Result<Value> {
                 "should only use integers to access arrays or strings"
             ))?;
             if i < 0 {
-                i = s.len() as i64 + i
+                i = s.chars().count() as i64 + i;
+                if i < 0 {
+                    i = 0;
+                }
             }
-            if let Some(Some(c)) = s.get(i as usize..).map(|substr| substr.chars().next()) {
+            if let Some(c) = s.chars().nth(i as usize) {
                 Ok(Value::String(c.into()))
             } else {
                 Err(interpreter_error!(
@@ -193,7 +196,7 @@ fn index(context: &Context, v: &Node, i: &Node) -> Result<Value> {
 fn slice(context: &Context, v: &Node, a: Option<&Node>, b: Option<&Node>) -> Result<Value> {
     let mut v = evaluate(v, context)?;
     let len = match v {
-        Value::String(ref s) => s.len(),
+        Value::String(ref s) => s.chars().count(),
         Value::Array(ref v) => v.len(),
         _ => Err(interpreter_error!("can only slice strings and arrays"))?,
     };
@@ -227,15 +230,18 @@ fn slice(context: &Context, v: &Node, a: Option<&Node>, b: Option<&Node>) -> Res
         .map(|x| wrap(x, len))
         .unwrap_or(len);
 
-    println!("v:{:?} a:{} b:{}", v, a, b);
     let r = Ok(match v {
         Value::String(ref s) => {
             if a < b {
+                // To index characters, we must scan the string from the start.
+                let indices = s.char_indices().map(|(i, c)| i);
+                let mut indices = indices.skip(a);
+                let a_idx = indices.next().unwrap_or_else(|| s.len());
+                let mut indices = indices.skip(b-a-1);
+                let b_idx = indices.next().unwrap_or_else(|| s.len());
                 Value::String(
-                    s.get(a..b)
-                        .ok_or_else(|| {
-                            interpreter_error!("invalid string slice indices {}:{}", a, b)
-                        })?
+                    s.get(a_idx..b_idx)
+                        .expect("invalid string slice indices")
                         .into(),
                 )
             } else {

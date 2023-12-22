@@ -167,6 +167,8 @@ treated as "half-open", meaning that the result contains the first index and
 does not contain the second index.  A "backward" slice with the start index
 greater than the end index is treated as empty.
 
+Strings are treated as a sequence of Unicode codepoints.
+
 ```yaml,json-e
 template:
   - {$eval: '[array[1], string[1]]'}
@@ -177,11 +179,11 @@ template:
   - {$eval: '[array[-2], string[-2]]'}
   - {$eval: '[array[-2:], string[-2:]]'}
   - {$eval: '[array[:-3], string[:-3]]'}
-context: {array: ['a', 'b', 'c', 'd', 'e'], string: 'abcde'}
+context: {array: ['a', 'b', '☪', 'd', 'e'], string: 'ab☪de'}
 result:
   - ['b', 'b']
-  - [['b', 'c', 'd'], 'bcd']
-  - [['c', 'd', 'e'], 'cde']
+  - [['b', '☪', 'd'], 'b☪d']
+  - [['☪', 'd', 'e'], '☪de']
   - [['a', 'b'], 'ab']
   - [[], '']
   - ['d', 'd']

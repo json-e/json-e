@@ -149,14 +149,16 @@ class Interpreter {
         if (node.right) {
             right = this.visit(node.right);
         }
-        if (left < 0) {
-            left = array.length + left
-        }
-        if (isArray(array) || isString(array)) {
-            if (node.isInterval) {
-                right = right === null ? array.length : right;
+        const slice_or_index = (isInterval, value, left, right) => {
+            if (left < 0) {
+                left = value.length + left
+                if (left < 0)
+                    left = 0;
+            }
+            if (isInterval) {
+                right = right === null ? value.length : right;
                 if (right < 0) {
-                    right = array.length + right;
+                    right = value.length + right;
                     if (right < 0)
                         right = 0
                 }
@@ -166,15 +168,33 @@ class Interpreter {
                 if (!isInteger(left) || !isInteger(right)) {
                     throw new InterpreterError('cannot perform interval access with non-integers');
                 }
-                return array.slice(left, right)
+                return value.slice(left, right)
             }
             if (!isInteger(left)) {
                 throw new InterpreterError('should only use integers to access arrays or strings');
             }
-            if (left >= array.length) {
+            if (left >= value.length) {
                 throw new InterpreterError('index out of bounds');
             }
-            return array[left]
+            return value[left]
+        };
+        if (isArray(array)) {
+            return slice_or_index(node.isInterval, array, left, right);
+        }
+        if (isString(array)) {
+            // If the string is entirely one-byte characters (i.e. ASCII), we can
+            // simply use `String.prototype.slice`.
+            /*eslint no-control-regex: "off"*/
+            if (/^[\x00-\x7F]*$/.test(array)) {
+                return slice_or_index(node.isInterval, array, left, right);
+            }
+            // Otherwise, we need to convert it to an array of characters first,
+            // slice that, and convert back.
+            let res = slice_or_index(node.isInterval, [...array], left, right)
+            if (isArray(res)) {
+                res = res.join('');
+            }
+            return res;
         }
         if (!isObject(array)) {
             throw expectationError(`infix: "[..]"`, 'object, array, or string');
