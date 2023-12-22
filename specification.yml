@@ -4587,10 +4587,15 @@ context: {key: "hello"}
 template: {$eval: 'key[3:]'}
 result: "lo"
 ---
-title: 'string slicing - negative index'
+title: 'string slicing - negative index, omitted second index'
 context: {key: "hello"}
 template: {$eval: 'key[-3:]'}
 result: "llo"
+---
+title: 'string slicing - negative index'
+context: {key: "hello"}
+template: {$eval: 'key[-3:4]'}
+result: "ll"
 ---
 title: 'string slicing - negative greater than length'
 context: {key: "hello"}
