@@ -152,6 +152,10 @@ fn main() {
 
 See [docs.rs](https://docs.rs/json-e) for the full API docs.
 
+## .NET
+
+See [json-everything](https://json-everything.net/json-e) for a .NET implementation of JSON-e.
+
 ## Third-Party Integrations
 
 ### rjsone
