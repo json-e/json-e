@@ -125,8 +125,8 @@ module.exports = (context) => {
   });
 
   define('split', builtins, {
-    minArgs: 1,
-    variadic: 'string|number',
+    minArgs: 2,
+    argumentTests: ['string', 'string|number'],
     invoke: (input, delimiter) => input.split(delimiter)
   });
 

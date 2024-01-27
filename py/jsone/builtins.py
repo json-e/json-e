@@ -132,7 +132,7 @@ def build():
 
         return str(separator).join(string_list)
 
-    @builtin("split", variadic=is_string_or_number, minArgs=1)
+    @builtin("split", argument_tests=[is_string, is_string_or_number], minArgs=2)
     def split(s, d=""):
         if not d and is_string(s):
             return list(s)

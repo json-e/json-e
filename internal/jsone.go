@@ -170,32 +170,17 @@ var builtin = map[string]interface{}{
 	"rstrip": i.WrapFunction(func(s string) string {
 		return strings.TrimRightFunc(s, unicode.IsSpace)
 	}),
-	"split": i.WrapFunction(func(v interface{}, d ...interface{}) (interface{}, error) {
+	"split": i.WrapFunction(func(v interface{}, d interface{}) (interface{}, error) {
+		_, isNumber := d.(float64)
+		_, isString := d.(string)
 
-		// We use variadic because golang doesn't support optional parameters
-		if len(d) > 1 {
-			return "", fmt.Errorf("split(value, delimiter) takes at-most two arguments, but was given %d", len(d))
-		}
-
-		var reference interface{} = nil
-
-		if len(d) == 1 {
-			reference = d[0]
-			_, isNumber := reference.(float64)
-			_, isString := reference.(string)
-
-			if !isString && !isNumber {
-				return "", fmt.Errorf("split(value, delimeter) delimeter must be a string or a number")
-			}
+		if !isString && !isNumber {
+			return "", fmt.Errorf("split(value, delimeter) delimeter must be a string or a number")
 		}
 
 		switch val := v.(type) {
 		case string:
-			var delimeter string = ""
-
-			if reference != nil {
-				delimeter = fmt.Sprintf("%v", reference)
-			}
+			delimeter := fmt.Sprintf("%v", d)
 			split := strings.Split(val, delimeter)
 			result := make([]interface{}, len(split))
 			for i, v := range split {
