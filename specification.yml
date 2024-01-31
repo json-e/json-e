@@ -2096,6 +2096,11 @@ context: {}
 template: {$eval: "split([])"}
 error: 'BuiltinError: invalid arguments to builtin: split'
 ---
+title: split with only one argument
+context: {}
+template: {$eval: "split('abc')"}
+error: 'BuiltinError: invalid arguments to builtin: split'
+---
 title: join with string separator
 context: {}
 template: {$eval: "join(['join', 'me'], ' ')"}
