@@ -108,30 +108,30 @@ print(jsone.render(template, context))  # -> 3
 
 ## Go (golang)
 
-The [golang package for json-e](https://pkg.go.dev/github.com/json-e/json-e) exposes a `Render` function:
+The [golang package for json-e](https://pkg.go.dev/github.com/json-e/json-e/v4) exposes a `Render` function:
 
 ```golang
 import (
   "fmt"
-  "github.com/json-e/json-e"
+  jsone "github.com/json-e/json-e/v4"
 )
 
 // Template must be given using types:
 //   map[string]interface{}, []interface{}, float64, string, bool, nil
 // The same types that json.Unmarshal() will create when targeting an interface{}
-template := map[string]interface{}{
+var template = map[string]interface{}{
   "result": map[string]interface{}{
     "$eval": "f() + 5",
   },
 }
 // Context can be JSON types just like template, but may also contain functions
 // these can JSON types as arguments, and return a value and optionally an error.
-context := map[string]interface{}{
-  "f": func() int { return 37 },
+var context = map[string]interface{}{
+  "f": jsone.WrapFunction(func() float64 { return 37 }),
 }
 
 func main() {
-  value, err := jsone.Render(template, context)
+  value, _ := jsone.Render(template, context)
   fmt.Printf("%#v\n", value)
 }
 ```
