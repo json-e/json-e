@@ -71,7 +71,7 @@ func TestErrorFromFunction(t *testing.T) {
 		"map_func":     interpreter.WrapFunction(func(fail bool) (map[string]interface{}, error) { return map[string]interface{}{}, f(fail) }),
 	}
 
-	for name, _ := range context {
+	for name := range context {
 		_, err := Render(map[string]interface{}{"$eval": name + "(false)"}, context)
 		require.NoError(t, err)
 		_, err = Render(map[string]interface{}{"$eval": name + "(true)"}, context)
