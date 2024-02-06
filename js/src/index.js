@@ -219,6 +219,43 @@ operators.$map = (template, context) => {
   }
 };
 
+operators.$find = (template, context) => {
+  const EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*)(,\\s*([a-zA-Z_][a-zA-Z0-9_]*))?\\)';
+  checkUndefinedProperties(template, ['\\$find', EACH_RE]);
+  let value = render(template['$find'], context);
+  if (!isArray(value)) {
+    throw new TemplateError('$find value must evaluate to an array');
+  }
+
+  if (Object.keys(template).length !== 2) {
+    throw new TemplateError('$find must have exactly two properties');
+  }
+
+  let eachKey = Object.keys(template).filter(k => k !== '$find')[0];
+  let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$/.exec(eachKey);
+  if (!match) {
+    throw new TemplateError('$find requires each(identifier) syntax');
+  }
+
+  if (!isString(template[eachKey])) {
+    throw new TemplateError('each can evaluate string expressions only');
+  }
+
+  let x = match[1];
+  let i = match[3];
+  let each = template[eachKey];
+
+  const result = value.find((v, idx) => {
+    let args = typeof i !== 'undefined' ? {[x]: v, [i]: idx} : {[x]: v};
+
+    if (isTruthy(parse(each, Object.assign({}, context, args)))) {
+      return render(each, Object.assign({}, context, args));
+    }
+  });
+
+  return result !== undefined ? result : deleteMarker;
+}
+
 operators.$match = (template, context) => {
   checkUndefinedProperties(template, ['\\$match']);
 
