@@ -256,10 +256,24 @@ Using context variables:
 
 ```yaml,json-e
 template:
-  $map: [2, 4, 6]
+  $find: [2, 4, 6]
   each(x): a == x
 context: {a: 4}
 result: 4
+```
+
+Omitting from parent:
+
+```yaml,json-e
+template:
+  a: 1
+  b:
+    $find: [2, 4, 6]
+    each(x): b == x
+context:
+  b: 3
+result:
+  a: 1
 ```
 
 The `each` function can define two variables, in which case the second is the 0-based index of the element.
