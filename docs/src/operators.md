@@ -236,6 +236,42 @@ context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 ```
 
+## `$find`
+
+The `$find` operator evaluates an expression for each value of the given array or object,
+returning the first value for which the expression evaluates to `true`.
+
+If there are no matches the result is either `null` or if used within an object or array, omitted
+from the parent object.
+
+```yaml,json-e  
+template:
+  $find: [2, 4, 6]
+  each(x): x == 4
+context: {}
+result: 4
+```
+
+Using context variables:
+
+```yaml,json-e
+template:
+  $map: [2, 4, 6]
+  each(x): a == x
+context: {a: 4}
+result: 4
+```
+
+The `each` function can define two variables, in which case the second is the 0-based index of the element.
+
+```yaml,json-e
+template:
+  $find: [2, 4, 6]
+  each(x,i): i == 2
+context: {}
+result: 6
+```
+
 ## `$match`
 
 The `$match` operator is not dissimilar to pattern matching operators.  It gets
