@@ -1102,6 +1102,113 @@ template: {$map: {a: 1, b: 2, c: 3}, 'each(y)': {'${y.key}x': {$eval: 'y.val + 1
 result:   {ax: 2, bx: 3, cx: 4}
 ################################################################################
 ---
+section: $find operator
+---
+title:   $find, simple find
+context: {}
+template: {$find: [2, 4, 6], each(x): 'x == 2' }
+result: 2
+---
+title:   $find, simple find with context
+context: {a: 2}
+template: {$find: [2, 4, 6], each(x): 'x == a' }
+result: 2
+---
+title:   $find respects delete marker
+context: {}
+template: {a: 1, b: {$find: [1,2,3], 'each(x)': 'x > 4' }}
+result: {a: 1}
+---
+title:   $find, complicated find with $let
+context: {}
+template:
+  $let:
+    needle:
+      $find: [1, 2, 3]
+      each(entry): entry == 2
+  in:
+    $eval: needle
+result: 2
+---
+title:    $find complex identifier
+context:  {a: 1}
+template:
+  $find: [2, 4, 6]
+  each(my_identifier97): 'my_identifier97 == 1 || my_identifier97 == 4'
+result: 4
+---
+title:    $find array index variable
+context: {}
+template:
+  $find: [1, 2, 3]
+  each(y,i): 'i == 2'
+result: 3
+---
+title:    $find no args
+context:  {}
+template:
+  $find: [1, 2, 3]
+  each(): 'y.k'
+error: 'TemplateError: $find has undefined properties: each()'
+---
+title:    $find too many args
+context:  {}
+template:
+  $find: [1, 2, 3]
+  each(k,v,i): 'y.k'
+error: 'TemplateError: $find has undefined properties: each(k,v,i)'
+---
+title:    $find requires an array, not string
+context:  {}
+template:
+  $find: "a, b, c"
+  each(y): 'y.k'
+error: 'TemplateError: $find value must evaluate to an array'
+---
+title:    $find requires an array, not number
+context:  {}
+template:
+  $find: 10.1
+  each(y): 'y.k'
+error: 'TemplateError: $find value must evaluate to an array'
+---
+title:    $find requires an array, not null
+context:  {}
+template:
+  $find: null
+  each(y): 'y.k'
+error: 'TemplateError: $find value must evaluate to an array'
+---
+title:    $find requires an array, not object
+context:  {}
+template:
+  $find: {a: 1}
+  each(y): 'y.k'
+error: 'TemplateError: $find value must evaluate to an array'
+---
+title:    $find with undefined properties
+context:  {a: 1}
+template:
+  $find: [2, 4, 6]
+  each(x): 'x + a'
+  foo: 'bar'
+error: 'TemplateError: $find has undefined properties: foo'
+---
+title:    $find each must be string, not number
+context:  {}
+template:
+  $find: [1,2,3]
+  each(a): 1
+error: 'TemplateError: each can evaluate string expressions only'
+---
+title:    $find each must be string, not object
+context:  {}
+template:
+  $find: [1,2,3]
+  each(a): {a: 1}
+error: 'TemplateError: each can evaluate string expressions only'
+################################################################################
+---
 section: $match operator
 ---
 title:    $match, 2 matches, ordered by lexcial sorting of property names
