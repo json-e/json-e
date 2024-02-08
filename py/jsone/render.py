@@ -327,8 +327,10 @@ def find(template, context):
 
     subcontext = context.copy()
     for i, elt in enumerate(value):
-        subcontext[each_var] = elt
         if each_idx is None:
+            subcontext[each_var] = elt
+        else:
+            subcontext[each_var] = elt
             subcontext[each_idx] = i
 
         if parse(each_template, subcontext):
