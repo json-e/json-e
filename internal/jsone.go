@@ -698,7 +698,7 @@ var operators = map[string]operator{
 			s, ok := eachTemplate.(string)
 			if !ok {
 				return nil, TemplateError{
-					Message:  "$if expects a string expression",
+					Message:  "$find expects a string expression",
 					Template: template,
 				}
 			}
