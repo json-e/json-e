@@ -680,7 +680,7 @@ var operators = map[string]operator{
 		val, ok := value.([]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$find expected an array",
+				Message:  "$find expects an array",
 				Template: template,
 			}
 		}
