@@ -304,6 +304,41 @@ def map(template, context):
         return list(gen(value))
 
 
+@operator("$find")
+def find(template, context):
+    EACH_RE = r"each\([a-zA-Z_][a-zA-Z0-9_]*(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)"
+    checkUndefinedProperties(template, [r"\$find", EACH_RE])
+    value = renderValue(template["$find"], context)
+    if not isinstance(value, list):
+        raise TemplateError("$find value must evaluate to an array")
+
+    each_keys = [k for k in template if k.startswith("each(")]
+    if len(each_keys) != 1:
+        raise TemplateError("$find requires exactly one other property, each(..)")
+    each_key = each_keys[0]
+    each_args = [x.strip() for x in each_key[5:-1].split(",")]
+    each_var = each_args[0]
+    each_idx = each_args[1] if len(each_args) > 1 else None
+
+    each_template = template[each_key]
+
+    if not isinstance(each_template, string):
+        raise TemplateError("each can evaluate string expressions only")
+
+    subcontext = context.copy()
+    for i, elt in enumerate(value):
+        if each_idx is None:
+            subcontext[each_var] = elt
+        else:
+            subcontext[each_var] = elt
+            subcontext[each_idx] = i
+
+        if parse(each_template, subcontext):
+            return renderValue(elt, subcontext)
+
+    return DeleteMarker
+
+
 @operator("$match")
 def matchConstruct(template, context):
     checkUndefinedProperties(template, [r"\$match"])
@@ -429,7 +464,10 @@ def sort(template, context):
         return sorted(value)
 
     # Otherwise, index into the sort_keys array for each element.
-    return list(pair[1] for pair in sorted(enumerate(value), key=lambda pair: sort_keys[pair[0]]))
+    return list(
+        pair[1]
+        for pair in sorted(enumerate(value), key=lambda pair: sort_keys[pair[0]])
+    )
 
 
 def containsFunctions(rendered):

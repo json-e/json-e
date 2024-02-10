@@ -639,6 +639,92 @@ var operators = map[string]operator{
 			}
 		}
 	},
+	"$find": func(template, context map[string]interface{}) (interface{}, error) {
+		value, err := render(template["$find"], context)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(template) != 2 {
+			return nil, TemplateError{
+				Message:  "$find must have exactly two properties",
+				Template: template,
+			}
+		}
+
+		// Find the each(...) key
+		var eachKey string
+		for k := range template {
+			if k == "$find" {
+				continue
+			}
+			eachKey = k
+		}
+
+		// Validate against each(...) key pattern
+		m := eachKeyPattern.FindStringSubmatch(eachKey)
+		if m == nil {
+			return nil, TemplateError{
+				Message:  "$find requires a property on the form 'each(identifier)'",
+				Template: template,
+			}
+		}
+		eachIdentifier := m[1]
+		eachIndex := m[3]
+		additionalContextVars := 1
+		if len(eachIndex) > 0 {
+			additionalContextVars = 2
+		}
+		eachTemplate := template[eachKey]
+
+		val, ok := value.([]interface{})
+		if !ok {
+			return nil, TemplateError{
+				Message:  "$find expects an array",
+				Template: template,
+			}
+		}
+		
+		for idx, entry := range val {
+			c := make(map[string]interface{}, len(context)+additionalContextVars)
+			for k, v := range context {
+				c[k] = v
+			}
+			c[eachIdentifier] = entry
+			if len(eachIndex) > 0 {
+				c[eachIndex] = float64(idx)
+			}
+			
+			s, ok := eachTemplate.(string)
+			if !ok {
+				return nil, TemplateError{
+					Message:  "$find expects a string expression",
+					Template: template,
+				}
+			}
+
+			val, err := i.Parse(s, c)
+			if err != nil {
+				return nil, TemplateError{
+					Message:  err.Error(),
+					Template: template,
+				}
+			}
+
+			if i.IsTruthy(val) {
+				r, err := render(entry, c)
+				if err != nil {
+					return nil, TemplateError{
+						Message:  err.Error(),
+						Template: template,
+					}
+				}
+				return r, nil;
+			}
+		}
+		
+		return deleteMarker, nil
+	},
 	"$match": func(template, context map[string]interface{}) (interface{}, error) {
 		if err := restrictProperties(template, "$match"); err != nil {
 			return nil, err

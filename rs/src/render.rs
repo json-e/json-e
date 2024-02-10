@@ -176,6 +176,7 @@ fn maybe_operator(
         "$json" => Ok(Some(json_operator(operator, value, object, context)?)),
         "$let" => Ok(Some(let_operator(operator, value, object, context)?)),
         "$map" => Ok(Some(map_operator(operator, value, object, context)?)),
+        "$find" => Ok(Some(find_operator(operator, value, object, context)?)),
         "$match" => Ok(Some(match_operator(operator, value, object, context)?)),
         "$switch" => Ok(Some(switch_operator(operator, value, object, context)?)),
         "$merge" => Ok(Some(merge_operator(operator, value, object, context)?)),
@@ -463,6 +464,50 @@ fn map_operator(
         _ => Err(template_error!(
             "$map value must evaluate to an array or object"
         )),
+    }
+}
+
+fn find_operator(
+    operator: &str,
+    value: &Value,
+    object: &Object,
+    context: &Context,
+) -> Result<Value> {
+    check_operator_properties(operator, object, |p| parse_each(p).is_some())?;
+    if object.len() != 2 {
+        return Err(template_error!("$find must have exactly two properties"));
+    }
+
+    // Unwraps here are safe because the presence of the `each(..)` is checked above.
+    let each_prop = object.keys().filter(|k| k != &"$find").next().unwrap();
+
+    let (value_var, index_var) = parse_each(each_prop)
+        .ok_or_else(|| template_error!("$find requires each(identifier[,identifier]) syntax"))?;
+
+    let each_tpl = object.get(each_prop).unwrap();
+
+    let mut value = _render(value, context)?;
+
+    if let Value::Array(ref mut a) = value {
+        for (i, v) in a.iter().enumerate() {
+            let mut subcontext = context.child();
+            subcontext.insert(value_var, v.clone());
+            if let Some(index_var) = index_var {
+                subcontext.insert(index_var, Value::Number(i as f64));
+            }
+
+            if let Value::String(ref s) = each_tpl {
+                let eval_result = evaluate(&s, &subcontext)?;
+                if bool::from(eval_result) {
+                    return Ok(_render(&v, &subcontext)?);
+                }
+            } else {
+                return Err(template_error!("$find can evaluate string expressions only"));
+            }
+        }   
+        Ok(Value::DeletionMarker)
+    } else {
+        Err(template_error!("$find value must be an array"))
     }
 }
 
