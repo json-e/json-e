@@ -1,1 +1,0 @@
-Support for Unicode strings has been improved and made consistent across implementations: all indexing and slicing is in terms of codepoints, rather than bytes.

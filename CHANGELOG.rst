@@ -1,3 +1,23 @@
+Jsone 4.7.0 (2024-02-17)
+========================
+
+Features
+--------
+
+- WrapFunction has been added to the external interface of the Golang module so
+  users can inject custom functions into the context. (#523)
+- The `$find` operator evaluates an expression for each value of the given array or object, returning
+  the first value for which the expression evaluates to `true`. If there are no matches the result is
+  either `null` or if used within an object or array, omitted from the parent object. (#525)
+
+
+Bugfixes
+--------
+
+- Support for Unicode strings has been improved and made consistent across implementations: all indexing and slicing is in terms of codepoints, rather than bytes. (#390)
+- Division by zero is now considered an error, since the result is not representible in JSON. (#391)
+
+
 Jsone 4.6.0 (2023-11-21)
 ========================
 

@@ -1,1 +1,0 @@
-Division by zero is now considered an error, since the result is not representible in JSON.
