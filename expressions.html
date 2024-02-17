@@ -158,21 +158,25 @@
 <p>Expression are given in a simple Python- or JavaScript-like expression
 language. Its data types are limited to JSON types plus function objects.</p>
 <h2 id="literals"><a class="header" href="#literals">Literals</a></h2>
-<p>Literals are similar to those for JSON. Numeric literals only accept integer
-and decimal notation. Strings do not support any kind of escaping. The use of
-<code>\n</code> and <code>\t</code> in the example below depends on the YAML parser to expand the
-escapes.</p>
+<p>Literals are similar to those for JSON Numeric literals, but only accept integer and
+decimal notation.</p>
 <pre><code class="language-yaml json-e">template:
   - {$eval: &quot;1.3&quot;}
-  - {$eval: &quot;'abc'&quot;}
-  - {$eval: '&quot;abc&quot;'}
-  - {$eval: &quot;'\n\t'&quot;}
 context: {}
 result:
   - 1.3
+</code></pre>
+<p>Strings do not support any kind of escaping, but can be enclosed in either <code>&quot;</code>
+or in <code>'</code>. To avoid confusion when writing JSON-e expressions in YAML or JSON
+documents, remember that JSON-e operates on the data structure that results
+<em>after</em> YAML or JSON parsing is complete.</p>
+<pre><code class="language-yaml json-e">template:
+  - {$eval: &quot;'abc'&quot;}
+  - {$eval: '&quot;abc&quot;'}
+context: {}
+result:
   - &quot;abc&quot;
   - &quot;abc&quot;
-  - &quot;\n\t&quot;
 </code></pre>
 <p>Array and object literals also look much like JSON, with bare identifiers
 allowed as keys like in Javascript:</p>
@@ -190,6 +194,10 @@ result:
 context: {x: 'quick', z: 'sort'}
 result: ['quick', 'sort', 'quicksort']
 </code></pre>
+<p>Valid identifiers for context references follow the requirements of many
+programming languages: identifiers may only contain letters, underscores, and
+numbers, but may not start with a number. This does imply that the context
+object may only have keys that meet these requirements.</p>
 <h2 id="arithmetic-operations"><a class="header" href="#arithmetic-operations">Arithmetic Operations</a></h2>
 <p>The usual arithmetic operators are all defined, with typical associativity and
 precedence:</p>
@@ -249,15 +257,27 @@ result: false
 syntax or with dot syntax. Unlike Javascript, <code>obj.prop</code> is an error if <code>obj</code>
 does not have <code>prop</code>, while <code>obj['prop']</code> will evaluate to <code>null</code>.</p>
 <pre><code class="language-yaml json-e">template: {$eval: 'v.a + v[&quot;b&quot;]'}
-context: {v: {a: 'apple', b: 'bananna', c: 'carrot'}}
-result: 'applebananna'
+context: {v: {a: 'apple', b: 'banana', c: 'carrot'}}
+result: 'applebanana'
 </code></pre>
+<p>Note that the object can be a literal expression:</p>
+<pre><code class="language-yaml json-e">template: {$eval: '{ENOMEM:&quot;Out of memory&quot;, ENOCPU:&quot;Out of CPUs&quot;}[msgid]'}
+context: {msgid: ENOMEM}
+result: 'Out of memory'
+</code></pre>
+<p>When using the dot-syntax, e.g. <code>.prop</code>, identifiers may only contain letters,
+underscores, and numbers, but may not start with a number (just like for context
+references). While the context object may only have keys that meet these
+requirements, nested objects may have keys in any format. Keys that are not in
+the identifier format must be accessed using the bracket-name syntax, e.g.
+<code>['my-prop']</code>.</p>
 <h2 id="indexing-and-slicing"><a class="header" href="#indexing-and-slicing">Indexing and Slicing</a></h2>
 <p>Strings and arrays can be indexed and sliced using a Python-like indexing
 scheme.  Negative indexes are counted from the end of the value.  Slices are
 treated as &quot;half-open&quot;, meaning that the result contains the first index and
 does not contain the second index.  A &quot;backward&quot; slice with the start index
 greater than the end index is treated as empty.</p>
+<p>Strings are treated as a sequence of Unicode codepoints.</p>
 <pre><code class="language-yaml json-e">template:
   - {$eval: '[array[1], string[1]]'}
   - {$eval: '[array[1:4], string[1:4]]'}
@@ -267,11 +287,11 @@ greater than the end index is treated as empty.</p>
   - {$eval: '[array[-2], string[-2]]'}
   - {$eval: '[array[-2:], string[-2:]]'}
   - {$eval: '[array[:-3], string[:-3]]'}
-context: {array: ['a', 'b', 'c', 'd', 'e'], string: 'abcde'}
+context: {array: ['a', 'b', '☪', 'd', 'e'], string: 'ab☪de'}
 result:
   - ['b', 'b']
-  - [['b', 'c', 'd'], 'bcd']
-  - [['c', 'd', 'e'], 'cde']
+  - [['b', '☪', 'd'], 'b☪d']
+  - [['☪', 'd', 'e'], '☪de']
   - [['a', 'b'], 'ab']
   - [[], '']
   - ['d', 'd']

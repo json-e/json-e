@@ -224,28 +224,28 @@ context = {&quot;foo&quot;: lambda x: x + 2}
 print(jsone.render(template, context))  # -&gt; 3
 </code></pre>
 <h2 id="go-golang"><a class="header" href="#go-golang">Go (golang)</a></h2>
-<p>The <a href="https://pkg.go.dev/github.com/json-e/json-e">golang package for json-e</a> exposes a <code>Render</code> function:</p>
+<p>The <a href="https://pkg.go.dev/github.com/json-e/json-e/v4">golang package for json-e</a> exposes a <code>Render</code> function:</p>
 <pre><code class="language-golang">import (
   &quot;fmt&quot;
-  &quot;github.com/json-e/json-e&quot;
+  jsone &quot;github.com/json-e/json-e/v4&quot;
 )
 
 // Template must be given using types:
 //   map[string]interface{}, []interface{}, float64, string, bool, nil
 // The same types that json.Unmarshal() will create when targeting an interface{}
-template := map[string]interface{}{
+var template = map[string]interface{}{
   &quot;result&quot;: map[string]interface{}{
     &quot;$eval&quot;: &quot;f() + 5&quot;,
   },
 }
 // Context can be JSON types just like template, but may also contain functions
 // these can JSON types as arguments, and return a value and optionally an error.
-context := map[string]interface{}{
-  &quot;f&quot;: func() int { return 37 },
+var context = map[string]interface{}{
+  &quot;f&quot;: jsone.WrapFunction(func() float64 { return 37 }),
 }
 
 func main() {
-  value, err := jsone.Render(template, context)
+  value, _ := jsone.Render(template, context)
   fmt.Printf(&quot;%#v\n&quot;, value)
 }
 </code></pre>
@@ -260,6 +260,8 @@ fn main() {
 }
 </code></pre>
 <p>See <a href="https://docs.rs/json-e">docs.rs</a> for the full API docs.</p>
+<h2 id="net"><a class="header" href="#net">.NET</a></h2>
+<p>See <a href="https://json-everything.net/json-e">json-everything</a> for a .NET implementation of JSON-e.</p>
 <h2 id="third-party-integrations"><a class="header" href="#third-party-integrations">Third-Party Integrations</a></h2>
 <h3 id="rjsone"><a class="header" href="#rjsone">rjsone</a></h3>
 <p>You can use the 3rd party package <a href="https://wryun.github.io/rjsone/">rjsone</a> to template

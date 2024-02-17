@@ -189,6 +189,10 @@ calculated value to eval is not allowed.  For example, <code>{$eval: {$eval: &qu
 not evaluate the value (use <code>$eval</code> for that). While this can be useful in some
 cases, it is an unusual case to include a JSON string in a larger data
 structure.</p>
+<p>Parsing the result of this operator with any compliant JSON parser will give
+the same results. However, the encoding may differ between implementations of
+JSON-e. For example, numeric representations or string escapes may differ
+between implementations.</p>
 <pre><code class="language-yaml json-e">template: {$json: [a, b, {$eval: 'a+b'}, 4]}
 context:  {a: 1, b: 2}
 result:   '[&quot;a&quot;,&quot;b&quot;,3,4]'
@@ -315,23 +319,55 @@ result: {ax: 2, bx: 3, cx: 4}
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 </code></pre>
-<h2 id="match"><a class="header" href="#match"><code>$match</code></a></h2>
-<p>The <code>$match</code> operator is not dissimilar to pattern matching operators.
-It gets an object, in which every key is a string expression(s) to
-evaluate to <code>true</code> or <code>false</code> based on the context. The result will
-be an array of things (all types are supported) that were values
-corresponding to the keys that were evaluated to <code>true</code>. The order of
-the things in the array will be arbitrary. If there are no matches,
-the result is an empty array.</p>
-<pre><code class="language-yaml json-e">template: {$match: {&quot;x == 10&quot;: &quot;ten&quot;, &quot;x == 20&quot;: &quot;twenty&quot;}}
-context: {x: 10}
-result: [&quot;ten&quot;]
-</code></pre>
+<h2 id="find"><a class="header" href="#find"><code>$find</code></a></h2>
+<p>The <code>$find</code> operator evaluates an expression for each value of the given array.
+returning the first value for which the expression evaluates to <code>true</code>.</p>
+<p>If there are no matches the result is either <code>null</code> or if used within an object or array, omitted
+from the parent object.</p>
 <pre><code class="language-yaml json-e">template:
-  # $sort the otherwise arbitrarily ordered results
-  $sort: {$match: {&quot;x == 10 || x == 20&quot;: &quot;tens&quot;, &quot;x == 10&quot;: &quot;ten&quot;}}
-context: {x: 10}
-result: [&quot;ten&quot;, &quot;tens&quot;]
+  $find: [2, 4, 6]
+  each(x): x == 4
+context: {}
+result: 4
+</code></pre>
+<p>Using context variables:</p>
+<pre><code class="language-yaml json-e">template:
+  $find: [2, 4, 6]
+  each(x): a == x
+context: {a: 4}
+result: 4
+</code></pre>
+<p>Omitting from parent:</p>
+<pre><code class="language-yaml json-e">template:
+  a: 1
+  b:
+    $find: [2, 4, 6]
+    each(x): b == x
+context:
+  b: 3
+result:
+  a: 1
+</code></pre>
+<p>The <code>each</code> function can define two variables, in which case the second is the 0-based index of the element.</p>
+<pre><code class="language-yaml json-e">template:
+  $find: [2, 4, 6]
+  each(x,i): i == 2
+context: {}
+result: 6
+</code></pre>
+<h2 id="match"><a class="header" href="#match"><code>$match</code></a></h2>
+<p>The <code>$match</code> operator is not dissimilar to pattern matching operators.  It gets
+an object, in which every key is a string expression evaluating to <code>true</code>
+or <code>false</code> based on the context. Keys are evaluated in lexical order, and the
+result is an array containing values corresponding to keys that evaluated to
+<code>true</code>.  If there are no matches, the result is an empty array.</p>
+<pre><code class="language-yaml json-e">template:
+  $match: 
+    &quot;c &gt; 10&quot;: &quot;cherry&quot;
+    &quot;b &gt; 10&quot;: &quot;banana&quot;
+    &quot;a &gt; 10&quot;: &quot;apple&quot;
+context: {a: 200, b: 3, c: 19}
+result: [&quot;apple&quot;, &quot;cherry&quot;]
 </code></pre>
 <pre><code class="language-yaml json-e">template: {$match: {&quot;x &lt; 10&quot;: &quot;tens&quot;}}
 context: {x: 10}
@@ -415,6 +451,14 @@ defaults to the identity function.</p>
   by(x): 'x.a'
 context:  {}
 result:   [{a: 1, b: []}, {a: 2}, {a: 3}]
+</code></pre>
+<p>The sort is stable:</p>
+<pre><code class="language-yaml json-e">template:
+  $sort: [&quot;aa&quot;, &quot;dd&quot;, &quot;ac&quot;, &quot;ba&quot;, &quot;ab&quot;]
+  by(x): 'x[0]'
+context:  {}
+# stable: all &quot;a&quot; strings remain in the same order relative to one another.
+result:   [&quot;aa&quot;, &quot;ac&quot;, &quot;ab&quot;, &quot;ba&quot;, &quot;dd&quot;]
 </code></pre>
 <h2 id="reverse"><a class="header" href="#reverse"><code>$reverse</code></a></h2>
 <p>The <code>$reverse</code> operator simply reverses the given array.</p>

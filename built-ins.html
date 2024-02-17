@@ -197,7 +197,8 @@ result:
   # convert string case
   - {$eval: 'lowercase(&quot;Fools!&quot;)'}
   - {$eval: 'uppercase(&quot;Fools!&quot;)'}
-  # convert string, number, boolean, or array to string
+  # convert string, number, or boolean to string
+  # (arrays and objects cannot be converted to string)
   - {$eval: 'str(130)'}
   # convert a string to a number (string is required)
   - {$eval: 'number(&quot;310&quot;)'}

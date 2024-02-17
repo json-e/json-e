@@ -595,6 +595,9 @@
                     return left - right;
                 case ("/"):
                     testMathOperands("/", left, right);
+                    if (right == 0) {
+                        throw new InterpreterError("division by zero");
+                    }
                     return left / right;
                 case ("*"):
                     testMathOperands("*", left, right);
@@ -670,14 +673,16 @@
             if (node.right) {
                 right = this.visit(node.right);
             }
-            if (left < 0) {
-                left = array.length + left;
-            }
-            if (isArray$3(array) || isString$2(array)) {
-                if (node.isInterval) {
-                    right = right === null ? array.length : right;
+            const slice_or_index = (isInterval, value, left, right) => {
+                if (left < 0) {
+                    left = value.length + left;
+                    if (left < 0)
+                        left = 0;
+                }
+                if (isInterval) {
+                    right = right === null ? value.length : right;
                     if (right < 0) {
-                        right = array.length + right;
+                        right = value.length + right;
                         if (right < 0)
                             right = 0;
                     }
@@ -687,15 +692,33 @@
                     if (!isInteger(left) || !isInteger(right)) {
                         throw new InterpreterError('cannot perform interval access with non-integers');
                     }
-                    return array.slice(left, right)
+                    return value.slice(left, right)
                 }
                 if (!isInteger(left)) {
                     throw new InterpreterError('should only use integers to access arrays or strings');
                 }
-                if (left >= array.length) {
+                if (left >= value.length) {
                     throw new InterpreterError('index out of bounds');
                 }
-                return array[left]
+                return value[left]
+            };
+            if (isArray$3(array)) {
+                return slice_or_index(node.isInterval, array, left, right);
+            }
+            if (isString$2(array)) {
+                // If the string is entirely one-byte characters (i.e. ASCII), we can
+                // simply use `String.prototype.slice`.
+                /*eslint no-control-regex: "off"*/
+                if (/^[\x00-\x7F]*$/.test(array)) {
+                    return slice_or_index(node.isInterval, array, left, right);
+                }
+                // Otherwise, we need to convert it to an array of characters first,
+                // slice that, and convert back.
+                let res = slice_or_index(node.isInterval, [...array], left, right);
+                if (isArray$3(res)) {
+                    res = res.join('');
+                }
+                return res;
             }
             if (!isObject$2(array)) {
                 throw expectationError(`infix: "[..]"`, 'object, array, or string');
@@ -1075,8 +1098,8 @@
       });
 
       define('split', builtins, {
-        minArgs: 1,
-        variadic: 'string|number',
+        minArgs: 2,
+        argumentTests: ['string', 'string|number'],
         invoke: (input, delimiter) => input.split(delimiter)
       });
 
@@ -1338,6 +1361,43 @@
       }
     };
 
+    operators.$find = (template, context) => {
+      const EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*)(,\\s*([a-zA-Z_][a-zA-Z0-9_]*))?\\)';
+      checkUndefinedProperties(template, ['\\$find', EACH_RE]);
+      let value = render(template['$find'], context);
+      if (!isArray(value)) {
+        throw new TemplateError('$find value must evaluate to an array');
+      }
+
+      if (Object.keys(template).length !== 2) {
+        throw new TemplateError('$find must have exactly two properties');
+      }
+
+      let eachKey = Object.keys(template).filter(k => k !== '$find')[0];
+      let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$/.exec(eachKey);
+      if (!match) {
+        throw new TemplateError('$find requires each(identifier) syntax');
+      }
+
+      if (!isString(template[eachKey])) {
+        throw new TemplateError('each can evaluate string expressions only');
+      }
+
+      let x = match[1];
+      let i = match[3];
+      let each = template[eachKey];
+
+      const result = value.find((v, idx) => {
+        let args = typeof i !== 'undefined' ? {[x]: v, [i]: idx} : {[x]: v};
+
+        if (isTruthy(parse(each, Object.assign({}, context, args)))) {
+          return render(each, Object.assign({}, context, args));
+        }
+      });
+
+      return result !== undefined ? result : deleteMarker;
+    };
+
     operators.$match = (template, context) => {
       checkUndefinedProperties(template, ['\\$match']);
 
@@ -1590,7 +1650,7 @@
         if (!next) {
             // string ended without the terminator
             let errorLocation = source.length;
-            throw new SyntaxError(`Found end of string, expected ${terminator}`,
+            throw new SyntaxError("unterminated ${..} expression",
                 {start: errorLocation, end: errorLocation});
         } else if (next.kind !== terminator) {
             throw syntaxRuleError(next);
