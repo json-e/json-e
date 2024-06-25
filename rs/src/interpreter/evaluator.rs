@@ -259,7 +259,6 @@ fn slice(context: &Context, v: &Node, a: Option<&Node>, b: Option<&Node>) -> Res
 
         _ => unreachable!(),
     });
-    println!("r: {:?}", r);
     r
 }
 
