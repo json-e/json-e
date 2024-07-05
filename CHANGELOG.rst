@@ -1,3 +1,12 @@
+Jsone 4.7.1 (2024-07-05)
+========================
+
+Bugfixes
+--------
+
+- Removed unnecessary print statement from rust implementation. (slice_print)
+
+
 Jsone 4.7.0 (2024-02-17)
 ========================
 
