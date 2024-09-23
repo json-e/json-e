@@ -1102,6 +1102,42 @@ template: {$map: {a: 1, b: 2, c: 3}, 'each(y)': {'${y.key}x': {$eval: 'y.val + 1
 result:   {ax: 2, bx: 3, cx: 4}
 ################################################################################
 ---
+section:  $range
+---
+title:    simple range without step creates list of numbers
+context:  {}
+template:
+  $map: {$eval: 'range(1, 5)'}
+  each(x): {$eval: 'x'}
+result:   [1, 2, 3, 4]
+---
+title:    simple range without step creates list of objects
+context:  {}
+template:
+  $map: {$eval: 'range(1, 4)'}
+  each(x):
+    asText: '${x}'
+    integer: {$eval: 'x'}
+result:
+ - {asText: '1', integer: 1}
+ - {asText: '2', integer: 2}
+ - {asText: '3', integer: 3}
+---
+title:    simple range without step creates list of strings
+context:  {}
+template:
+  $map: {$eval: 'range(10, 12)'}
+  each(x, i): 'id_${x}_${i}'
+result: ['id_10_0', 'id_11_1']
+---
+title:    simple range with step creates list of strings
+context:  {}
+template:
+  $map: {$eval: 'range(10, 20, 5)'}
+  each(x, i): 'id_${x}_${i}'
+result: ['id_10_0', 'id_15_1']
+################################################################################
+---
 section: $find operator
 ---
 title:   $find, simple find

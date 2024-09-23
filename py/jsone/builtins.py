@@ -66,6 +66,9 @@ def build():
     def is_number(v):
         return isinstance(v, (int, float)) and not isinstance(v, bool)
 
+    def is_number_or_none(v):
+        return is_number(v) or v is None
+
     def is_string(v):
         return isinstance(v, string)
 
@@ -100,6 +103,11 @@ def build():
     @builtin("floor", argument_tests=[is_number])
     def floor(v):
         return int(math.floor(v))
+
+    @builtin("range", minArgs=2)
+    def range_builtin(start, stop, step=1):
+        print(f"initiating range with {start}, {stop}, {step}")
+        return list(range(start, stop, step))
 
     @builtin("lowercase", argument_tests=[is_string])
     def lowercase(v):
