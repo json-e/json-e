@@ -1134,14 +1134,14 @@ title:    range without step creates list of strings
 context:  {}
 template:
   $map: {$eval: 'range(10, 12)'}
-  each(x, i): 'id_${x}_${i}'
+  each(x,i): 'id_${x}_${i}'
 result: ['id_10_0', 'id_11_1']
 ---
 title:    range with step creates list of strings
 context:  {}
 template:
   $map: {$eval: 'range(10, 20, 5)'}
-  each(x, i): 'id_${x}_${i}'
+  each(x,i): 'id_${x}_${i}'
 result: ['id_10_0', 'id_15_1']
 ---
 title:    range without step creates objects

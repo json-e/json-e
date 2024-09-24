@@ -190,8 +190,8 @@ fn strip_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
 }
 
 fn range_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
-   if args.len() != 2 {
-        return Err(interpreter_error!("range expects two arguments"));
+   if args.len() < 2 || args.len() > 3 {
+        return Err(interpreter_error!("range requires two arguments and optionally supports a third"));
     }
     let start = &args[0];
     let start: i64 = match start {
@@ -203,7 +203,16 @@ fn range_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
         Value::Number(n) => n.round() as i64,
         _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
     };
-    let range = (start..stop).map(|i| Value::Number(i as f64)).collect();
+    let step: usize = match args.get(2) {
+        // If step is not provided by the user, it defaults to 1.
+        None => 1,
+        Some(val) => match val {
+            Value::Number(n) => n.round() as usize,
+            _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
+        }
+    };
+
+    let range = (start..stop).step_by(step).map(|i| Value::Number(i as f64)).collect();
     Ok(Value::Array(range))
 }
 
