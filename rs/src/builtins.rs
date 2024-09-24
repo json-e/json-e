@@ -195,25 +195,34 @@ fn range_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     }
     let start = &args[0];
     let start: i64 = match start {
-        Value::Number(n) => n.round() as i64,
+        Value::Number(n) if n.fract() == 0.0 => n.round() as i64,
         _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
     };
     let stop = &args[1];
     let stop: i64 = match stop {
-        Value::Number(n) => n.round() as i64,
+        Value::Number(n) if n.fract() == 0.0 => n.round() as i64,
         _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
     };
-    let step: usize = match args.get(2) {
+    let step: i64 = match args.get(2) {
         // If step is not provided by the user, it defaults to 1.
         None => 1,
         Some(val) => match val {
-            Value::Number(n) => n.round() as usize,
+            Value::Number(n) if n.fract() == 0.0 => n.round() as i64,
             _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
         }
     };
 
-    let range = (start..stop).step_by(step).map(|i| Value::Number(i as f64)).collect();
-    Ok(Value::Array(range))
+    if step > 0 {
+        let step = step as usize;
+        let range = (start..stop).step_by(step).map(|i| Value::Number(i as f64)).collect();
+        Ok(Value::Array(range))
+    } else if step < 0 {
+        let step = (step * -1) as usize;
+        let range = (stop+1..=start).rev().step_by(step).map(|i| Value::Number(i as f64)).collect();
+        Ok(Value::Array(range))
+    } else {
+        return Err(interpreter_error!("invalid argument `step` to builtin: range"));
+    }
 }
 
 fn rstrip_builtin(_context: &Context, args: &[Value]) -> Result<Value> {

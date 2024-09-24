@@ -66,6 +66,9 @@ def build():
     def is_number(v):
         return isinstance(v, (int, float)) and not isinstance(v, bool)
 
+    def is_int(v):
+        return isinstance(v, int)
+
     def is_string(v):
         return isinstance(v, string)
 
@@ -103,6 +106,9 @@ def build():
 
     @builtin("range", minArgs=2)
     def range_builtin(start, stop, step=1):
+        if step == 0 or not all([is_int(n) for n in [start, stop, step]]):
+            raise BuiltinError("invalid arguments to builtin: range")
+
         return list(range(start, stop, step))
 
     @builtin("lowercase", argument_tests=[is_string])

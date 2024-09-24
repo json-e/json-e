@@ -136,3 +136,27 @@ template: {$eval: 'len([1, 2, 3])'}
 context: {}
 result: 3
 ```
+
+## Range
+
+The `range()` built-in generates an array based on the following inputs:
+* `start` - An integer specifying the lower bound of the range (inclusive).
+  This can be negative.
+* `end` - An integer specifying the upper bound of the range (exclusive). This
+  can be negative.
+* `step` - Optional. An integer specifying a step to apply to each value within
+  the range. If not specified, defaults to `1`. Can be negative.
+
+For a positive step, the contents of a range r are determined by the formula
+r[i] = start + step*i where i >= 0 and r[i] < end.
+
+For a negative step, the contents of the range are still determined by the
+formula r[i] = start + step*i, where i >= 0 and r[i] > end.
+
+```
+template:
+  $map: {$eval: 'range(1, 5)'}
+  each(x): {$eval: 'x'}
+context:  {}
+result:   [1, 2, 3, 4]
+```
