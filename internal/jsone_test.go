@@ -3,7 +3,7 @@ package jsone
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -48,7 +48,7 @@ func TestSpec(t *testing.T) {
 	// in gopkg.in/yaml.v2
 
 	// Read specification.yml
-	data, err := ioutil.ReadFile("../specification.yml")
+	data, err := os.ReadFile("../specification.yml")
 	require.NoError(t, err, "failed to read specification.yml")
 	// Parse as YAML (split for each document)
 	var rawSpec []interface{}
