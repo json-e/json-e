@@ -163,18 +163,31 @@ var builtin = map[string]interface{}{
 	"abs":   i.WrapFunction(math.Abs),
 	"range": i.WrapFunction(
 		func(start float64, stop float64, args ...float64) ([]interface{}, error) {
-			var result []interface{}
-			step := 1
-			if len(args) != 0 && len(args) > 1 {
+			result := make([]interface{}, 0)
+			step := 1.0
+			if len(args) > 1 {
 				return result, fmt.Errorf("range(start, stop, step) requires start and stop argument and optionally takes step")
 			}
 			if len(args) == 1 {
-				step = int(args[0])
+				step = args[0]
 			}
 
-			for i := int(start); i < int(stop); i += step {
-				result = append(result, float64(i))
+			if !i.IsInteger(start) || !i.IsInteger(stop) || !i.IsInteger(step) {
+				return result, fmt.Errorf("invalid argument `step` to builtin: range")
 			}
+
+			if step > 0 {
+				for i := start; i < stop; i += step {
+					result = append(result, float64(i))
+				}
+			} else if step < 0 {
+				for i := start; i > stop; i += step {
+					result = append(result, float64(i))
+				}
+			} else {
+				return result, fmt.Errorf("invalid argument `step` to builtin: range")
+			}
+
 			return result, nil
 		},
 	),
@@ -701,7 +714,7 @@ var operators = map[string]operator{
 				Template: template,
 			}
 		}
-		
+
 		for idx, entry := range val {
 			c := make(map[string]interface{}, len(context)+additionalContextVars)
 			for k, v := range context {
@@ -711,7 +724,7 @@ var operators = map[string]operator{
 			if len(eachIndex) > 0 {
 				c[eachIndex] = float64(idx)
 			}
-			
+
 			s, ok := eachTemplate.(string)
 			if !ok {
 				return nil, TemplateError{
@@ -736,10 +749,10 @@ var operators = map[string]operator{
 						Template: template,
 					}
 				}
-				return r, nil;
+				return r, nil
 			}
 		}
-		
+
 		return deleteMarker, nil
 	},
 	"$match": func(template, context map[string]interface{}) (interface{}, error) {

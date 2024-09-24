@@ -1102,7 +1102,7 @@ template: {$map: {a: 1, b: 2, c: 3}, 'each(y)': {'${y.key}x': {$eval: 'y.val + 1
 result:   {ax: 2, bx: 3, cx: 4}
 ################################################################################
 ---
-section:  $range
+section:  range
 ---
 title:    range without step creates list of numbers
 context:  {}
@@ -1114,9 +1114,8 @@ result:   [1, 2, 3, 4]
 title:    range with end > start creates empty list
 context:  {}
 template:
-  $map: {$eval: 'range(5, 1)'}
-  each(x): {$eval: 'x'}
-result:   []
+  {$eval: 'len(range(5, 1))'}
+result:   0
 ---
 title:    range with step creates list of numbers
 context:  {}
