@@ -2,13 +2,14 @@ var {BuiltinError} = require('./error');
 var fromNow = require('./from-now');
 var {
   isString, isNumber, isBool,
-  isArray, isObject,
+  isInteger, isArray, isObject,
   isNull, isFunction,
 } = require('./type-utils');
 
 let types = {
   string: isString,
   number: isNumber,
+  integer: isInteger,
   boolean: isBool,
   array: isArray,
   object: isObject,
@@ -80,7 +81,7 @@ module.exports = (context) => {
 
   define('range', builtins, {
     minArgs: 2,
-    argumentTests: ['number', 'number'],
+    argumentTests: ['integer', 'integer', 'integer'],
     variadic: 'number',
     invoke: (start, stop, step=1) => {
       return Array.from(
