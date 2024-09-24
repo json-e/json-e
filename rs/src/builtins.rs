@@ -34,6 +34,7 @@ lazy_static! {
             "strip",
             Value::Function(Function::new("strip", strip_builtin)),
         );
+        builtins.insert("range", Value::Function(Function::new("range", range_builtin)));
         builtins.insert(
             "rstrip",
             Value::Function(Function::new("rstrip", rstrip_builtin)),
@@ -186,6 +187,24 @@ fn number_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
 
 fn strip_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_string(args, |s| str::trim(s).to_owned())
+}
+
+fn range_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
+   if args.len() != 2 {
+        return Err(interpreter_error!("range expects two arguments"));
+    }
+    let start = &args[0];
+    let start: i64 = match start {
+        Value::Number(n) => n.round() as i64,
+        _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
+    };
+    let stop = &args[1];
+    let stop: i64 = match stop {
+        Value::Number(n) => n.round() as i64,
+        _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
+    };
+    let range = (start..stop).map(|i| Value::Number(i as f64)).collect();
+    Ok(Value::Array(range))
 }
 
 fn rstrip_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
