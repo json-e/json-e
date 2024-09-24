@@ -157,10 +157,27 @@ var builtin = map[string]interface{}{
 		}
 		return n
 	}),
-	"sqrt":      i.WrapFunction(math.Sqrt),
-	"ceil":      i.WrapFunction(math.Ceil),
-	"floor":     i.WrapFunction(math.Floor),
-	"abs":       i.WrapFunction(math.Abs),
+	"sqrt":  i.WrapFunction(math.Sqrt),
+	"ceil":  i.WrapFunction(math.Ceil),
+	"floor": i.WrapFunction(math.Floor),
+	"abs":   i.WrapFunction(math.Abs),
+	"range": i.WrapFunction(
+		func(start float64, stop float64, args ...float64) ([]interface{}, error) {
+			var result []interface{}
+			step := 1
+			if len(args) != 0 && len(args) > 1 {
+				return result, fmt.Errorf("range(start, stop, step) requires start and stop argument and optionally takes step")
+			}
+			if len(args) == 1 {
+				step = int(args[0])
+			}
+
+			for i := int(start); i < int(stop); i += step {
+				result = append(result, float64(i))
+			}
+			return result, nil
+		},
+	),
 	"lowercase": i.WrapFunction(strings.ToLower),
 	"uppercase": i.WrapFunction(strings.ToUpper),
 	"strip":     i.WrapFunction(strings.TrimSpace),

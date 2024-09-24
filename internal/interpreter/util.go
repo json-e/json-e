@@ -53,11 +53,15 @@ func IsTruthy(v interface{}) bool {
 		return false
 	case []interface{}:
 		return len(val) > 0
+	case []int:
+		return len(val) > 0
 	case map[string]interface{}:
 		return len(val) > 0
 	case string:
 		return len(val) > 0
 	case float64:
+		return val != 0
+	case int:
 		return val != 0
 	case bool:
 		return val
@@ -75,11 +79,13 @@ type function struct {
 
 var allowedTypes = []reflect.Type{
 	reflect.TypeOf(float64(0)),
+	reflect.TypeOf(int(0)),
 	reflect.TypeOf(""),
 	reflect.TypeOf(true),
 	reflect.TypeOf((*interface{})(nil)).Elem(),
 	reflect.TypeOf([]interface{}(nil)),
 	reflect.TypeOf(map[string]interface{}(nil)),
+	reflect.TypeOf([]int(nil)),
 }
 
 var typeOfError = reflect.TypeOf((*error)(nil)).Elem()
@@ -147,7 +153,7 @@ func wrapFunction(f interface{}, withContext bool) (interface{}, error) {
 			}
 		}
 		if !ok {
-			return nil, injectedFunctionError(f, "may only accept: bool, string, float64, []interface{}, map[string]interface{} and interface{}")
+			return nil, injectedFunctionError(f, "may only accept: bool, string, float64, int, []int, []interface{}, map[string]interface{} and interface{}")
 		}
 	}
 	// Check return values
@@ -242,9 +248,16 @@ func IsValidData(data interface{}) error {
 		return nil
 	}
 	switch val := data.(type) {
-	case *function, string, float64, bool:
+	case *function, string, float64, bool, int:
 		return nil
 	case []interface{}:
+		for _, value := range val {
+			if err := IsValidData(value); err != nil {
+				return err
+			}
+		}
+		return nil
+	case []int:
 		for _, value := range val {
 			if err := IsValidData(value); err != nil {
 				return err
