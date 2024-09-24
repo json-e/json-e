@@ -153,7 +153,7 @@ r[i] = start + step*i where i >= 0 and r[i] < end.
 For a negative step, the contents of the range are still determined by the
 formula r[i] = start + step*i, where i >= 0 and r[i] > end.
 
-```
+```yaml,json-e
 template:
   $map: {$eval: 'range(1, 5)'}
   each(x): {$eval: 'x'}
