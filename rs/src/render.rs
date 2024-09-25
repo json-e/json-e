@@ -2,7 +2,7 @@
 use crate::builtins::BUILTINS;
 use crate::fromnow::{from_now, now};
 use crate::interpreter::{self, Context};
-use crate::op_props::{parse_by, parse_each};
+use crate::op_props::{parse_by, parse_each, parse_each_three};
 use crate::value::{Object, Value};
 use anyhow::{bail, Result};
 use nom::{
@@ -176,6 +176,7 @@ fn maybe_operator(
         "$json" => Ok(Some(json_operator(operator, value, object, context)?)),
         "$let" => Ok(Some(let_operator(operator, value, object, context)?)),
         "$map" => Ok(Some(map_operator(operator, value, object, context)?)),
+        "$reduce" => Ok(Some(reduce_operator(operator, value, object, context)?)),
         "$find" => Ok(Some(find_operator(operator, value, object, context)?)),
         "$match" => Ok(Some(match_operator(operator, value, object, context)?)),
         "$switch" => Ok(Some(switch_operator(operator, value, object, context)?)),
@@ -463,6 +464,56 @@ fn map_operator(
         }
         _ => Err(template_error!(
             "$map value must evaluate to an array or object"
+        )),
+    }
+}
+
+fn reduce_operator(
+    operator: &str,
+    value: &Value,
+    object: &Object,
+    context: &Context,
+) -> Result<Value> {
+    check_operator_properties(operator, object, |p| p == "initial" || parse_each_three(p).is_some())?;
+    if object.len() != 3 {
+        return Err(template_error!("$reduce must have exactly three properties"));
+    }
+
+    // Unwraps here are safe because the presence of the `each(..)` is checked above.
+    let each_prop = object.keys().filter(|k| k != &"$reduce" && k != &"initial").next().unwrap();
+
+    let (acc_var, value_var, index_var) = parse_each_three(each_prop)
+        .ok_or_else(|| template_error!("$reduce requires each(identifier,identifier[,identifier]) syntax"))?;
+
+    let each_tpl = object.get(each_prop).unwrap();
+
+    let mut value = _render(value, context)?;
+    // Need to get the initial value from the object.
+    let initial = object.get("initial").unwrap();
+
+    match value {
+        Value::Array(ref mut a) => {
+            let mapped = a
+                .drain(..)
+                .enumerate()
+                .try_fold(initial.clone(), |acc, (i, v)| {
+                    let mut subcontext = context.child();
+                    subcontext.insert(acc_var, acc.clone());
+                    subcontext.insert(value_var, v);
+                    if let Some(index_var) = index_var {
+                        subcontext.insert(index_var, Value::Number(i as f64));
+                    }
+                    let rendered = _render(each_tpl, &subcontext);
+                    match rendered {
+                        Ok(Value::DeletionMarker) => Ok(acc),
+                        Ok(v) => Ok(v),
+                        Err(e) => Err(e),
+                    }
+                });
+            mapped
+        }
+        _ => Err(template_error!(
+            "$reduce value must evaluate to an array"
         )),
     }
 }
