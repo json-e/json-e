@@ -151,7 +151,8 @@ The `range()` built-in generates an array based on the following inputs:
   zero.
 
 The contents of a range r are determined by the following formula:
-```
+
+```yaml,json-e
 IF step > 0 THEN
 
   i = start
