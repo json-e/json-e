@@ -148,13 +148,29 @@ The `range()` built-in generates an array based on the following inputs:
   this negative value (exclusive).
 * `step` - Optional. An integer specifying a step to apply to each value within
   the range. If not specified, defaults to `1`. Can be negative, but cannot be
-  zero.
-    * For a positive step, the contents of a range r are determined by the
-      formula `r[i] = start + step*i` where `i >= 0` and `r[i] < end`. The
-      resulting range will be empty if `start` >= `end`.
-    * For a negative step, the contents of the range are still determined by the
-      formula `r[i] = start + step*i`, where `i >= 0` and `r[i] > end`. The
-      resulting range will be empty if `start` <= `end`.
+  zero. The contents of a range r are determined by the following formula:
+  ```
+  IF step > 0 THEN
+
+    i = start
+    WHILE i < end:
+      r(i) = i
+      i = i + step
+    END WHILE
+
+  ELSE if step < 0 THEN
+
+    i = start
+    WHILE i > end:
+      r(i) = i
+      i = i + step
+    END WHILE
+
+  END IF
+  ```
+
+Notably, the resulting range will be empty if `start >= end` and `step` is
+positive or if `start` <= `end` and `step` is negative.
 
 ```yaml,json-e
 template:
