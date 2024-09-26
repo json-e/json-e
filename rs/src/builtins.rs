@@ -3,6 +3,7 @@ use crate::interpreter::Context;
 use crate::value::{Function, Value};
 use anyhow::Result;
 use lazy_static::lazy_static;
+use std::convert::TryInto;
 
 lazy_static! {
     pub(crate) static ref BUILTINS: Context<'static> = {
@@ -213,11 +214,11 @@ fn range_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     };
 
     if step > 0 {
-        let step = step as usize;
+        let step: usize = step.try_into()?;
         let range = (start..stop).step_by(step).map(|i| Value::Number(i as f64)).collect();
         Ok(Value::Array(range))
     } else if step < 0 {
-        let step = (step * -1) as usize;
+        let step: usize = (step * -1).try_into()?;
         let range = (stop+1..=start).rev().step_by(step).map(|i| Value::Number(i as f64)).collect();
         Ok(Value::Array(range))
     } else {

@@ -1138,6 +1138,13 @@ template:
   each(x): {$eval: 'x'}
 result:   [-7, -8, -9]
 ---
+title:    range with negative step that does not divide evenly
+context:  {}
+template:
+  $map: {$eval: 'range(20, 0, -7)'}
+  each(x): {$eval: 'x'}
+result:   [20, 13, 6]
+---
 title:    range with step=0 throws error
 context:  {}
 template:
