@@ -1102,6 +1102,117 @@ template: {$map: {a: 1, b: 2, c: 3}, 'each(y)': {'${y.key}x': {$eval: 'y.val + 1
 result:   {ax: 2, bx: 3, cx: 4}
 ################################################################################
 ---
+section:  range
+---
+title:    range without step creates list of numbers
+context:  {}
+template:
+  $map: {$eval: 'range(1, 5)'}
+  each(x): {$eval: 'x'}
+result:   [1, 2, 3, 4]
+---
+title:    range with end > start creates empty list
+context:  {}
+template:
+  {$eval: 'len(range(5, 1))'}
+result:   0
+---
+title:    range with step creates list of numbers
+context:  {}
+template:
+  $map: {$eval: 'range(1, 10, 2)'}
+  each(x): {$eval: 'x'}
+result:   [1, 3, 5, 7, 9]
+---
+title:    range with negative step creates list of numbers
+context:  {}
+template:
+  $map: {$eval: 'range(1, -2, -1)'}
+  each(x): {$eval: 'x'}
+result:   [1, 0, -1]
+---
+title:    range with negative step and negative start and end creates list of numbers
+context:  {}
+template:
+  $map: {$eval: 'range(-7, -10, -1)'}
+  each(x): {$eval: 'x'}
+result:   [-7, -8, -9]
+---
+title:    range with negative step that does not divide evenly
+context:  {}
+template:
+  $map: {$eval: 'range(20, 0, -7)'}
+  each(x): {$eval: 'x'}
+result:   [20, 13, 6]
+---
+title:    range with step=0 throws error
+context:  {}
+template:
+  $map: {$eval: 'range(1, 5, 0)'}
+  each(x): {$eval: 'x'}
+error: true
+---
+title:    range with float step throws error
+context:  {}
+template:
+  $map: {$eval: 'range(1, 5, 1.2)'}
+  each(x): {$eval: 'x'}
+error: true
+---
+title:    range with float start throws error
+context:  {}
+template:
+  $map: {$eval: 'range(1.3, 5)'}
+  each(x): {$eval: 'x'}
+error: true
+---
+title:    range with string start throws error
+context:  {}
+template:
+  $map: {$eval: 'range("1", 5)'}
+  each(x): {$eval: 'x'}
+error: true
+---
+title:    range without step creates list of objects
+context:  {}
+template:
+  $map: {$eval: 'range(1, 4)'}
+  each(x):
+    asText: '${x}'
+    integer: {$eval: 'x'}
+result:
+ - {asText: '1', integer: 1}
+ - {asText: '2', integer: 2}
+ - {asText: '3', integer: 3}
+---
+title:    range without step creates list of strings
+context:  {}
+template:
+  $map: {$eval: 'range(10, 12)'}
+  each(x,i): 'id_${x}_${i}'
+result: ['id_10_0', 'id_11_1']
+---
+title:    range with step creates list of strings
+context:  {}
+template:
+  $map: {$eval: 'range(10, 20, 5)'}
+  each(x,i): 'id_${x}_${i}'
+result: ['id_10_0', 'id_15_1']
+---
+title:    range without step creates objects
+context:  {}
+template:
+  $map: {$eval: 'range(1, 3)'}
+  each(y):
+    k: {$eval: 'y + 1'}
+    v: 'before=${y}'
+result:
+  - k: 2
+    v: 'before=1'
+  - k: 3
+    v: 'before=2'
+################################################################################
+---
 section: $find operator
 ---
 title:   $find, simple find

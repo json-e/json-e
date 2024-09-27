@@ -3,6 +3,7 @@ use crate::interpreter::Context;
 use crate::value::{Function, Value};
 use anyhow::Result;
 use lazy_static::lazy_static;
+use std::convert::TryInto;
 
 lazy_static! {
     pub(crate) static ref BUILTINS: Context<'static> = {
@@ -34,6 +35,7 @@ lazy_static! {
             "strip",
             Value::Function(Function::new("strip", strip_builtin)),
         );
+        builtins.insert("range", Value::Function(Function::new("range", range_builtin)));
         builtins.insert(
             "rstrip",
             Value::Function(Function::new("rstrip", rstrip_builtin)),
@@ -186,6 +188,42 @@ fn number_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
 
 fn strip_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
     unary_string(args, |s| str::trim(s).to_owned())
+}
+
+fn range_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
+   if args.len() < 2 || args.len() > 3 {
+        return Err(interpreter_error!("range requires two arguments and optionally supports a third"));
+    }
+    let start = &args[0];
+    let start: i64 = match start {
+        Value::Number(n) if n.fract() == 0.0 => n.round() as i64,
+        _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
+    };
+    let stop = &args[1];
+    let stop: i64 = match stop {
+        Value::Number(n) if n.fract() == 0.0 => n.round() as i64,
+        _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
+    };
+    let step: i64 = match args.get(2) {
+        // If step is not provided by the user, it defaults to 1.
+        None => 1,
+        Some(val) => match val {
+            Value::Number(n) if n.fract() == 0.0 => n.round() as i64,
+            _ => return Err(interpreter_error!("invalid arguments to builtin: range")),
+        }
+    };
+
+    if step > 0 {
+        let step: usize = step.try_into()?;
+        let range = (start..stop).step_by(step).map(|i| Value::Number(i as f64)).collect();
+        Ok(Value::Array(range))
+    } else if step < 0 {
+        let step: usize = (step * -1).try_into()?;
+        let range = (stop+1..=start).rev().step_by(step).map(|i| Value::Number(i as f64)).collect();
+        Ok(Value::Array(range))
+    } else {
+        return Err(interpreter_error!("invalid argument `step` to builtin: range"));
+    }
 }
 
 fn rstrip_builtin(_context: &Context, args: &[Value]) -> Result<Value> {

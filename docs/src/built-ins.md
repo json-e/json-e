@@ -136,3 +136,49 @@ template: {$eval: 'len([1, 2, 3])'}
 context: {}
 result: 3
 ```
+
+## Range
+
+The `range()` built-in generates an array based on the following inputs:
+* `start` - An integer specifying the lower bound of the range (inclusive).
+  This can be negative, in which case the generated array of integers will
+  start with this negative value (inclusive).
+* `end` - An integer specifying the upper bound of the range (exclusive). This
+  can be negative, in which case the generated array of integers will end with
+  this negative value (exclusive).
+* `step` - Optional. An integer specifying a step to apply to each value within
+  the range. If not specified, defaults to `1`. Can be negative, but cannot be
+  zero.
+
+The contents of a range r are determined by the following formula:
+
+```yaml,json-e
+IF step > 0 THEN
+
+  i = start
+  WHILE i < end:
+    r(i) = i
+    i = i + step
+  END WHILE
+
+ELSE if step < 0 THEN
+
+  i = start
+  WHILE i > end:
+    r(i) = i
+    i = i + step
+  END WHILE
+
+END IF
+```
+
+Notably, the resulting range will be empty if `start >= end` and `step` is
+positive or if `start <= end` and `step` is negative.
+
+```yaml,json-e
+template:
+  $map: {$eval: 'range(1, 5)'}
+  each(x): {$eval: 'x'}
+context:  {}
+result:   [1, 2, 3, 4]
+```

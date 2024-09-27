@@ -2,13 +2,14 @@ var {BuiltinError} = require('./error');
 var fromNow = require('./from-now');
 var {
   isString, isNumber, isBool,
-  isArray, isObject,
+  isInteger, isArray, isObject,
   isNull, isFunction,
 } = require('./type-utils');
 
 let types = {
   string: isString,
   number: isNumber,
+  integer: isInteger,
   boolean: isBool,
   array: isArray,
   object: isObject,
@@ -38,7 +39,7 @@ module.exports = (context) => {
       }
 
       if (variadic) {
-        argumentTests = args.map(() => variadic);
+        argumentTests = args.map((_, i) => i < argumentTests.length ? argumentTests[i] : variadic);
       }
 
       args.forEach((arg, i) => {
@@ -76,6 +77,18 @@ module.exports = (context) => {
       argumentTests: ['number'],
       invoke: num => Math[name](num),
     });
+  });
+
+  define('range', builtins, {
+    minArgs: 2,
+    argumentTests: ['integer', 'integer', 'integer'],
+    variadic: 'number',
+    invoke: (start, stop, step=1) => {
+      return Array.from(
+        {length: Math.ceil((stop - start) / step)}, 
+        (_, i) => start + i * step
+      )
+    },
   });
 
   // String manipulation

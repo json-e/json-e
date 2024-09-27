@@ -22,6 +22,11 @@ func isBool(v interface{}) bool {
 	return ok
 }
 
+func IsInteger(v interface{}) bool {
+	floatRep, _ := v.(float64)
+	return floatRep == float64(int(floatRep))
+}
+
 // IsJSON returns true, if v is pure JSON
 func IsJSON(v interface{}) bool {
 	if isString(v) || isNumber(v) || isBool(v) || v == nil {
