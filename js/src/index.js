@@ -219,6 +219,37 @@ operators.$map = (template, context) => {
   }
 };
 
+operators.$reduce = (template, context) => {
+  const EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*),\\s*([a-zA-Z_][a-zA-Z0-9_]*)(,\\s*([a-zA-Z_][a-zA-Z0-9_]*))?\\)';
+  checkUndefinedProperties(template, ['\\$reduce', 'initial', EACH_RE]);
+  let value = render(template['$reduce'], context);
+  if (!isArray(value)) {
+    throw new TemplateError('$reduce value must evaluate to an array');
+  }
+
+  if (Object.keys(template).length !== 3) {
+    throw new TemplateError('$reduce must have exactly three properties');
+  }
+
+  let eachKey = Object.keys(template).find(k => k !== '$reduce' && k !== 'initial');
+  let match = /^each\(([a-zA-Z_][a-zA-Z0-9_]*),\s*([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$/.exec(eachKey);
+  if (!match) {
+    throw new TemplateError('$reduce requires each(identifier) syntax');
+  }
+
+  let a = match[1];
+  let x = match[2];
+  let i = match[4];
+  let each = template[eachKey];
+  let initialValue = template['initial'];
+
+  return value.reduce((acc, v, idx)=>{
+    const args = typeof i !== 'undefined' ? {[a]: acc, [x]: v, [i]: idx} : {[a]: acc, [x]: v};
+    const r = render(each, Object.assign({}, context, args));
+    return r === deleteMarker ? acc : r;
+  }, initialValue);
+};
+
 operators.$find = (template, context) => {
   const EACH_RE = 'each\\(([a-zA-Z_][a-zA-Z0-9_]*)(,\\s*([a-zA-Z_][a-zA-Z0-9_]*))?\\)';
   checkUndefinedProperties(template, ['\\$find', EACH_RE]);

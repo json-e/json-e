@@ -1213,6 +1213,125 @@ result:
     v: 'before=2'
 ################################################################################
 ---
+section: $reduce operator
+---
+title:    reduce array into number
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  each(acc, x): {$eval: 'acc + x'}
+  initial: 0
+result:   12
+---
+title:    reduce array with indexes into number
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  each(acc, x, i): {$eval: 'acc + x * 10 ** i'}
+  initial: 0
+result:   642
+---
+title:    reduce array into string
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  each(acc, x): "${acc}${x}"
+  initial: 'pre '
+result:   'pre 246'
+---
+title:    reduce array into boolean
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  each(acc, x): {$eval: 'acc || x > 5'}
+  initial: false
+result:   true
+---
+title:    reduce array into object
+# This is a contrived example since using $merge and $map would be more appropriate.
+# But it demonstrates that the accumulator can be an object
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  each(acc, x, i):
+    $merge: [{$eval: 'acc'}, {'k${i}': {$eval: 'x'}}]
+  initial: {a: 0}
+result: { a: 0, k0: 2, k1: 4, k2: 6 }
+---
+title:    reduce over an object
+context:  {}
+template:
+  $reduce: {a: 2, b: 4, c: 6}
+  each(acc, v, k): {$eval: 'acc + v'}
+  initial: 0
+error:   'TemplateError: $reduce value must evaluate to an array'
+---
+title:    reduce skips delete-marker from $if
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  initial: 0
+  each(acc, v, i):
+    $if: 'v != 4'
+    then: {$eval: 'acc + v'}
+result: 8
+---
+title:    reduce with undefined properties
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  each(acc, x): {$eval: 'acc + x'}
+  initial: 0
+  foo: 'bar'
+error:    'TemplateError: $reduce has undefined properties: foo'
+---
+title:    reduce with missing initial
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  each(acc, x): {$eval: 'acc + x'}
+error:    'TemplateError: $reduce must have exactly three properties'
+---
+title:    reduce with missing initial with undefined properties
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  each(acc, x): {$eval: 'acc + x'}
+  init: 9
+error:    'TemplateError: $reduce has undefined properties: init'
+---
+title:    reduce with missing each
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  initial: 0
+error:    'TemplateError: $reduce must have exactly three properties'
+---
+title:    reduce with missing each with undefined properties
+context:  {}
+template:
+  $reduce: [2, 4, 6]
+  each: 'acc + x'
+  initial: 0
+error:    'TemplateError: $reduce has undefined properties: each'
+---
+title:    reduce over a number
+context:  {}
+template:
+  $reduce: 10
+  each(acc, x): {$eval: 'acc + x'}
+  initial: 0
+error:    'TemplateError: $reduce value must evaluate to an array'
+---
+title:    reduce over a string
+context:  {}
+template:
+  $reduce: A Thing that is a String
+  each(acc, x): {$eval: 'acc + x'}
+  initial: 0
+error:    'TemplateError: $reduce value must evaluate to an array'
+---
+################################################################################
 section: $find operator
 ---
 title:   $find, simple find

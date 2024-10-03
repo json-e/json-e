@@ -343,6 +343,7 @@ var builtin = map[string]interface{}{
 }
 
 var eachKeyPattern = regexp.MustCompile(`^each\(([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$`)
+var eachKeyAccPattern = regexp.MustCompile(`^each\(([a-zA-Z_][a-zA-Z0-9_]*),\s*([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$`)
 var byKeyPattern = regexp.MustCompile(`^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$`)
 
 var operators = map[string]operator{
@@ -665,6 +666,73 @@ var operators = map[string]operator{
 		default:
 			return nil, TemplateError{
 				Message:  "$map requires a value that evaluates to either an object or an array",
+				Template: template,
+			}
+		}
+	},
+	"$reduce": func(template, context map[string]interface{}) (interface{}, error) {
+		value, err := render(template["$reduce"], context)
+		if err != nil {
+			return nil, err
+		}
+		if len(template) != 3 {
+			return nil, TemplateError{
+				Message:  "$reduce must have exactly three properties",
+				Template: template,
+			}
+		}
+		// Find the each(...) key
+		var eachKey string
+		for k := range template {
+			if k == "$reduce" || k == "initial" {
+				continue
+			}
+			eachKey = k
+		}
+		// Validate against each(...) key pattern
+		m := eachKeyAccPattern.FindStringSubmatch(eachKey)
+		if m == nil {
+			return nil, TemplateError{
+				Message:  "$reduce requires a property on the form 'each(identifier)'",
+				Template: template,
+			}
+		}
+		eachAcc := m[1]
+		eachIdentifier := m[2]
+		eachIndex := m[4]
+		additionalContextVars := 2
+		if len(eachIndex) > 0 {
+			additionalContextVars = 3
+		}
+		eachTemplate := template[eachKey]
+		
+		switch val := value.(type) {
+		case []interface{}:
+			var result interface{}
+			result = template["initial"]
+			for idx, entry := range val {
+				c := make(map[string]interface{}, len(context)+additionalContextVars)
+				for k, v := range context {
+					c[k] = v
+				}
+				c[eachAcc] = result
+				c[eachIdentifier] = entry
+				if len(eachIndex) > 0 {
+					c[eachIndex] = float64(idx)
+				}
+				r, err := render(eachTemplate, c)
+				if err != nil {
+					return nil, err
+				}
+				if r == deleteMarker {
+					continue
+				}
+				result = r
+			}
+			return result, nil
+		default:
+			return nil, TemplateError{
+				Message:  "$reduce value must evaluate to an array",
 				Template: template,
 			}
 		}

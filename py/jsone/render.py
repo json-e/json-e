@@ -304,6 +304,45 @@ def map(template, context):
         return list(gen(value))
 
 
+@operator("$reduce")
+def reduce(template, context):
+    EACH_RE = r"each\([a-zA-Z_][a-zA-Z0-9_]*,\s*[a-zA-Z_][a-zA-Z0-9_]*(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)"
+    checkUndefinedProperties(template, [r"\$reduce", "initial", EACH_RE])
+    value = renderValue(template["$reduce"], context)
+    if not isinstance(value, list):
+        raise TemplateError("$reduce value must evaluate to an array")
+
+    if len(template) != 3:
+        raise TemplateError("$reduce must have exactly three properties")
+
+    each_keys = [k for k in template if k.startswith("each(")]
+    if len(each_keys) != 1:
+        raise TemplateError("$reduce requires each(..)")
+    each_key = each_keys[0]
+    each_args = [x.strip() for x in each_key[5:-1].split(",")]
+    each_acc = each_args[0]
+    each_var = each_args[1]
+    each_idx = each_args[2] if len(each_args) > 2 else None
+
+    each_template = template[each_key]
+    resultValue = template["initial"]
+
+    subcontext = context.copy()
+    for i, elt in enumerate(value):
+        if each_idx is None:
+            subcontext[each_acc] = resultValue
+            subcontext[each_var] = elt
+        else:
+            subcontext[each_acc] = resultValue
+            subcontext[each_var] = elt
+            subcontext[each_idx] = i
+        r = renderValue(each_template, subcontext)
+        if r is not DeleteMarker:
+            resultValue = r
+
+    return resultValue
+
+
 @operator("$find")
 def find(template, context):
     EACH_RE = r"each\([a-zA-Z_][a-zA-Z0-9_]*(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)"

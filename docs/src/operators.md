@@ -131,6 +131,7 @@ template: {$fromNow: '1 hour', from: '2017-01-19T16:27:20.974Z'}
 context:  {}
 result:   '2017-01-19T17:27:20.974Z'
 ```
+
 The available units, including useful shorthands, are:
 
 ```none
@@ -234,6 +235,38 @@ template:
   each(y): {'${y.key}x': {$eval: 'y.val + 1'}}
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
+```
+
+## `$reduce`
+
+The `$reduce` operator evaluates an expression with each value of the given array and
+the result of the prior expression, reducing the array into a single JSON value.
+
+This operation is sometimes called `fold`, `accumulate`, `aggregate`, or `inject`.
+
+An initial result is passed as the accumulator for the first evaluation of the expression.
+
+The `each` function defines the accumulated, or prior result, and the current value.  The result of
+this function will be passed as the accumulated to the next call of `each`.
+
+```yaml,json-e
+template:
+  $reduce: [{name: Apple, price: 1}, {name: Orange, price: 0.75}, {name: Pear, price: 1.1}]
+  initial: 0
+  each(acc, v): {$eval: 'acc + v.price'}
+context:  {}
+result:   2.85
+```
+
+The `each` function can define three variables, in which case the third is the 0-based index of the element.
+
+```yaml,json-e
+template:
+  $reduce: [2, 5, 8]
+  initial: 0
+  each(acc, v, i): {$eval: 'acc + v * 10 ** i'}
+context:  {}
+result:   852
 ```
 
 ## `$find`
@@ -420,6 +453,7 @@ result:   [{a: 1, b: []}, {a: 2}, {a: 3}]
 ```
 
 The sort is stable:
+
 ```yaml,json-e
 template:
   $sort: ["aa", "dd", "ac", "ba", "ab"]

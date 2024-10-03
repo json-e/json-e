@@ -2,7 +2,7 @@ use anyhow::Result;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{alpha1, alphanumeric1},
+    character::complete::{alpha1, alphanumeric1, multispace0},
     combinator::{map_res, opt, recognize},
     multi::many0,
     sequence::{pair, tuple},
@@ -10,6 +10,7 @@ use nom::{
 };
 
 fn ident(input: &str) -> IResult<&str, &str> {
+    let (input, _) = multispace0(input)?;
     recognize(pair(
         alt((alpha1, tag("_"))),
         many0(alt((alphanumeric1, tag("_")))),
@@ -31,6 +32,26 @@ fn each(input: &str) -> IResult<&str, (&str, Option<&str>)> {
 /// Parse the each(..) property of $map, or return None if no match
 pub(crate) fn parse_each(input: &str) -> Option<(&str, Option<&str>)> {
     match each(input) {
+        Ok(("", r)) => Some(r),
+        _ => None,
+    }
+}
+
+fn each_three(input: &str) -> IResult<&str, (&str, &str, Option<&str>)> {
+    fn to_result<'a>(
+        input: (&str, &'a str, &str, &'a str, Option<(&str, &'a str)>, &str),
+    ) -> Result<(&'a str, &'a str, Option<&'a str>), ()> {
+        Ok((input.1, input.3, input.4.map(|x| x.1)))
+    }
+    map_res(
+        tuple((tag("each("), ident, tag(","), ident, opt(tuple((tag(","), ident))), tag(")"))),
+        to_result,
+    )(input)
+}
+
+/// Parse the each(..) property of $reduce, or return None if no match
+pub(crate) fn parse_each_three(input: &str) -> Option<(&str, &str, Option<&str>)> {
+    match each_three(input) {
         Ok(("", r)) => Some(r),
         _ => None,
     }
@@ -83,6 +104,36 @@ mod test {
     #[test]
     fn three_vars() {
         assert_eq!(parse_each("each(x,y,z)"), None);
+    }
+
+    #[test]
+    fn not_each_three() {
+        assert_eq!(parse_each_three("uhh"), None);
+    }
+
+    #[test]
+    fn single_var_three() {
+        assert_eq!(parse_each_three("each(x)"),  None);
+    }
+
+    #[test]
+    fn two_vars_three() {
+        assert_eq!(parse_each_three("each(x,y)"), Some(("x", "y", None)));
+    }
+
+    #[test]
+    fn two_longer_vars_three() {
+        assert_eq!(parse_each_three("each(x123,y123)"), Some(("x123", "y123", None)));
+    }
+
+    #[test]
+    fn three_vars_three() {
+        assert_eq!(parse_each_three("each(x,y,z)"), Some(("x", "y", Some("z"))));
+    }
+
+    #[test]
+    fn three_longer_vars_three() {
+        assert_eq!(parse_each_three("each(x123,y123,z1234)"), Some(("x123", "y123", Some("z1234"))));
     }
 
     #[test]
