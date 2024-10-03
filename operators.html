@@ -319,6 +319,28 @@ result: {ax: 2, bx: 3, cx: 4}
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 </code></pre>
+<h2 id="reduce"><a class="header" href="#reduce"><code>$reduce</code></a></h2>
+<p>The <code>$reduce</code> operator evaluates an expression with each value of the given array and
+the result of the prior expression, reducing the array into a single JSON value.</p>
+<p>This operation is sometimes called <code>fold</code>, <code>accumulate</code>, <code>aggregate</code>, or <code>inject</code>.</p>
+<p>An initial result is passed as the accumulator for the first evaluation of the expression.</p>
+<p>The <code>each</code> function defines the accumulated, or prior result, and the current value.  The result of
+this function will be passed as the accumulated to the next call of <code>each</code>.</p>
+<pre><code class="language-yaml json-e">template:
+  $reduce: [{name: Apple, price: 1}, {name: Orange, price: 0.75}, {name: Pear, price: 1.1}]
+  initial: 0
+  each(acc, v): {$eval: 'acc + v.price'}
+context:  {}
+result:   2.85
+</code></pre>
+<p>The <code>each</code> function can define three variables, in which case the third is the 0-based index of the element.</p>
+<pre><code class="language-yaml json-e">template:
+  $reduce: [2, 5, 8]
+  initial: 0
+  each(acc, v, i): {$eval: 'acc + v * 10 ** i'}
+context:  {}
+result:   852
+</code></pre>
 <h2 id="find"><a class="header" href="#find"><code>$find</code></a></h2>
 <p>The <code>$find</code> operator evaluates an expression for each value of the given array.
 returning the first value for which the expression evaluates to <code>true</code>.</p>

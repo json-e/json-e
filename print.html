@@ -504,6 +504,28 @@ result: {ax: 2, bx: 3, cx: 4}
 context:  {}
 result: {ax: 2, bx: 3, cx: 4}
 </code></pre>
+<h2 id="reduce"><a class="header" href="#reduce"><code>$reduce</code></a></h2>
+<p>The <code>$reduce</code> operator evaluates an expression with each value of the given array and
+the result of the prior expression, reducing the array into a single JSON value.</p>
+<p>This operation is sometimes called <code>fold</code>, <code>accumulate</code>, <code>aggregate</code>, or <code>inject</code>.</p>
+<p>An initial result is passed as the accumulator for the first evaluation of the expression.</p>
+<p>The <code>each</code> function defines the accumulated, or prior result, and the current value.  The result of
+this function will be passed as the accumulated to the next call of <code>each</code>.</p>
+<pre><code class="language-yaml json-e">template:
+  $reduce: [{name: Apple, price: 1}, {name: Orange, price: 0.75}, {name: Pear, price: 1.1}]
+  initial: 0
+  each(acc, v): {$eval: 'acc + v.price'}
+context:  {}
+result:   2.85
+</code></pre>
+<p>The <code>each</code> function can define three variables, in which case the third is the 0-based index of the element.</p>
+<pre><code class="language-yaml json-e">template:
+  $reduce: [2, 5, 8]
+  initial: 0
+  each(acc, v, i): {$eval: 'acc + v * 10 ** i'}
+context:  {}
+result:   852
+</code></pre>
 <h2 id="find"><a class="header" href="#find"><code>$find</code></a></h2>
 <p>The <code>$find</code> operator evaluates an expression for each value of the given array.
 returning the first value for which the expression evaluates to <code>true</code>.</p>
@@ -927,6 +949,46 @@ result:
 <pre><code class="language-yaml json-e">template: {$eval: 'len([1, 2, 3])'}
 context: {}
 result: 3
+</code></pre>
+<h2 id="range"><a class="header" href="#range">Range</a></h2>
+<p>The <code>range()</code> built-in generates an array based on the following inputs:</p>
+<ul>
+<li><code>start</code> - An integer specifying the lower bound of the range (inclusive).
+This can be negative, in which case the generated array of integers will
+start with this negative value (inclusive).</li>
+<li><code>end</code> - An integer specifying the upper bound of the range (exclusive). This
+can be negative, in which case the generated array of integers will end with
+this negative value (exclusive).</li>
+<li><code>step</code> - Optional. An integer specifying a step to apply to each value within
+the range. If not specified, defaults to <code>1</code>. Can be negative, but cannot be
+zero.</li>
+</ul>
+<p>The contents of a range r are determined by the following formula:</p>
+<pre><code class="language-yaml json-e">IF step &gt; 0 THEN
+
+  i = start
+  WHILE i &lt; end:
+    r(i) = i
+    i = i + step
+  END WHILE
+
+ELSE if step &lt; 0 THEN
+
+  i = start
+  WHILE i &gt; end:
+    r(i) = i
+    i = i + step
+  END WHILE
+
+END IF
+</code></pre>
+<p>Notably, the resulting range will be empty if <code>start &gt;= end</code> and <code>step</code> is
+positive or if <code>start &lt;= end</code> and <code>step</code> is negative.</p>
+<pre><code class="language-yaml json-e">template:
+  $map: {$eval: 'range(1, 5)'}
+  each(x): {$eval: 'x'}
+context:  {}
+result:   [1, 2, 3, 4]
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="playground"><a class="header" href="#playground">Playground</a></h1>
 <p>This page executes JSON-e live in your browser.</p>

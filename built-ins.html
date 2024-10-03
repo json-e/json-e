@@ -266,6 +266,46 @@ result:
 context: {}
 result: 3
 </code></pre>
+<h2 id="range"><a class="header" href="#range">Range</a></h2>
+<p>The <code>range()</code> built-in generates an array based on the following inputs:</p>
+<ul>
+<li><code>start</code> - An integer specifying the lower bound of the range (inclusive).
+This can be negative, in which case the generated array of integers will
+start with this negative value (inclusive).</li>
+<li><code>end</code> - An integer specifying the upper bound of the range (exclusive). This
+can be negative, in which case the generated array of integers will end with
+this negative value (exclusive).</li>
+<li><code>step</code> - Optional. An integer specifying a step to apply to each value within
+the range. If not specified, defaults to <code>1</code>. Can be negative, but cannot be
+zero.</li>
+</ul>
+<p>The contents of a range r are determined by the following formula:</p>
+<pre><code class="language-yaml json-e">IF step &gt; 0 THEN
+
+  i = start
+  WHILE i &lt; end:
+    r(i) = i
+    i = i + step
+  END WHILE
+
+ELSE if step &lt; 0 THEN
+
+  i = start
+  WHILE i &gt; end:
+    r(i) = i
+    i = i + step
+  END WHILE
+
+END IF
+</code></pre>
+<p>Notably, the resulting range will be empty if <code>start &gt;= end</code> and <code>step</code> is
+positive or if <code>start &lt;= end</code> and <code>step</code> is negative.</p>
+<pre><code class="language-yaml json-e">template:
+  $map: {$eval: 'range(1, 5)'}
+  each(x): {$eval: 'x'}
+context:  {}
+result:   [1, 2, 3, 4]
+</code></pre>
 
                     </main>
 
