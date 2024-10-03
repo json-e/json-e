@@ -1,3 +1,13 @@
+Jsone 4.8.0 (2024-10-03)
+========================
+
+Features
+--------
+
+- Introduces the `$reduce` operator which combines an array or object into a single value. (#531)
+- Introduced the `range(..)` function for generating ranges of integers. (#534)
+
+
 Jsone 4.7.1 (2024-07-05)
 ========================
 
