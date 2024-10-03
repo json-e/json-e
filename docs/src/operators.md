@@ -240,7 +240,7 @@ result: {ax: 2, bx: 3, cx: 4}
 ## `$reduce`
 
 The `$reduce` operator evaluates an expression with each value of the given array and
-the result of the prior expression, reducing the array or object into a single JSON value.
+the result of the prior expression, reducing the array into a single JSON value.
 
 This operation is sometimes called `fold`, `accumulate`, `aggregate`, or `inject`.
 
