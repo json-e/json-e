@@ -326,7 +326,7 @@ operators.$switch = (template, context) => {
     throw new TemplateError('$switch can only have one truthy condition');
   }
 
-  if (result.length === 0 && conditions[ '$default' ]) {
+  if (result.length === 0 && "$default" in conditions) {
     result.push(render(conditions[ '$default' ], context));
   }
 
