@@ -1543,6 +1543,46 @@ title:    $switch, $default with 1 match in object
 context:  {cond: 3}
 template: {$switch: {'cond == 3': 1, $default: 'fallback'}}
 result:   1
+---
+title:    $switch, $default of empty string
+context:  {}
+template: {$switch: {'false': 1, $default: ''}}
+result:   ''
+---
+title:    $switch, $default of empty string not a deletion marker
+context:  {}
+template: [{$switch: {'false': 1, $default: ''}}]
+result:   ['']
+---
+title:    $switch, $default of false
+context:  {}
+template: {$switch: {'false': 1, $default: false}}
+result:   false
+---
+title:    $switch, $default of false not a deletion marker
+context:  {}
+template: [{$switch: {'false': 1, $default: false}}]
+result:   [false]
+---
+title:    $switch, $default of null
+context:  {}
+template: {$switch: {'false': 1, $default: null}}
+result:   null
+---
+title:    $switch, $default of null not a deletion marker
+context:  {}
+template: [{$switch: {'false': 1, $default: null}}]
+result:   [null]
+---
+title:    $switch, $default of 0
+context:  {}
+template: {$switch: {'false': 1, $default: 0}}
+result:   0
+---
+title:    $switch, $default of 0 not a deletion marker
+context:  {}
+template: [{$switch: {'false': 1, $default: 0}}]
+result:   [0]
 ###############################################################################
 ---
 section:  $merge

@@ -1,0 +1,1 @@
+Fix handling of false-y $default values in $switch in JS and Go implementations.
