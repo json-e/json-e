@@ -113,12 +113,13 @@ func (p *Parser) parsePropertyAccessOrFunc() (node IASTNode, err error) {
 	operators := []string{"[", "(", "."}
 
 	for token := p.CurrentToken; p.CurrentToken != (Token{}) && StringsContains(token.Kind, operators); token = p.CurrentToken {
-		if token.Kind == "[" {
+		switch token.Kind {
+		case "[":
 			node, err = p.parseAccessWithBrackets(node)
 			if err != nil {
 				return nil, err
 			}
-		} else if token.Kind == "." {
+		case ".":
 			token = p.CurrentToken
 			err = p.takeToken(".")
 			if err != nil {
@@ -132,7 +133,7 @@ func (p *Parser) parsePropertyAccessOrFunc() (node IASTNode, err error) {
 			}
 			binaryNode.NewNode(token, node, rightPart)
 			node = binaryNode
-		} else if token.Kind == "(" {
+		case "(":
 			node, err = p.parseFunctionCall(node)
 			if err != nil {
 				return nil, err
