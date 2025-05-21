@@ -395,7 +395,7 @@ result:   [0]
 ```yaml,json-e
 template: [0, {$switch: {'cond > 3': 2, 'cond == 5': 3, $default: 4}}]
 context:  {cond: 1}
-result:   [4]
+result:   [0, 4]
 ```
 
 ## `$merge`
