@@ -273,7 +273,7 @@ var builtin = map[string]interface{}{
 	"join": i.WrapFunction(func(v []interface{}, sep ...interface{}) (string, error) {
 		// We use variadic because golang doesn't support optional parameters
 		if len(sep) > 1 {
-			return "", fmt.Errorf("join(value, seperator) takes at-most two arguments, but was given %d", len(sep))
+			return "", fmt.Errorf("join(value, separator) takes at-most two arguments, but was given %d", len(sep))
 		}
 
 		var reference interface{} = nil
@@ -284,14 +284,14 @@ var builtin = map[string]interface{}{
 			_, isString := reference.(string)
 
 			if !isString && !isNumber {
-				return "", fmt.Errorf("join(value, seperator) seperator must be a string or a number")
+				return "", fmt.Errorf("join(value, separator) separator must be a string or a number")
 			}
 		}
 
-		var seperator string = ""
+		separator := ""
 
 		if reference != nil {
-			seperator = fmt.Sprintf("%v", reference)
+			separator = fmt.Sprintf("%v", reference)
 		}
 
 		valuesText := []string{}
@@ -307,12 +307,12 @@ var builtin = map[string]interface{}{
 			case float64:
 				text = fmt.Sprintf("%v", item)
 			default:
-				return "", fmt.Errorf("join(value, seperator) value must be a list of strings or numbers")
+				return "", fmt.Errorf("join(value, separator) value must be a list of strings or numbers")
 			}
 			valuesText = append(valuesText, text)
 		}
 
-		return strings.Join(valuesText, seperator), nil
+		return strings.Join(valuesText, separator), nil
 	}),
 	"fromNow": i.WrapFunctionWithContext(func(context map[string]interface{}, offset string, from ...string) (string, error) {
 		// We use variadic because golang doesn't support optional parameters
@@ -705,7 +705,7 @@ var operators = map[string]operator{
 			additionalContextVars = 3
 		}
 		eachTemplate := template[eachKey]
-		
+
 		switch val := value.(type) {
 		case []interface{}:
 			var result interface{}
