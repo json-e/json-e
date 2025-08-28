@@ -160,9 +160,8 @@ fn f64_to_serde_number(value: f64) -> Result<Number> {
         }
     }
     // the failure conditions here are NaN and Infinity, which we do not see
-    Number::from_f64(value).ok_or_else(|| {
-        template_error!("{} is not finite and cannot be represented in JSON")
-    })
+    Number::from_f64(value)
+        .ok_or_else(|| template_error!("{value} is not finite and cannot be represented in JSON"))
 }
 
 impl From<&Value> for bool {
