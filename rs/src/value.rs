@@ -154,9 +154,9 @@ impl Value {
 fn f64_to_serde_number(value: f64) -> Result<Number> {
     if value.fract() == 0.0 {
         if value < 0.0 && value > -(u32::MAX as f64) {
-            return (value as i64).into();
+            return Ok((value as i64).into());
         } else if value >= 0.0 && value < u32::MAX as f64 {
-            return (value as u64).into();
+            return Ok((value as u64).into());
         }
     }
     // the failure conditions here are NaN and Infinity, which we do not see
