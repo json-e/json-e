@@ -151,7 +151,7 @@ impl Value {
 /// Utility function to turn an f64 into a serde Number, using the simplest form.
 /// This conservatively assumes values outside (-u32::MAX..u32::MAX) are best
 /// represented as floats
-fn f64_to_serde_number(value: f64) -> Number {
+fn f64_to_serde_number(value: f64) -> Result<Number> {
     if value.fract() == 0.0 {
         if value < 0.0 && value > -(u32::MAX as f64) {
             return (value as i64).into();
@@ -160,7 +160,9 @@ fn f64_to_serde_number(value: f64) -> Number {
         }
     }
     // the failure conditions here are NaN and Infinity, which we do not see
-    Number::from_f64(value).unwrap()
+    Number::from_f64(value).ok_or_else(|| {
+        template_error!("{} is not finite and cannot be represented in JSON")
+    })
 }
 
 impl From<&Value> for bool {
@@ -214,7 +216,7 @@ impl TryFrom<&Value> for SerdeValue {
         Ok(match value {
             Value::Null => SerdeValue::Null,
             Value::String(s) => SerdeValue::String(s.into()),
-            Value::Number(n) => SerdeValue::Number(f64_to_serde_number(*n)),
+            Value::Number(n) => SerdeValue::Number(f64_to_serde_number(*n)?),
             Value::Bool(b) => SerdeValue::Bool(*b),
             Value::Object(o) => SerdeValue::Object(
                 o.iter()
