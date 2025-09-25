@@ -6181,6 +6181,11 @@ title: '$json with deep uncalled functions'
 context: {}
 template: {$json: [{minimum: {$eval: 'min'}}, {maximum: {$eval: 'max'}}]}
 error:   "TemplateError: evaluated template contained uncalled functions"
+---
+title: 'reject infinity'
+context: {a: 1.7976931348623157e+308}
+template: {$eval: 'a * 2'}
+error:   "inf cannot be represented in JSON"
 ################################################################################
 ---
 section: Regression tests
