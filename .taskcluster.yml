@@ -12,7 +12,7 @@ tasks:
     repo:
       $if: 'tasks_for == "github-push"'
       then:
-        url: ${event.repository.url}
+        url: ${event.repository.html_url}
         ref: ${event.after}
       else:
         url: ${event.pull_request.head.repo.html_url}
