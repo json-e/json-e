@@ -402,6 +402,15 @@ mod test {
     }
 
     #[test]
+    fn test_op_mult() {
+        let c = Context::new();
+        assert_eq!(
+            evaluate(&Node::Op(Box::new(Node::Number("1.17")), "*", Box::new(Node::Number("480"))), &c).unwrap(),
+            Value::Number(561.6),
+        );
+    }
+
+    #[test]
     fn test_unary_plus_not_number() {
         let c = Context::new();
         assert_interpreter_error!(
