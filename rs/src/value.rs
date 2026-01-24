@@ -69,52 +69,31 @@ impl Value {
     }
 
     pub(crate) fn is_null(&self) -> bool {
-        match self {
-            Value::Null => true,
-            _ => false,
-        }
+        matches!(self, Value::Null)
     }
 
     pub(crate) fn is_string(&self) -> bool {
-        match self {
-            Value::String(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::String(_))
     }
 
     pub(crate) fn is_number(&self) -> bool {
-        match self {
-            Value::Number(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::Number(_))
     }
 
     pub(crate) fn is_bool(&self) -> bool {
-        match self {
-            Value::Bool(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::Bool(_))
     }
 
     pub(crate) fn is_object(&self) -> bool {
-        match self {
-            Value::Object(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::Object(_))
     }
 
     pub(crate) fn is_array(&self) -> bool {
-        match self {
-            Value::Array(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::Array(_))
     }
 
     pub(crate) fn is_deletion_marker(&self) -> bool {
-        match self {
-            Value::DeletionMarker => true,
-            _ => false,
-        }
+        matches!(self, Value::DeletionMarker)
     }
 
     /// A reference to the string, if this is a String variant
@@ -169,7 +148,7 @@ impl From<&Value> for bool {
             Value::Number(n) => *n != 0.0,
             Value::Bool(b) => *b,
             Value::Null => false,
-            Value::String(s) => s.len() > 0,
+            Value::String(s) => !s.is_empty(),
             Value::Array(a) => !a.is_empty(),
             Value::Object(o) => !o.is_empty(),
             Value::DeletionMarker => false,
@@ -223,7 +202,7 @@ impl TryFrom<&Value> for SerdeValue {
             ),
             Value::Array(a) => SerdeValue::Array(
                 a.iter()
-                    .map(|v| SerdeValue::try_from(v))
+                    .map(SerdeValue::try_from)
                     .collect::<Result<Vec<SerdeValue>>>()?,
             ),
             Value::DeletionMarker => SerdeValue::Null,
@@ -254,8 +233,8 @@ mod test {
         // These floats are chosen such that they exercise the assumption that
         // integer values outside (-u32::MAX..u32::MAX) are best represented as
         // floats.
-        let small_float = (-100_000_000_000_000 as i64) as f64;
-        let big_float = (100_000_000_000_000 as i64) as f64;
+        let small_float = -100_000_000_000_000f64;
+        let big_float = 100_000_000_000_000f64;
 
         let serde_value = json!({
             "the": "quick",

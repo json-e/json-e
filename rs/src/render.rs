@@ -51,7 +51,7 @@ fn _render(template: &Value, context: &Context) -> Result<Value> {
         Value::String(s) => Value::String(interpolate(s, context)?),
         Value::Array(elements) => Value::Array(
             elements
-                .into_iter()
+                .iter()
                 .filter_map(|e| render_or_deletion_marker(e, context))
                 .collect::<Result<Vec<Value>>>()?,
         ),
@@ -60,7 +60,7 @@ fn _render(template: &Value, context: &Context) -> Result<Value> {
             for (k, v) in o.iter() {
                 // apply interpolation to key
                 // this allows keys that start with an interpolation to work
-                let interpolated = interpolate(&k, context)?;
+                let interpolated = interpolate(k, context)?;
                 let mut chars = interpolated.chars();
                 if chars.next() == Some('$') && chars.next() != Some('$') {
                     if let Some(rendered) = maybe_operator(k, v, o, context)? {
@@ -92,13 +92,13 @@ fn _render(template: &Value, context: &Context) -> Result<Value> {
 /// Perform string interpolation on the given string.
 fn interpolate(mut source: &str, context: &Context) -> Result<String> {
     // shortcut the common no-interpolation case
-    if source.find('$') == None {
+    if source.find('$').is_none() {
         return Ok(source.into());
     }
 
     let mut result = String::new();
 
-    while source.len() > 0 {
+    while !source.is_empty() {
         if let Some(offset) = source.find('$') {
             // If this is an un-escaped `${`, interpolate..
             if let Some(s) = source.get(offset..offset + 2) {
@@ -153,7 +153,7 @@ fn interpolate(mut source: &str, context: &Context) -> Result<String> {
 /// Evaluate the given expression and return the resulting Value
 fn evaluate(expression: &str, context: &Context) -> Result<Value> {
     let parsed = interpreter::parse_all(expression)?;
-    interpreter::evaluate(&parsed, context).map(|v| v.into())
+    interpreter::evaluate(&parsed, context)
 }
 
 /// The given object may be an operator: it has the given key that starts with `$`.  If so,
@@ -217,7 +217,7 @@ where
         }
     }
 
-    if unknown.len() > 0 {
+    if !unknown.is_empty() {
         unknown.sort();
         Err(template_error!(
             "{} has undefined properties: {}",
@@ -332,7 +332,7 @@ fn if_operator(operator: &str, value: &Value, object: &Object, context: &Context
     check_operator_properties(operator, object, |prop| prop == "then" || prop == "else")?;
 
     let eval_result = match value {
-        Value::String(s) => evaluate(&s, context)?,
+        Value::String(s) => evaluate(s, context)?,
         _ => return Err(template_error!("$if can evaluate string expressions only")),
     };
 
@@ -401,7 +401,7 @@ fn map_operator(
     }
 
     // Unwraps here are safe because the presence of the `each(..)` is checked above.
-    let each_prop = object.keys().filter(|k| k != &"$map").next().unwrap();
+    let each_prop = object.keys().find(|k| k != &"$map").unwrap();
 
     let (value_var, index_var) = parse_each(each_prop)
         .ok_or_else(|| template_error!("$map requires each(identifier[,identifier]) syntax"))?;
@@ -455,10 +455,7 @@ fn map_operator(
                     }
                     _render(each_tpl, &subcontext)
                 })
-                .filter(|v| match v {
-                    Ok(Value::DeletionMarker) => false,
-                    _ => true,
-                })
+                .filter(|v| !matches!(v, Ok(Value::DeletionMarker)))
                 .collect::<Result<Vec<_>>>()?;
             Ok(Value::Array(mapped))
         }
@@ -480,7 +477,7 @@ fn reduce_operator(
     }
 
     // Unwraps here are safe because the presence of the `each(..)` is checked above.
-    let each_prop = object.keys().filter(|k| k != &"$reduce" && k != &"initial").next().unwrap();
+    let each_prop = object.keys().find(|k| k != &"$reduce" && k != &"initial").unwrap();
 
     let (acc_var, value_var, index_var) = parse_each_three(each_prop)
         .ok_or_else(|| template_error!("$reduce requires each(identifier,identifier[,identifier]) syntax"))?;
@@ -530,7 +527,7 @@ fn find_operator(
     }
 
     // Unwraps here are safe because the presence of the `each(..)` is checked above.
-    let each_prop = object.keys().filter(|k| k != &"$find").next().unwrap();
+    let each_prop = object.keys().find(|k| k != &"$find").unwrap();
 
     let (value_var, index_var) = parse_each(each_prop)
         .ok_or_else(|| template_error!("$find requires each(identifier[,identifier]) syntax"))?;
@@ -548,9 +545,9 @@ fn find_operator(
             }
 
             if let Value::String(ref s) = each_tpl {
-                let eval_result = evaluate(&s, &subcontext)?;
+                let eval_result = evaluate(s, &subcontext)?;
                 if bool::from(eval_result) {
-                    return Ok(_render(&v, &subcontext)?);
+                    return _render(v, &subcontext);
                 }
             } else {
                 return Err(template_error!("$find can evaluate string expressions only"));
@@ -572,7 +569,7 @@ fn match_operator(
     if let Value::Object(ref obj) = value {
         let mut res = vec![];
         for (cond, val) in obj {
-            if let Ok(cond) = evaluate(&cond, context) {
+            if let Ok(cond) = evaluate(cond, context) {
                 if !bool::from(cond) {
                     continue;
                 }
@@ -603,7 +600,7 @@ fn switch_operator(
                 continue;
             }
             // try to evaluate the condition
-            if let Ok(cond) = evaluate(&cond, context) {
+            if let Ok(cond) = evaluate(cond, context) {
                 if !bool::from(cond) {
                     continue;
                 }
@@ -672,9 +669,9 @@ fn merge_deep_operator(
             (Value::Object(a), Value::Object(b)) => {
                 let mut a = a.clone();
                 let b = b.clone();
-                for (k, mut v) in b {
+                for (k, v) in b {
                     if a.contains_key(&k) {
-                        a.insert(k.to_string(), merge_deep(a.get(&k).unwrap(), &mut v));
+                        a.insert(k.to_string(), merge_deep(a.get(&k).unwrap(), &v));
                     } else {
                         a.insert(k.to_string(), v);
                     }
@@ -735,7 +732,7 @@ fn sort_operator(
 
     if let Value::Array(arr) = _render(value, context)? {
         // short-circuit a zero-length array, so we can later assume at least one item
-        if arr.len() == 0 {
+        if arr.is_empty() {
             return Ok(Value::Array(arr));
         }
 
@@ -799,7 +796,7 @@ fn sort_operator(
             .into_iter()
             .map(|(_evaluation, item)| item)
             .collect();
-        return Ok(Value::Array(result));
+        Ok(Value::Array(result))
     } else {
         make_err()
     }

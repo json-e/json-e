@@ -124,7 +124,7 @@ fn str_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
 
     match v {
         Value::Null | Value::String(_) | Value::Number(_) | Value::Bool(_) => {
-            v.stringify().map(|s| Value::String(s))
+            v.stringify().map(Value::String)
         }
         _ => Err(interpreter_error!("invalid arguments to builtin: str")),
     }
@@ -218,11 +218,11 @@ fn range_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
         let range = (start..stop).step_by(step).map(|i| Value::Number(i as f64)).collect();
         Ok(Value::Array(range))
     } else if step < 0 {
-        let step: usize = (step * -1).try_into()?;
+        let step: usize = (-step).try_into()?;
         let range = (stop+1..=start).rev().step_by(step).map(|i| Value::Number(i as f64)).collect();
         Ok(Value::Array(range))
     } else {
-        return Err(interpreter_error!("invalid argument `step` to builtin: range"));
+        Err(interpreter_error!("invalid argument `step` to builtin: range"))
     }
 }
 
@@ -248,7 +248,7 @@ fn join_builtin(_context: &Context, args: &[Value]) -> Result<Value> {
 
     match v {
         Value::Array(v) => {
-            let strings: Result<Vec<String>> = v.into_iter().map(|val| val.stringify()).collect();
+            let strings: Result<Vec<String>> = v.iter().map(|val| val.stringify()).collect();
             match strings {
                 Ok(s) => Ok(Value::String(s.join(&sep))),
                 Err(_) => Err(interpreter_error!(
@@ -317,7 +317,7 @@ fn from_now_builtin(context: &Context, args: &[Value]) -> Result<Value> {
     };
 
     match v {
-        Value::String(s) => Ok(Value::String(from_now(&s, &reference)?)),
+        Value::String(s) => Ok(Value::String(from_now(s, &reference)?)),
         _ => Err(interpreter_error!(
             "BuiltinError: invalid arguments to builtin: fromNow"
         )),
