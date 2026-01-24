@@ -79,7 +79,7 @@ tasks:
           # compiles with the older Rust version. It is fine to bump this
           # as-needed, as long as about a years' worth of Rust releases are
           # still supported.
-          - {vers: "1.60"}
+          - {vers: "1.78"}
           - {vers: "latest"}
           each(v):
             image: 'rust:${v.vers}'
