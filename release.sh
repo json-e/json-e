@@ -29,9 +29,9 @@ update_changelog() {
     if [ "${cl_version}" == "${version}" ]; then
         return
     fi
-    towncrier --version=$version --draft
+    towncrier build --version=$version --draft
     read -p "Look OK? (ctrl-c if not, enter if OK)"
-    towncrier --version=$version --yes
+    towncrier build --version=$version --yes
 }
 
 update_version_rs() {
