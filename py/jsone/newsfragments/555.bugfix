@@ -1,1 +1,0 @@
-The Rust version no longer panics when it encounters a non-finite float.

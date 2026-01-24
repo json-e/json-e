@@ -1,1 +1,0 @@
-The Rust error message when a non finite number is encountered now properly includes the non finite value, rather than {value}.

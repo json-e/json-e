@@ -1,3 +1,14 @@
+Jsone 4.8.1 (2026-01-23)
+========================
+
+Bugfixes
+--------
+
+- Fix handling of false-y $default values in $switch in JS and Go implementations. (#541)
+- The Rust version no longer panics when it encounters a non-finite float. (#555)
+- The Rust error message when a non finite number is encountered now properly includes the non finite value, rather than {value}. (#558)
+
+
 Jsone 4.8.0 (2024-10-03)
 ========================
 
