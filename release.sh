@@ -65,6 +65,7 @@ upload_rs() {
 
 upload_js() {
     cd js
+    npm install
     npm publish
     cd ..
 }
