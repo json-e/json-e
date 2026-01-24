@@ -75,19 +75,19 @@ fn main() {
 /// Convert the given Yaml value to a serde_json::Value
 fn to_json(y: &Yaml) -> Value {
     match y {
-        &Yaml::Real(ref v) => Value::Number(Number::from_str(v).unwrap()),
-        &Yaml::Integer(v) => Value::Number(v.into()),
-        &Yaml::String(ref v) => Value::String(v.into()),
-        &Yaml::Boolean(ref v) => Value::Bool(*v),
-        &Yaml::Array(ref v) => Value::Array(v.iter().map(|y| to_json(y)).collect()),
-        &Yaml::Hash(ref v) => Value::Object(
+        Yaml::Real(v) => Value::Number(Number::from_str(v).unwrap()),
+        Yaml::Integer(v) => Value::Number((*v).into()),
+        Yaml::String(v) => Value::String(v.into()),
+        Yaml::Boolean(v) => Value::Bool(*v),
+        Yaml::Array(v) => Value::Array(v.iter().map(to_json).collect()),
+        Yaml::Hash(v) => Value::Object(
             v.iter()
                 .map(|(k, v)| (k.as_str().unwrap().to_string(), to_json(v)))
                 .collect(),
         ),
-        &Yaml::Null => Value::Null,
-        &Yaml::Alias(_) => todo!(),
-        &Yaml::BadValue => todo!(),
+        Yaml::Null => Value::Null,
+        Yaml::Alias(_) => todo!(),
+        Yaml::BadValue => todo!(),
     }
 }
 
@@ -96,6 +96,7 @@ fn to_json_str(y: &Yaml) -> String {
     to_string(&to_json(y)).unwrap()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn write_test(
     test_file: &mut File,
     test_names: &mut HashSet<String>,
