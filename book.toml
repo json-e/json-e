@@ -1,7 +1,6 @@
 [book]
 authors = ["JSON-e Developers"]
 language = "en"
-multilingual = false
 src = "docs/src"
 title = "JSON-e"
 

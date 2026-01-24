@@ -1,7 +1,7 @@
 # Making a Release
 
 Install:
- * Python: towncrier<20, wheel and twine
+ * Python: towncrier<20, setuptools, wheel and twine
  * Node / npm
  * Rust / cargo
  * mdbook (https://rust-lang.github.io/mdBook/guide/installation.html).
