@@ -22,7 +22,7 @@ use nom::{
 
 /// Parse a number token (integer or decimal)
 fn number(input: &str) -> IResult<&str, Node<'_>> {
-    fn node(input: &str) -> Result<Node, std::num::ParseIntError> {
+    fn node(input: &str) -> Result<Node<'_>, std::num::ParseIntError> {
         Ok(Node::Number(input))
     }
 
@@ -34,7 +34,7 @@ fn number(input: &str) -> IResult<&str, Node<'_>> {
 
 /// Parse a atomic literal JSON value (true, false, null)
 fn literal(input: &str) -> IResult<&str, Node<'_>> {
-    fn node(input: &str) -> Result<Node, ()> {
+    fn node(input: &str) -> Result<Node<'_>, ()> {
         Ok(match input {
             "true" => Node::True,
             "false" => Node::False,
@@ -64,7 +64,7 @@ fn ident_str(input: &str) -> IResult<&str, &str> {
 
 /// Parse an identifier as a Node
 fn ident(input: &str) -> IResult<&str, Node<'_>> {
-    fn node(input: &str) -> Result<Node, ()> {
+    fn node(input: &str) -> Result<Node<'_>, ()> {
         Ok(Node::Ident(input))
     }
 
@@ -87,7 +87,7 @@ fn string_str(input: &str) -> IResult<&str, &str> {
 
 /// Parse a string as a Node
 fn string(input: &str) -> IResult<&str, Node<'_>> {
-    fn node(input: &str) -> Result<Node, ()> {
+    fn node(input: &str) -> Result<Node<'_>, ()> {
         Ok(Node::String(input))
     }
 
@@ -311,7 +311,7 @@ fn expression(input: &str) -> IResult<&str, Node<'_>> {
 }
 
 /// Parse an entire string as an expression.  Un-parsed characters are treated as an error.
-pub(crate) fn parse_all(input: &str) -> anyhow::Result<Node> {
+pub(crate) fn parse_all(input: &str) -> anyhow::Result<Node<'_>> {
     match expression(input) {
         Ok(("", node)) => Ok(node),
         Ok((unused, _)) => Err(anyhow!("Unexpected trailing characters {}", unused)),
@@ -322,7 +322,7 @@ pub(crate) fn parse_all(input: &str) -> anyhow::Result<Node> {
 }
 
 /// Parse a part of a string as an expression, returning the remainder of the string.
-pub(crate) fn parse_partial(input: &str) -> anyhow::Result<(Node, &str)> {
+pub(crate) fn parse_partial(input: &str) -> anyhow::Result<(Node<'_>, &str)> {
     match expression(input) {
         Ok((unused, node)) => Ok((node, unused)),
         Err(Err::Incomplete(_)) => unreachable!(),

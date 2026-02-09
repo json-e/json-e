@@ -30,11 +30,11 @@ pub(crate) fn evaluate(node: &Node, context: &Context) -> Result<Value> {
             }
             Ok(Value::Object(map))
         }
-        Node::Un(ref op, ref v) => un(context, op, v.as_ref()),
-        Node::Op(ref l, ref o, ref r) => op(context, l.as_ref(), o, r.as_ref()),
+        Node::Un(op, ref v) => un(context, op, v.as_ref()),
+        Node::Op(ref l, o, ref r) => op(context, l.as_ref(), o, r.as_ref()),
         Node::Index(ref v, ref i) => index(context, v.as_ref(), i.as_ref()),
         Node::Slice(ref v, ref a, ref b) => slice(context, v.as_ref(), a.as_deref(), b.as_deref()),
-        Node::Dot(ref v, ref p) => dot(context, v.as_ref(), p),
+        Node::Dot(ref v, p) => dot(context, v.as_ref(), p),
         Node::Func(ref f, ref args) => func(context, f.as_ref(), &args[..]),
     }
 }
@@ -130,7 +130,7 @@ fn op(context: &Context, l: &Node, o: &str, r: &Node) -> Result<Value> {
         (l, "==", r) => Ok(Value::Bool(l == r)),
         (l, "!=", r) => Ok(Value::Bool(l != r)),
 
-        (Value::String(ref l), "in", Value::String(ref r)) => Ok(Value::Bool(r.find(l).is_some())),
+        (Value::String(ref l), "in", Value::String(ref r)) => Ok(Value::Bool(r.contains(l))),
         (ref l, "in", Value::Array(ref r)) => Ok(Value::Bool(r.iter().any(|x| l == x))),
         (Value::String(ref l), "in", Value::Object(ref r)) => Ok(Value::Bool(r.contains_key(l))),
         (_, "in", _) => Err(interpreter_error!("Expected proper args for in")),
@@ -151,7 +151,7 @@ fn index(context: &Context, v: &Node, i: &Node) -> Result<Value> {
                 "should only use integers to access arrays or strings"
             ))?;
             if i < 0 {
-                i = a.len() as i64 + i
+                i += a.len() as i64
             }
             if let Some(v) = a.get(i as usize) {
                 Ok(v.clone())
@@ -165,7 +165,7 @@ fn index(context: &Context, v: &Node, i: &Node) -> Result<Value> {
                 "should only use integers to access arrays or strings"
             ))?;
             if i < 0 {
-                i = s.chars().count() as i64 + i;
+                i += s.chars().count() as i64;
                 if i < 0 {
                     i = 0;
                 }
@@ -204,7 +204,7 @@ fn slice(context: &Context, v: &Node, a: Option<&Node>, b: Option<&Node>) -> Res
     /// Handle wrapping and limiting in accordance with JSON-e rules
     fn wrap(mut x: i64, len: usize) -> usize {
         if x < 0 {
-            x = x + len as i64;
+            x += len as i64;
         }
         if x < 0 {
             return 0;
@@ -236,9 +236,9 @@ fn slice(context: &Context, v: &Node, a: Option<&Node>, b: Option<&Node>) -> Res
                 // To index characters, we must scan the string from the start.
                 let indices = s.char_indices().map(|(i, c)| i);
                 let mut indices = indices.skip(a);
-                let a_idx = indices.next().unwrap_or_else(|| s.len());
+                let a_idx = indices.next().unwrap_or(s.len());
                 let mut indices = indices.skip(b-a-1);
-                let b_idx = indices.next().unwrap_or_else(|| s.len());
+                let b_idx = indices.next().unwrap_or(s.len());
                 Value::String(
                     s.get(a_idx..b_idx)
                         .expect("invalid string slice indices")
@@ -282,7 +282,7 @@ fn func(context: &Context, f: &Node, args: &[Node]) -> Result<Value> {
         .map(|x| evaluate(x, context))
         .collect::<Result<Vec<_>>>()?;
     match f {
-        Value::Function(ref f) => Ok(f.call(&context, &args)?),
+        Value::Function(ref f) => Ok(f.call(context, &args)?),
         _ => Err(interpreter_error!(
             "function invocation requires a function"
         )),

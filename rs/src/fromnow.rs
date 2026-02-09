@@ -1,3 +1,4 @@
+#![allow(clippy::type_complexity)]
 use crate::whitespace::ws;
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, Utc};
@@ -46,7 +47,7 @@ pub(crate) fn from_now(offset: &str, reference: &str) -> Result<String> {
 
 fn int(input: &str) -> IResult<&str, i64> {
     fn to_int(input: (&str, &str)) -> Result<i64, ()> {
-        Ok(input.0.parse().map_err(|_| ())?)
+        input.0.parse().map_err(|_| ())
     }
     map_res(tuple((digit1, multispace0)), to_int)(input)
 }
