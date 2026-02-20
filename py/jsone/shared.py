@@ -94,7 +94,10 @@ def fromNow(offset, reference):
     if isinstance(reference, string):
         reference = datetime.datetime.strptime(reference, "%Y-%m-%dT%H:%M:%S.%fZ")
     elif reference is None:
-        reference = datetime.datetime.utcnow()
+        try:
+            reference = datetime.datetime.now(tz=datetime.timezone.utc)
+        except AttributeError:
+            reference = datetime.datetime.utcnow()
     return stringDate(reference + delta if future else reference - delta)
 
 
