@@ -112,7 +112,7 @@ dependencies = [
 
 [[package]]
 name = "json-e"
-version = "4.8.1"
+version = "4.8.2"
 dependencies = [
  "anyhow",
  "chrono",
