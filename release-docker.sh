@@ -31,10 +31,15 @@ if [ -f "$HOME/.pypirc" ]; then
     MOUNTS+=(-v "$HOME/.pypirc:/root/.pypirc:ro")
 fi
 
-# SSH agent forwarding
+# SSH agent forwarding (use Docker's built-in support on macOS)
 SSH_ARGS=()
 if [ -n "${SSH_AUTH_SOCK:-}" ]; then
-    SSH_ARGS+=(-v "$SSH_AUTH_SOCK:/ssh-agent" -e "SSH_AUTH_SOCK=/ssh-agent")
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS: Docker Desktop provides a magic path for SSH agent forwarding
+        SSH_ARGS+=(-v /run/host-services/ssh-auth.sock:/ssh-agent -e "SSH_AUTH_SOCK=/ssh-agent")
+    else
+        SSH_ARGS+=(-v "$SSH_AUTH_SOCK:/ssh-agent" -e "SSH_AUTH_SOCK=/ssh-agent")
+    fi
 fi
 
 # Pass through PyPI env vars if set
