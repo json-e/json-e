@@ -80,24 +80,40 @@ preflight() {
 
     # npm auth
     if command -v npm >/dev/null 2>&1; then
-        if ! npm whoami >/dev/null 2>&1; then
+        local npm_user
+        npm_user=$(npm whoami 2>/dev/null) || true
+        if [ -n "$npm_user" ]; then
+            echo "  npm: authenticated as $npm_user"
+        else
             errors+=("npm not authenticated (run: npm login)")
         fi
     fi
 
     # cargo / crates.io auth
     if command -v cargo >/dev/null 2>&1; then
-        if [ ! -f "$HOME/.cargo/credentials.toml" ] && \
-           [ ! -f "$HOME/.cargo/credentials" ] && \
-           [ -z "${CARGO_REGISTRY_TOKEN:-}" ]; then
+        if [ -n "${CARGO_REGISTRY_TOKEN:-}" ]; then
+            echo "  crates.io: authenticated via CARGO_REGISTRY_TOKEN env var"
+        elif [ -f "$HOME/.cargo/credentials.toml" ]; then
+            echo "  crates.io: authenticated via ~/.cargo/credentials.toml"
+        elif [ -f "$HOME/.cargo/credentials" ]; then
+            echo "  crates.io: authenticated via ~/.cargo/credentials"
+        else
             errors+=("crates.io not authenticated (run: cargo login)")
         fi
     fi
 
     # PyPI auth
-    if [ ! -f "$HOME/.pypirc" ] && \
-       [ -z "${TWINE_USERNAME:-}" ] && \
-       [ -z "${TWINE_PASSWORD:-}" ]; then
+    if [ -n "${TWINE_USERNAME:-}" ]; then
+        echo "  PyPI: authenticated as $TWINE_USERNAME (via env var)"
+    elif [ -f "$HOME/.pypirc" ]; then
+        local pypi_user
+        pypi_user=$(grep -A5 '\[pypi\]' "$HOME/.pypirc" 2>/dev/null | grep 'username' | head -1 | sed 's/.*=\s*//' || true)
+        if [ -n "$pypi_user" ]; then
+            echo "  PyPI: authenticated as $pypi_user (via ~/.pypirc)"
+        else
+            echo "  PyPI: authenticated via ~/.pypirc"
+        fi
+    else
         errors+=("PyPI not authenticated (create ~/.pypirc or set TWINE_USERNAME/TWINE_PASSWORD)")
     fi
 
@@ -112,16 +128,16 @@ preflight() {
         fi
     fi
 
-    # Repo state: clean working tree
-    if [ -n "$(git status --porcelain)" ]; then
-        errors+=("Working tree is not clean (commit or stash changes first)")
-    fi
-
     # Repo state: on main branch
     local branch
     branch=$(git rev-parse --abbrev-ref HEAD)
     if [ "$branch" != "main" ]; then
-        errors+=("Not on main branch (currently on '$branch')")
+        errors+=("Not on main branch (currently on '$branch'). To fix: git checkout main")
+    fi
+
+    # Repo state: clean working tree
+    if [ -n "$(git status --porcelain)" ]; then
+        errors+=("Working tree is not clean — see details below")
     fi
 
     # Tag doesn't already exist
@@ -136,6 +152,24 @@ preflight() {
         for err in "${errors[@]}"; do
             echo "  - $err"
         done
+
+        # Show working tree details if dirty
+        if [ -n "$(git status --porcelain)" ]; then
+            echo ""
+            echo "Working tree status:"
+            git status --short
+            echo ""
+            echo "To inspect changes before discarding:"
+            echo "  git diff                   # staged and unstaged changes to tracked files"
+            echo "  git diff --cached          # staged changes only"
+            echo "  git status                 # full status including untracked files"
+            echo ""
+            echo "To discard ALL local changes (WARNING: this is irreversible):"
+            echo "  git checkout main          # switch to main branch"
+            echo "  git reset --hard HEAD      # discard all changes to tracked files"
+            echo "  git clean -fd              # delete untracked files and directories"
+        fi
+
         echo ""
         exit 1
     fi
