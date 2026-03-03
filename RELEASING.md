@@ -95,8 +95,8 @@ ssh -T git@github.com   # should show your username
 ## Changelog (newsfragments)
 
 Every PR that changes user-facing behavior should include a newsfragment file.
-Create a file in `py/jsone/newsfragments/` named `<issue>.<type>` where `<type>`
-is one of:
+Create a file in `newsfragments/` named `<issue>.<type>` where `<type>` is one
+of:
 
 | Type | When to use |
 |------|-------------|
@@ -105,8 +105,7 @@ is one of:
 | `.doc` | Documentation-only changes |
 
 The file content should be a single sentence in reStructuredText format
-describing the change. For example, `py/jsone/newsfragments/571.feature` might
-contain:
+describing the change. For example, `newsfragments/571.feature` might contain:
 
 ```
 Improved release process with Docker support, pre-flight checks, and better diagnostics.
