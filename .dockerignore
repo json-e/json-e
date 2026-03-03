@@ -1,0 +1,9 @@
+.git
+.venv
+__pycache__
+js/node_modules
+rs/target
+py/dist
+py/build
+py/*.egg-info
+book
