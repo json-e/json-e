@@ -31,8 +31,11 @@ if [ -f "$HOME/.pypirc" ]; then
     MOUNTS+=(-v "$HOME/.pypirc:/root/.pypirc:ro")
 fi
 
-# SSH agent forwarding (use Docker's built-in support on macOS)
+# SSH: mount config, keys, known_hosts, and forward the agent
 SSH_ARGS=()
+if [ -d "$HOME/.ssh" ]; then
+    SSH_ARGS+=(-v "$HOME/.ssh:/root/.ssh:ro")
+fi
 if [ -n "${SSH_AUTH_SOCK:-}" ]; then
     if [[ "$(uname)" == "Darwin" ]]; then
         # macOS: Docker Desktop provides a magic path for SSH agent forwarding
