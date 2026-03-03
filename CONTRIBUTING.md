@@ -70,6 +70,7 @@ and you should be fine!
 
 For example, `newsfragments/201.bugfix` might contain `Fixed the precedence of
 the || and 'in' operators`.
+
 Welcome to the team!
 
 [participation]: https://www.mozilla.org/en-US/about/governance/policies/participation/
