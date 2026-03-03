@@ -63,13 +63,13 @@ yarn rollup
 # Changelog
 
 When making a pull request with your changes, create a new file in
-`py/jsone/newsfragments/` named after the issue or bug you are working on, with
-a suffix of `.bugfix`, `.feature`, or (for docs-only changes) `.doc`.  The
-content of this file should be in reStructuredText format. Keep it to a simple
-sentence, and you should be fine!
+`newsfragments/` named after the issue or bug you are working on, with a suffix
+of `.bugfix`, `.feature`, or (for docs-only changes) `.doc`.  The content of
+this file should be in reStructuredText format. Keep it to a simple sentence,
+and you should be fine!
 
-For example, `py/jsone/newsfragments/201.bugfix` might contain `Fixed the
-precedence of the || and 'in' operators`.
+For example, `newsfragments/201.bugfix` might contain `Fixed the precedence of
+the || and 'in' operators`.
 
 Welcome to the team!
 

@@ -92,33 +92,9 @@ repository (it does not assume a specific remote name like `origin` or
 ssh -T git@github.com   # should show your username
 ```
 
-## Changelog (newsfragments)
-
-Every PR that changes user-facing behavior should include a newsfragment file.
-Create a file in `py/jsone/newsfragments/` named `<issue>.<type>` where `<type>`
-is one of:
-
-| Type | When to use |
-|------|-------------|
-| `.feature` | New functionality |
-| `.bugfix` | Bug fixes |
-| `.doc` | Documentation-only changes |
-
-The file content should be a single sentence in reStructuredText format
-describing the change. For example, `py/jsone/newsfragments/571.feature` might
-contain:
-
-```
-Improved release process with Docker support, pre-flight checks, and better diagnostics.
-```
-
-During a release, `towncrier build` compiles all newsfragment files into
-`CHANGELOG.rst` and deletes the individual fragment files. If there are no
-fragments, the changelog entry will be empty ("No significant changes").
-
 ## Registry permissions
 
-To publish, you must be a maintainer/owner on **all three** registries:
+To publish, you must be a maintainer/owner on all three registries:
 
 | Registry | How to check | How to grant |
 |----------|-------------|--------------|
@@ -131,26 +107,26 @@ on the specific package.
 
 ## What the release script does
 
-1. **Pre-flight checks** — verifies all tools, credentials, Python version,
+1. Pre-flight checks — verifies all tools, credentials, Python version,
    repo state (clean tree, on `main`, tag doesn't exist yet)
-2. **Changelog** — runs `towncrier build` to generate the changelog entry
-3. **Version bump** — updates version in `rs/Cargo.toml`, `js/package.json`,
+2. Changelog — runs `towncrier build` to generate the changelog entry
+3. Version bump — updates version in `rs/Cargo.toml`, `js/package.json`,
    and `py/setup.py`
-4. **Commit & tag** — creates a `v<version>` commit and tag
-5. **Publish** — uploads to crates.io, npm, and PyPI
-6. **Push** — pushes the commit and tag to GitHub
-7. **Docs** — rebuilds and deploys documentation via `deploy-docs.sh`
+4. Commit & tag — creates a `v<version>` commit and tag
+5. Publish — uploads to crates.io, npm, and PyPI
+6. Push — pushes the commit and tag to GitHub
+7. Docs — rebuilds and deploys documentation via `deploy-docs.sh`
 
 ## Partial failures
 
 The release script publishes to registries sequentially (crates.io, then npm,
 then PyPI). If a publish step fails partway through:
 
-- **The git commit and tag already exist locally** but may not have been pushed
+- The git commit and tag already exist locally but may not have been pushed
   yet (push happens last).
-- **Some registries may have the new version while others don't.** Most
+- Some registries may have the new version while others don't. Most
   registries don't support unpublishing (npm has a 72-hour window, crates.io
   does not allow it at all, PyPI does not allow re-uploading the same version).
-- **Fix forward**: resolve the issue and re-run the publish steps that failed,
+- Fix forward: resolve the issue and re-run the publish steps that failed,
   or cut a patch release if needed. The release script skips the changelog step
   if it detects the version already matches.
