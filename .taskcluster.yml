@@ -22,9 +22,10 @@ tasks:
       environments:
         $flatten:
         - $map:
-          - {vers: 18}
           - {vers: 20}
-          - {vers: 21}
+          - {vers: 22}
+          - {vers: 24}
+          - {vers: 25}
           each(v):
             image: node:${v.vers}
             name: Node ${v.vers} tests
