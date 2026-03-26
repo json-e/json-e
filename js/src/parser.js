@@ -26,11 +26,7 @@ class Parser {
         if (kinds.length > 0 && kinds.indexOf(this.current_token.kind) === -1) {
             throw syntaxRuleError(this.current_token, kinds);
         }
-        try {
-            this.current_token = this._tokenizer.next(this._source, this.current_token.end);
-        } catch (err) {
-            throw err;
-        }
+        this.current_token = this._tokenizer.next(this._source, this.current_token.end);
     }
 
     parse(level = 0) {

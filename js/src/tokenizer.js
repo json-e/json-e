@@ -8,7 +8,7 @@ let isRegEx = (re) => {
   }
   try {
     new RegExp(`^${re}$`);
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;
