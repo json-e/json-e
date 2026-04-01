@@ -108,7 +108,9 @@ on the specific package.
 ## What the release script does
 
 1. Pre-flight checks — verifies all tools, credentials, Python version,
-   repo state (clean tree, on `main`, tag doesn't exist yet)
+   repo state (clean tree, on `main`, in sync with upstream), tag doesn't
+   exist (locally or on remote), and version not already published to any
+   registry
 2. Changelog — runs `towncrier build` to generate the changelog entry
 3. Version bump — updates version in `rs/Cargo.toml`, `js/package.json`,
    and `py/setup.py`
@@ -122,11 +124,16 @@ on the specific package.
 The release script publishes to registries sequentially (crates.io, then npm,
 then PyPI). If a publish step fails partway through:
 
-- The git commit and tag already exist locally but may not have been pushed
-  yet (push happens last).
-- Some registries may have the new version while others don't. Most
-  registries don't support unpublishing (npm has a 72-hour window, crates.io
-  does not allow it at all, PyPI does not allow re-uploading the same version).
-- Fix forward: resolve the issue and re-run the publish steps that failed,
-  or cut a patch release if needed. The release script skips the changelog step
-  if it detects the version already matches.
+- The git commit and tag exist locally but may not have been pushed yet (push
+  happens after all registry uploads).
+- Some registries may have the new version while others don't. None of the
+  registries allow re-publishing the same version number (npm allows
+  unpublishing within 72 hours, but crates.io and PyPI do not).
+
+To recover from a partial failure:
+
+1. Consider adding a pre-flight check to `release.sh` so the same failure
+   mode cannot recur in future releases.
+2. Increment the patch version (json-e uses semver) and release again. The
+   pre-flight checks will detect and report which registries already have the
+   failed version, so you can confirm the state before proceeding.
