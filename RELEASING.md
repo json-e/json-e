@@ -1,41 +1,132 @@
 # Making a Release
 
-Install:
- * Python: towncrier<20, setuptools, wheel and twine
- * Node / npm
- * Rust / cargo
- * mdbook (https://rust-lang.github.io/mdBook/guide/installation.html).
+There are two ways to run the release: inside Docker (recommended) or natively.
 
-Run
+## Option A: Docker-based release (recommended)
 
+This runs the release inside a container with all tools pre-installed. You only
+need Docker and credentials configured on the host.
+
+### Prerequisites
+
+1. **Docker** installed and running
+2. **Credentials** configured (see [Credential Setup](#credential-setup) below)
+3. **SSH agent** running with a key that has push access to `github.com:json-e/json-e`
+
+### Run
+
+```bash
+./release-docker.sh <version>   # without the `v` prefix
 ```
-./release.sh <version>  (without the `v` prefix)
+
+The script builds the Docker image (cached after first build), mounts your
+credentials read-only, forwards your SSH agent, and runs `release.sh` inside
+the container.
+
+## Option B: Native release
+
+Run the release directly on your machine.
+
+### Required tools
+
+| Tool | Install |
+|------|---------|
+| git | system package manager |
+| Python >= 3.10 | system package manager or pyenv |
+| pip packages: `build`, `twine`, `towncrier` | `pip install build twine towncrier` |
+| Node.js (LTS) + npm | https://nodejs.org or nvm |
+| yarn | `corepack enable` (ships with Node.js) |
+| Rust + cargo | https://rustup.rs |
+| mdbook | `cargo install mdbook` or [pre-built binary](https://github.com/rust-lang/mdBook/releases) |
+
+### Run
+
+```bash
+./release.sh <version>   # without the `v` prefix
 ```
 
-### Old Process:
+The script runs comprehensive pre-flight checks before doing any work. If
+anything is missing or misconfigured, it reports all failures at once so you can
+fix everything in one pass.
 
-* Run `towncrier --version=$newversion --draft` and check that the output looks OK.  Then run it without `--draft`, deleting the old newsfiles.  Commit.
-* Update the version in:
-  * `rs/Cargo.toml` and `rs/Cargo.lock`
-  * `js/package.json`
-  * `py/setup.py`
-* commit, and tag with `v$newversion`
-* Release to PyPi:
-  * `cd py/`
-  * (if you haven't already installed it..) `pip install wheel`
-  * `python setup.py sdist bdist_wheel`
-  * `twine upload dist/json-e-<version>.{tar.gz,whl}`
-* Release to npm:
-  * `npm publish` in `js/`
-* Release to crates.io:
-  * `cd rs/`
-  * `cp ../specification.yml .` - Cargo requires all necessary files to be in the directory, so temporarily include this file
-  * `cargo publish --allow-dirty`
-  * `rm specification.yml` - ..and remove the temporary file.  DO NOT CHECK IT IN!
-* Nothing to do for Go
-* Push -- `git push && git push --tags` (does this work?)
-* Documentation:
-  * Ensure you have `mdbook` installed (https://rust-lang.github.io/mdBook/guide/installation.html).
-  * Ensure you have a node environment set up.
-  * Ensure you have SSH access to push to the json-e/json-e repository.
-  * Run `./deploy.sh`
+## Credential Setup
+
+### npm (npmjs.com)
+
+```bash
+npm login
+```
+
+Verify with `npm whoami`.
+
+### crates.io (Rust)
+
+```bash
+cargo login
+```
+
+This saves a token to `~/.cargo/credentials.toml`. Alternatively, set the
+`CARGO_REGISTRY_TOKEN` environment variable.
+
+### PyPI
+
+Create a `~/.pypirc` file:
+
+```ini
+[pypi]
+username = __token__
+password = pypi-<your-api-token>
+```
+
+Or set `TWINE_USERNAME` and `TWINE_PASSWORD` environment variables. Generate an
+API token at https://pypi.org/manage/account/token/.
+
+### Git (SSH push access)
+
+Ensure you have an SSH key that can push to `github.com:json-e/json-e`. The
+release script auto-detects which git remote points to the `json-e/json-e`
+repository (it does not assume a specific remote name like `origin` or
+`upstream`).
+
+```bash
+ssh -T git@github.com   # should show your username
+```
+
+## Registry permissions
+
+To publish, you must be a maintainer/owner on all three registries:
+
+| Registry | How to check | How to grant |
+|----------|-------------|--------------|
+| npm | `npm access ls-collaborators json-e` | `npm owner add <user> json-e` |
+| crates.io | Check [crates.io/crates/json-e](https://crates.io/crates/json-e) owners | `cargo owner --add <user> json-e` |
+| PyPI | Check [pypi.org/project/json-e](https://pypi.org/project/json-e/#files) maintainers | Add via PyPI project settings |
+
+Having valid credentials is not enough — your account must have publish rights
+on the specific package.
+
+## What the release script does
+
+1. Pre-flight checks — verifies all tools, credentials, Python version,
+   repo state (clean tree, on `main`, tag doesn't exist yet)
+2. Changelog — runs `towncrier build` to generate the changelog entry
+3. Version bump — updates version in `rs/Cargo.toml`, `js/package.json`,
+   and `py/setup.py`
+4. Commit & tag — creates a `v<version>` commit and tag
+5. Publish — uploads to crates.io, npm, and PyPI
+6. Push — pushes the commit and tag to GitHub
+7. Docs — rebuilds and deploys documentation via `deploy-docs.sh`
+
+## Partial failures
+
+The release script publishes to registries sequentially (crates.io, then npm,
+then PyPI). If a publish step fails partway through:
+
+- The git commit and tag already exist locally but may not have been pushed
+  yet (push happens last).
+- Some registries may have the new version while others don't. Most
+  registries don't support unpublishing (npm has a 72-hour window, crates.io
+  does not allow it at all, PyPI does not allow re-uploading the same version).
+- Fix forward: resolve the issue and re-run the publish steps that failed,
+  or cut a patch release if needed. The release script skips the changelog step
+  if it detects the version already matches.

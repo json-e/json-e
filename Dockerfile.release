@@ -1,0 +1,46 @@
+FROM debian:bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# System packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    curl \
+    git \
+    openssh-client \
+    pkg-config \
+    libssl-dev \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Make python3 the default
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+
+# Python release tools (installed globally with --break-system-packages
+# since this is a single-purpose container)
+RUN pip3 install --break-system-packages \
+    build \
+    twine \
+    towncrier
+
+# Node.js LTS (via NodeSource)
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable corepack for yarn
+RUN corepack enable
+
+# Rust (via rustup)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# mdbook (pre-built binary)
+RUN MDBOOK_VERSION="v0.4.40" && \
+    curl -fsSL "https://github.com/rust-lang/mdBook/releases/download/${MDBOOK_VERSION}/mdbook-${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+    | tar -xz -C /usr/local/bin
+
+WORKDIR /work

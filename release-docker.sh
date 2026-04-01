@@ -1,0 +1,70 @@
+#!/bin/bash
+
+set -e
+
+IMAGE_NAME="json-e-release"
+
+version="${1}"
+if [ -z "${version}" ] || [[ "${version}" == v* ]]; then
+    echo 'USAGE: ./release-docker.sh <version>  (without `v` prefix)'
+    exit 1
+fi
+
+# Build the release image if needed
+echo "=== Building release Docker image ==="
+docker build -f Dockerfile.release -t "$IMAGE_NAME" .
+
+# Collect credential mount arguments
+MOUNTS=()
+
+if [ -f "$HOME/.cargo/credentials.toml" ]; then
+    MOUNTS+=(-v "$HOME/.cargo/credentials.toml:/root/.cargo/credentials.toml:ro")
+elif [ -f "$HOME/.cargo/credentials" ]; then
+    MOUNTS+=(-v "$HOME/.cargo/credentials:/root/.cargo/credentials:ro")
+fi
+
+if [ -f "$HOME/.npmrc" ]; then
+    MOUNTS+=(-v "$HOME/.npmrc:/root/.npmrc:ro")
+fi
+
+if [ -f "$HOME/.pypirc" ]; then
+    MOUNTS+=(-v "$HOME/.pypirc:/root/.pypirc:ro")
+fi
+
+# SSH: mount config, keys, known_hosts, and forward the agent
+SSH_ARGS=()
+if [ -d "$HOME/.ssh" ]; then
+    SSH_ARGS+=(-v "$HOME/.ssh:/root/.ssh:ro")
+fi
+if [ -n "${SSH_AUTH_SOCK:-}" ]; then
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS: Docker Desktop provides a magic path for SSH agent forwarding
+        SSH_ARGS+=(-v /run/host-services/ssh-auth.sock:/ssh-agent -e "SSH_AUTH_SOCK=/ssh-agent")
+    else
+        SSH_ARGS+=(-v "$SSH_AUTH_SOCK:/ssh-agent" -e "SSH_AUTH_SOCK=/ssh-agent")
+    fi
+fi
+
+# Pass through PyPI env vars if set
+ENV_ARGS=()
+if [ -n "${TWINE_USERNAME:-}" ]; then
+    ENV_ARGS+=(-e "TWINE_USERNAME=$TWINE_USERNAME")
+fi
+if [ -n "${TWINE_PASSWORD:-}" ]; then
+    ENV_ARGS+=(-e "TWINE_PASSWORD=$TWINE_PASSWORD")
+fi
+if [ -n "${CARGO_REGISTRY_TOKEN:-}" ]; then
+    ENV_ARGS+=(-e "CARGO_REGISTRY_TOKEN=$CARGO_REGISTRY_TOKEN")
+fi
+if [ -n "${NPM_TOKEN:-}" ]; then
+    ENV_ARGS+=(-e "NPM_TOKEN=$NPM_TOKEN")
+fi
+
+echo "=== Running release inside Docker ==="
+docker run --rm -it \
+    -v "$(pwd):/work" \
+    "${MOUNTS[@]}" \
+    "${SSH_ARGS[@]}" \
+    "${ENV_ARGS[@]}" \
+    "$IMAGE_NAME" \
+    ./release.sh "$version"
