@@ -1,0 +1,1 @@
+Release script now checks that the local main branch is in sync with upstream, that the release tag does not already exist on the remote, and that the version has not already been published to npm, PyPI, or crates.io.
