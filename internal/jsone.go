@@ -19,7 +19,11 @@ import (
 func Render(template interface{}, context map[string]interface{}) (interface{}, error) {
 	// Validate input
 	if err := i.IsValidContext(context); err != nil {
-		return nil, err
+		message := err.Error()
+		if strings.HasPrefix(message, "top level keys of context must follow") {
+			message = "top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/"
+		}
+		return nil, TemplateError{Message: message}
 	}
 
 	// Inherit functions from builtins
@@ -61,29 +65,44 @@ type operator func(template, context map[string]interface{}) (interface{}, error
 type TemplateError struct {
 	Message  string
 	Template interface{}
+	Location []string
 }
 
 func (t TemplateError) Error() string {
-	data, _ := json.Marshal(t.Template)
-	return fmt.Sprintf("%s in template %s", t.Message, string(data))
+	location := ""
+	if len(t.Location) > 0 {
+		location = " at template" + strings.Join(t.Location, "")
+	}
+	return fmt.Sprintf("TemplateError%s: %s", location, t.Message)
+}
+
+// AddLocation returns a copy of the error with a location prepended.
+func (t TemplateError) AddLocation(location string) error {
+	t.Location = append([]string{location}, t.Location...)
+	return t
 }
 
 // restrictProperties returns an error if the template contains properties other
 // than those listed as allowed
 func restrictProperties(template map[string]interface{}, allowed ...string) error {
+	var unknown []string
 	for k := range template {
 		matched := false
 		for _, s := range allowed {
-			if s == k {
+			if s == k || regexp.MustCompile("^(?:"+s+")$").MatchString(k) {
 				matched = true
 				break
 			}
 		}
 		if !matched {
-			return TemplateError{
-				Message:  fmt.Sprintf("property '%s' is not permitted in template", k),
-				Template: template,
-			}
+			unknown = append(unknown, k)
+		}
+	}
+	if len(unknown) > 0 {
+		sort.Strings(unknown)
+		return TemplateError{
+			Message:  fmt.Sprintf("%s has undefined properties: %s", allowed[0], strings.Join(unknown, " ")),
+			Template: template,
 		}
 	}
 	return nil
@@ -345,6 +364,8 @@ var builtin = map[string]interface{}{
 var eachKeyPattern = regexp.MustCompile(`^each\(([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$`)
 var eachKeyAccPattern = regexp.MustCompile(`^each\(([a-zA-Z_][a-zA-Z0-9_]*),\s*([a-zA-Z_][a-zA-Z0-9_]*)(,\s*([a-zA-Z_][a-zA-Z0-9_]*))?\)$`)
 var byKeyPattern = regexp.MustCompile(`^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$`)
+var contextKeyPattern = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+var templateIdentifierPattern = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]*$`)
 
 var operators = map[string]operator{
 	"$eval": func(template, context map[string]interface{}) (interface{}, error) {
@@ -354,16 +375,13 @@ var operators = map[string]operator{
 		s, ok := template["$eval"].(string)
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$eval expects a string expression",
+				Message:  "$eval must be given a string expression",
 				Template: template,
 			}
 		}
 		value, err := i.Parse(s, context)
 		if err != nil {
-			return nil, TemplateError{
-				Message:  err.Error(),
-				Template: template,
-			}
+			return nil, err
 		}
 		return value, nil
 	},
@@ -378,7 +396,7 @@ var operators = map[string]operator{
 		a, ok := value.([]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$flatten expects an array",
+				Message:  "$flatten value must evaluate to an array",
 				Template: template,
 			}
 		}
@@ -403,7 +421,7 @@ var operators = map[string]operator{
 		a, ok := value.([]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$flattenDeep expects an array",
+				Message:  "$flattenDeep value must evaluate to an array",
 				Template: template,
 			}
 		}
@@ -434,7 +452,7 @@ var operators = map[string]operator{
 		offset, ok := value.(string)
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$fromNow expects a string value",
+				Message:  "$fromNow expects a string",
 				Template: template,
 			}
 		}
@@ -490,10 +508,7 @@ var operators = map[string]operator{
 		}
 		val, err := i.Parse(s, context)
 		if err != nil {
-			return nil, TemplateError{
-				Message:  err.Error(),
-				Template: template,
-			}
+			return nil, err
 		}
 		var result interface{}
 		if i.IsTruthy(val) {
@@ -514,6 +529,12 @@ var operators = map[string]operator{
 		if err != nil {
 			return nil, err
 		}
+		if containsFunctions(val) {
+			return nil, TemplateError{
+				Message:  "evaluated template contained uncalled functions",
+				Template: template,
+			}
+		}
 		if !i.IsJSON(val) {
 			return nil, TemplateError{
 				Message:  "$json can only stringify JSON types",
@@ -530,7 +551,7 @@ var operators = map[string]operator{
 		_, ok := template["$let"].(map[string]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$let expects an object",
+				Message:  "$let value must be an object",
 				Template: template,
 			}
 		}
@@ -551,7 +572,7 @@ var operators = map[string]operator{
 			}
 		} else {
 			return nil, TemplateError{
-				Message:  "$let expects an object",
+				Message:  "$let value must be an object",
 				Template: template,
 			}
 		}
@@ -559,19 +580,27 @@ var operators = map[string]operator{
 		in, ok := template["in"]
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$let requires an 'in' clause",
+				Message:  "$let operator requires an `in` clause",
 				Template: template,
 			}
 		}
-		if err = i.IsValidContext(c); err != nil {
-			return nil, TemplateError{
-				Message:  err.Error(),
-				Template: template,
+		for key := range rv {
+			if !contextKeyPattern.MatchString(key) {
+				return nil, TemplateError{
+					Message:  "top level keys of $let must follow /[a-zA-Z_][a-zA-Z0-9_]*/",
+					Template: template,
+				}
 			}
+		}
+		if err = i.IsValidContext(c); err != nil {
+			return nil, err
 		}
 		return render(in, c)
 	},
 	"$map": func(template, context map[string]interface{}) (interface{}, error) {
+		if err := restrictProperties(template, "$map", eachKeyPattern.String()); err != nil {
+			return nil, err
+		}
 		value, err := render(template["$map"], context)
 		if err != nil {
 			return nil, err
@@ -651,7 +680,7 @@ var operators = map[string]operator{
 				R, ok := r.(map[string]interface{})
 				if !ok {
 					return nil, TemplateError{
-						Message:  fmt.Sprintf("$map on objects expects 'each(%s)' to evaluate to an object", eachIdentifier),
+						Message:  fmt.Sprintf("$map on objects expects each(%s) to evaluate to an object", eachIdentifier),
 						Template: eachTemplate,
 					}
 				}
@@ -665,12 +694,15 @@ var operators = map[string]operator{
 			return result, nil
 		default:
 			return nil, TemplateError{
-				Message:  "$map requires a value that evaluates to either an object or an array",
+				Message:  "$map value must evaluate to an array or object",
 				Template: template,
 			}
 		}
 	},
 	"$reduce": func(template, context map[string]interface{}) (interface{}, error) {
+		if err := restrictProperties(template, "$reduce", "initial", eachKeyAccPattern.String()); err != nil {
+			return nil, err
+		}
 		value, err := render(template["$reduce"], context)
 		if err != nil {
 			return nil, err
@@ -738,6 +770,9 @@ var operators = map[string]operator{
 		}
 	},
 	"$find": func(template, context map[string]interface{}) (interface{}, error) {
+		if err := restrictProperties(template, "$find", eachKeyPattern.String()); err != nil {
+			return nil, err
+		}
 		value, err := render(template["$find"], context)
 		if err != nil {
 			return nil, err
@@ -778,7 +813,7 @@ var operators = map[string]operator{
 		val, ok := value.([]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$find expects an array",
+				Message:  "$find value must evaluate to an array",
 				Template: template,
 			}
 		}
@@ -796,26 +831,20 @@ var operators = map[string]operator{
 			s, ok := eachTemplate.(string)
 			if !ok {
 				return nil, TemplateError{
-					Message:  "$find expects a string expression",
+					Message:  "each can evaluate string expressions only",
 					Template: template,
 				}
 			}
 
 			val, err := i.Parse(s, c)
 			if err != nil {
-				return nil, TemplateError{
-					Message:  err.Error(),
-					Template: template,
-				}
+				return nil, err
 			}
 
 			if i.IsTruthy(val) {
 				r, err := render(entry, c)
 				if err != nil {
-					return nil, TemplateError{
-						Message:  err.Error(),
-						Template: template,
-					}
+					return nil, err
 				}
 				return r, nil
 			}
@@ -848,20 +877,14 @@ var operators = map[string]operator{
 		for _, key := range conditions {
 			check, err := i.Parse(key, context)
 			if err != nil {
-				return nil, TemplateError{
-					Message:  err.Error(),
-					Template: template,
-				}
+				return nil, err
 			}
 
 			if i.IsTruthy(check) {
 				value := match[key]
 				r, err := render(value, context)
 				if err != nil {
-					return nil, TemplateError{
-						Message:  err.Error(),
-						Template: template,
-					}
+					return nil, err
 				}
 				result = append(result, r)
 			}
@@ -894,20 +917,14 @@ var operators = map[string]operator{
 		for _, key := range conditions {
 			check, err := i.Parse(key, context)
 			if err != nil {
-				return nil, TemplateError{
-					Message:  err.Error(),
-					Template: template,
-				}
+				return nil, err
 			}
 
 			if i.IsTruthy(check) {
 				value := match[key]
 				r, err := render(value, context)
 				if err != nil {
-					return nil, TemplateError{
-						Message:  err.Error(),
-						Template: template,
-					}
+					return nil, err
 				}
 				result = append(result, r)
 			}
@@ -924,10 +941,7 @@ var operators = map[string]operator{
 			if value, ok := match["$default"]; ok {
 				r, err := render(value, context)
 				if err != nil {
-					return nil, TemplateError{
-						Message:  err.Error(),
-						Template: template,
-					}
+					return nil, err
 				}
 				result = append(result, r)
 			}
@@ -950,7 +964,7 @@ var operators = map[string]operator{
 		a, ok := value.([]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$merge expected an array",
+				Message:  "$merge value must evaluate to an array of objects",
 				Template: template,
 			}
 		}
@@ -959,7 +973,7 @@ var operators = map[string]operator{
 			obj, ok := entry.(map[string]interface{})
 			if !ok {
 				return nil, TemplateError{
-					Message:  "$merge expected an array of objects",
+					Message:  "$merge value must evaluate to an array of objects",
 					Template: template,
 				}
 			}
@@ -980,7 +994,7 @@ var operators = map[string]operator{
 		a, ok := value.([]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$mergeDeep expected an array",
+				Message:  "$mergeDeep value must evaluate to an array of objects",
 				Template: template,
 			}
 		}
@@ -1014,7 +1028,7 @@ var operators = map[string]operator{
 			obj, ok := entry.(map[string]interface{})
 			if !ok {
 				return nil, TemplateError{
-					Message:  "$mergeDeep expected an array of objects",
+					Message:  "$mergeDeep value must evaluate to an array of objects",
 					Template: template,
 				}
 			}
@@ -1033,7 +1047,7 @@ var operators = map[string]operator{
 		a, ok := value.([]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$reverse expected a value that evaluated to an array",
+				Message:  "$reverse value must evaluate to an array of objects",
 				Template: template,
 			}
 		}
@@ -1044,6 +1058,9 @@ var operators = map[string]operator{
 		return result, nil
 	},
 	"$sort": func(template, context map[string]interface{}) (interface{}, error) {
+		if err := restrictProperties(template, "$sort", byKeyPattern.String()); err != nil {
+			return nil, err
+		}
 		value, err := render(template["$sort"], context)
 		if err != nil {
 			return nil, err
@@ -1051,7 +1068,7 @@ var operators = map[string]operator{
 		items, ok := value.([]interface{})
 		if !ok {
 			return nil, TemplateError{
-				Message:  "$sort expects a value that evaluates to an array",
+				Message:  "$sorted values to be sorted must have the same type",
 				Template: template,
 			}
 		}
@@ -1101,10 +1118,7 @@ var operators = map[string]operator{
 				c[byIdentifier] = item
 				val, err := i.Parse(byExpr, c)
 				if err != nil {
-					return nil, TemplateError{
-						Message:  err.Error(),
-						Template: template,
-					}
+					return nil, err
 				}
 				byValues[j] = val
 			}
@@ -1132,13 +1146,13 @@ var operators = map[string]operator{
 			}
 		default:
 			return nil, TemplateError{
-				Message:  "$sort can only operate on strings and numbers, add a 'by(identifier)' to sort by a key",
+				Message:  "$sorted values to be sorted must have the same type",
 				Template: template,
 			}
 		}
 		if mixedTypes {
 			return nil, TemplateError{
-				Message:  "$sort cannot handle mixed types, tweak the 'by(identifier)' property to conform values",
+				Message:  "$sorted values to be sorted must have the same type",
 				Template: template,
 			}
 		}
@@ -1196,6 +1210,7 @@ func interpolate(template string, context map[string]interface{}) (string, error
 			if err != nil {
 				return "", err
 			}
+			expression := remaining[offset+2 : end-1]
 			remaining = remaining[end:]
 			switch v := value.(type) {
 			case string:
@@ -1207,7 +1222,9 @@ func interpolate(template string, context map[string]interface{}) (string, error
 			case nil:
 				// null, interpolates as empty string
 			default:
-				return "", fmt.Errorf("cannot interpolate array/object in '%s'", template)
+				return "", TemplateError{
+					Message: fmt.Sprintf("interpolation of '%s' produced an array or object", expression),
+				}
 			}
 		} else {
 			result += "${"
@@ -1251,6 +1268,25 @@ func containsFunctions(rendered interface{}) bool {
 	}
 }
 
+type locationError interface {
+	AddLocation(string) error
+}
+
+func addErrorLocation(err error, location string) error {
+	if err, ok := err.(locationError); ok {
+		return err.AddLocation(location)
+	}
+	return err
+}
+
+func templateKeyLocation(key string) string {
+	if templateIdentifierPattern.MatchString(key) {
+		return "." + key
+	}
+	data, _ := json.Marshal(key)
+	return "[" + string(data) + "]"
+}
+
 func render(template interface{}, context map[string]interface{}) (interface{}, error) {
 	if template == nil {
 		return nil, nil
@@ -1262,10 +1298,10 @@ func render(template interface{}, context map[string]interface{}) (interface{}, 
 		return interpolate(v, context)
 	case []interface{}:
 		result := make([]interface{}, 0, len(v))
-		for _, val := range v {
+		for index, val := range v {
 			r, err := render(val, context)
 			if err != nil {
-				return nil, err
+				return nil, addErrorLocation(err, fmt.Sprintf("[%d]", index))
 			}
 			if r != deleteMarker {
 				result = append(result, r)
@@ -1293,19 +1329,19 @@ func render(template interface{}, context map[string]interface{}) (interface{}, 
 
 		// Clone object
 		result := make(map[string]interface{}, len(v))
-		for k, v := range v {
+		for k, value := range v {
 
-			r, err := render(v, context)
+			r, err := render(value, context)
 			if err != nil {
-				return nil, err
+				return nil, addErrorLocation(err, templateKeyLocation(k))
 			}
 			if r != deleteMarker {
 				if strings.HasPrefix(k, "$$") {
 					k = k[1:]
 				} else if reservedIdentifiers.MatchString(k) {
 					return nil, TemplateError{
-						Message:  fmt.Sprintf("'$%s' is reserved used '$$%s' instead", k, k),
-						Template: v,
+						Message:  "$<identifier> is reserved; use $$<identifier>",
+						Template: value,
 					}
 				}
 				k, err = interpolate(k, context)

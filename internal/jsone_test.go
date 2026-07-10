@@ -36,7 +36,11 @@ func (c *testCase) Test(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, c.Result, result, "expected a different result")
 	} else {
-		require.Error(t, err)
+		if message, ok := c.Error.(string); ok {
+			require.EqualError(t, err, message)
+		} else {
+			require.Error(t, err)
+		}
 	}
 }
 
