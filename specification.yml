@@ -2711,6 +2711,16 @@ context: {a: [1,2,3,4]}
 template: {$eval: 'a[-2]'}
 result: 3
 ---
+title: array access at negative length
+context: {a: [1,2,3,4,5]}
+template: {$eval: 'a[-5]'}
+result: 1
+---
+title: array access at negative length (single item)
+context: {a: [1]}
+template: {$eval: 'a[-1]'}
+result: 1
+---
 title:    array access [index expression]
 context:  {a: [10,11,12], b: 1}
 template: {$eval: 'a[b]'}
