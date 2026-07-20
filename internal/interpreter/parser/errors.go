@@ -12,18 +12,38 @@ type SyntaxError struct {
 	Start    int
 	End      int
 	Expected []string
+	Location []string
 }
 
 func (s SyntaxError) Error() string {
-	m := s.Message
-	if m == "" {
-		m = "syntax error"
-	}
+	var message string
 	if s.Expected != nil {
-		return fmt.Sprintf("%s expected %s at %d -> '%s' in '%s'",
-			m, strings.Join(s.Expected, ", "), s.Start, s.Source[s.Start:s.End], s.Source,
-		)
+		message = fmt.Sprintf("Found: %s token, expected one of: %s",
+			s.sourceAtError(), strings.Join(s.Expected, ", "))
+	} else if s.Message == "" {
+		message = fmt.Sprintf("Unexpected input for '%s' at '%s'", s.Source, s.sourceAtError())
+	} else if s.Message == "unexpected end of input" {
+		message = "Unexpected end of input"
+	} else {
+		message = s.Message
 	}
-	return fmt.Sprintf("%s at %d -> '%s' in '%s'",
-		m, s.Start, s.Source[s.Start:s.End], s.Source)
+
+	location := ""
+	if len(s.Location) > 0 {
+		location = " at template" + strings.Join(s.Location, "")
+	}
+	return fmt.Sprintf("SyntaxError%s: %s", location, message)
+}
+
+// AddLocation prepends a location to the error.
+func (s SyntaxError) AddLocation(location string) error {
+	s.Location = append([]string{location}, s.Location...)
+	return s
+}
+
+func (s SyntaxError) sourceAtError() string {
+	if s.Start < 0 || s.Start > len(s.Source) || s.End < s.Start || s.End > len(s.Source) {
+		return ""
+	}
+	return s.Source[s.Start:s.End]
 }

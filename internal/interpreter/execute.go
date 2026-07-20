@@ -18,6 +18,10 @@ var tokenizer = *p.NewTokenizer(`\s+`, strings.Split(
 	"null":       `null\b`,
 })
 
+var expectedInfixTokens = strings.Split(
+	`!= && ( * ** + - . / < <= == > >= [ in ||`, " ",
+)
+
 func Parse(source string, context interface{}) (interface{}, error) {
 	var parser p.Parser
 	var newInterpreter NewInterpreter
@@ -31,10 +35,10 @@ func Parse(source string, context interface{}) (interface{}, error) {
 	}
 	if !parser.CurrentToken.IsEmpty() {
 		return nil, p.SyntaxError{
-			Message: "expected end of input",
-			Source:  source,
-			Start:   parser.CurrentToken.Start,
-			End:     parser.CurrentToken.End,
+			Source:   source,
+			Start:    parser.CurrentToken.Start,
+			End:      parser.CurrentToken.End,
+			Expected: expectedInfixTokens,
 		}
 	}
 	newInterpreter.AddContext(context.(map[string]interface{}))
@@ -54,12 +58,17 @@ func ParseUntilTerminator(source string, offset int, terminator string, context 
 	if err != nil {
 		return nil, 0, err
 	}
+	if parser.CurrentToken.IsEmpty() {
+		return nil, 0, p.SyntaxError{
+			Message: "unterminated ${..} expression",
+		}
+	}
 	if parser.CurrentToken.Kind != terminator {
 		return nil, 0, p.SyntaxError{
 			Source:   source,
 			Start:    parser.CurrentToken.Start,
 			End:      parser.CurrentToken.End,
-			Expected: []string{terminator},
+			Expected: expectedInfixTokens,
 		}
 	}
 	newInterpreter.AddContext(context.(map[string]interface{}))
