@@ -35,7 +35,7 @@ func (s SyntaxError) Error() string {
 	return fmt.Sprintf("SyntaxError%s: %s", location, message)
 }
 
-// AddLocation returns a copy of the error with a location prepended.
+// AddLocation prepends a location to the error.
 func (s SyntaxError) AddLocation(location string) error {
 	s.Location = append([]string{location}, s.Location...)
 	return s

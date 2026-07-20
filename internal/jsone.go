@@ -19,11 +19,7 @@ import (
 func Render(template interface{}, context map[string]interface{}) (interface{}, error) {
 	// Validate input
 	if err := i.IsValidContext(context); err != nil {
-		message := err.Error()
-		if strings.HasPrefix(message, "top level keys of context must follow") {
-			message = "top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/"
-		}
-		return nil, TemplateError{Message: message}
+		return nil, TemplateError{Message: err.Error()}
 	}
 
 	// Inherit functions from builtins
