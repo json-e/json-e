@@ -3,7 +3,7 @@ var fromNow = require('./from-now');
 var {
   isString, isNumber, isBool,
   isInteger, isArray, isObject,
-  isNull, isFunction,
+  isNull, isFunction, hasOwn, mergeContext,
 } = require('./type-utils');
 
 let types = {
@@ -174,8 +174,8 @@ module.exports = (context) => {
   define('defined', builtins, {
     argumentTests: ['string'],
     needsContext: true,
-    invoke: (ctx, str) => ctx.hasOwnProperty(str)
+    invoke: (ctx, str) => hasOwn(ctx, str)
   });
 
-  return Object.assign({}, builtins, context);
+  return mergeContext(builtins, context);
 };

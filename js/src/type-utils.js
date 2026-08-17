@@ -1,4 +1,8 @@
 let utils = {
+  // avoids redefinition
+  hasOwn: (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop),
+  // use null prototype so `__proto__` key behaves
+  mergeContext: (...sources) => Object.assign(Object.create(null), ...sources),
   isString:   expr => typeof expr === 'string',
   isNumber:   expr => typeof expr === 'number',
   isInteger:  expr => typeof expr === 'number' && Number.isInteger(expr),

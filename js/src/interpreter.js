@@ -1,4 +1,4 @@
-const {isFunction, isObject, isString, isArray, isNumber, isInteger, isTruthy} = require("../src/type-utils");
+const {isFunction, isObject, isString, isArray, isNumber, isInteger, isTruthy, hasOwn} = require("../src/type-utils");
 const {InterpreterError} = require('./error');
 
 let expectationError = (operator, expectation) => new InterpreterError(`${operator} expects ${expectation}`);
@@ -101,7 +101,7 @@ class Interpreter {
                 return Math.pow(right, left);
             case ("."): {
                 if (isObject(left)) {
-                    if (left.hasOwnProperty(right)) {
+                    if (hasOwn(left, right)) {
                         return left[right];
                     }
                     throw new InterpreterError(`object has no property "${right}"`);
@@ -204,7 +204,7 @@ class Interpreter {
             throw new InterpreterError('object keys must be strings');
         }
 
-        if (array.hasOwnProperty(left)) {
+        if (hasOwn(array, left)) {
             return array[left];
         } else {
             return null;
@@ -212,7 +212,7 @@ class Interpreter {
     }
 
     visit_ContextValue(node) {
-        if (this.context.hasOwnProperty(node.token.value)) {
+        if (hasOwn(this.context, node.token.value)) {
             let contextValue = this.context[node.token.value];
             return contextValue
         }
@@ -227,7 +227,7 @@ class Interpreter {
             node.args.forEach(function (item) {
                 args.push(this.visit(item))
             }, this);
-            if (funcName.hasOwnProperty("jsone_builtin")) {
+            if (hasOwn(funcName, "jsone_builtin")) {
                 args.unshift(this.context);
             }
             return funcName.apply(null, args);
