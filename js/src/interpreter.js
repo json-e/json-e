@@ -1,4 +1,4 @@
-const {isFunction, isObject, isString, isArray, isNumber, isInteger, isTruthy, hasOwn} = require("../src/type-utils");
+const {isFunction, isObject, isString, isArray, isNumber, isInteger, isTruthy, hasOwn, setProp} = require("../src/type-utils");
 const {InterpreterError} = require('./error');
 
 let expectationError = (operator, expectation) => new InterpreterError(`${operator} expects ${expectation}`);
@@ -239,8 +239,8 @@ class Interpreter {
     visit_Object(node) {
         let obj = {};
 
-        for (let key in node.obj) {
-            obj[key] = this.visit(node.obj[key])
+        for (let key of Object.keys(node.obj)) {
+            setProp(obj, key, this.visit(node.obj[key]));
         }
 
         return obj

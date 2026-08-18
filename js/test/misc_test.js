@@ -139,6 +139,17 @@ suite('misc', function() {
     assume(Object.getPrototypeOf(result)).equals(Object.prototype);
   });
 
+  test('__proto__ in an expression object literal is an ordinary key', function() {
+    for (let expr of ['{"__proto__": 1, "a": 2}', '{__proto__: 1, a: 2}']) {
+      let result = jsone({$eval: expr}, {});
+
+      assume(Object.keys(result)).eql(['__proto__', 'a']);
+      assume(result.__proto__).equals(1);
+      assume(result.a).equals(2);
+      assume(Object.getPrototypeOf(result)).equals(Object.prototype);
+    }
+  });
+
   test('$mergeDeep preserves a literal __proto__ key without touching the real prototype', function() {
     let template = JSON.parse('{"$mergeDeep": [{"__proto__": {"x": 1}}, {"__proto__": {"y": 2}}]}');
     let result = jsone(template, {});

@@ -7,17 +7,10 @@ var {
   isString, isNumber, isBool,
   isArray, isObject,
   isTruthy, isFunction,
-  hasOwn, mergeContext,
+  hasOwn, mergeContext, setProp,
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError, SyntaxError} = require('./error');
-
-let setProp = (obj, key, value) => {
-  Object.defineProperty(obj, key, {
-    value, writable: true, enumerable: true, configurable: true,
-  });
-  return obj;
-};
 
 let mergeObjects = (...sources) => {
   let result = {};
