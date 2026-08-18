@@ -1,132 +1,49 @@
 # Making a Release
 
-There are two ways to run the release: inside Docker (recommended) or natively.
-
-## Option A: Docker-based release (recommended)
-
-This runs the release inside a container with all tools pre-installed. You only
-need Docker and credentials configured on the host.
-
-### Prerequisites
-
-1. **Docker** installed and running
-2. **Credentials** configured (see [Credential Setup](#credential-setup) below)
-3. **SSH agent** running with a key that has push access to `github.com:json-e/json-e`
-
-### Run
-
-```bash
-./release-docker.sh <version>   # without the `v` prefix
-```
-
-The script builds the Docker image (cached after first build), mounts your
-credentials read-only, forwards your SSH agent, and runs `release.sh` inside
-the container.
-
-## Option B: Native release
-
-Run the release directly on your machine.
-
-### Required tools
-
-| Tool | Install |
-|------|---------|
-| git | system package manager |
-| Python >= 3.10 | system package manager or pyenv |
-| pip packages: `build`, `twine`, `towncrier` | `pip install build twine towncrier` |
-| Node.js (LTS) + npm | https://nodejs.org or nvm |
-| yarn | `corepack enable` (ships with Node.js) |
-| Rust + cargo | https://rustup.rs |
-| mdbook | `cargo install mdbook` or [pre-built binary](https://github.com/rust-lang/mdBook/releases) |
-
-### Run
-
 ```bash
 ./release.sh <version>   # without the `v` prefix
 ```
 
-The script runs comprehensive pre-flight checks before doing any work. If
-anything is missing or misconfigured, it reports all failures at once so you can
-fix everything in one pass.
+`release.sh` prepares and pushes the release commit and tag; it does not
+publish anything itself. Pushing the tag triggers
+[`.github/workflows/release.yml`](.github/workflows/release.yml), which
+publishes via Trusted Publishing (OIDC), with no credentials needed on your
+machine, to:
 
-## Credential Setup
+- [crates.io](https://crates.io/crates/json-e)
+- [npm](https://www.npmjs.com/package/json-e)
+- [PyPI](https://pypi.org/project/json-e/)
 
-### npm (npmjs.com)
+and deploys the docs to <https://json-e.js.org>. Go needs no publish step:
+the pushed tag *is* the release, resolved directly by `proxy.golang.org`.
 
-```bash
-npm login
-```
+**Never delete and re-create a `v*` tag.** `proxy.golang.org` caches
+`module@version` immutably within minutes of the first fetch; retagging gives
+every Go user who already fetched it a checksum-mismatch error with no way to
+recover. If a release goes wrong, bump the patch version and release again.
 
-Verify with `npm whoami`.
+## Integration audit
 
-### crates.io (Rust)
+[Trusted Publishing](.github/workflows/release.yml) and the
+[release](https://github.com/json-e/json-e/settings/environments/20101978916/edit)
+environment are already configured.  This records what's live, for reference if
+it ever needs auditing or redoing (e.g. after a rename).
 
-```bash
-cargo login
-```
+All three registries bind trust to owner `json-e`, repo `json-e`, workflow
+filename `release.yml`, environment `release`. Renaming any of those breaks
+publishing to all three at once.
 
-This saves a token to `~/.cargo/credentials.toml`. Alternatively, set the
-`CARGO_REGISTRY_TOKEN` environment variable.
+* [PyPI](https://pypi.org/manage/project/json-e/settings/publishing/)
+* [npm](https://www.npmjs.com/package/json-e/access)
+* [crates.io](https://crates.io/crates/json-e/settings)
 
-### PyPI
+GitHub `release` environment: deployment restricted to tags matching `v*`,
+with a list of required reviewers configured on the environment itself
+(Settings → Environments → release) rather than duplicated here, since a
+name list here would drift as maintainers change.
 
-Create a `~/.pypirc` file:
-
-```ini
-[pypi]
-username = __token__
-password = pypi-<your-api-token>
-```
-
-Or set `TWINE_USERNAME` and `TWINE_PASSWORD` environment variables. Generate an
-API token at https://pypi.org/manage/account/token/.
-
-### Git (SSH push access)
-
-Ensure you have an SSH key that can push to `github.com:json-e/json-e`. The
-release script auto-detects which git remote points to the `json-e/json-e`
-repository (it does not assume a specific remote name like `origin` or
-`upstream`).
-
-```bash
-ssh -T git@github.com   # should show your username
-```
-
-## Registry permissions
-
-To publish, you must be a maintainer/owner on all three registries:
-
-| Registry | How to check | How to grant |
-|----------|-------------|--------------|
-| npm | `npm access ls-collaborators json-e` | `npm owner add <user> json-e` |
-| crates.io | Check [crates.io/crates/json-e](https://crates.io/crates/json-e) owners | `cargo owner --add <user> json-e` |
-| PyPI | Check [pypi.org/project/json-e](https://pypi.org/project/json-e/#files) maintainers | Add via PyPI project settings |
-
-Having valid credentials is not enough — your account must have publish rights
-on the specific package.
-
-## What the release script does
-
-1. Pre-flight checks — verifies all tools, credentials, Python version,
-   repo state (clean tree, on `main`, tag doesn't exist yet)
-2. Changelog — runs `towncrier build` to generate the changelog entry
-3. Version bump — updates version in `rs/Cargo.toml`, `js/package.json`,
-   and `py/setup.py`
-4. Commit & tag — creates a `v<version>` commit and tag
-5. Publish — uploads to crates.io, npm, and PyPI
-6. Push — pushes the commit and tag to GitHub
-7. Docs — rebuilds and deploys documentation via `deploy-docs.sh`
-
-## Partial failures
-
-The release script publishes to registries sequentially (crates.io, then npm,
-then PyPI). If a publish step fails partway through:
-
-- The git commit and tag already exist locally but may not have been pushed
-  yet (push happens last).
-- Some registries may have the new version while others don't. Most
-  registries don't support unpublishing (npm has a 72-hour window, crates.io
-  does not allow it at all, PyPI does not allow re-uploading the same version).
-- Fix forward: resolve the issue and re-run the publish steps that failed,
-  or cut a patch release if needed. The release script skips the changelog step
-  if it detects the version already matches.
+GitHub tag ruleset "Releases" (`refs/tags/v*`): active, bypassable only by
+repository admins. Blocks creating a `v*` tag, deleting one, and force-
+pushing one to a different commit; that last case is what actually enforces
+"never retag" at the git level, since a tag can otherwise be moved to point
+at a new commit without ever being deleted first.
