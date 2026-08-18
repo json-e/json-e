@@ -1,5 +1,6 @@
 const {UnaryOp, BinOp, Primitive, ContextValue, FunctionCall, ValueAccess, List, Object} = require("../src/AST");
 const {SyntaxError} = require('./error');
+const {setProp} = require('./type-utils');
 
 let syntaxRuleError = (token, expects) => {
     expects.sort();
@@ -217,7 +218,7 @@ class Parser {
             if (value == null) {
                 throw syntaxRuleError(this.current_token, this.expectedTokens);
             }
-            obj[key] = value;
+            setProp(obj, key, value);
             if (this.current_token != null && this.current_token.kind == "}") {
                 break;
             } else {
