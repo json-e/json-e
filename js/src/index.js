@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 const {Parser} = require('./parser');
 const Tokenizer = require("../src/tokenizer");
 const {Interpreter} = require('./interpreter');
@@ -9,9 +7,27 @@ var {
   isString, isNumber, isBool,
   isArray, isObject,
   isTruthy, isFunction,
+  hasOwn, mergeContext,
 } = require('./type-utils');
 var addBuiltins = require('./builtins');
 var {JSONTemplateError, TemplateError, SyntaxError} = require('./error');
+
+let setProp = (obj, key, value) => {
+  Object.defineProperty(obj, key, {
+    value, writable: true, enumerable: true, configurable: true,
+  });
+  return obj;
+};
+
+let mergeObjects = (...sources) => {
+  let result = {};
+  for (let source of sources) {
+    for (let key of Object.keys(source)) {
+      setProp(result, key, source[key]);
+    }
+  }
+  return result;
+};
 
 let syntaxRuleError = (token) => {
     return new SyntaxError(`Found: ${token.value} token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||`);
@@ -125,14 +141,14 @@ operators.$if = (template, context) => {
     throw new TemplateError('$if can evaluate string expressions only');
   }
   if (isTruthy(parse(template['$if'], context))) {
-    if(template.hasOwnProperty('$then')){
+    if(hasOwn(template, '$then')){
       throw new TemplateError('$if Syntax error: $then: should be spelled then: (no $)')
     }
 
-   return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
+   return hasOwn(template, 'then') ? render(template.then, context) : deleteMarker;
   }
 
-  return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
+  return hasOwn(template, 'else') ? render(template.else, context) : deleteMarker;
 };
 
 operators.$json = (template, context) => {
@@ -151,7 +167,7 @@ operators.$let = (template, context) => {
   if (!isObject(template['$let'])) {
     throw new TemplateError('$let value must be an object');
   }
-  let variables = {};
+  let variables = Object.create(null);
 
   let initialResult = render(template['$let'], context);
   if (!isObject(initialResult)) {
@@ -165,7 +181,7 @@ operators.$let = (template, context) => {
     }
   });
 
-  var child_context = Object.assign({}, context, variables);
+  var child_context = mergeContext(context, variables);
 
   if (template.in == undefined) {
     throw new TemplateError('$let operator requires an `in` clause');
@@ -203,18 +219,17 @@ operators.$map = (template, context) => {
     let eachValue;
     value = value.map(v => {
       let args = typeof i !== 'undefined' ? {[x]: v.val, [i]: v.key} : {[x]: v};
-      eachValue = render(each, Object.assign({}, context, args));
+      eachValue = render(each, mergeContext(context, args));
       if (!isObject(eachValue)) {
         throw new TemplateError(`$map on objects expects each(${x}) to evaluate to an object`);
       }
       return eachValue;
     }).filter(v => v !== deleteMarker);
-    //return value.reduce((a, o) => Object.assign(a, o), {});
-    return Object.assign({}, ...value);
+    return mergeObjects(...value);
   } else {
     return value.map((v, idx) => {
       let args = typeof i !== 'undefined' ? {[x]: v, [i]: idx} : {[x]: v};
-      return render(each, Object.assign({}, context, args));
+      return render(each, mergeContext(context, args));
     }).filter(v => v !== deleteMarker);
   }
 };
@@ -245,7 +260,7 @@ operators.$reduce = (template, context) => {
 
   return value.reduce((acc, v, idx)=>{
     const args = typeof i !== 'undefined' ? {[a]: acc, [x]: v, [i]: idx} : {[a]: acc, [x]: v};
-    const r = render(each, Object.assign({}, context, args));
+    const r = render(each, mergeContext(context, args));
     return r === deleteMarker ? acc : r;
   }, initialValue);
 };
@@ -279,8 +294,8 @@ operators.$find = (template, context) => {
   const result = value.find((v, idx) => {
     let args = typeof i !== 'undefined' ? {[x]: v, [i]: idx} : {[x]: v};
 
-    if (isTruthy(parse(each, Object.assign({}, context, args)))) {
-      return render(each, Object.assign({}, context, args));
+    if (isTruthy(parse(each, mergeContext(context, args)))) {
+      return render(each, mergeContext(context, args));
     }
   });
 
@@ -326,7 +341,7 @@ operators.$switch = (template, context) => {
     throw new TemplateError('$switch can only have one truthy condition');
   }
 
-  if (result.length === 0 && "$default" in conditions) {
+  if (result.length === 0 && hasOwn(conditions, '$default')) {
     result.push(render(conditions[ '$default' ], context));
   }
 
@@ -342,7 +357,7 @@ operators.$merge = (template, context) => {
     throw new TemplateError('$merge value must evaluate to an array of objects');
   }
 
-  return Object.assign({}, ...value);
+  return mergeObjects(...value);
 };
 
 operators.$mergeDeep = (template, context) => {
@@ -364,13 +379,9 @@ operators.$mergeDeep = (template, context) => {
       return l.concat(r);
     }
     if (isObject(l) && isObject(r)) {
-      let res = Object.assign({}, l);
-      for (let p in r) { // eslint-disable-line taskcluster/no-for-in
-        if (p in l) {
-          res[p] = merge(l[p], r[p]);
-        } else {
-          res[p] = r[p];
-        }
+      let res = mergeObjects(l);
+      for (let p of Object.keys(r)) {
+        setProp(res, p, hasOwn(l, p) ? merge(l[p], r[p]) : r[p]);
       }
       return res;
     }
@@ -403,7 +414,7 @@ operators.$sort = (template, context) => {
   let match = /^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(byKey);
   let by;
   if (match) {
-    let contextClone = Object.assign({}, context);
+    let contextClone = mergeContext(context);
     let x = match[1];
     let byExpr = template[byKey];
     by = value => {
@@ -462,7 +473,7 @@ let render = (template, context) => {
     }).filter((v) => v !== deleteMarker);
   }
 
-  let matches = Object.keys(operators).filter(c => template.hasOwnProperty(c));
+  let matches = Object.keys(operators).filter(c => hasOwn(template, c));
   if (matches.length > 1) {
     throw new TemplateError('only one operator allowed');
   }
@@ -495,7 +506,7 @@ let render = (template, context) => {
         key = interpolate(key, context);
       }
 
-      result[key] = value;
+      setProp(result, key, value);
     }
   }
   return result;
@@ -575,7 +586,7 @@ module.exports = (template, context = {}) => {
   if (!test) {
     throw new TemplateError('top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
   }
-  context = addBuiltins(Object.assign({}, {now: fromNow('0 seconds')}, context));
+  context = addBuiltins(mergeContext({now: fromNow('0 seconds')}, context));
   let result = render(template, context);
   if (result === deleteMarker) {
     return null;

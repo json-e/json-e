@@ -122,6 +122,11 @@ context:  {nothing: null}
 template: 'big pile of ${nothing}'
 result:   'big pile of '
 ---
+title:    interpolated __proto__ key
+context:  {e: ''}
+template: {'__pro${e}to__': {$eval: '1 + 1'}}
+result:   {'__proto__': 2}
+---
 title: invalid context
 context: {'a b c': 1}
 template: {}
@@ -1621,6 +1626,11 @@ title: merge with undefined properties
 template: {$merge: [{a: 1}, {b: 2, c: 3}, {d: 4}], foo: "bar", bing: "baz"}
 context: {}
 error: 'TemplateError: $merge has undefined properties: bing foo'
+---
+title:    merge preserves a literal __proto__ key
+context:  {}
+template: {$merge: [{'__proto__': 1}, {a: 2}]}
+result:   {'__proto__': 1, a: 2}
 ################################################################################
 ---
 section:  $mergeDeep
@@ -1689,6 +1699,16 @@ title: mergeDeep with undefined properties
 template: {$mergeDeep: [{a: {x: 1,'y': 2}}, {a: {'y': 3, z: 4}}], foo: "bar", bing: "baz"}
 context: {}
 error: 'TemplateError: $mergeDeep has undefined properties: bing foo'
+---
+title:    mergeDeep preserves a literal __proto__ key
+context:  {}
+template: {$mergeDeep: [{'__proto__': 1}, {a: 2}]}
+result:   {'__proto__': 1, a: 2}
+---
+title:    mergeDeep preserves a literal __proto__ key when merging nested objects
+context:  {}
+template: {$mergeDeep: [{'__proto__': {x: 1}}, {'__proto__': {y: 2}}]}
+result:   {'__proto__': {x: 1, y: 2}}
 ################################################################################
 ---
 section:  $sort
