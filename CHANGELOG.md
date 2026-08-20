@@ -1,3 +1,10 @@
+# Jsone 4.8.4 (2026-08-20)
+
+## Bugfixes
+
+- Fixed missing PyPI package metadata (long_description_content_type) that caused the release of 4.8.3 to fail at the packaging step, and added packaging dry-run checks to CI so problems like this are caught on every push rather than only when a release is attempted. (#592)
+
+
 # Jsone 4.8.3 (2026-08-20)
 
 ## Features
