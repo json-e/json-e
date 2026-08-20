@@ -99,9 +99,10 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
+      # Keep in sync with the version in .taskcluster.yml
       - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: '3.12'
+          python-version: '3.11'
       - name: Build sdist and wheel
         run: |
           set -euo pipefail
@@ -151,7 +152,11 @@ jobs:
           persist-credentials: false
       - name: Stage specification.yml into the crate
         run: ./scripts/stage-crate-spec.sh
-      - run: cargo --version && rustc --version
+      # ubuntu-latest's preinstalled Rust can lag behind whatever the
+      # runner image last baked in; update to track stable the same way
+      # .taskcluster.yml's rust:latest tasks do, rather than relying on
+      # an implicit, undated snapshot.
+      - run: rustup update stable && rustup default stable && cargo --version && rustc --version
       - name: cargo publish --dry-run
         working-directory: rs
         run: cargo publish --dry-run --allow-dirty
@@ -281,6 +286,10 @@ jobs:
       - name: Stage specification.yml into the crate
         if: steps.pre.outputs.skip == 'false'
         run: ./scripts/stage-crate-spec.sh
+      # See the equivalent step in build-crates for why this runs.
+      - name: Update to latest stable Rust
+        if: steps.pre.outputs.skip == 'false'
+        run: rustup update stable && rustup default stable
       - uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
         if: steps.pre.outputs.skip == 'false'
         id: auth

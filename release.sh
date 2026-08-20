@@ -220,15 +220,15 @@ preflight() {
 
 update_changelog() {
     local cl_version
-    cl_version=$(head -n 1 CHANGELOG.rst | cut -d' ' -f 2)
+    cl_version=$(sed -n 's/^# Jsone \([0-9.]*\) .*/\1/p' CHANGELOG.md | head -1)
     if [ "${cl_version}" == "${version}" ]; then
-        echo "=== CHANGELOG.rst already at ${version}, skipping towncrier"
+        echo "=== CHANGELOG.md already at ${version}, skipping towncrier"
         return
     fi
     echo "=== Changelog draft"
     towncrier build --version="${version}" --draft
     read -r -p "Look OK? (ctrl-c if not, enter if OK) "
-    towncrier build --version="${version}" --yes   # stages CHANGELOG.rst, removes fragments
+    towncrier build --version="${version}" --yes   # stages CHANGELOG.md, removes fragments
 }
 
 update_versions() {

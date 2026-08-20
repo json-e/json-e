@@ -19,6 +19,7 @@ setup(
     version=version,
     description=description,
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Dustin J. Mitchell",
     url="https://json-e.js.org",
     author_email="dustin@mozilla.com",

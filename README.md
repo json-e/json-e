@@ -47,7 +47,7 @@ See [json-e.js.org](https://json-e.js.org).
 ## Changes
 
 See
-[CHANGELOG.rst](https://github.com/json-e/json-e/blob/main/CHANGELOG.rst)
+[CHANGELOG.md](https://github.com/json-e/json-e/blob/main/CHANGELOG.md)
 for the changes in each version of this library.
 
 ## In Action

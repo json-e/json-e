@@ -66,13 +66,13 @@ else
     printf '  ok        %-16s %s (no /vN suffix required below v2)\n' "go.mod" "${modpath}"
 fi
 
-# CHANGELOG heading shape: `Jsone X.Y.Z (YYYY-MM-DD)`
-cl_first_line="$(head -n1 CHANGELOG.rst)"
-if echo "${cl_first_line}" | grep -Eq "^Jsone ${version//./\\.} \([0-9]{4}-[0-9]{2}-[0-9]{2}\)\$"; then
-    printf '  ok        %-16s %s\n' "CHANGELOG.rst" "${version}"
+# CHANGELOG heading shape: `# Jsone X.Y.Z (YYYY-MM-DD)`
+cl_first_line="$(head -n1 CHANGELOG.md)"
+if echo "${cl_first_line}" | grep -Eq "^# Jsone ${version//./\\.} \([0-9]{4}-[0-9]{2}-[0-9]{2}\)\$"; then
+    printf '  ok        %-16s %s\n' "CHANGELOG.md" "${version}"
 else
-    printf '  MISMATCH  %-16s expected first line '"'"'Jsone %s (YYYY-MM-DD)'"'"', found: %s\n' \
-        "CHANGELOG.rst" "${version}" "${cl_first_line}"
+    printf '  MISMATCH  %-16s expected first line '"'"'# Jsone %s (YYYY-MM-DD)'"'"', found: %s\n' \
+        "CHANGELOG.md" "${version}" "${cl_first_line}"
     fail=1
 fi
 
