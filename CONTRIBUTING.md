@@ -108,8 +108,8 @@ yarn rollup
 When making a pull request with your changes, create a new file in
 `newsfragments/` named after the issue or bug you are working on, with a suffix
 of `.bugfix`, `.feature`, or (for docs-only changes) `.doc`.  The content of
-this file should be in reStructuredText format. Keep it to a simple sentence,
-and you should be fine!
+this file should be in Markdown format, the same as this file. Keep it to a
+simple sentence, and you should be fine!
 
 For example, `newsfragments/201.bugfix` might contain `Fixed the precedence of
 the || and 'in' operators`.

@@ -1,61 +1,49 @@
-Jsone 4.8.3 (2026-08-20)
-========================
+# Jsone 4.8.3 (2026-08-20)
 
-Features
---------
+## Features
 
 - Release script now checks that the local main branch is in sync with upstream, that the release tag does not already exist on the remote, and that the version has not already been published to npm, PyPI, or crates.io. (#577)
 
 
-Bugfixes
---------
+## Bugfixes
 
 - The Go implementation now enforces the spec error messages: the specification test suite asserts the exact expected message string, and TemplateError/InterpreterError/BuiltinError/SyntaxError output is aligned with specification.yml to match the Python implementation. (#393)
 - Added conformance tests for array indexes equal to the negative array length. (#556)
 - Fixed the JS implementation to treat contexts and template objects as explicit key/value dictionaries rather than JavaScript objects. (#589)
 
 
-Jsone 4.8.2 (2026-02-26)
-========================
+# Jsone 4.8.2 (2026-02-26)
 
 No significant changes.
 
 
-Jsone 4.8.1 (2026-01-23)
-========================
+# Jsone 4.8.1 (2026-01-23)
 
-Bugfixes
---------
+## Bugfixes
 
 - Fix handling of false-y $default values in $switch in JS and Go implementations. (#541)
 - The Rust version no longer panics when it encounters a non-finite float. (#555)
 - The Rust error message when a non finite number is encountered now properly includes the non finite value, rather than {value}. (#558)
 
 
-Jsone 4.8.0 (2024-10-03)
-========================
+# Jsone 4.8.0 (2024-10-03)
 
-Features
---------
+## Features
 
 - Introduces the `$reduce` operator which combines an array or object into a single value. (#531)
 - Introduced the `range(..)` function for generating ranges of integers. (#534)
 
 
-Jsone 4.7.1 (2024-07-05)
-========================
+# Jsone 4.7.1 (2024-07-05)
 
-Bugfixes
---------
+## Bugfixes
 
 - Removed unnecessary print statement from rust implementation. (slice_print)
 
 
-Jsone 4.7.0 (2024-02-17)
-========================
+# Jsone 4.7.0 (2024-02-17)
 
-Features
---------
+## Features
 
 - WrapFunction has been added to the external interface of the Golang module so
   users can inject custom functions into the context. (#523)
@@ -64,111 +52,91 @@ Features
   either `null` or if used within an object or array, omitted from the parent object. (#525)
 
 
-Bugfixes
---------
+## Bugfixes
 
 - Support for Unicode strings has been improved and made consistent across implementations: all indexing and slicing is in terms of codepoints, rather than bytes. (#390)
 - Division by zero is now considered an error, since the result is not representible in JSON. (#391)
 
 
-Jsone 4.6.0 (2023-11-21)
-========================
+# Jsone 4.6.0 (2023-11-21)
 
-Bugfixes
---------
+## Bugfixes
 
 - For JavaScript, variables added in a `$let` do not persist outside of that `$let` any more. (#473)
 - The context is required to be a JSON object in all implementations. (#481)
 - Python versions older than 3.8 are no longer tested or supported. Notably, Python 2 is no longer supported. (#486)
 
 
-Improved Documentation
-----------------------
+## Improved Documentation
 
 - All of the time-range abbreviations supported by `fromNow` and `$fromNow` are
   now documented, and all implementations agree on those abbreviations. (#483)
 
 
-Jsone 4.5.3 (2023-07-27)
-========================
+# Jsone 4.5.3 (2023-07-27)
 
-Bugfixes
---------
+## Bugfixes
 
 - Upgraded Rust parser-builder `nom` to major version 7. (#462)
 - Fix Rust JSON conversions for floats of small magnitude (#466)
 
 
-Jsone 4.5.2 (2023-04-10)
-========================
+# Jsone 4.5.2 (2023-04-10)
 
-Bugfixes
---------
+## Bugfixes
 
 - Fixed a bug that caused some examples in documentation not to be rendered on json-e.js.org (#461)
 
 
-Jsone 4.5.1 (2023-03-20)
-========================
+# Jsone 4.5.1 (2023-03-20)
 
 - The Rust crate no longer rebuilds on every invocation. (#460)
 
 
-Jsone 4.5.0 (2022-12-25)
-========================
+# Jsone 4.5.0 (2022-12-25)
 
-Features
---------
+## Features
 
 - Added a $default case to the switch operator (#455)
 
 
-Jsone 4.4.3 (2021-11-17)
-========================
+# Jsone 4.4.3 (2021-11-17)
 
-Features
---------
+## Features
 
 - The JSON-e GitHub repository has been moved to https://github.com/json-e/json-e. (#430)
 
 
-Bugfixes
---------
+## Bugfixes
 
 - Emit an error on uncalled functions in all implementations. (#158)
 - All implementations now enforce that context is an object.  This was always the intent, but the JS and Python implementations' validation was not particularly thorough. (#408)
 
 
-Jsone 4.4.1 (2021-03-12)
-========================
+# Jsone 4.4.1 (2021-03-12)
 
 No significant changes.
 
 This version updates the release mechanics to include descriptions for each package.
 
 
-Jsone 4.4.0 (2021-03-12)
-========================
+# Jsone 4.4.0 (2021-03-12)
 
-Features
---------
+## Features
 
 - JSON-e is now also available as a Rust crate! (#289)
 - Each implementation language is now in its own subdirectory.  This change should not affect users of the library. (#401)
 
 
-Bugfixes
---------
+## Bugfixes
 
 - Syntax errors regarding unexpected identifiers are now phrased more clearly (Python and JS implementations only) (#383)
 - JS implementation now throws instances of the correct SyntaxError type (#399)
 
 
-Jsone 4.3.0 (2020-08-27)
-========================
+# Jsone 4.3.0 (2020-08-27)
 
-Features
---------
+## Features
 
 - Introduces `split` to built-in string functions enabling string splitting with a delimiter. 
   Input and delimiter can either be `string` or `number`. (#368)
@@ -176,19 +144,15 @@ Features
 - The Go port now uses GoModules.  It should nonetheless remain compatible with earlier versions of Go. (#373)
 
 
-Jsone 4.2.0 (2020-07-17)
-========================
+# Jsone 4.2.0 (2020-07-17)
 
-Bugfixes
---------
+## Bugfixes
 
 - The Python implementation no longer causes warnings about invalid escape sequences (#361).
 
-Jsone 4.1.0 (2020-05-29)
-========================
+# Jsone 4.1.0 (2020-05-29)
 
-Features
---------
+## Features
 
 - Introduces $switch operator, which behaves like a combination of the $if and $match operator for
   more complex boolean logic. It gets an object, in which every key is a string expression(s), where
@@ -196,40 +160,33 @@ Features
   the value corresponding to the key that were evaluated to true. (#257)
 
 
-Bugfixes
---------
+## Bugfixes
 
 - Builtin functions are now called with relevant context.
   This means that builtins like `fromNow()` and `defined()` respect variables defined via `$let`. (342&343)
 - Fix error (constructor.name) when using with Webpack in production mode (#354)
 
 
-Improved Documentation
-----------------------
+## Improved Documentation
 
 - The `defined()` builtin is now documented. (#341)
 - Tests now include a test case for #354, regarding function evaluation. (#354)
 
 
-Jsone 4.0.1 (2020-03-11)
-========================
+# Jsone 4.0.1 (2020-03-11)
 
-Bugfixes
---------
+## Bugfixes
 
 - Revert PR # 330 (fix for issue 158)
 
-Improved Documentation
-----------------------
+## Improved Documentation
 
 - Update releasing documentation with information on how to release on npm and deploy the web-site (release)
 
 
-Jsone 4.0.0 (2020-03-04)
-===================
+# Jsone 4.0.0 (2020-03-04)
 
-Bugfixes
---------
+## Bugfixes
 
 - Added support for the short-circuiting of the boolean logic operators || and &&
   Separated parser and interpreter.
@@ -237,11 +194,9 @@ Bugfixes
   Interpreter make tree traversal. (#244)
 
 
-Jsone 3.0.2 (2020-03-03)
-========================
+# Jsone 3.0.2 (2020-03-03)
 
-Bugfixes
---------
+## Bugfixes
 
 - ## Part fix for #168: Enforce all error messages match
 
@@ -295,27 +250,22 @@ Bugfixes
 - Strings containing unicode are now handled correctly by str() on Python 2. (#338)
 
 
-Improved Documentation
-----------------------
+## Improved Documentation
 
 - Fix typo in CONTRIBUTING.md (contributingmd)
 - Clarify 'all tests pass' instruction in PULL_REQUEST_TEMPLATE.md (pull_request_template)
 - The `$fromNow` builtin is tested to properly handle a new value of `now` defined in a `$let`. (#344)
 
 
-Jsone 3.0.1 (2018-07-11)
-========================
+# Jsone 3.0.1 (2018-07-11)
 
-Features
---------
+## Features
 
 - Introduction of support of TypeScript typings. This version adds type for the jsone function.
 
-Jsone 3.0.0 (2018-11-01)
-========================
+# Jsone 3.0.0 (2018-11-01)
 
-Features
---------
+## Features
 
 - Support of `index` or `key` context variable in `$map` operation.
 
@@ -335,8 +285,7 @@ Features
 - Add support for element indexes in $map (#242)
 
 
-Bugfixes
---------
+## Bugfixes
 
 - [BREAKING] make typeof(null) be "null", not null
 
@@ -344,48 +293,39 @@ Bugfixes
   However, it is unlikely to affect most uses of JSON-e. (#246)
 
 
-Jsone 2.7.1 (2018-09-22)
-========================
+# Jsone 2.7.1 (2018-09-22)
 
-Bugfixes
---------
+## Bugfixes
 
 - Ensure that `$match` results are deterministic (#258)
 
 
-Jsone 2.7.0 (2018-08-23)
-========================
+# Jsone 2.7.0 (2018-08-23)
 
-Features
---------
+## Features
 
 - Add new operator `$match` which allows for a new way of flow control by evaluating boolean expressions it is given. (#161)
 
 
-Jsone 2.6.0 (2018-06-20)
-========================
+# Jsone 2.6.0 (2018-06-20)
 
-Features
---------
+## Features
 
 - Begin using towncrier to build CHANGELOG.rst (#193)
 - Add a `number` builtin that converts strings to numbers (#240)
 
 
-Bugfixes
---------
+## Bugfixes
 
 - Ensure that ``$json`` consistently sorts object properties across languages
   (#222)
 
 
-Improved Documentation
-----------------------
+## Improved Documentation
 
 - Link to rjsone in README (#238)
 
 
-Older Versions
-==============
+# Older Versions
 
 For versions of JSON-e 2.5.0 and older, please consult the git history.
