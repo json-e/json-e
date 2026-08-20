@@ -40,7 +40,8 @@ tasks:
                 git checkout ${repo.ref} &&
                 cd js &&
                 yarn &&
-                yarn test
+                yarn test &&
+                ./package-test.sh
         - $map: 
           - {env: py38, vers: "3.8"}
           - {env: py39, vers: "3.9"}
@@ -59,8 +60,10 @@ tasks:
                 git config advice.detachedHead false &&
                 git checkout ${repo.ref} &&
                 cd py/ &&
-                pip install tox &&
-                tox -e ${v.env}
+                pip install tox build twine &&
+                tox -e ${v.env} &&
+                python -m build &&
+                twine check --strict dist/*
         # This image generally tracks the latest Go
         - image: 'golangci/golangci-lint'
           name: Go tests (and lint)
@@ -94,7 +97,11 @@ tasks:
                 git config advice.detachedHead false &&
                 git checkout ${repo.ref} &&
                 cd rs/ &&
-                cargo test
+                cargo test &&
+                cd .. &&
+                ./scripts/stage-crate-spec.sh &&
+                cd rs &&
+                cargo publish --dry-run --allow-dirty
         # Always use the latest Rust for the mdbook tests
         - image: 'rust:latest'
           name: MdBook tests
