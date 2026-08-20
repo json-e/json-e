@@ -116,6 +116,11 @@ the || and 'in' operators`.
 
 Note that test time is frozen to `2017-01-19T16:27:20.974Z` across all implementations.
 
+# Releasing
+
+See [RELEASING.md](RELEASING.md) for the release process. It's only relevant
+to maintainers cutting a release, not to regular contributions.
+
 Welcome to the team!
 
 [participation]: https://www.mozilla.org/en-US/about/governance/policies/participation/

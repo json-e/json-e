@@ -1,0 +1,382 @@
+# ============================================================================
+#  DO NOT RENAME THIS FILE.
+#
+#  npm, PyPI and crates.io all key their Trusted Publishing (OIDC) trust
+#  configuration on the *workflow filename* (release.yml) plus the
+#  owner/repo and the `release` environment name below. Renaming this file,
+#  moving it, or renaming the `release` environment breaks publishing to
+#  ALL THREE registries with a misleading auth error, not an obvious one.
+# ============================================================================
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Serialise whole releases. Never cancel: a cancelled run can leave a
+# partially-published version.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+# Least privilege by default; every job opts in to exactly what it needs.
+permissions: {}
+
+env:
+  # Keep in sync with the mdbook version used for `MdBook tests` in
+  # .taskcluster.yml.
+  MDBOOK_VERSION: v0.5.2
+
+jobs:
+
+  # --------------------------------------------------------------------
+  # Gate 1: the tag is well-formed, cut from main, and every version
+  # string in the tree agrees with it.
+  #
+  # release.sh already runs scripts/check-versions.sh locally, before it
+  # ever commits, so this is not re-checking work that was already done
+  # safely. It's the backstop for a v* tag that was pushed without
+  # release.sh being run at all (by hand, or by anything else with tag
+  # access), which is the one path where no local check ran.
+  # --------------------------------------------------------------------
+  verify:
+    name: Verify tag and versions
+    # Forks can push v* tags too; their OIDC claims won't match any
+    # registry's trust config, so there's no point burning CI minutes.
+    if: github.repository == 'json-e/json-e'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Parse tag
+        id: v
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag '${tag}' is not vMAJOR.MINOR.PATCH."
+            exit 1
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Tag must be reachable from main
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --quiet origin +refs/heads/main:refs/remotes/origin/main
+          if ! git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
+            echo "::error::Tag ${GITHUB_REF_NAME} (${GITHUB_SHA}) is not an ancestor of origin/main."
+            echo "Releases must be cut from main. Delete the tag and try again."
+            exit 1
+          fi
+
+      # Also checks go.mod's /vN suffix against the tag's major version:
+      # see scripts/check-versions.sh for why that can't wait until CI.
+      - name: Versions agree across all manifests
+        run: ./scripts/check-versions.sh "${{ steps.v.outputs.version }}"
+
+  # --------------------------------------------------------------------
+  # Gate 2: prove every artifact actually builds, BEFORE anything is
+  # published anywhere. No job here has id-token.
+  # --------------------------------------------------------------------
+  build-pypi:
+    name: Build Python distributions
+    needs: [verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        with:
+          python-version: '3.12'
+      - name: Build sdist and wheel
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade build twine
+          cd py
+          python -m build
+          ls -l dist
+      - name: Check metadata
+        run: python -m twine check --strict py/dist/*
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pypi-dist
+          path: py/dist/
+          if-no-files-found: error
+
+  build-npm:
+    name: Build and smoke-test npm package
+    needs: [verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '24'
+          cache: yarn
+          cache-dependency-path: js/yarn.lock
+      - name: Install devDependencies
+        run: cd js && yarn install --frozen-lockfile
+      # Runs `prepack` -> `npm run rollup`, then packs the real tarball,
+      # installs it in a scratch dir, and require()s it.
+      - name: Pack and smoke test
+        run: cd js && ./package-test.sh
+
+  build-crates:
+    name: Dry-run crate package
+    needs: [verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Stage specification.yml into the crate
+        run: ./scripts/stage-crate-spec.sh
+      - run: cargo --version && rustc --version
+      - name: cargo publish --dry-run
+        working-directory: rs
+        run: cargo publish --dry-run --allow-dirty
+
+  # --------------------------------------------------------------------
+  # Publish. Three parallel jobs, each waits for ALL builds. Each is
+  # idempotent: if the version is already on the registry it skips,
+  # so re-running the whole workflow after a partial failure is safe.
+  # --------------------------------------------------------------------
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [verify, build-pypi, build-npm, build-crates]
+    runs-on: ubuntu-latest # pypa/gh-action-pypi-publish is Linux-only
+    environment: release
+    permissions:
+      id-token: write # OIDC for Trusted Publishing
+    steps:
+      - name: Already published?
+        id: pre
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /dev/null -w '%{http_code}' \
+                 "https://pypi.org/pypi/json-e/${{ needs.verify.outputs.version }}/json") || code="000"
+          case "${code}" in
+            200) echo "::warning::json-e ${{ needs.verify.outputs.version }} already on PyPI; skipping."
+                 echo "skip=true" >> "$GITHUB_OUTPUT" ;;
+            404) echo "skip=false" >> "$GITHUB_OUTPUT" ;;
+            *)   echo "::error::Unexpected HTTP ${code} from PyPI."; exit 1 ;;
+          esac
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        if: steps.pre.outputs.skip == 'false'
+        with:
+          name: pypi-dist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1 (v1.14.2)
+        if: steps.pre.outputs.skip == 'false'
+        with:
+          packages-dir: dist
+          print-hash: true
+
+  publish-npm:
+    name: Publish to npm
+    needs: [verify, build-pypi, build-npm, build-crates]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Already published?
+        id: pre
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /dev/null -w '%{http_code}' \
+                 "https://registry.npmjs.org/json-e/${{ needs.verify.outputs.version }}") || code="000"
+          case "${code}" in
+            200) echo "::warning::json-e ${{ needs.verify.outputs.version }} already on npm; skipping."
+                 echo "skip=true" >> "$GITHUB_OUTPUT" ;;
+            404) echo "skip=false" >> "$GITHUB_OUTPUT" ;;
+            *)   echo "::error::Unexpected HTTP ${code} from registry.npmjs.org."; exit 1 ;;
+          esac
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        if: steps.pre.outputs.skip == 'false'
+        with:
+          persist-credentials: false
+      # Deliberately NO `registry-url:` here. Setting it makes setup-node
+      # write ~/.npmrc with //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}.
+      # With NODE_AUTH_TOKEN unset, that sends an empty credential and
+      # SUPPRESSES the OIDC exchange, producing a misleading ENEEDAUTH/404
+      # instead of a real error.
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        if: steps.pre.outputs.skip == 'false'
+        with:
+          node-version: '24'
+          cache: yarn
+          cache-dependency-path: js/yarn.lock
+      - name: Ensure npm >= 11.5.1 (Trusted Publishing support)
+        if: steps.pre.outputs.skip == 'false'
+        run: |
+          set -euo pipefail
+          npm install -g npm@12.0.2
+          npm --version
+      - name: Assert no stray npm credentials
+        if: steps.pre.outputs.skip == 'false'
+        run: |
+          set -euo pipefail
+          if [ -n "${NODE_AUTH_TOKEN:-}${NPM_TOKEN:-}" ]; then
+            echo "::error::NODE_AUTH_TOKEN/NPM_TOKEN is set; it would shadow OIDC trusted publishing."
+            exit 1
+          fi
+          test ! -f ~/.npmrc || { echo "::error::unexpected ~/.npmrc:"; cat ~/.npmrc; exit 1; }
+      - name: Install devDependencies
+        if: steps.pre.outputs.skip == 'false'
+        run: cd js && yarn install --frozen-lockfile
+      # Runs `prepack` -> rollup -> dist/index.js, then publishes with
+      # automatic provenance via OIDC.
+      - name: npm publish
+        if: steps.pre.outputs.skip == 'false'
+        run: cd js && npm publish
+
+  publish-crates:
+    name: Publish to crates.io
+    needs: [verify, build-pypi, build-npm, build-crates]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Already published?
+        id: pre
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /dev/null -w '%{http_code}' \
+                 -H 'User-Agent: json-e-release (https://github.com/json-e/json-e)' \
+                 "https://crates.io/api/v1/crates/json-e/${{ needs.verify.outputs.version }}") || code="000"
+          case "${code}" in
+            200) echo "::warning::json-e ${{ needs.verify.outputs.version }} already on crates.io; skipping."
+                 echo "skip=true" >> "$GITHUB_OUTPUT" ;;
+            404) echo "skip=false" >> "$GITHUB_OUTPUT" ;;
+            *)   echo "::error::Unexpected HTTP ${code} from crates.io."; exit 1 ;;
+          esac
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        if: steps.pre.outputs.skip == 'false'
+        with:
+          persist-credentials: false
+      - name: Stage specification.yml into the crate
+        if: steps.pre.outputs.skip == 'false'
+        run: ./scripts/stage-crate-spec.sh
+      - uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+        if: steps.pre.outputs.skip == 'false'
+        id: auth
+      - name: cargo publish
+        if: steps.pre.outputs.skip == 'false'
+        working-directory: rs
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish --allow-dirty
+
+  # --------------------------------------------------------------------
+  # Post-publish: rebuild and deploy the docs site.
+  # --------------------------------------------------------------------
+  docs:
+    name: Deploy documentation
+    needs: [publish-pypi, publish-npm, publish-crates]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # pushes to the gh-pages branch
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # pushing gh-pages must not be from a shallow clone
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '24'
+          cache: yarn
+          cache-dependency-path: js/yarn.lock
+
+      # book.toml's additional-js references js/dist/index.js, which is
+      # NOT checked in; it only exists after this build.
+      - name: Build browser bundle
+        run: |
+          set -euo pipefail
+          cd js
+          yarn install --frozen-lockfile
+          yarn rollup
+          test -s dist/index.js
+
+      - name: Install mdBook ${{ env.MDBOOK_VERSION }}
+        run: |
+          set -euo pipefail
+          url="https://github.com/rust-lang/mdBook/releases/download/${MDBOOK_VERSION}/mdbook-${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          curl -fsSL "${url}" | tar -xz -C /usr/local/bin mdbook
+          mdbook --version
+
+      - name: Build book
+        run: |
+          set -euo pipefail
+          mdbook build
+          cp img/* book/ # mdbook does not copy these itself
+
+      # book.toml's `cname` key is what makes mdbook emit book/CNAME. If a
+      # future mdbook version ever drops that, this fails loudly instead of
+      # silently taking the custom domain offline on the next push.
+      #
+      # mdbook content-hashes additional-js/additional-css output (e.g.
+      # book/js/dist/index-<hash>.js, not index.js), so check by glob and
+      # cross-reference what playground.html actually points to, rather
+      # than assume a fixed filename.
+      - name: Sanity-check book output
+        run: |
+          set -euo pipefail
+          for f in book/CNAME book/index.html \
+                   book/logo.png book/logo-white.png book/playground.html; do
+            [ -s "${f}" ] || { echo "::error::missing or empty: ${f}"; exit 1; }
+          done
+          grep -qx 'json-e.js.org' book/CNAME \
+            || { echo "::error::book/CNAME is wrong:"; cat book/CNAME; exit 1; }
+
+          referenced=$(grep -o 'js/dist/index[^"]*\.js' book/playground.html | head -1)
+          [ -n "${referenced}" ] \
+            || { echo "::error::playground.html does not reference a js/dist bundle"; exit 1; }
+          [ -s "book/${referenced}" ] \
+            || { echo "::error::playground.html references book/${referenced}, which is missing"; exit 1; }
+
+      - name: Push to gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd book
+          git init -q -b gh-pages
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q origin '+refs/heads/gh-pages:refs/remotes/origin/gh-pages'
+          # Mixed reset: index = old site, worktree = new site, so `git add
+          # -A` below records both new/changed files and files an older
+          # mdbook version produced that this one no longer does.
+          git reset -q origin/gh-pages
+          git add -A .
+          if git diff --cached --quiet; then
+            echo "No documentation changes."
+            exit 0
+          fi
+          git commit -q -m "Rebuilding gh-pages from ${GITHUB_SHA} (${GITHUB_REF_NAME})"
+          git push -q origin HEAD:gh-pages
