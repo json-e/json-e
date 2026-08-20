@@ -1,1 +1,0 @@
-The Go implementation now enforces the spec error messages: the specification test suite asserts the exact expected message string, and TemplateError/InterpreterError/BuiltinError/SyntaxError output is aligned with specification.yml to match the Python implementation.

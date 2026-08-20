@@ -1,3 +1,20 @@
+Jsone 4.8.3 (2026-08-20)
+========================
+
+Features
+--------
+
+- Release script now checks that the local main branch is in sync with upstream, that the release tag does not already exist on the remote, and that the version has not already been published to npm, PyPI, or crates.io. (#577)
+
+
+Bugfixes
+--------
+
+- The Go implementation now enforces the spec error messages: the specification test suite asserts the exact expected message string, and TemplateError/InterpreterError/BuiltinError/SyntaxError output is aligned with specification.yml to match the Python implementation. (#393)
+- Added conformance tests for array indexes equal to the negative array length. (#556)
+- Fixed the JS implementation to treat contexts and template objects as explicit key/value dictionaries rather than JavaScript objects. (#589)
+
+
 Jsone 4.8.2 (2026-02-26)
 ========================
 
