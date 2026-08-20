@@ -165,6 +165,47 @@
 		return error;
 	}
 
+	var typeUtils;
+	var hasRequiredTypeUtils;
+
+	function requireTypeUtils () {
+		if (hasRequiredTypeUtils) return typeUtils;
+		hasRequiredTypeUtils = 1;
+		let utils = {
+		  // avoids redefinition
+		  hasOwn: (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop),
+		  // use null prototype so `__proto__` key behaves
+		  mergeContext: (...sources) => Object.assign(Object.create(null), ...sources),
+		  setProp: (obj, key, value) => {
+		    Object.defineProperty(obj, key, {
+		      value, writable: true, enumerable: true, configurable: true,
+		    });
+		    return obj;
+		  },
+		  isString:   expr => typeof expr === 'string',
+		  isNumber:   expr => typeof expr === 'number',
+		  isInteger:  expr => typeof expr === 'number' && Number.isInteger(expr),
+		  isBool:     expr => typeof expr === 'boolean',
+		  isNull:     expr => expr === null,
+		  isArray:    expr => expr instanceof Array,
+		  isObject:   expr => expr instanceof Object && !(expr instanceof Array) && !(expr instanceof Function),
+		  isFunction: expr => expr instanceof Function,
+		  isTruthy: expr => {
+		    return expr!== null && (
+		      utils.isArray(expr) && expr.length > 0 ||
+		      utils.isObject(expr) && Object.keys(expr).length > 0 ||
+		      utils.isString(expr) && expr.length > 0 ||
+		      utils.isNumber(expr) && expr !== 0 ||
+		      utils.isBool(expr) && expr ||
+		      utils.isFunction(expr)
+		    );
+		  },
+		};
+
+		typeUtils = utils;
+		return typeUtils;
+	}
+
 	var hasRequiredParser;
 
 	function requireParser () {
@@ -172,6 +213,7 @@
 		hasRequiredParser = 1;
 		const {UnaryOp, BinOp, Primitive, ContextValue, FunctionCall, ValueAccess, List, Object} = requireAST();
 		const {SyntaxError} = requireError();
+		const {setProp} = requireTypeUtils();
 
 		let syntaxRuleError = (token, expects) => {
 		    expects.sort();
@@ -198,11 +240,7 @@
 		        if (kinds.length > 0 && kinds.indexOf(this.current_token.kind) === -1) {
 		            throw syntaxRuleError(this.current_token, kinds);
 		        }
-		        try {
-		            this.current_token = this._tokenizer.next(this._source, this.current_token.end);
-		        } catch (err) {
-		            throw err;
-		        }
+		        this.current_token = this._tokenizer.next(this._source, this.current_token.end);
 		    }
 
 		    parse(level = 0) {
@@ -393,7 +431,7 @@
 		            if (value == null) {
 		                throw syntaxRuleError(this.current_token, this.expectedTokens);
 		            }
-		            obj[key] = value;
+		            setProp(obj, key, value);
 		            if (this.current_token != null && this.current_token.kind == "}") {
 		                break;
 		            } else {
@@ -435,7 +473,7 @@
 		  }
 		  try {
 		    new RegExp(`^${re}$`);
-		  } catch (e) {
+		  } catch {
 		    return false;
 		  }
 		  return true;
@@ -533,43 +571,12 @@
 
 	var interpreter = {};
 
-	var typeUtils;
-	var hasRequiredTypeUtils;
-
-	function requireTypeUtils () {
-		if (hasRequiredTypeUtils) return typeUtils;
-		hasRequiredTypeUtils = 1;
-		let utils = {
-		  isString:   expr => typeof expr === 'string',
-		  isNumber:   expr => typeof expr === 'number',
-		  isInteger:  expr => typeof expr === 'number' && Number.isInteger(expr),
-		  isBool:     expr => typeof expr === 'boolean',
-		  isNull:     expr => expr === null,
-		  isArray:    expr => expr instanceof Array,
-		  isObject:   expr => expr instanceof Object && !(expr instanceof Array) && !(expr instanceof Function),
-		  isFunction: expr => expr instanceof Function,
-		  isTruthy: expr => {
-		    return expr!== null && (
-		      utils.isArray(expr) && expr.length > 0 ||
-		      utils.isObject(expr) && Object.keys(expr).length > 0 ||
-		      utils.isString(expr) && expr.length > 0 ||
-		      utils.isNumber(expr) && expr !== 0 ||
-		      utils.isBool(expr) && expr ||
-		      utils.isFunction(expr)
-		    );
-		  },
-		};
-
-		typeUtils = utils;
-		return typeUtils;
-	}
-
 	var hasRequiredInterpreter;
 
 	function requireInterpreter () {
 		if (hasRequiredInterpreter) return interpreter;
 		hasRequiredInterpreter = 1;
-		const {isFunction, isObject, isString, isArray, isNumber, isInteger, isTruthy} = requireTypeUtils();
+		const {isFunction, isObject, isString, isArray, isNumber, isInteger, isTruthy, hasOwn, setProp} = requireTypeUtils();
 		const {InterpreterError} = requireError();
 
 		let expectationError = (operator, expectation) => new InterpreterError(`${operator} expects ${expectation}`);
@@ -672,7 +679,7 @@
 		                return Math.pow(right, left);
 		            case ("."): {
 		                if (isObject(left)) {
-		                    if (left.hasOwnProperty(right)) {
+		                    if (hasOwn(left, right)) {
 		                        return left[right];
 		                    }
 		                    throw new InterpreterError(`object has no property "${right}"`);
@@ -775,7 +782,7 @@
 		            throw new InterpreterError('object keys must be strings');
 		        }
 
-		        if (array.hasOwnProperty(left)) {
+		        if (hasOwn(array, left)) {
 		            return array[left];
 		        } else {
 		            return null;
@@ -783,7 +790,7 @@
 		    }
 
 		    visit_ContextValue(node) {
-		        if (this.context.hasOwnProperty(node.token.value)) {
+		        if (hasOwn(this.context, node.token.value)) {
 		            let contextValue = this.context[node.token.value];
 		            return contextValue
 		        }
@@ -798,7 +805,7 @@
 		            node.args.forEach(function (item) {
 		                args.push(this.visit(item));
 		            }, this);
-		            if (funcName.hasOwnProperty("jsone_builtin")) {
+		            if (hasOwn(funcName, "jsone_builtin")) {
 		                args.unshift(this.context);
 		            }
 		            return funcName.apply(null, args);
@@ -810,8 +817,8 @@
 		    visit_Object(node) {
 		        let obj = {};
 
-		        for (let key in node.obj) {
-		            obj[key] = this.visit(node.obj[key]);
+		        for (let key of Object.keys(node.obj)) {
+		            setProp(obj, key, this.visit(node.obj[key]));
 		        }
 
 		        return obj
@@ -905,7 +912,7 @@
 		    throw new Error('String: \'' + str + '\' isn\'t a time expression');
 		  }
 		  // Negate if needed
-		  var neg = match[2] === '-' ? - 1 : 1;
+		  var neg = match[2] === '-' ? -1 : 1;
 		  // Return parsed values
 		  let groups = match.groups;
 		  return {
@@ -1047,7 +1054,7 @@
 		var {
 		  isString, isNumber, isBool,
 		  isInteger, isArray, isObject,
-		  isNull, isFunction,
+		  isNull, isFunction, hasOwn, mergeContext,
 		} = requireTypeUtils();
 
 		let types = {
@@ -1218,15 +1225,13 @@
 		  define('defined', builtins, {
 		    argumentTests: ['string'],
 		    needsContext: true,
-		    invoke: (ctx, str) => ctx.hasOwnProperty(str)
+		    invoke: (ctx, str) => hasOwn(ctx, str)
 		  });
 
-		  return Object.assign({}, builtins, context);
+		  return mergeContext(builtins, context);
 		};
 		return builtins;
 	}
-
-	/* eslint-disable */
 
 	var src;
 	var hasRequiredSrc;
@@ -1243,9 +1248,20 @@
 		  isString, isNumber, isBool,
 		  isArray, isObject,
 		  isTruthy, isFunction,
+		  hasOwn, mergeContext, setProp,
 		} = requireTypeUtils();
 		var addBuiltins = requireBuiltins();
 		var {JSONTemplateError, TemplateError, SyntaxError} = requireError();
+
+		let mergeObjects = (...sources) => {
+		  let result = {};
+		  for (let source of sources) {
+		    for (let key of Object.keys(source)) {
+		      setProp(result, key, source[key]);
+		    }
+		  }
+		  return result;
+		};
 
 		let syntaxRuleError = (token) => {
 		    return new SyntaxError(`Found: ${token.value} token, expected one of: !=, &&, (, *, **, +, -, ., /, <, <=, ==, >, >=, [, in, ||`);
@@ -1359,14 +1375,14 @@
 		    throw new TemplateError('$if can evaluate string expressions only');
 		  }
 		  if (isTruthy(parse(template['$if'], context))) {
-		    if(template.hasOwnProperty('$then')){
+		    if(hasOwn(template, '$then')){
 		      throw new TemplateError('$if Syntax error: $then: should be spelled then: (no $)')
 		    }
 
-		   return template.hasOwnProperty('then') ? render(template.then, context) : deleteMarker;
+		   return hasOwn(template, 'then') ? render(template.then, context) : deleteMarker;
 		  }
 
-		  return template.hasOwnProperty('else') ? render(template.else, context) : deleteMarker;
+		  return hasOwn(template, 'else') ? render(template.else, context) : deleteMarker;
 		};
 
 		operators.$json = (template, context) => {
@@ -1385,7 +1401,7 @@
 		  if (!isObject(template['$let'])) {
 		    throw new TemplateError('$let value must be an object');
 		  }
-		  let variables = {};
+		  let variables = Object.create(null);
 
 		  let initialResult = render(template['$let'], context);
 		  if (!isObject(initialResult)) {
@@ -1399,7 +1415,7 @@
 		    }
 		  });
 
-		  var child_context = Object.assign({}, context, variables);
+		  var child_context = mergeContext(context, variables);
 
 		  if (template.in == undefined) {
 		    throw new TemplateError('$let operator requires an `in` clause');
@@ -1437,18 +1453,17 @@
 		    let eachValue;
 		    value = value.map(v => {
 		      let args = typeof i !== 'undefined' ? {[x]: v.val, [i]: v.key} : {[x]: v};
-		      eachValue = render(each, Object.assign({}, context, args));
+		      eachValue = render(each, mergeContext(context, args));
 		      if (!isObject(eachValue)) {
 		        throw new TemplateError(`$map on objects expects each(${x}) to evaluate to an object`);
 		      }
 		      return eachValue;
 		    }).filter(v => v !== deleteMarker);
-		    //return value.reduce((a, o) => Object.assign(a, o), {});
-		    return Object.assign({}, ...value);
+		    return mergeObjects(...value);
 		  } else {
 		    return value.map((v, idx) => {
 		      let args = typeof i !== 'undefined' ? {[x]: v, [i]: idx} : {[x]: v};
-		      return render(each, Object.assign({}, context, args));
+		      return render(each, mergeContext(context, args));
 		    }).filter(v => v !== deleteMarker);
 		  }
 		};
@@ -1479,7 +1494,7 @@
 
 		  return value.reduce((acc, v, idx)=>{
 		    const args = typeof i !== 'undefined' ? {[a]: acc, [x]: v, [i]: idx} : {[a]: acc, [x]: v};
-		    const r = render(each, Object.assign({}, context, args));
+		    const r = render(each, mergeContext(context, args));
 		    return r === deleteMarker ? acc : r;
 		  }, initialValue);
 		};
@@ -1513,8 +1528,8 @@
 		  const result = value.find((v, idx) => {
 		    let args = typeof i !== 'undefined' ? {[x]: v, [i]: idx} : {[x]: v};
 
-		    if (isTruthy(parse(each, Object.assign({}, context, args)))) {
-		      return render(each, Object.assign({}, context, args));
+		    if (isTruthy(parse(each, mergeContext(context, args)))) {
+		      return render(each, mergeContext(context, args));
 		    }
 		  });
 
@@ -1560,7 +1575,7 @@
 		    throw new TemplateError('$switch can only have one truthy condition');
 		  }
 
-		  if (result.length === 0 && "$default" in conditions) {
+		  if (result.length === 0 && hasOwn(conditions, '$default')) {
 		    result.push(render(conditions[ '$default' ], context));
 		  }
 
@@ -1576,7 +1591,7 @@
 		    throw new TemplateError('$merge value must evaluate to an array of objects');
 		  }
 
-		  return Object.assign({}, ...value);
+		  return mergeObjects(...value);
 		};
 
 		operators.$mergeDeep = (template, context) => {
@@ -1598,13 +1613,9 @@
 		      return l.concat(r);
 		    }
 		    if (isObject(l) && isObject(r)) {
-		      let res = Object.assign({}, l);
-		      for (let p in r) { // eslint-disable-line taskcluster/no-for-in
-		        if (p in l) {
-		          res[p] = merge(l[p], r[p]);
-		        } else {
-		          res[p] = r[p];
-		        }
+		      let res = mergeObjects(l);
+		      for (let p of Object.keys(r)) {
+		        setProp(res, p, hasOwn(l, p) ? merge(l[p], r[p]) : r[p]);
 		      }
 		      return res;
 		    }
@@ -1637,7 +1648,7 @@
 		  let match = /^by\(([a-zA-Z_][a-zA-Z0-9_]*)\)$/.exec(byKey);
 		  let by;
 		  if (match) {
-		    let contextClone = Object.assign({}, context);
+		    let contextClone = mergeContext(context);
 		    let x = match[1];
 		    let byExpr = template[byKey];
 		    by = value => {
@@ -1696,7 +1707,7 @@
 		    }).filter((v) => v !== deleteMarker);
 		  }
 
-		  let matches = Object.keys(operators).filter(c => template.hasOwnProperty(c));
+		  let matches = Object.keys(operators).filter(c => hasOwn(template, c));
 		  if (matches.length > 1) {
 		    throw new TemplateError('only one operator allowed');
 		  }
@@ -1729,7 +1740,7 @@
 		        key = interpolate(key, context);
 		      }
 
-		      result[key] = value;
+		      setProp(result, key, value);
 		    }
 		  }
 		  return result;
@@ -1809,7 +1820,7 @@
 		  if (!test) {
 		    throw new TemplateError('top level keys of context must follow /[a-zA-Z_][a-zA-Z0-9_]*/');
 		  }
-		  context = addBuiltins(Object.assign({}, {now: fromNow('0 seconds')}, context));
+		  context = addBuiltins(mergeContext({now: fromNow('0 seconds')}, context));
 		  let result = render(template, context);
 		  if (result === deleteMarker) {
 		    return null;
