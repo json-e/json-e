@@ -398,6 +398,10 @@ operators.$reverse = (template, context) => {
 operators.$sort = (template, context) => {
   const BY_RE = 'by\\(([a-zA-Z_][a-zA-Z0-9_]*)\\)';
   checkUndefinedProperties(template, ['\\$sort', BY_RE]);
+  let byKeys = Object.keys(template).filter(k => new RegExp('^' + BY_RE + '$').test(k));
+  if (byKeys.length > 1) {
+    throw new TemplateError('only one by(..) is allowed');
+  }
   let value = render(template['$sort'], context);
   if (!isArray(value)) {
     throw new TemplateError('$sorted values to be sorted must have the same type');

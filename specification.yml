@@ -1840,6 +1840,14 @@ template:
   foo:   'bar'
 error: 'TemplateError: $sort has undefined properties: foo'
 ---
+title:    sort with multiple by() properties
+context:  {}
+template:
+  $sort: [{a: 2}, {a: 1, b: []}, {a: 3}]
+  by(per_Mi5t): 'per_Mi5t.a'
+  by(x): 'x.b'
+error: 'TemplateError: only one by(..) is allowed'
+---
 title:    $sort variable not used (in context)
 context:  { foo: 1 }
 template: { $sort: [2,1,3], by(x): foo}
