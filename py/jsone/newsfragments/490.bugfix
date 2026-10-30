@@ -1,0 +1,1 @@
+Reject multiple `by(..)` properties on `$sort`.

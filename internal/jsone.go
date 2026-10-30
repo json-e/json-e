@@ -1070,7 +1070,7 @@ var operators = map[string]operator{
 		}
 		if len(template) > 2 {
 			return nil, TemplateError{
-				Message:  "$sort can have at-most two properties",
+				Message:  "only one by(..) is allowed",
 				Template: template,
 			}
 		}
